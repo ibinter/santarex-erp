@@ -62,10 +62,10 @@ const MOCK_DEMANDES: DemandeAnalyse[] = [
   },
 ];
 
-const STATUT_CONFIG: Record<StatutDemandeAnalyse, { label: string; variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'secondary'; dot?: boolean }> = {
-  attente_prelevement: { label: 'Attente prélèvement', variant: 'default', dot: true },
-  preleve: { label: 'Prélevé', variant: 'secondary', dot: true },
-  en_analyse: { label: 'En analyse', variant: 'primary', dot: true },
+const STATUT_CONFIG: Record<StatutDemandeAnalyse, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'danger'; dot?: boolean }> = {
+  attente_prelevement: { label: 'Attente prélèvement', variant: 'neutral', dot: true },
+  preleve: { label: 'Prélevé', variant: 'info', dot: true },
+  en_analyse: { label: 'En analyse', variant: 'info', dot: true },
   termine: { label: 'Terminé', variant: 'success', dot: true },
   annule: { label: 'Annulé', variant: 'danger', dot: true },
 };

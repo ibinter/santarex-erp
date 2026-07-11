@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Bell, ChevronDown, User, LogOut, Settings } from 'lucide-react';
+import { Search, Bell, ChevronDown, User as UserIcon, LogOut, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getUserInitials, getFullName, logout } from '@/lib/auth';
 import type { User } from '@/types';
@@ -137,7 +137,7 @@ export default function Header() {
               </div>
               <div className="py-1">
                 <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-surface transition-colors">
-                  <User size={16} className="text-text-secondary" />
+                  <UserIcon size={16} className="text-text-secondary" />
                   Mon profil
                 </button>
                 <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-primary hover:bg-surface transition-colors">

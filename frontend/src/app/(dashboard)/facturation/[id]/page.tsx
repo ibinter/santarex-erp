@@ -32,9 +32,9 @@ const MOCK_FACTURE = {
   ],
 };
 
-const STATUT_CONFIG: Record<StatutFacture, { label: string; variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'secondary' }> = {
-  brouillon: { label: 'Brouillon', variant: 'default' },
-  emise: { label: 'Émise', variant: 'primary' },
+const STATUT_CONFIG: Record<StatutFacture, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'danger' }> = {
+  brouillon: { label: 'Brouillon', variant: 'neutral' },
+  emise: { label: 'Émise', variant: 'info' },
   partiellement_payee: { label: 'Partiellement payée', variant: 'warning' },
   payee: { label: 'Payée', variant: 'success' },
   annulee: { label: 'Annulée', variant: 'danger' },

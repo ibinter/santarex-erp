@@ -59,8 +59,8 @@ export default function ConsultationDetailPage() {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold text-text-primary">{c.numero}</h1>
-              <Badge variant={c.statut === 'terminee' ? 'success' : c.statut === 'en_cours' ? 'info' : 'neutral'} dot>
-                {c.statut === 'en_cours' ? 'En cours' : c.statut === 'terminee' ? 'Terminée' : 'Facturée'}
+              <Badge variant={(c.statut as string) === 'terminee' ? 'success' : (c.statut as string) === 'en_cours' ? 'info' : 'neutral'} dot>
+                {(c.statut as string) === 'en_cours' ? 'En cours' : (c.statut as string) === 'terminee' ? 'Terminée' : 'Facturée'}
               </Badge>
             </div>
             <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary flex-wrap">
@@ -73,10 +73,10 @@ export default function ConsultationDetailPage() {
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            {c.statut === 'en_cours' && (
+            {(c.statut as string) === 'en_cours' && (
               <Button leftIcon={<Check size={16} />}>Terminer la consultation</Button>
             )}
-            {c.statut === 'terminee' && (
+            {(c.statut as string) === 'terminee' && (
               <Button variant="secondary" leftIcon={<CreditCard size={16} />}>Facturer</Button>
             )}
           </div>
