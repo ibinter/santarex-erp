@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: santarex_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: santarex_db
+      POSTGRES_USER: santarex
+      POSTGRES_PASSWORD: Santarex@2025!Prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - santarex_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U santarex -d santarex_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: santarex_redis
+    restart: always
+    networks:
+      - santarex_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: santarex_backend
+    restart: always
+    env_file: .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - santarex_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://185.98.139.38/api/v1
+    container_name: santarex_frontend
+    restart: always
+    env_file: .env.prod
+    depends_on:
+      - backend
+    networks:
+      - santarex_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: santarex_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - santarex_net
+
+volumes:
+  postgres_data:
+
+networks:
+  santarex_net:
+    driver: bridge

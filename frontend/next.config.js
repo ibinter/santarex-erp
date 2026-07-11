@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: { domains: ['localhost'] },
+  output: 'standalone',
+  images: { domains: ['localhost', '185.98.139.38'] },
 }
 module.exports = nextConfig
