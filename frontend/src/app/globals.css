@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #0D47A1;
+  --color-primary-medium: #1565C0;
+  --color-primary-light: #1976D2;
+  --color-secondary: #00838F;
+  --color-accent: #00BCD4;
+  --color-surface: #F5F7FA;
+  --color-text-primary: #37474F;
+  --color-text-secondary: #546E7A;
+  --color-success: #2E7D32;
+  --color-warning: #F57F17;
+  --color-danger: #C62828;
+  --color-border: #B0BEC5;
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white font-semibold px-4 py-2 rounded text-sm hover:bg-primary-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply border border-primary text-primary font-semibold px-4 py-2 rounded text-sm hover:bg-blue-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .btn-danger {
+    @apply bg-danger text-white font-semibold px-4 py-2 rounded text-sm hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+  .card {
+    @apply bg-white rounded-card shadow-card p-6;
+  }
+  .input-field {
+    @apply w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-light transition-colors placeholder:text-text-secondary;
+  }
+  .input-field-error {
+    @apply w-full border border-danger rounded px-3 py-2 text-sm focus:outline-none focus:border-danger transition-colors;
+  }
+  .label {
+    @apply block text-sm font-medium text-text-primary mb-1;
+  }
+  .error-text {
+    @apply text-xs text-danger mt-1;
+  }
+  .section-title {
+    @apply text-base font-semibold text-text-primary border-b border-border pb-2 mb-4;
+  }
+}
