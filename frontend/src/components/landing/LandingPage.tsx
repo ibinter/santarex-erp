@@ -111,39 +111,39 @@ const MODULES = [
 /* ── Plans tarifaires ── */
 const PLANS = [
   {
-    code: 'Starter',
-    eyebrow: 'Cabinet solo',
-    price: '15 000',
+    code: 'Pharmacie',
+    eyebrow: 'Pharmacie autonome',
+    price: '12 000',
     cycle: 'FCFA / mois',
-    users: '1 à 3 utilisateurs',
+    users: '1 à 5 utilisateurs',
     featured: false,
-    badge: null,
+    badge: 'Nouveau',
     features: [
-      'Jusqu\'à 3 utilisateurs',
-      'Patients & DME illimités',
-      'Consultations & ordonnances',
-      'Rendez-vous & agenda',
-      'Facturation mobile money',
+      'Gestion des stocks complète',
+      'Dispensation sur ordonnance',
+      'Alertes péremption & rupture',
+      'Gestion des lots & traçabilité',
+      'Facturation & Mobile Money',
       'Support WhatsApp 5j/7',
     ],
     btnClass: 'lp-plan-btn-outline',
     btnLabel: 'Démarrer l\'essai gratuit',
   },
   {
-    code: 'Cabinet Pro',
-    eyebrow: 'Cabinet multipraticiens',
-    price: '35 000',
+    code: 'Cabinet',
+    eyebrow: 'Cabinet médical',
+    price: '15 000',
     cycle: 'FCFA / mois',
-    users: 'Jusqu\'à 10 utilisateurs',
+    users: '1 à 5 utilisateurs',
     featured: false,
     badge: null,
     features: [
-      'Jusqu\'à 10 utilisateurs',
-      'Tous les modules Starter',
-      'Pharmacie & gestion stocks',
-      'Laboratoire & résultats',
-      'Reporting basique',
-      'Support prioritaire 6j/7',
+      'Jusqu\'à 5 utilisateurs',
+      'Patients & DME illimités',
+      'Consultations & ordonnances',
+      'Rendez-vous & agenda',
+      'Facturation mobile money',
+      'Support WhatsApp 5j/7',
     ],
     btnClass: 'lp-plan-btn-outline',
     btnLabel: 'Démarrer l\'essai gratuit',
@@ -158,11 +158,11 @@ const PLANS = [
     badge: 'Le plus populaire',
     features: [
       'Jusqu\'à 30 utilisateurs',
-      'Tous les modules Cabinet Pro',
+      'Patients, DME & consultations',
+      'Pharmacie & gestion stocks',
+      'Laboratoire & résultats',
       'Hospitalisation & plan des lits',
-      'Urgences & triage Manchester',
-      'Dashboard BI & reporting avancé',
-      'API & intégrations tierces',
+      'Dashboard BI & reporting',
       'Support 7j/7 prioritaire',
     ],
     btnClass: 'lp-plan-btn-fill',
@@ -179,15 +179,61 @@ const PLANS = [
     features: [
       'Utilisateurs illimités',
       'Tous les 14 modules',
-      'Bloc opératoire & chirurgie',
+      'Urgences & bloc opératoire',
       'Imagerie médicale (PACS)',
       'Ressources humaines & paie',
       'Multi-sites & consolidation',
-      'SLA 99.9% garanti',
-      'Support 24/7 dédié + sur site',
+      'SLA 99.9% · Support 24/7',
+      'Account manager dédié',
     ],
     btnClass: 'lp-plan-btn-outline',
     btnLabel: 'Nous contacter',
+  },
+];
+
+/* ── Activités / Verticales ── */
+const ACTIVITES = [
+  {
+    title: 'Hôpital & Clinique',
+    desc: 'Gestion complète multi-services : urgences, consultations, pharmacie, labo, bloc opératoire, imagerie.',
+    tags: ['DME', 'Urgences', 'Bloc op.', 'Imagerie'],
+    color: '#00C8B8',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
+  },
+  {
+    title: 'Pharmacie autonome',
+    desc: 'Stocks, dispensation sur ordonnance, alertes péremption, facturation — sans module hospitalier.',
+    tags: ['Stocks', 'Dispensation', 'Alertes', 'Facturation'],
+    color: '#F5A623',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
+  },
+  {
+    title: 'Cabinet médical',
+    desc: 'Agenda, consultations CIM-10, ordonnances numériques et facturation pour praticiens en cabinet.',
+    tags: ['Agenda', 'DME', 'Ordonnances', 'Facturation'],
+    color: '#4A8AF4',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+  },
+  {
+    title: 'Laboratoire d\'analyses',
+    desc: 'Réception des demandes, saisie & validation des résultats, interface biologiste, historique complet.',
+    tags: ['Demandes', 'Résultats', 'Validation', 'Historique'],
+    color: '#A78BFA',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg>,
+  },
+  {
+    title: 'Centre de santé',
+    desc: 'Solution légère pour les CSP, dispensaires et centres communautaires. Déploiement en 48h.',
+    tags: ['Patients', 'Consultations', 'Médicaments', 'Reporting'],
+    color: '#34D399',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
+  },
+  {
+    title: 'Clinique spécialisée',
+    desc: 'Ophtalmologie, dentisterie, kinésithérapie, maternité — configuré selon votre spécialité.',
+    tags: ['Spécialités', 'Planning', 'DME', 'Facturation'],
+    color: '#F87171',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
   },
 ];
 
@@ -357,11 +403,11 @@ export default function LandingPage() {
             </div>
 
             <div className="lp-hero-trust">
-              {['Côte d\'Ivoire', 'Sénégal', 'Mali', 'Burkina Faso'].map((pays, i) => (
+              {["Côte d'Ivoire", 'Sénégal', 'Cameroun', 'Mali', 'Burkina Faso', 'Guinée', 'Togo', 'Congo'].map((pays, i) => (
                 <div key={pays} style={{ display: 'contents' }}>
                   {i > 0 && <div className="lp-trust-sep" />}
                   <div className="lp-trust-item">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
                     {pays}
                   </div>
                 </div>
@@ -497,11 +543,17 @@ export default function LandingPage() {
         <div className="lp-trust-bar-inner">
           <span className="lp-trust-label">Déployé dans</span>
           <div className="lp-trust-logos">
-            {['Clinique du Plateau', 'Polyclinique Espoir', 'Cabinet Dr. Koné', 'Centre Médical Riviera'].map(n => (
+            {[
+              'Clinique Sainte-Marie · Douala',
+              'Polyclinique Dakar Santé · Sénégal',
+              'CHR de Conakry · Guinée',
+              'Hôpital Général · Brazzaville',
+              'Cabinet Excellence · Lomé',
+            ].map(n => (
               <span key={n} className="lp-trust-logo">{n}</span>
             ))}
           </div>
-          <div className="lp-trust-count"><strong>40+</strong> établissements actifs</div>
+          <div className="lp-trust-count"><strong>60+</strong> établissements actifs</div>
         </div>
       </div>
 
@@ -608,13 +660,52 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══ ACTIVITÉS ══ */}
+      <section className="lp-activites-section">
+        <div className="lp-activites-inner">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Une plateforme, plusieurs métiers</span>
+            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>
+              À l&apos;inscription, vous choisissez<br />
+              <span style={{ color: 'var(--teal)' }}>votre activité.</span>
+            </h2>
+            <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 560 }}>
+              SANTAREX ERP se configure automatiquement selon votre type de structure. Les modules, tableaux de bord et flux de travail s&apos;adaptent à votre métier — pas l&apos;inverse.
+            </p>
+          </div>
+          <div className="lp-activites-grid">
+            {ACTIVITES.map(a => (
+              <div key={a.title} className="lp-activite-card">
+                <div className="lp-activite-icon" style={{ color: a.color, background: `${a.color}18` }}>
+                  {a.icon}
+                </div>
+                <h3 className="lp-activite-title">{a.title}</h3>
+                <p className="lp-activite-desc">{a.desc}</p>
+                <div className="lp-activite-tags">
+                  {a.tags.map(t => (
+                    <span key={t} className="lp-activite-tag" style={{ borderColor: `${a.color}40`, color: a.color }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="lp-activites-cta">
+            <div className="lp-activites-cta-text">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              À l&apos;inscription, sélectionnez votre activité — le système configure vos modules, votre tableau de bord et vos droits d&apos;accès automatiquement.
+            </div>
+            <a href="#contact" className="lp-btn-cta" style={{ whiteSpace: 'nowrap' }}>Voir une démo →</a>
+          </div>
+        </div>
+      </section>
+
       {/* ══ PRICING ══ */}
       <section id="pricing" className="lp-pricing-section">
         <div className="lp-pricing-inner">
           <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>Tarifs</span>
           <h2 className="lp-section-title dark">Transparent. Sans surprise.</h2>
           <p className="lp-section-desc">Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.</p>
-          <div className="lp-pricing-grid lp-pricing-4col">
+          <div className="lp-pricing-grid lp-pricing-5col">
             {PLANS.map(p => (
               <div key={p.code} className={`lp-plan-card ${p.featured ? 'featured' : ''}`}>
                 {p.badge && <div className="lp-plan-badge">{p.badge}</div>}

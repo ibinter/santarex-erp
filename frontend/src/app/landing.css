@@ -201,7 +201,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 .lp-trust-bar-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
 .lp-trust-label{font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#334155}
 .lp-trust-logos{display:flex;align-items:center;gap:32px;flex-wrap:wrap}
-.lp-trust-logo{font-size:.75rem;font-weight:700;color:#334155;letter-spacing:.06em;text-transform:uppercase}
+.lp-trust-logo{font-size:.7rem;font-weight:700;color:#4A6580;letter-spacing:.04em;text-transform:uppercase}
 .lp-trust-count{display:flex;align-items:center;gap:10px;font-size:.8125rem;color:#64748B;border-left:1px solid var(--border-dark);padding-left:32px}
 .lp-trust-count strong{color:var(--teal);font-size:1.125rem;font-weight:800}
 
@@ -260,11 +260,45 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 .lp-step-title{font-size:1.0625rem;font-weight:700;color:#E2E8F0;margin-bottom:10px;letter-spacing:-.01em}
 .lp-step-desc{font-size:.875rem;color:#64748B;line-height:1.65}
 
+/* ── ACTIVITÉS / VERTICALES ── */
+.lp-activites-section{padding:96px 48px;background:var(--navy)}
+.lp-activites-inner{max-width:1280px;margin:0 auto}
+.lp-activites-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:40px;
+}
+.lp-activite-card{
+  background:var(--navy-2);border:1px solid var(--border-dark);border-radius:var(--radius-md);
+  padding:28px 24px;transition:border-color .25s,transform .25s;
+}
+.lp-activite-card:hover{border-color:rgba(0,200,184,.25);transform:translateY(-3px)}
+.lp-activite-icon{
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;flex-shrink:0;
+}
+.lp-activite-icon svg{width:22px;height:22px}
+.lp-activite-title{font-size:1rem;font-weight:700;color:#E2E8F0;margin-bottom:8px;letter-spacing:-.01em}
+.lp-activite-desc{font-size:.8125rem;color:#64748B;line-height:1.65;margin-bottom:16px}
+.lp-activite-tags{display:flex;flex-wrap:wrap;gap:6px}
+.lp-activite-tag{
+  font-size:.6875rem;font-weight:600;padding:3px 9px;border-radius:99px;
+  border:1px solid;letter-spacing:.04em;text-transform:uppercase;
+}
+.lp-activites-cta{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  background:var(--navy-2);border:1px solid var(--border-dark);
+  border-radius:var(--radius-md);padding:20px 28px;flex-wrap:wrap;
+}
+.lp-activites-cta-text{
+  font-size:.875rem;color:#64748B;display:flex;align-items:flex-start;gap:10px;line-height:1.55;flex:1;min-width:240px;
+}
+.lp-activites-cta-text svg{flex-shrink:0;margin-top:2px;color:var(--teal)}
+
 /* ── PRICING ── */
 .lp-pricing-section{padding:96px 48px;background:var(--off)}
 .lp-pricing-inner{max-width:1280px;margin:0 auto}
 .lp-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border-light);margin-top:56px}
 .lp-pricing-4col{grid-template-columns:repeat(4,1fr)}
+.lp-pricing-5col{grid-template-columns:repeat(5,1fr)}
 .lp-plan-users{font-size:.8rem;color:#94A3B8;margin-bottom:16px;margin-top:2px}
 .lp-plan-card{background:var(--white);padding:36px 32px;position:relative}
 .lp-plan-card.featured{background:#06101F;color:var(--white)}
@@ -373,6 +407,8 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 /* ── RESPONSIVE ── */
 @media(max-width:1280px){
   .lp-pricing-4col{grid-template-columns:repeat(2,1fr)}
+  .lp-pricing-5col{grid-template-columns:repeat(3,1fr)}
+  .lp-activites-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:1024px){
   .lp-nav{padding:0 24px}
@@ -384,7 +420,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
   .lp-mockup-wrap{transform:none;max-width:480px;margin:0 auto}
   .lp-trust-bar{padding:20px 24px}
   .lp-stats-inner{grid-template-columns:repeat(2,1fr)}
-  .lp-modules-section,.lp-why-section,.lp-how-section,.lp-pricing-section,.lp-testi-section,.lp-cta-section{padding:64px 24px}
+  .lp-modules-section,.lp-why-section,.lp-how-section,.lp-activites-section,.lp-pricing-section,.lp-testi-section,.lp-cta-section{padding:64px 24px}
   .lp-modules-layout{grid-template-columns:1fr;gap:40px}
   .lp-modules-sticky{position:static}
   .lp-modules-grid{grid-template-columns:repeat(2,1fr)}
@@ -393,6 +429,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
   .lp-how-steps::after{display:none}
   .lp-pricing-grid,.lp-testi-grid{grid-template-columns:1fr;gap:2px}
   .lp-pricing-4col{grid-template-columns:repeat(2,1fr)}
+  .lp-pricing-5col{grid-template-columns:repeat(2,1fr)}
   .lp-cta-inner{grid-template-columns:1fr;gap:40px}
   .lp-footer{padding:48px 24px 24px}
   .lp-footer-top{grid-template-columns:1fr 1fr;gap:32px}
@@ -406,4 +443,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
   .lp-footer-top{grid-template-columns:1fr}
   .lp-how-step{padding:0}
   .lp-pricing-4col{grid-template-columns:1fr}
+  .lp-pricing-5col{grid-template-columns:1fr}
+  .lp-activites-grid{grid-template-columns:1fr}
+  .lp-hero-trust{gap:12px}
 }
