@@ -14,6 +14,10 @@ import { SuperadminModule } from './superadmin/superadmin.module';
 import { ExportsModule } from './exports/exports.module';
 import { SearchModule } from './search/search.module';
 import { PaiementsSaasModule } from './paiements-saas/paiements-saas.module';
+import { AiAssistantModule } from './ai-assistant/ai-assistant.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { SupportTicketsModule } from './support-tickets/support-tickets.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PatientsModule } from './patients/patients.module';
 import { DmeModule } from './dme/dme.module';
 import { RendezVousModule } from './rendez-vous/rendez-vous.module';
@@ -29,6 +33,7 @@ import { SeedModule } from './database/seed.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 20 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -51,6 +56,9 @@ import { SeedModule } from './database/seed.module';
     ExportsModule,
     SearchModule,
     PaiementsSaasModule,
+    AiAssistantModule,
+    NotificationsModule,
+    SupportTicketsModule,
     TenantsModule,
     OffresSaasModule,
     LicencesModule,
