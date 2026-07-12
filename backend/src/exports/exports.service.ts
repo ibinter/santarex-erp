@@ -229,7 +229,7 @@ export class ExportsService {
     });
 
     ws.autoFilter = { from: 'A1', to: 'K1' };
-    return wb.xlsx.writeBuffer() as Promise<Buffer>;
+    return wb.xlsx.writeBuffer() as unknown as Promise<Buffer>;
   }
 
   async genererXlsxStock(medicaments: any[]): Promise<Buffer> {
@@ -279,6 +279,6 @@ export class ExportsService {
     });
 
     ws.autoFilter = { from: 'A1', to: 'J1' };
-    return wb.xlsx.writeBuffer() as Promise<Buffer>;
+    return wb.xlsx.writeBuffer() as unknown as Promise<Buffer>;
   }
 }

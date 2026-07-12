@@ -10,6 +10,7 @@ import { PaiementSaas, PaiementSaasStatut, PaiementSaasMethode } from './entitie
 import { InitierPaiementDto, ValiderPaiementManuelDto } from './dto/initier-paiement.dto';
 import { LicencesService } from '../licences/licences.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/entities/audit-log.entity';
 
 @Injectable()
 export class PaiementsSaasService {
@@ -60,7 +61,7 @@ export class PaiementsSaasService {
 
     try {
       const { data } = await firstValueFrom(
-        this.http.post(
+        this.http.post<any>(
           'https://api.moneroo.io/v1/payments/initialize',
           {
             amount: dto.montant,
@@ -174,11 +175,11 @@ export class PaiementsSaasService {
     await this.activerLicence(paiement);
 
     this.auditLogs.log({
-      action: 'PAIEMENT_SAAS_VALIDE_MANUELLEMENT',
-      entite: 'PaiementSaas',
-      entiteId: paiement.id,
+      action: AuditAction.UPDATE,
+      ressource: 'PaiementSaas',
+      ressourceId: paiement.id,
       userId: adminId,
-      details: { montant: paiement.montant, reference: paiement.reference },
+      contexte: { montant: paiement.montant, reference: paiement.reference },
     });
 
     return this.paiementRepo.findOne({ where: { id: paiement.id } });
@@ -198,7 +199,7 @@ export class PaiementsSaasService {
     const apiKey = this.config.getOrThrow<string>('MONEROO_SECRET_KEY');
     try {
       const { data } = await firstValueFrom(
-        this.http.get(`https://api.moneroo.io/v1/payments/${transactionId}`, {
+        this.http.get<any>(`https://api.moneroo.io/v1/payments/${transactionId}`, {
           headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
         }),
       );
