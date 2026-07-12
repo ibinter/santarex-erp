@@ -1,0 +1,124 @@
+{
+  "nav": {
+    "modules": "Modules",
+    "tarifs": "Pricing",
+    "contact": "Contact",
+    "login": "Sign in",
+    "demo": "Request a demo"
+  },
+  "hero": {
+    "badge": "#1 Hospital SaaS Solution in West Africa",
+    "title": "Hospital management,",
+    "titleAccent": "reinvented for Africa",
+    "subtitle": "SANTAREX ERP centralizes all your healthcare facility processes: patient records, pharmacy, laboratory, billing and more — accessible from anywhere.",
+    "cta": "Start free trial",
+    "ctaSub": "30 days free · No credit card required"
+  },
+  "modules": {
+    "title": "Everything your facility needs",
+    "dme": "Electronic Medical Record",
+    "dmeDesc": "Complete history, prescriptions, medical background",
+    "pharmacie": "Pharmacy",
+    "pharmacieDesc": "Stock, dispensing, expiry alerts",
+    "laboratoire": "Laboratory",
+    "laboratoireDesc": "Tests, results, EMR integration",
+    "facturation": "Billing",
+    "facturationDesc": "Quotes, invoices, receipts, payment tracking",
+    "urgences": "Emergency",
+    "urgencesDesc": "Triage, rapid patient handling",
+    "hospitalisation": "Hospitalization",
+    "hospitalisationDesc": "Beds, stays, continuous care",
+    "rdv": "Appointments",
+    "rdvDesc": "Doctor scheduling, patient reminders",
+    "rh": "Human Resources",
+    "rhDesc": "Staff, leave management, scheduling",
+    "stats": "Analytics",
+    "statsDesc": "Dashboards, PDF/Excel exports"
+  },
+  "why": {
+    "title": "Why choose SANTAREX?",
+    "cloud": "100% Cloud",
+    "cloudDesc": "Access from any device, automatic updates",
+    "secure": "Secure data",
+    "secureDesc": "TLS encryption, automatic backups, GDPR compliant",
+    "support": "Local support",
+    "supportDesc": "Team based in Côte d'Ivoire, training included",
+    "fast": "Fast deployment",
+    "fastDesc": "Live in 48h, import your existing data"
+  },
+  "pricing": {
+    "title": "Pricing tailored to your facility",
+    "subtitle": "Prices in FCFA · Monthly or annual billing (−20%)",
+    "month": "/ month",
+    "starter": "Starter",
+    "starterDesc": "Clinics and practices",
+    "pro": "Professional",
+    "proDesc": "Medium-sized hospitals",
+    "enterprise": "Enterprise",
+    "enterpriseDesc": "CHUs and hospital groups",
+    "devis": "Custom quote",
+    "cta": "Start for free",
+    "ctaPro": "30-day free trial",
+    "ctaEnterprise": "Contact us",
+    "popular": "Most popular"
+  },
+  "testimonials": {
+    "title": "They trust us"
+  },
+  "contact": {
+    "title": "Ready to transform your facility?",
+    "subtitle": "Join the healthcare facilities that have already modernized their management.",
+    "cta": "Request a demonstration",
+    "ctaSub": "Response within 24h · Personalized demo"
+  },
+  "footer": {
+    "tagline": "Technology at the service of African healthcare.",
+    "product": "Product",
+    "legal": "Legal",
+    "cgu": "Terms of Use",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "rights": "All rights reserved",
+    "madeBy": "Made by"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Access your SANTAREX workspace",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in...",
+    "error": "Invalid email or password",
+    "forgotPassword": "Forgot password?"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "patients": "Patients",
+    "consultations": "Consultations",
+    "factures": "Invoices",
+    "stock": "Pharmacy stock",
+    "searchPlaceholder": "Search for a patient, medication..."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "export": "Export",
+    "print": "Print",
+    "download": "Download",
+    "active": "Active",
+    "inactive": "Inactive",
+    "yes": "Yes",
+    "no": "No"
+  }
+}

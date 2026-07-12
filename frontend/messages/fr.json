@@ -1,0 +1,124 @@
+{
+  "nav": {
+    "modules": "Modules",
+    "tarifs": "Tarifs",
+    "contact": "Contact",
+    "login": "Se connecter",
+    "demo": "Demander une démo"
+  },
+  "hero": {
+    "badge": "Solution SaaS Hospitalière #1 en Afrique de l'Ouest",
+    "title": "La gestion hospitalière,",
+    "titleAccent": "réinventée pour l'Afrique",
+    "subtitle": "SANTAREX ERP centralise tous les processus de votre établissement de santé : dossiers patients, pharmacie, laboratoire, facturation et bien plus — accessible depuis n'importe où.",
+    "cta": "Démarrer l'essai gratuit",
+    "ctaSub": "30 jours gratuits · Sans carte bancaire"
+  },
+  "modules": {
+    "title": "Tout ce dont votre établissement a besoin",
+    "dme": "Dossier Médical Électronique",
+    "dmeDesc": "Historique complet, ordonnances, antécédents",
+    "pharmacie": "Pharmacie",
+    "pharmacieDesc": "Stock, dispensation, alertes péremption",
+    "laboratoire": "Laboratoire",
+    "laboratoireDesc": "Analyses, résultats, intégration DME",
+    "facturation": "Facturation",
+    "facturationDesc": "Devis, factures, reçus, suivi paiements",
+    "urgences": "Urgences",
+    "urgencesDesc": "Triage, prise en charge rapide",
+    "hospitalisation": "Hospitalisation",
+    "hospitalisationDesc": "Lits, séjours, soins continus",
+    "rdv": "Rendez-vous",
+    "rdvDesc": "Planning médecins, rappels patients",
+    "rh": "Ressources Humaines",
+    "rhDesc": "Personnel, congés, planning",
+    "stats": "Statistiques",
+    "statsDesc": "Tableaux de bord, exports PDF/Excel"
+  },
+  "why": {
+    "title": "Pourquoi choisir SANTAREX ?",
+    "cloud": "100% Cloud",
+    "cloudDesc": "Accès depuis n'importe quel appareil, mises à jour automatiques",
+    "secure": "Données sécurisées",
+    "secureDesc": "Chiffrement TLS, sauvegardes automatiques, conformité RGPD",
+    "support": "Support local",
+    "supportDesc": "Équipe basée en Côte d'Ivoire, formation incluse",
+    "fast": "Déploiement rapide",
+    "fastDesc": "Opérationnel en 48h, import de vos données existantes"
+  },
+  "pricing": {
+    "title": "Des tarifs adaptés à votre établissement",
+    "subtitle": "Tarifs en FCFA · Facturation mensuelle ou annuelle (−20%)",
+    "month": "/ mois",
+    "starter": "Starter",
+    "starterDesc": "Cliniques et cabinets",
+    "pro": "Professionnel",
+    "proDesc": "Hôpitaux de taille moyenne",
+    "enterprise": "Enterprise",
+    "enterpriseDesc": "CHU et groupes hospitaliers",
+    "devis": "Sur devis",
+    "cta": "Commencer gratuitement",
+    "ctaPro": "Essai gratuit 30 jours",
+    "ctaEnterprise": "Nous contacter",
+    "popular": "Le plus populaire"
+  },
+  "testimonials": {
+    "title": "Ils nous font confiance"
+  },
+  "contact": {
+    "title": "Prêt à transformer votre établissement ?",
+    "subtitle": "Rejoignez les établissements qui ont déjà modernisé leur gestion.",
+    "cta": "Demander une démonstration",
+    "ctaSub": "Réponse sous 24h · Démo personnalisée"
+  },
+  "footer": {
+    "tagline": "La technologie au service de la santé africaine.",
+    "product": "Produit",
+    "legal": "Légal",
+    "cgu": "Conditions d'utilisation",
+    "privacy": "Confidentialité",
+    "cookies": "Cookies",
+    "rights": "Tous droits réservés",
+    "madeBy": "Produit par"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Accédez à votre espace SANTAREX",
+    "email": "Adresse email",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "loading": "Connexion...",
+    "error": "Email ou mot de passe incorrect",
+    "forgotPassword": "Mot de passe oublié ?"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "patients": "Patients",
+    "consultations": "Consultations",
+    "factures": "Factures",
+    "stock": "Stock pharmacie",
+    "searchPlaceholder": "Rechercher un patient, médicament..."
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Opération réussie",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "export": "Exporter",
+    "print": "Imprimer",
+    "download": "Télécharger",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "yes": "Oui",
+    "no": "Non"
+  }
+}

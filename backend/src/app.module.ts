@@ -13,6 +13,7 @@ import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
 import { ExportsModule } from './exports/exports.module';
 import { SearchModule } from './search/search.module';
+import { PaiementsSaasModule } from './paiements-saas/paiements-saas.module';
 import { PatientsModule } from './patients/patients.module';
 import { DmeModule } from './dme/dme.module';
 import { RendezVousModule } from './rendez-vous/rendez-vous.module';
@@ -49,6 +50,7 @@ import { SeedModule } from './database/seed.module';
     SuperadminModule,
     ExportsModule,
     SearchModule,
+    PaiementsSaasModule,
     TenantsModule,
     OffresSaasModule,
     LicencesModule,
