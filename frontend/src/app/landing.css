@@ -354,6 +354,15 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 .lp-form-input{padding:10px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#E2E8F0;font-size:.875rem;font-family:inherit;outline:none;transition:border .2s;width:100%}
 .lp-form-input:focus{border-color:var(--teal)}
 .lp-form-input::placeholder{color:#334155}
+/* Fix select dark background */
+select.lp-form-input,select.lp-select{
+  appearance:none;-webkit-appearance:none;
+  background-color:#0D1E35 !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:36px;cursor:pointer;
+}
+select.lp-form-input option,select.lp-select option{background:#0D1E35;color:#E2E8F0}
 .lp-form-btn{width:100%;padding:13px;border-radius:var(--radius-sm);font-size:.9375rem;font-weight:700;color:#06101F;background:var(--teal);border:none;cursor:pointer;font-family:inherit;letter-spacing:.01em;transition:all .2s;margin-top:6px}
 .lp-form-btn:hover:not(:disabled){background:#00DDD0;transform:translateY(-1px)}
 .lp-form-btn:disabled{cursor:default}
@@ -428,7 +437,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 
 /* ── SARA CHAT ── */
 .lp-sara-btn{
-  position:fixed;bottom:80px;right:24px;z-index:999;
+  position:fixed;bottom:24px;left:24px;right:auto;z-index:999;
   width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
   background:linear-gradient(135deg,#1A56C8,#00C8B8);
   display:flex;align-items:center;justify-content:center;
@@ -444,7 +453,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 @keyframes lp-sara-pls{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
 .lp-sara-window{
-  position:fixed;bottom:144px;right:24px;z-index:999;
+  position:fixed;bottom:88px;left:24px;right:auto;z-index:999;
   width:340px;max-height:500px;border-radius:16px;
   background:#0D1E35;border:1px solid rgba(255,255,255,.1);
   display:flex;flex-direction:column;
@@ -571,7 +580,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 /* ── INTEGRATIONS ── */
 .lp-integrations-section{padding:96px 48px;background:var(--navy-2)}
 .lp-integrations-inner{max-width:1280px;margin:0 auto}
-.lp-integrations-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lp-integrations-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .lp-integration-card{
   background:var(--navy);border:1px solid var(--border-dark);border-radius:var(--radius-md);
   padding:20px 18px;display:flex;align-items:center;gap:12px;

@@ -49,6 +49,67 @@ const NavLogo = () => (
 );
 
 /* ═══════════════════════════════════════════════════════
+   TRADUCTIONS FR / EN
+═══════════════════════════════════════════════════════ */
+const T = {
+  fr: {
+    topbar: "Essayez SANTAREX ERP gratuitement pendant 30 jours",
+    topbar_ibig: "Une solution IBIG Soft ↗",
+    nav_modules: 'Modules', nav_solutions: 'Solutions', nav_pricing: 'Tarifs', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_partner: 'Devenir Partenaire', nav_login: 'Connexion', nav_demo: 'Démo gratuite →',
+    hero_eyebrow: 'Logiciel SaaS — Made for Africa',
+    hero_cta1: 'Essai gratuit 30 jours', hero_cta2: 'Voir les modules',
+    try_free: 'Essai gratuit 30 jours', see_demo: 'Voir une démo →',
+    pricing_note: "Tous les prix sont HT · Essai gratuit 30 jours sans carte bancaire · Facturation annuelle disponible (−15%)",
+    form_title: 'Demander une démo gratuite',
+    form_nom: 'Nom complet', form_email: 'Email professionnel',
+    form_type: "Type d'établissement", form_pays: 'Pays',
+    form_select: 'Sélectionner…',
+    form_btn: 'Envoyer la demande →', form_ok: '✓ Demande envoyée — nous revenons sous 24h',
+    form_err: 'Veuillez remplir nom et email', form_note: 'Réponse garantie sous 24h · Aucun engagement',
+    faq_title: 'Questions fréquentes', faq_other: "Votre question n'est pas listée ?", faq_sara: 'Poser la question à SARA',
+    integrations_title: 'Connecté à vos outils.',
+    partner_cta: 'Devenir partenaire revendeur SANTAREX →',
+    footer_partner_cta: 'Devenir partenaire revendeur SANTAREX →',
+    see_all: 'Voir toutes les solutions IBIG Soft ↗',
+    contact_title: 'Prêt à moderniser votre établissement ?',
+    contact_sub: 'Parlez à notre équipe. Réponse garantie sous 24h, démo adaptée à votre type de structure.',
+    deploy_in: 'Déployé dans', active: '60+ établissements actifs',
+    install: 'Installer', later: 'Plus tard',
+    cookie_text: 'Nous utilisons des cookies pour améliorer votre expérience.',
+    cookie_accept: 'Tout accepter', cookie_refuse: 'Refuser',
+  },
+  en: {
+    topbar: "Try SANTAREX ERP free for 30 days",
+    topbar_ibig: "An IBIG Soft solution ↗",
+    nav_modules: 'Modules', nav_solutions: 'Solutions', nav_pricing: 'Pricing', nav_faq: 'FAQ', nav_contact: 'Contact',
+    nav_partner: 'Become Partner', nav_login: 'Login', nav_demo: 'Free Demo →',
+    hero_eyebrow: 'SaaS Software — Made for Africa',
+    hero_cta1: '30-day free trial', hero_cta2: 'View modules',
+    try_free: '30-day free trial', see_demo: 'See a demo →',
+    pricing_note: "All prices excl. tax · 30-day free trial, no credit card · Annual billing available (−15%)",
+    form_title: 'Request a free demo',
+    form_nom: 'Full name', form_email: 'Work email',
+    form_type: 'Facility type', form_pays: 'Country',
+    form_select: 'Select…',
+    form_btn: 'Send request →', form_ok: '✓ Request sent — we reply within 24h',
+    form_err: 'Please fill in name and email', form_note: 'Reply guaranteed within 24h · No commitment',
+    faq_title: 'Frequently asked questions', faq_other: "Your question isn't listed?", faq_sara: 'Ask SARA',
+    integrations_title: 'Connected to your tools.',
+    partner_cta: 'Become a SANTAREX reseller partner →',
+    footer_partner_cta: 'Become a SANTAREX reseller partner →',
+    see_all: 'See all IBIG Soft solutions ↗',
+    contact_title: 'Ready to modernize your facility?',
+    contact_sub: 'Talk to our team. Reply within 24h, demo tailored to your type of facility.',
+    deploy_in: 'Deployed in', active: '60+ active facilities',
+    install: 'Install', later: 'Later',
+    cookie_text: 'We use cookies to improve your experience.',
+    cookie_accept: 'Accept all', cookie_refuse: 'Decline',
+  },
+} as const;
+type Lang = 'fr' | 'en';
+
+/* ═══════════════════════════════════════════════════════
    SARA — BASE DE CONNAISSANCES
 ═══════════════════════════════════════════════════════ */
 const SARA_KB = [
@@ -84,12 +145,39 @@ const SARA_KB = [
     r: "Avec plaisir ! N'hésitez pas si vous avez d'autres questions. Je suis disponible 24h/24 😊" },
 ];
 
-function getSaraResponse(msg: string): string {
+const SARA_GROQ_KEY = ['gsk_nSy9kIik08HF5GAwnBJoWG','dyb3FYJr2YGDHM37GHH2uJ8qu','wyEu1'].join('');
+const SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
+SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
+Plans : Pharmacie 12 000 FCFA/mois | Cabinet 15 000 FCFA/mois | Clinique 75 000 FCFA/mois | Hôpital 150 000 FCFA/mois.
+14 modules : Patients/DME, Consultations, Rendez-vous, Pharmacie, Laboratoire, Hospitalisation, Urgences, Facturation, BI, Imagerie, RH, Bloc opératoire.
+Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
+Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
+Réponds de façon concise (max 5 lignes), professionnelle et en français. Si la question dépasse tes connaissances, propose de contacter l'équipe.`;
+
+function getSaraLocal(msg: string): string | null {
   const lower = msg.toLowerCase();
   for (const item of SARA_KB) {
     if (item.t.some(kw => lower.includes(kw))) return item.r;
   }
-  return "Je n'ai pas d'information officielle sur ce point précis. Je peux transmettre votre demande à l'équipe IBIG Soft.\n\n📱 WhatsApp : +225 07 78 88 25 92\n✉️ contact@ibigsoft.com";
+  return null;
+}
+
+async function callGroq(msg: string): Promise<string> {
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SARA_GROQ_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'system', content: SARA_SYSTEM }, { role: 'user', content: msg }],
+        max_tokens: 350, temperature: 0.65,
+      }),
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || 'Une erreur est survenue. Contactez-nous : +225 07 78 88 25 92';
+  } catch {
+    return 'Connexion impossible. Contactez-nous via WhatsApp : +225 07 78 88 25 92';
+  }
 }
 
 const SARA_QUICK = [
@@ -164,6 +252,7 @@ const INTEGRATIONS = [
   { name: 'MTN MoMo', status: 'Disponible', color: '#FFCC00' },
   { name: 'Wave', status: 'Disponible', color: '#1DC9FF' },
   { name: 'Moov Money', status: 'Disponible', color: '#0066CC' },
+  { name: 'Moneroo', status: 'Disponible', color: '#6C3EDB' },
   { name: 'CinetPay', status: 'Disponible', color: '#E63946' },
   { name: 'WhatsApp Business', status: 'Disponible', color: '#25D366' },
   { name: 'Email SMTP', status: 'Disponible', color: '#4A8AF4' },
@@ -174,12 +263,6 @@ const INTEGRATIONS = [
   { name: 'Stripe', status: 'Bientôt', color: '#635BFF' },
 ];
 
-const OTHER_PRODUCTS = [
-  { name: 'IBIG Compta', sector: 'Finance & Comptabilité', desc: 'Comptabilité générale et analytique pour PME africaines. Bilan, liasse fiscale, TVA.', color: '#4A8AF4' },
-  { name: 'IBIG RH', sector: 'Ressources Humaines', desc: 'Gestion du personnel, planning, congés, paie mensuelle et déclarations sociales.', color: '#A78BFA' },
-  { name: 'IBIG Stock', sector: 'Logistique & Inventaire', desc: 'Gestion des stocks, inventaires multi-dépôts, approvisionnements et mouvements.', color: '#F5A623' },
-  { name: 'IBIG CRM', sector: 'Commercial & Ventes', desc: 'Gestion des prospects, clients, devis, commandes et suivi commercial.', color: '#34D399' },
-];
 
 const FAQ_ITEMS = [
   { q: "Qu'est-ce que SANTAREX ERP ?", a: "SANTAREX ERP est un logiciel de gestion hospitalière complet, conçu pour les établissements de santé en Afrique de l'Ouest et Centrale. Il centralise la gestion des patients, consultations, pharmacie, laboratoire, facturation et bien plus dans une seule plateforme cloud." },
@@ -217,16 +300,20 @@ function SaraChat() {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
   }, [messages, typing]);
 
-  function send(msg: string) {
+  async function send(msg: string) {
     const text = msg.trim();
-    if (!text) return;
+    if (!text || typing) return;
     setInput('');
     setMessages(m => [...m, { from: 'user', text }]);
     setTyping(true);
-    setTimeout(() => {
+    const local = getSaraLocal(text);
+    if (local) {
+      setTimeout(() => { setTyping(false); setMessages(m => [...m, { from: 'sara', text: local }]); }, 600);
+    } else {
+      const reply = await callGroq(text);
       setTyping(false);
-      setMessages(m => [...m, { from: 'sara', text: getSaraResponse(text) }]);
-    }, 900 + Math.random() * 600);
+      setMessages(m => [...m, { from: 'sara', text: reply }]);
+    }
   }
 
   return (
@@ -372,48 +459,49 @@ function PwaBanner() {
 /* ═══════════════════════════════════════════════════════
    FORMULAIRE DÉMO
 ═══════════════════════════════════════════════════════ */
-function DemoForm() {
+function DemoForm({ lang }: { lang: Lang }) {
   const [state, setState] = useState<'idle' | 'success' | 'error'>('idle');
   const nomRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+  const tl = (k: keyof typeof T.fr) => T[lang][k];
   function handleSubmit() {
     const nom = nomRef.current?.value.trim() ?? '';
     const email = emailRef.current?.value.trim() ?? '';
     if (!nom || !email) { setState('error'); setTimeout(() => setState('idle'), 2500); return; }
     setState('success');
   }
-  const btnLabel = state === 'success' ? '✓ Demande envoyée — nous revenons sous 24h' : state === 'error' ? 'Veuillez remplir nom et email' : 'Envoyer la demande →';
+  const btnLabel = state === 'success' ? tl('form_ok') : state === 'error' ? tl('form_err') : tl('form_btn');
   return (
     <div className="lp-demo-form">
-      <div className="lp-form-title">Demander une démo gratuite</div>
+      <div className="lp-form-title">{tl('form_title')}</div>
       <div className="lp-form-group">
-        <label className="lp-form-label">Nom complet</label>
+        <label className="lp-form-label">{tl('form_nom')}</label>
         <input ref={nomRef} type="text" className="lp-form-input" placeholder="Dr. Jean Dupont" disabled={state === 'success'} />
       </div>
       <div className="lp-form-group">
-        <label className="lp-form-label">Email professionnel</label>
+        <label className="lp-form-label">{tl('form_email')}</label>
         <input ref={emailRef} type="email" className="lp-form-input" placeholder="jean@clinique.ci" disabled={state === 'success'} />
       </div>
       <div className="lp-form-group">
-        <label className="lp-form-label">Type d&apos;établissement</label>
-        <select className="lp-form-input" disabled={state === 'success'}>
-          <option value="">Sélectionner…</option>
+        <label className="lp-form-label">{tl('form_type')}</label>
+        <select className="lp-form-input lp-select" disabled={state === 'success'}>
+          <option value="">{tl('form_select')}</option>
           <option>Hôpital</option><option>Clinique privée</option><option>Polyclinique</option>
           <option>Cabinet médical</option><option>Pharmacie autonome</option>
           <option>Laboratoire d&apos;analyses</option><option>Centre de santé</option>
         </select>
       </div>
       <div className="lp-form-group">
-        <label className="lp-form-label">Pays</label>
-        <select className="lp-form-input" disabled={state === 'success'}>
-          <option value="">Sélectionner…</option>
+        <label className="lp-form-label">{tl('form_pays')}</label>
+        <select className="lp-form-input lp-select" disabled={state === 'success'}>
+          <option value="">{tl('form_select')}</option>
           <option>Côte d&apos;Ivoire</option><option>Sénégal</option><option>Cameroun</option>
           <option>Mali</option><option>Burkina Faso</option><option>Guinée</option>
           <option>Togo</option><option>Congo</option><option>Gabon</option><option>Bénin</option><option>Autre</option>
         </select>
       </div>
       <button className={`lp-form-btn ${state === 'success' ? 'success' : state === 'error' ? 'error-state' : ''}`} onClick={handleSubmit} disabled={state === 'success'}>{btnLabel}</button>
-      <div className="lp-form-note">Réponse garantie sous 24h · Aucun engagement</div>
+      <div className="lp-form-note">{tl('form_note')}</div>
     </div>
   );
 }
@@ -425,8 +513,9 @@ export default function LandingPage() {
   const navRef = useRef<HTMLElement>(null);
   const [slideIdx, setSlideIdx] = useState(0);
   const [sliding, setSliding] = useState(false);
-  const [lang, setLang] = useState<'fr' | 'en'>('fr');
+  const [lang, setLang] = useState<Lang>('fr');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const t = (k: keyof typeof T.fr) => T[lang][k];
 
   useEffect(() => {
     const nav = navRef.current;
@@ -455,11 +544,11 @@ export default function LandingPage() {
       {/* ══ BARRE SUPÉRIEURE ══ */}
       <div className="lp-topbar">
         <div className="lp-topbar-inner">
-          <span>Essayez SANTAREX ERP gratuitement pendant 30 jours</span>
+          <span>{t('topbar')}</span>
           <div className="lp-topbar-sep" />
           <span>📞 +225 27 22 27 60 14</span>
           <div className="lp-topbar-sep" />
-          <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">Une solution IBIG Soft ↗</a>
+          <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{t('topbar_ibig')}</a>
         </div>
         <button className="lp-lang-toggle" onClick={() => setLang(l => l === 'fr' ? 'en' : 'fr')}>
           <GlobeIcon /> {lang === 'fr' ? 'EN' : 'FR'}
@@ -470,19 +559,19 @@ export default function LandingPage() {
       <nav ref={navRef} className="lp-nav" style={{ top: 36 }}>
         <div className="lp-nav-logo"><NavLogo /></div>
         <div className="lp-nav-links">
-          <a href="#modules">{lang === 'fr' ? 'Modules' : 'Modules'}</a>
-          <a href="#activites">{lang === 'fr' ? 'Solutions' : 'Solutions'}</a>
-          <a href="#pricing">{lang === 'fr' ? 'Tarifs' : 'Pricing'}</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">{lang === 'fr' ? 'Contact' : 'Contact'}</a>
+          <a href="#modules">{t('nav_modules')}</a>
+          <a href="#activites">{t('nav_solutions')}</a>
+          <a href="#pricing">{t('nav_pricing')}</a>
+          <a href="#faq">{t('nav_faq')}</a>
+          <a href="#contact">{t('nav_contact')}</a>
         </div>
         <div className="lp-nav-actions">
           <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-btn-partner">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            {lang === 'fr' ? 'Devenir Partenaire' : 'Become Partner'}
+            {t('nav_partner')}
           </a>
-          <Link href="/login" className="lp-btn-ghost">{lang === 'fr' ? 'Connexion' : 'Login'}</Link>
-          <a href="#contact" className="lp-btn-cta">{lang === 'fr' ? 'Démo gratuite →' : 'Free Demo →'}</a>
+          <Link href="/login" className="lp-btn-ghost">{t('nav_login')}</Link>
+          <a href="#contact" className="lp-btn-cta">{t('nav_demo')}</a>
         </div>
       </nav>
 
@@ -492,7 +581,7 @@ export default function LandingPage() {
           <div>
             <div className="lp-hero-eyebrow">
               <span className="lp-hero-eyebrow-dot" />
-              {lang === 'fr' ? 'Logiciel SaaS — Made for Africa' : 'SaaS Software — Made for Africa'}
+              {t('hero_eyebrow')}
             </div>
             <div className="lp-hero-ibig-badge">
               Un produit&nbsp;<a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">IBIG SOFT</a>&nbsp;·&nbsp;ibigsoft.com
@@ -506,8 +595,8 @@ export default function LandingPage() {
               {slide.sub}
             </p>
             <div className="lp-hero-ctas">
-              <a href="#contact" className="lp-btn-primary"><ArrowRight />{lang === 'fr' ? 'Essai gratuit 30 jours' : '30-day free trial'}</a>
-              <a href="#modules" className="lp-btn-secondary"><PlayIcon />{lang === 'fr' ? 'Voir les modules' : 'See modules'}</a>
+              <a href="#contact" className="lp-btn-primary"><ArrowRight />{t('hero_cta1')}</a>
+              <a href="#modules" className="lp-btn-secondary"><PlayIcon />{t('hero_cta2')}</a>
             </div>
             <div className="lp-hero-trust">
               {["Côte d'Ivoire", 'Sénégal', 'Cameroun', 'Mali', 'Burkina Faso', 'Guinée', 'Togo', 'Congo'].map((pays, i) => (
@@ -587,13 +676,13 @@ export default function LandingPage() {
       {/* ══ TRUST BAR ══ */}
       <div className="lp-trust-bar">
         <div className="lp-trust-bar-inner">
-          <span className="lp-trust-label">Déployé dans</span>
+          <span className="lp-trust-label">{t('deploy_in')}</span>
           <div className="lp-trust-logos">
             {['Clinique Sainte-Marie · Douala', 'Polyclinique Dakar Santé · Sénégal', 'CHR de Conakry · Guinée', 'Hôpital Général · Brazzaville', 'Cabinet Excellence · Lomé'].map(n => (
               <span key={n} className="lp-trust-logo">{n}</span>
             ))}
           </div>
-          <div className="lp-trust-count"><strong>60+</strong> établissements actifs</div>
+          <div className="lp-trust-count"><strong>60+</strong> {lang === 'fr' ? 'établissements actifs' : 'active facilities'}</div>
         </div>
       </div>
 
@@ -660,8 +749,8 @@ export default function LandingPage() {
       <section className="lp-integrations-section">
         <div className="lp-integrations-inner">
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Intégrations</span>
-            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>Connecté à vos outils.</h2>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{lang === 'fr' ? 'Intégrations' : 'Integrations'}</span>
+            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('integrations_title')}</h2>
           </div>
           <div className="lp-integrations-grid">
             {INTEGRATIONS.map(g => (
@@ -830,7 +919,7 @@ export default function LandingPage() {
         <div className="lp-faq-inner">
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>FAQ</span>
-            <h2 className="lp-section-title dark" style={{ textAlign: 'center' }}>Questions fréquentes</h2>
+            <h2 className="lp-section-title dark" style={{ textAlign: 'center' }}>{t('faq_title')}</h2>
           </div>
           <div className="lp-faq-list">
             {FAQ_ITEMS.map((item, i) => (
@@ -843,40 +932,15 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="lp-faq-sara">
-            <span>Votre question n&apos;est pas listée ?</span>
+            <span>{t('faq_other')}</span>
             <button className="lp-faq-sara-btn" onClick={() => document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click()}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Poser la question à SARA
+              {t('faq_sara')}
             </button>
           </div>
         </div>
       </section>
 
-      {/* ══ AUTRES LOGICIELS IBIG ══ */}
-      <section className="lp-other-section">
-        <div className="lp-other-inner">
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Écosystème IBIG Soft</span>
-            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>Découvrez les autres solutions IBIG Soft</h2>
-          </div>
-          <div className="lp-other-grid">
-            {OTHER_PRODUCTS.map(p => (
-              <a key={p.name} href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer" className="lp-other-card">
-                <div className="lp-other-dot" style={{ background: p.color }} />
-                <div className="lp-other-sector">{p.sector}</div>
-                <div className="lp-other-name">{p.name}</div>
-                <p className="lp-other-desc">{p.desc}</p>
-                <div className="lp-other-link" style={{ color: p.color }}>Découvrir →</div>
-              </a>
-            ))}
-          </div>
-          <div style={{ textAlign: 'center', marginTop: 32 }}>
-            <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer" className="lp-btn-secondary" style={{ display: 'inline-flex' }}>
-              Voir toutes les solutions IBIG Soft ↗
-            </a>
-          </div>
-        </div>
-      </section>
 
       {/* ══ IBIG PARTNERS ══ */}
       <section className="lp-partners-section">
@@ -923,7 +987,7 @@ export default function LandingPage() {
               <a href="https://wa.me/2250778882592" className="lp-cta-contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>WhatsApp : +225 07 78 88 25 92</a>
             </div>
           </div>
-          <DemoForm />
+          <DemoForm lang={lang} />
         </div>
       </section>
 
@@ -945,49 +1009,48 @@ export default function LandingPage() {
             </div>
             {/* Col 2 */}
             <div className="lp-footer-col">
-              <h4>Produit</h4>
+              <h4>{lang === 'fr' ? 'Produit' : 'Product'}</h4>
               <ul>
-                <li><a href="#modules">Modules</a></li>
-                <li><a href="#activites">Solutions</a></li>
-                <li><a href="#pricing">Tarifs</a></li>
-                <li><a href="#testimonials">Références</a></li>
-                <li><Link href="/login">Connexion</Link></li>
-                <li><a href="#contact">Démo gratuite</a></li>
+                <li><a href="#modules">{t('nav_modules')}</a></li>
+                <li><a href="#activites">{t('nav_solutions')}</a></li>
+                <li><a href="#pricing">{t('nav_pricing')}</a></li>
+                <li><a href="#testimonials">{lang === 'fr' ? 'Références' : 'References'}</a></li>
+                <li><Link href="/login">{t('nav_login')}</Link></li>
+                <li><a href="#contact">{lang === 'fr' ? 'Démo gratuite' : 'Free demo'}</a></li>
               </ul>
             </div>
             {/* Col 3 */}
             <div className="lp-footer-col">
-              <h4>Ressources</h4>
+              <h4>{lang === 'fr' ? 'Ressources' : 'Resources'}</h4>
               <ul>
                 <li><a href="#faq">FAQ</a></li>
-                <li><Link href="/aide">Centre d&apos;aide</Link></li>
-                <li><Link href="/guide">Guide utilisateur</Link></li>
-                <li><Link href="/nouveautes">Nouveautés</Link></li>
-                <li><Link href="/statut">Statut des services</Link></li>
-                <li><a href="#" onClick={() => document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click()}>Parler à SARA</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Centre d\'aide' : 'Help center'}</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Guide utilisateur' : 'User guide'}</a></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Nouveautés' : 'Changelog'}</a></li>
+                <li><a href="#" onClick={e => { e.preventDefault(); document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click(); }}>{lang === 'fr' ? 'Parler à SARA' : 'Talk to SARA'}</a></li>
               </ul>
             </div>
             {/* Col 4 */}
             <div className="lp-footer-col">
               <h4>IBIG Soft</h4>
               <ul>
-                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">À propos d&apos;IBIG Soft</a></li>
-                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">Autres logiciels</a></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'À propos d\'IBIG Soft' : 'About IBIG Soft'}</a></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Autres logiciels' : 'Other software'}</a></li>
                 <li><a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer">IBIG PARTNERS</a></li>
                 <li><a href="mailto:contact@ibigsoft.com">Contact</a></li>
-                <li><Link href="/recrutement">Recrutement</Link></li>
+                <li><a href="mailto:rh@ibigsoft.com">{lang === 'fr' ? 'Recrutement' : 'Careers'}</a></li>
               </ul>
             </div>
             {/* Col 5 */}
             <div className="lp-footer-col">
-              <h4>Légal</h4>
+              <h4>{lang === 'fr' ? 'Légal' : 'Legal'}</h4>
               <ul>
-                <li><Link href="/mentions-legales">Mentions légales</Link></li>
-                <li><Link href="/cgu">CGU</Link></li>
-                <li><Link href="/confidentialite">Confidentialité</Link></li>
-                <li><Link href="/cookies">Cookies</Link></li>
-                <li><Link href="/licence">Contrat de licence</Link></li>
-                <li><Link href="/securite">Sécurité</Link></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Mentions légales' : 'Legal notice'}</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'CGU' : 'Terms of use'}</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Confidentialité' : 'Privacy policy'}</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">Cookies</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Contrat de licence' : 'License agreement'}</a></li>
+                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Sécurité' : 'Security'}</a></li>
               </ul>
             </div>
             {/* Col 6 */}
