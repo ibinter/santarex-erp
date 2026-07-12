@@ -9,6 +9,7 @@ export interface User {
 }
 
 export enum UserRole {
+  SUPERADMIN = 'superadmin',
   ADMIN = 'admin',
   MEDECIN = 'medecin',
   INFIRMIER = 'infirmier',
@@ -17,6 +18,79 @@ export enum UserRole {
   LABORANTIN = 'laborantin',
   DRH = 'drh',
   DIRECTEUR = 'directeur',
+}
+
+// ──────────────────────────────────────────────────────
+// SuperAdmin — Tenants, Licences, Offres
+// ──────────────────────────────────────────────────────
+export type TenantStatut = 'actif' | 'suspendu' | 'essai' | 'expire' | 'en_attente';
+export type TenantType = 'clinique' | 'hopital' | 'cabinet' | 'polyclinique' | 'pharmacie' | 'laboratoire';
+
+export interface Tenant {
+  id: string;
+  slug: string;
+  nom: string;
+  type?: TenantType;
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  ville?: string;
+  pays: string;
+  nomResponsable?: string;
+  emailResponsable?: string;
+  statut: TenantStatut;
+  maxUtilisateurs?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LicenceStatut = 'active' | 'suspendue' | 'expiree' | 'essai' | 'annulee';
+export type OffreCycle = 'mensuel' | 'trimestriel' | 'annuel' | 'unique';
+
+export interface Licence {
+  id: string;
+  cle: string;
+  tenantSlug: string;
+  offreId: string;
+  offreCode: string;
+  statut: LicenceStatut;
+  dateDebut: string;
+  dateExpiration: string;
+  maxUtilisateurs: number;
+  montantPaye: number;
+  modePaiement: string;
+  refTransaction?: string;
+  joursEssai: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OffreSaas {
+  id: string;
+  code: string;
+  nom: string;
+  description?: string;
+  prix: number;
+  cycle: OffreCycle;
+  remiseAnnuelle: number;
+  maxUtilisateurs: number;
+  modulesInclus?: string;
+  fonctionnalites?: string;
+  estVisible: boolean;
+  estMisEnAvant: boolean;
+  ordre: number;
+  estActif: boolean;
+}
+
+export interface SuperadminDashboard {
+  tenants: { total: number; actifs: number; suspendus: number; essai: number };
+  licences: { total: number; actives: number; essai: number; suspendues: number };
+  offres: { id: string; code: string; nom: string; prix: number; cycle: string; estMisEnAvant: boolean }[];
+  alertes: { niveau: 'danger' | 'warning' | 'info'; message: string }[];
+  activiteRecente: {
+    id: string; action: string; ressource: string;
+    userEmail?: string; tenantId?: string; createdAt: string;
+  }[];
 }
 
 export interface Patient {

@@ -162,4 +162,52 @@ export const api = {
   sortirPatientHospitalise: (sejourId: string, data: any) =>
     fetchApi(`/hospitalisation/sejours/${sejourId}/sortir`, { method: 'PATCH', body: JSON.stringify(data) }),
   getStatsHospitalisation: () => fetchApi('/hospitalisation/stats'),
+
+  // ── SuperAdmin ──────────────────────────────────────────
+  superadmin: {
+    getDashboard: () => fetchApi<any>('/superadmin/dashboard'),
+
+    // Tenants
+    getTenants: (params?: { page?: number; limit?: number }) => {
+      const qs = params ? new URLSearchParams(params as any).toString() : '';
+      return fetchApi<any>(`/superadmin/tenants${qs ? '?' + qs : ''}`);
+    },
+    getTenant: (id: string) => fetchApi<any>(`/superadmin/tenants/${id}`),
+    createTenant: (data: any) =>
+      fetchApi<any>('/superadmin/tenants', { method: 'POST', body: JSON.stringify(data) }),
+    updateTenant: (id: string, data: any) =>
+      fetchApi<any>(`/superadmin/tenants/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    suspendreTenant: (id: string) =>
+      fetchApi<any>(`/superadmin/tenants/${id}/suspendre`, { method: 'PATCH' }),
+    activerTenant: (id: string) =>
+      fetchApi<any>(`/superadmin/tenants/${id}/activer`, { method: 'PATCH' }),
+    getTenantStats: () => fetchApi<any>('/superadmin/tenants/stats'),
+
+    // Licences
+    getLicences: (params?: { page?: number; limit?: number }) => {
+      const qs = params ? new URLSearchParams(params as any).toString() : '';
+      return fetchApi<any>(`/superadmin/licences${qs ? '?' + qs : ''}`);
+    },
+    getLicencesByTenant: (slug: string) =>
+      fetchApi<any>(`/superadmin/licences/tenant/${slug}`),
+    creerLicence: (data: any) =>
+      fetchApi<any>('/superadmin/licences', { method: 'POST', body: JSON.stringify(data) }),
+    suspendreLicence: (id: string) =>
+      fetchApi<any>(`/superadmin/licences/${id}/suspendre`, { method: 'PATCH' }),
+    renouvelerLicence: (id: string, mois = 1) =>
+      fetchApi<any>(`/superadmin/licences/${id}/renouveler?mois=${mois}`, { method: 'PATCH' }),
+
+    // Offres SaaS
+    getOffres: () => fetchApi<any>('/offres-saas'),
+    createOffre: (data: any) =>
+      fetchApi<any>('/offres-saas', { method: 'POST', body: JSON.stringify(data) }),
+    updateOffre: (id: string, data: any) =>
+      fetchApi<any>(`/offres-saas/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+    // Audit logs
+    getAuditLogs: (params?: { page?: number; limit?: number; tenantId?: string; action?: string }) => {
+      const qs = params ? new URLSearchParams(params as any).toString() : '';
+      return fetchApi<any>(`/audit-logs${qs ? '?' + qs : ''}`);
+    },
+  },
 };

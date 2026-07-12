@@ -10,6 +10,7 @@ import { OffresSaasModule } from './offres-saas/offres-saas.module';
 import { LicencesModule } from './licences/licences.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
+import { SuperadminModule } from './superadmin/superadmin.module';
 import { PatientsModule } from './patients/patients.module';
 import { DmeModule } from './dme/dme.module';
 import { RendezVousModule } from './rendez-vous/rendez-vous.module';
@@ -43,6 +44,7 @@ import { SeedModule } from './database/seed.module';
     }),
     AuditLogsModule,
     MailModule,
+    SuperadminModule,
     TenantsModule,
     OffresSaasModule,
     LicencesModule,
