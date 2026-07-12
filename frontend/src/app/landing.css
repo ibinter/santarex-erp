@@ -24,18 +24,15 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
   --shadow-card:0 4px 24px rgba(0,0,0,.28);
 }
 
-/* ── WORDMARK (logo texte fiable sur fond sombre) ── */
-.lp-wordmark{display:flex;align-items:center;gap:9px;text-decoration:none}
-.lp-wordmark-icon{
-  width:34px;height:34px;border-radius:7px;flex-shrink:0;
-  background:linear-gradient(135deg,#1A56C8 0%,#00C8B8 100%);
-  display:flex;align-items:center;justify-content:center;
-}
+/* ── WORDMARK / NAV LOGO ── */
+.lp-wordmark{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.lp-wordmark-textblock{display:flex;flex-direction:column;line-height:1}
 .lp-wordmark-text{
-  font-size:.9375rem;font-weight:800;letter-spacing:-.02em;color:#fff;
-  white-space:nowrap;
+  font-size:.9375rem;font-weight:900;letter-spacing:-.01em;color:#fff;
+  white-space:nowrap;line-height:1.1;
 }
-.lp-wordmark-text em{color:#00C8B8;font-style:normal}
+.lp-wordmark-text em{color:#00CEB8;font-style:normal}
+.lp-wordmark-sub{font-size:.6rem;font-weight:600;letter-spacing:.1em;color:#4A8090;text-transform:uppercase;margin-top:1px}
 
 /* ── NAV ── */
 .lp-nav{
@@ -91,6 +88,12 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 }
 .lp-hero-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:lp-pulse 2s infinite}
 @keyframes lp-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.lp-hero-ibig-badge{
+  font-size:.72rem;font-weight:500;color:#4A6580;letter-spacing:.04em;
+  margin-top:-16px;margin-bottom:24px;
+}
+.lp-hero-ibig-badge a{color:#4A8090;text-decoration:none;font-weight:600;transition:color .2s}
+.lp-hero-ibig-badge a:hover{color:var(--teal)}
 
 .lp-hero-title{
   font-size:clamp(42px,5.5vw,72px);font-weight:800;
@@ -330,14 +333,11 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 .lp-footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:64px;margin-bottom:32px}
 
 /* footer wordmark */
-.lp-footer-wordmark{display:flex;align-items:center;gap:9px;margin-bottom:16px}
-.lp-footer-wordmark-icon{
-  width:32px;height:32px;border-radius:6px;flex-shrink:0;
-  background:linear-gradient(135deg,#1A56C8,#00C8B8);
-  display:flex;align-items:center;justify-content:center;
-}
-.lp-footer-wordmark-text{font-size:.9375rem;font-weight:800;letter-spacing:-.02em;color:#E2E8F0}
-.lp-footer-wordmark-text em{color:#00C8B8;font-style:normal}
+.lp-footer-wordmark{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.lp-footer-wordmark-textblock{display:flex;flex-direction:column;line-height:1}
+.lp-footer-wordmark-text{font-size:1rem;font-weight:900;letter-spacing:-.01em;color:#E2E8F0;line-height:1.1}
+.lp-footer-wordmark-text em{color:#00CEB8;font-style:normal}
+.lp-footer-wordmark-sub{font-size:.6rem;font-weight:600;letter-spacing:.1em;color:#4A6580;text-transform:uppercase;margin-top:2px}
 
 .lp-footer-brand p{font-size:.8125rem;color:#64748B;line-height:1.7}
 .lp-footer-brand strong{color:#94A3B8}

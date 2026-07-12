@@ -21,15 +21,46 @@ const PlayIcon = () => (
   </svg>
 );
 
-/* ── Logo texte (fiable sur tout fond sombre) ── */
+/* ── Logo SVG SANTAREX (S + croix médicale ECG, dégradé teal→bleu) ── */
+const SantarexIcon = ({ size = 38 }: { size?: number }) => (
+  <svg width={size} height={Math.round(size * 1.15)} viewBox="0 0 100 115" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sg1" x1="10" y1="5" x2="90" y2="110" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#00D9C4"/>
+        <stop offset="45%" stopColor="#0070E0"/>
+        <stop offset="100%" stopColor="#1228B8"/>
+      </linearGradient>
+      <linearGradient id="sg2" x1="10" y1="5" x2="90" y2="110" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="#00CEB8"/>
+        <stop offset="100%" stopColor="#1535C8"/>
+      </linearGradient>
+    </defs>
+    {/* Ruban supérieur du S — arc de gauche-centre vers haut-droite avec aile */}
+    <path d="M 16,64 C 16,64 14,52 20,42 C 28,30 44,26 60,24 C 72,22 84,18 90,10 C 94,4 90,2 84,4 C 76,7 64,12 50,14 C 36,16 22,20 14,32 C 6,44 8,58 12,66 Z"
+      fill="url(#sg1)"/>
+    {/* Ruban inférieur du S — arc de droite-centre vers bas-gauche */}
+    <path d="M 84,50 C 84,50 86,62 80,72 C 72,84 56,88 40,90 C 28,92 16,96 10,104 C 6,110 10,113 16,111 C 24,108 36,103 50,101 C 64,99 78,95 86,83 C 94,71 92,57 88,49 Z"
+      fill="url(#sg1)"/>
+    {/* Croix médicale — barre verticale */}
+    <rect x="43" y="36" width="14" height="42" rx="5" fill="url(#sg2)"/>
+    {/* Croix médicale — barre horizontale */}
+    <rect x="31" y="48" width="38" height="14" rx="5" fill="url(#sg2)"/>
+    {/* Reflet blanc sur les rubans pour effet 3D */}
+    <path d="M 16,64 C 16,64 14,52 20,42 C 26,32 40,27 54,25 C 54,25 40,30 34,42 C 28,54 28,64 28,64 Z"
+      fill="white" opacity="0.12"/>
+    {/* Ligne ECG dans la croix */}
+    <polyline points="33,55 39,55 43,47 50,63 57,49 61,55 67,55"
+      stroke="white" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const NavLogo = () => (
   <div className="lp-wordmark">
-    <div className="lp-wordmark-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
+    <SantarexIcon size={36} />
+    <div className="lp-wordmark-textblock">
+      <span className="lp-wordmark-text">SANTA<em>REX</em></span>
+      <span className="lp-wordmark-sub">ERP v2.0</span>
     </div>
-    <span className="lp-wordmark-text">SANTAREX <em>ERP</em></span>
   </div>
 );
 
@@ -80,20 +111,39 @@ const MODULES = [
 /* ── Plans tarifaires ── */
 const PLANS = [
   {
-    code: 'Cabinet',
-    eyebrow: 'Cabinet médical',
-    price: '95 000',
+    code: 'Starter',
+    eyebrow: 'Cabinet solo',
+    price: '15 000',
     cycle: 'FCFA / mois',
-    users: '1 à 5 utilisateurs',
+    users: '1 à 3 utilisateurs',
     featured: false,
     badge: null,
     features: [
-      'Jusqu\'à 5 utilisateurs',
+      'Jusqu\'à 3 utilisateurs',
       'Patients & DME illimités',
       'Consultations & ordonnances',
       'Rendez-vous & agenda',
       'Facturation mobile money',
-      'Support 5j/7 WhatsApp',
+      'Support WhatsApp 5j/7',
+    ],
+    btnClass: 'lp-plan-btn-outline',
+    btnLabel: 'Démarrer l\'essai gratuit',
+  },
+  {
+    code: 'Cabinet Pro',
+    eyebrow: 'Cabinet multipraticiens',
+    price: '35 000',
+    cycle: 'FCFA / mois',
+    users: 'Jusqu\'à 10 utilisateurs',
+    featured: false,
+    badge: null,
+    features: [
+      'Jusqu\'à 10 utilisateurs',
+      'Tous les modules Starter',
+      'Pharmacie & gestion stocks',
+      'Laboratoire & résultats',
+      'Reporting basique',
+      'Support prioritaire 6j/7',
     ],
     btnClass: 'lp-plan-btn-outline',
     btnLabel: 'Démarrer l\'essai gratuit',
@@ -101,18 +151,18 @@ const PLANS = [
   {
     code: 'Clinique',
     eyebrow: 'Clinique & polyclinique',
-    price: '250 000',
+    price: '75 000',
     cycle: 'FCFA / mois',
-    users: 'Jusqu\'à 25 utilisateurs',
+    users: 'Jusqu\'à 30 utilisateurs',
     featured: true,
     badge: 'Le plus populaire',
     features: [
-      'Jusqu\'à 25 utilisateurs',
-      'Tous les modules Cabinet',
-      'Pharmacie & gestion des stocks',
-      'Laboratoire & résultats',
+      'Jusqu\'à 30 utilisateurs',
+      'Tous les modules Cabinet Pro',
       'Hospitalisation & plan des lits',
-      'Reporting & dashboard BI',
+      'Urgences & triage Manchester',
+      'Dashboard BI & reporting avancé',
+      'API & intégrations tierces',
       'Support 7j/7 prioritaire',
     ],
     btnClass: 'lp-plan-btn-fill',
@@ -120,42 +170,21 @@ const PLANS = [
   },
   {
     code: 'Hôpital',
-    eyebrow: 'Hôpital complet',
-    price: '580 000',
+    eyebrow: 'Hôpital & groupe',
+    price: '150 000',
     cycle: 'FCFA / mois',
-    users: 'Jusqu\'à 60 utilisateurs',
-    featured: false,
-    badge: null,
-    features: [
-      'Jusqu\'à 60 utilisateurs',
-      'Tous les modules Clinique',
-      'Urgences & triage Manchester',
-      'Bloc opératoire & chirurgie',
-      'Imagerie médicale (PACS)',
-      'Ressources humaines & paie',
-      'API & intégrations tierces',
-      'Support 24/7 dédié',
-    ],
-    btnClass: 'lp-plan-btn-outline',
-    btnLabel: 'Démarrer l\'essai gratuit',
-  },
-  {
-    code: 'Groupe',
-    eyebrow: 'Multi-sites & groupes',
-    price: 'Sur devis',
-    cycle: '',
     users: 'Utilisateurs illimités',
     featured: false,
     badge: null,
     features: [
       'Utilisateurs illimités',
       'Tous les 14 modules',
-      'Multi-sites & multi-entités',
-      'Consolidation des données',
+      'Bloc opératoire & chirurgie',
+      'Imagerie médicale (PACS)',
+      'Ressources humaines & paie',
+      'Multi-sites & consolidation',
       'SLA 99.9% garanti',
-      'Formation sur site incluse',
-      'Développements spécifiques',
-      'Account manager dédié',
+      'Support 24/7 dédié + sur site',
     ],
     btnClass: 'lp-plan-btn-outline',
     btnLabel: 'Nous contacter',
@@ -306,6 +335,10 @@ export default function LandingPage() {
               <span className="lp-hero-eyebrow-dot" />
               Logiciel SaaS — Made for Africa
             </div>
+            <div className="lp-hero-ibig-badge">
+              Un produit&nbsp;<a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">IBIG SOFT</a>
+              &nbsp;·&nbsp;ibigsoft.com
+            </div>
 
             {/* Titre animé */}
             <h1 className={`lp-hero-title ${sliding ? 'lp-slide-out' : 'lp-slide-in'}`}>
@@ -356,7 +389,7 @@ export default function LandingPage() {
                 <div className="lp-mk-sidebar">
                   <div className="lp-mk-logo-area">
                     <div className="lp-mk-logo-dot">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                      <SantarexIcon size={18} />
                     </div>
                   </div>
                   <div className="lp-mk-nav-item active"><div className="lp-mk-icon" /></div>
@@ -666,12 +699,13 @@ export default function LandingPage() {
         <div className="lp-footer-inner">
           <div className="lp-footer-top">
             <div className="lp-footer-brand">
-              {/* Logo texte — toujours lisible sur fond sombre */}
+              {/* Logo SVG SANTAREX */}
               <div className="lp-footer-wordmark">
-                <div className="lp-footer-wordmark-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <SantarexIcon size={44} />
+                <div className="lp-footer-wordmark-textblock">
+                  <span className="lp-footer-wordmark-text">SANTA<em>REX</em></span>
+                  <span className="lp-footer-wordmark-sub">ERP v2.0</span>
                 </div>
-                <span className="lp-footer-wordmark-text">SANTAREX <em>ERP</em></span>
               </div>
               <p>Un produit <strong>IBIG SOFT</strong> — Intermark Business International Group.<br />Conçu en Côte d&apos;Ivoire pour toute l&apos;Afrique.</p>
               <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer" className="lp-footer-ibig">ibigsoft.com ↗</a>
