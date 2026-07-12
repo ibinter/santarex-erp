@@ -1,0 +1,21 @@
+<h2>Rapport mensuel — {{mois}} {{annee}}</h2>
+<p>Bonjour <strong>{{prenom}}</strong>, voici le résumé des activités de <strong>{{nomEtablissement}}</strong> pour le mois de <strong>{{mois}} {{annee}}</strong>.</p>
+
+<table class="table">
+  <thead><tr><th>Indicateur</th><th>Ce mois</th><th>Mois précédent</th></tr></thead>
+  <tbody>
+    <tr><td>Patients reçus</td><td><strong>{{patientsTotal}}</strong></td><td>{{patientsPrecedent}}</td></tr>
+    <tr><td>Consultations</td><td><strong>{{consultationsTotal}}</strong></td><td>{{consultationsPrecedent}}</td></tr>
+    <tr><td>Hospitalisations</td><td><strong>{{hospitalisationsTotal}}</strong></td><td>{{hospitalisationsPrecedent}}</td></tr>
+    <tr><td>Chiffre d'affaires</td><td><strong>{{chiffreAffaires}} FCFA</strong></td><td>{{chiffreAffairesPrecedent}} FCFA</td></tr>
+    <tr><td>Factures émises</td><td><strong>{{facturesTotal}}</strong></td><td>{{facturesPrecedent}}</td></tr>
+    <tr><td>Taux de recouvrement</td><td><strong>{{tauxRecouvrement}}%</strong></td><td>{{tauxRecouvrementPrecedent}}%</td></tr>
+  </tbody>
+</table>
+
+<p style="text-align:center;margin-top:24px;">
+  <a class="btn" href="{{urlDashboard}}">Voir le tableau de bord complet →</a>
+</p>
+
+<div class="divider"></div>
+<p style="font-size:13px;color:#6B7280;">Ce rapport est généré automatiquement par SANTAREX ERP. Pour le désactiver : paramètres → notifications.</p>

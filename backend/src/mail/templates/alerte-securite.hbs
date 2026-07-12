@@ -1,0 +1,23 @@
+<h2>Alerte de sécurité — Connexion détectée</h2>
+<p>Bonjour <strong>{{prenom}}</strong>, une connexion à votre compte SANTAREX ERP a été détectée.</p>
+
+<div class="warning-box">
+  <p><strong>Détails de la connexion</strong><br/>
+  Date et heure : <strong>{{dateConnexion}}</strong><br/>
+  Adresse IP : <strong>{{adresseIp}}</strong><br/>
+  Navigateur : <strong>{{navigateur}}</strong><br/>
+  Établissement : <strong>{{tenantSlug}}</strong>
+  </p>
+</div>
+
+<p>Si c'est bien vous, vous pouvez ignorer cet email.</p>
+
+<div class="danger-box">
+  <p>Si vous n'êtes <strong>pas à l'origine</strong> de cette connexion, changez immédiatement votre mot de passe et contactez votre administrateur.</p>
+</div>
+
+<p style="text-align:center;">
+  <a class="btn" href="{{urlChangerMdp}}">Changer mon mot de passe →</a>
+</p>
+
+<p style="font-size:13px;color:#6B7280;">Support sécurité : <a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a> | +225 27 22 27 60 14</p>

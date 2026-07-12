@@ -1,0 +1,19 @@
+<h2>Nouveau compte créé sur votre espace</h2>
+<p>Bonjour <strong>{{prenomAdmin}}</strong>, un nouveau compte utilisateur vient d'être créé sur <strong>{{nomEtablissement}}</strong>.</p>
+
+<table class="table">
+  <thead><tr><th>Champ</th><th>Valeur</th></tr></thead>
+  <tbody>
+    <tr><td>Nom complet</td><td><strong>{{nomUtilisateur}}</strong></td></tr>
+    <tr><td>Email</td><td>{{emailUtilisateur}}</td></tr>
+    <tr><td>Rôle attribué</td><td><span class="badge info">{{roleUtilisateur}}</span></td></tr>
+    <tr><td>Créé par</td><td>{{creePar}}</td></tr>
+    <tr><td>Date</td><td>{{dateCreation}}</td></tr>
+  </tbody>
+</table>
+
+<p>Si cette création ne vous semble pas légitime, connectez-vous immédiatement pour vérifier et désactiver le compte si nécessaire.</p>
+
+<p style="text-align:center;">
+  <a class="btn" href="{{urlGestionUtilisateurs}}">Gérer les utilisateurs →</a>
+</p>
