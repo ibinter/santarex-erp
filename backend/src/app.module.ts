@@ -5,6 +5,10 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { TenantsModule } from './tenants/tenants.module';
+import { OffresSaasModule } from './offres-saas/offres-saas.module';
+import { LicencesModule } from './licences/licences.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { PatientsModule } from './patients/patients.module';
 import { DmeModule } from './dme/dme.module';
 import { RendezVousModule } from './rendez-vous/rendez-vous.module';
@@ -36,6 +40,10 @@ import { SeedModule } from './database/seed.module';
       }),
       inject: [ConfigService],
     }),
+    AuditLogsModule,
+    TenantsModule,
+    OffresSaasModule,
+    LicencesModule,
     AuthModule,
     UsersModule,
     PatientsModule,

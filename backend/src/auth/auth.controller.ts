@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,11 +20,17 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/entities/audit-log.entity';
+import { Request } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   @Post('login')
   @Throttle({ default: { ttl: 60000, limit: 10 } })
@@ -31,8 +38,32 @@ export class AuthController {
   @ApiOperation({ summary: 'Connexion utilisateur', description: 'Authentifie un utilisateur et retourne les tokens JWT' })
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
+    try {
+      const result = await this.authService.login(loginDto);
+      this.auditLogsService.log({
+        action: AuditAction.LOGIN,
+        ressource: 'auth',
+        userId: result.user.id,
+        userEmail: result.user.email,
+        userRole: result.user.role,
+        tenantId: loginDto.tenantId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      return result;
+    } catch (err) {
+      this.auditLogsService.log({
+        action: AuditAction.LOGIN_FAILED,
+        ressource: 'auth',
+        userEmail: loginDto.email,
+        tenantId: loginDto.tenantId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        contexte: { reason: err.message },
+      });
+      throw err;
+    }
   }
 
   @Post('refresh')
