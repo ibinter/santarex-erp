@@ -1,6 +1,7 @@
 import type { LoginCredentials, LoginResponse, ApiResponse, PaginatedResponse, Patient } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE = API_URL;
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token =
@@ -211,3 +212,13 @@ export const api = {
     },
   },
 };
+
+export async function apiClient<T = any>(
+  endpoint: string,
+  options?: { method?: string; body?: unknown },
+): Promise<T> {
+  return fetchApi<T>(endpoint, {
+    method: options?.method ?? 'GET',
+    body: options?.body ? JSON.stringify(options.body) : undefined,
+  });
+}
