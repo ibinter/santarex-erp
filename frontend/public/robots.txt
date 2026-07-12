@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /cgu
+Allow: /confidentialite
+Allow: /cookies
+
+Disallow: /dashboard
+Disallow: /dme
+Disallow: /facturation
+Disallow: /pharmacie
+Disallow: /laboratoire
+Disallow: /urgences
+Disallow: /hospitalisation
+Disallow: /rendez-vous
+Disallow: /superadmin
+Disallow: /api/
+
+Sitemap: https://santarex.ibigsoft.com/sitemap.xml
