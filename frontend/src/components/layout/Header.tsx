@@ -27,17 +27,12 @@ export default function Header() {
       style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 min-w-[220px]">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #0D47A1 0%, #1976D2 100%)' }}
-        >
-          S
-        </div>
-        <div className="leading-tight">
-          <p className="font-bold text-primary text-sm tracking-wide">SANTAREX ERP</p>
-          <p className="text-[10px] text-text-secondary font-medium">IBIG SOFT · Santé</p>
-        </div>
+      <div className="flex items-center gap-2 min-w-[220px]">
+        <img
+          src="/logo.png"
+          alt="SANTAREX ERP"
+          className="h-9 w-auto object-contain flex-shrink-0"
+        />
       </div>
 
       {/* Search bar */}

@@ -3,8 +3,17 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-  title: 'SANTAREX ERP',
-  description: 'Gestion Hospitalière — IBIG SOFT',
+  title: 'SANTAREX ERP — Gestion Hospitalière',
+  description: 'La technologie au service de la santé — IBIG SOFT',
+  icons: {
+    icon: [
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    shortcut: '/favicon-32.png',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

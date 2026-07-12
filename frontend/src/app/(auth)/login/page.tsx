@@ -46,16 +46,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo & titre */}
         <div className="text-center mb-8">
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-3xl mx-auto mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #0D47A1 0%, #1976D2 100%)',
-              boxShadow: '0 8px 24px rgba(13,71,161,0.3)',
-            }}
-          >
-            🏥
-          </div>
-          <h1 className="text-2xl font-bold" style={{ color: '#0D47A1' }}>SANTAREX ERP</h1>
+          <img
+            src="/logo.png"
+            alt="SANTAREX ERP"
+            className="h-28 w-auto mx-auto mb-2 object-contain"
+          />
           <p className="text-sm text-text-secondary mt-1 font-medium">
             La technologie au service de la santé
           </p>

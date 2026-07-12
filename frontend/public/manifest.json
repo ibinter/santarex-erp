@@ -1,0 +1,13 @@
+{
+  "name": "SANTAREX ERP",
+  "short_name": "SANTAREX",
+  "description": "La technologie au service de la santé — IBIG SOFT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0D47A1",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
