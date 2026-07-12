@@ -100,11 +100,11 @@ export class AuthService {
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_SECRET', 'santarex_jwt_secret_change_in_production'),
+        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
         expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRY', '15m'),
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'santarex_refresh_secret_change_in_production'),
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRY', '7d'),
       }),
     ]);

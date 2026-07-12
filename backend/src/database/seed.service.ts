@@ -274,6 +274,8 @@ export class SeedService {
 // ─── Controller Admin ─────────────────────────────────────────────────────────
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.SUPERADMIN)
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 
