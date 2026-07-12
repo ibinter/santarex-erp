@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
+import { createHmac } from 'crypto';
 import { PaiementSaas, PaiementSaasStatut, PaiementSaasMethode } from './entities/paiement-saas.entity';
 import { InitierPaiementDto, ValiderPaiementManuelDto } from './dto/initier-paiement.dto';
 import { LicencesService } from '../licences/licences.service';
@@ -27,15 +28,21 @@ export class PaiementsSaasService {
     return `SRX-PAY-${Date.now()}-${uuidv4().slice(0, 8).toUpperCase()}`;
   }
 
-  async initier(dto: InitierPaiementDto, userId: string): Promise<{ paymentUrl?: string; reference: string; message: string }> {
+  // ─── Initier un paiement via Moneroo ───────────────────────────────────────
+
+  async initier(
+    dto: InitierPaiementDto,
+    userId: string,
+  ): Promise<{ checkoutUrl: string; reference: string; transactionId: string }> {
     const reference = this.generateReference();
 
     const paiement = this.paiementRepo.create({
       reference,
       tenantId: dto.licenceId,
       licenceId: dto.licenceId,
-      methode: dto.methode,
+      methode: PaiementSaasMethode.MONEROO,
       montant: dto.montant,
+      devise: dto.devise ?? 'XOF',
       emailPayeur: dto.emailPayeur,
       nomPayeur: dto.nomPayeur,
       telephone: dto.telephone,
@@ -44,108 +51,93 @@ export class PaiementsSaasService {
 
     await this.paiementRepo.save(paiement);
 
-    if (dto.methode === PaiementSaasMethode.CINETPAY) {
-      return this.initierCinetPay(paiement);
-    }
+    const apiKey = this.config.getOrThrow<string>('MONEROO_SECRET_KEY');
+    const returnUrl = `${this.config.getOrThrow<string>('FRONTEND_URL')}/paiement/retour`;
+    const webhookUrl = `${this.config.getOrThrow<string>('APP_URL')}/api/v1/paiements-saas/webhook`;
 
-    if (dto.methode === PaiementSaasMethode.ORANGE_MONEY) {
-      return this.initierOrangeMoney(paiement);
-    }
-
-    // Manuel : pas d'URL, attente validation SUPERADMIN
-    return {
-      reference,
-      message: 'Paiement manuel enregistré. En attente de validation par IBIG SOFT.',
-    };
-  }
-
-  private async initierCinetPay(paiement: PaiementSaas): Promise<{ paymentUrl: string; reference: string; message: string }> {
-    const apiKey = this.config.get<string>('CINETPAY_API_KEY');
-    const siteId = this.config.get<string>('CINETPAY_SITE_ID');
-    const notifyUrl = this.config.get<string>('APP_URL') + '/api/v1/paiements-saas/webhook/cinetpay';
-    const returnUrl = this.config.get<string>('FRONTEND_URL') + '/paiement/retour';
+    const [prenom, ...reste] = dto.nomPayeur.trim().split(' ');
+    const nom = reste.join(' ') || prenom;
 
     try {
       const { data } = await firstValueFrom(
-        this.http.post('https://api-checkout.cinetpay.com/v2/payment', {
-          apikey: apiKey,
-          site_id: siteId,
-          transaction_id: paiement.reference,
-          amount: paiement.montant,
-          currency: 'XOF',
-          description: `Abonnement SANTAREX ERP`,
-          notify_url: notifyUrl,
-          return_url: returnUrl,
-          customer_name: paiement.nomPayeur,
-          customer_email: paiement.emailPayeur,
-          customer_phone_number: paiement.telephone ?? '',
-          lang: 'fr',
-          channels: 'ALL',
-        }),
+        this.http.post(
+          'https://api.moneroo.io/v1/payments/initialize',
+          {
+            amount: dto.montant,
+            currency: dto.devise ?? 'XOF',
+            description: `Abonnement SANTAREX ERP — réf. ${reference}`,
+            return_url: returnUrl,
+            webhook_url: webhookUrl,
+            reference,
+            customer: {
+              email: dto.emailPayeur,
+              first_name: prenom,
+              last_name: nom,
+              phone: dto.telephone ?? '',
+            },
+            metadata: {
+              licenceId: dto.licenceId,
+              paiementId: paiement.id,
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+          },
+        ),
       );
 
-      if (data?.code === '201') {
-        const paymentUrl = data.data?.payment_url;
-        await this.paiementRepo.update(paiement.id, { paymentUrl, transactionId: data.data?.payment_token });
-        return { paymentUrl, reference: paiement.reference, message: 'Redirection vers CinetPay' };
+      const checkoutUrl: string = data?.data?.checkout_url;
+      const transactionId: string = data?.data?.id;
+
+      if (!checkoutUrl) {
+        this.logger.error('Moneroo: pas de checkout_url', data);
+        throw new BadRequestException('Erreur initialisation Moneroo');
       }
 
-      this.logger.error('CinetPay init error', data);
-      throw new BadRequestException('Erreur initialisation CinetPay');
+      await this.paiementRepo.update(paiement.id, { paymentUrl: checkoutUrl, transactionId });
+
+      return { checkoutUrl, reference, transactionId };
     } catch (err) {
       await this.paiementRepo.update(paiement.id, { statut: PaiementSaasStatut.ECHEC });
-      throw new BadRequestException('Service de paiement indisponible');
+      this.logger.error('Moneroo init failed', err?.response?.data ?? err.message);
+      throw new BadRequestException('Service de paiement Moneroo indisponible');
     }
   }
 
-  private async initierOrangeMoney(paiement: PaiementSaas): Promise<{ reference: string; message: string }> {
-    const merchantKey = this.config.get<string>('ORANGE_MONEY_MERCHANT_KEY');
-    const notifyUrl = this.config.get<string>('APP_URL') + '/api/v1/paiements-saas/webhook/orangemoney';
+  // ─── Webhook Moneroo ───────────────────────────────────────────────────────
 
-    try {
-      const { data } = await firstValueFrom(
-        this.http.post('https://api.orange.com/orange-money-webpay/ci/v1/webpayment', {
-          merchant_key: merchantKey,
-          currency: 'OUV',
-          order_id: paiement.reference,
-          amount: paiement.montant,
-          return_url: this.config.get<string>('FRONTEND_URL') + '/paiement/retour',
-          cancel_url: this.config.get<string>('FRONTEND_URL') + '/paiement/annule',
-          notif_url: notifyUrl,
-          lang: 'fr',
-        }),
-      );
-
-      if (data?.payment_url) {
-        await this.paiementRepo.update(paiement.id, { paymentUrl: data.payment_url, operateur: 'Orange Money CI' });
-        return { reference: paiement.reference, message: 'Redirection vers Orange Money' };
-      }
-
-      throw new BadRequestException('Erreur initialisation Orange Money');
-    } catch {
-      await this.paiementRepo.update(paiement.id, { statut: PaiementSaasStatut.ECHEC });
-      throw new BadRequestException('Service Orange Money indisponible');
+  async webhook(payload: Record<string, unknown>, signature: string): Promise<{ status: string }> {
+    if (!this.verifierSignatureMoneroo(payload, signature)) {
+      this.logger.warn('Moneroo webhook: signature invalide');
+      return { status: 'invalid_signature' };
     }
-  }
 
-  async webhookCinetPay(payload: Record<string, unknown>): Promise<{ status: string }> {
-    const transactionId = payload['cpm_trans_id'] as string;
-    const statut = payload['cpm_result'] as string;
+    const reference = payload['reference'] as string;
+    const statut = payload['status'] as string;
 
-    if (!transactionId) return { status: 'ignored' };
+    if (!reference) return { status: 'ignored' };
 
-    const paiement = await this.paiementRepo.findOne({ where: { reference: transactionId } });
+    const paiement = await this.paiementRepo.findOne({ where: { reference } });
     if (!paiement) return { status: 'not_found' };
 
-    if (statut === '00') {
+    // Idempotence : ne pas retraiter un paiement déjà confirmé
+    if (paiement.statut === PaiementSaasStatut.SUCCES) return { status: 'already_processed' };
+
+    if (statut === 'success') {
       await this.paiementRepo.update(paiement.id, {
         statut: PaiementSaasStatut.SUCCES,
         webhookPayload: payload,
+        transactionId: payload['id'] as string ?? paiement.transactionId,
       });
       await this.activerLicence(paiement);
-    } else {
+      this.logger.log(`Paiement ${reference} confirmé via Moneroo, licence activée`);
+    } else if (statut === 'failed' || statut === 'cancelled') {
       await this.paiementRepo.update(paiement.id, {
-        statut: PaiementSaasStatut.ECHEC,
+        statut: statut === 'cancelled' ? PaiementSaasStatut.ANNULE : PaiementSaasStatut.ECHEC,
         webhookPayload: payload,
       });
     }
@@ -153,24 +145,16 @@ export class PaiementsSaasService {
     return { status: 'processed' };
   }
 
-  async webhookOrangeMoney(payload: Record<string, unknown>): Promise<{ status: string }> {
-    const orderId = payload['order_id'] as string;
-    const status = payload['status'] as string;
-
-    if (!orderId) return { status: 'ignored' };
-
-    const paiement = await this.paiementRepo.findOne({ where: { reference: orderId } });
-    if (!paiement) return { status: 'not_found' };
-
-    if (status === 'SUCCESS') {
-      await this.paiementRepo.update(paiement.id, { statut: PaiementSaasStatut.SUCCES, webhookPayload: payload });
-      await this.activerLicence(paiement);
-    } else {
-      await this.paiementRepo.update(paiement.id, { statut: PaiementSaasStatut.ECHEC, webhookPayload: payload });
-    }
-
-    return { status: 'processed' };
+  private verifierSignatureMoneroo(payload: Record<string, unknown>, signature: string): boolean {
+    const secret = this.config.get<string>('MONEROO_WEBHOOK_SECRET');
+    if (!secret) return true; // En dev sans secret configuré, on accepte
+    const expected = createHmac('sha256', secret)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    return expected === signature;
   }
+
+  // ─── Paiement manuel (validation SUPERADMIN) ───────────────────────────────
 
   async validerManuel(dto: ValiderPaiementManuelDto, adminId: string): Promise<PaiementSaas> {
     const paiement = await this.paiementRepo.findOne({ where: { id: dto.paiementId } });
@@ -190,7 +174,7 @@ export class PaiementsSaasService {
     await this.activerLicence(paiement);
 
     this.auditLogs.log({
-      action: 'PAIEMENT_SAAS_VALIDE',
+      action: 'PAIEMENT_SAAS_VALIDE_MANUELLEMENT',
       entite: 'PaiementSaas',
       entiteId: paiement.id,
       userId: adminId,
@@ -204,9 +188,27 @@ export class PaiementsSaasService {
     try {
       await this.licencesService.renouveler(paiement.licenceId, 12);
     } catch (err) {
-      this.logger.error(`Failed to activate licence ${paiement.licenceId}`, err);
+      this.logger.error(`Échec activation licence ${paiement.licenceId}`, err);
     }
   }
+
+  // ─── Vérifier statut Moneroo (polling frontend) ───────────────────────────
+
+  async verifierStatut(transactionId: string): Promise<{ statut: string; reference?: string }> {
+    const apiKey = this.config.getOrThrow<string>('MONEROO_SECRET_KEY');
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get(`https://api.moneroo.io/v1/payments/${transactionId}`, {
+          headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+        }),
+      );
+      return { statut: data?.data?.status, reference: data?.data?.reference };
+    } catch {
+      throw new BadRequestException('Impossible de vérifier le statut du paiement');
+    }
+  }
+
+  // ─── Queries ───────────────────────────────────────────────────────────────
 
   async findAll(tenantId?: string): Promise<PaiementSaas[]> {
     const where = tenantId ? { tenantId } : {};

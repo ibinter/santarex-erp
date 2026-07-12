@@ -1,12 +1,8 @@
-import { IsString, IsEnum, IsInt, IsEmail, IsOptional, Min } from 'class-validator';
-import { PaiementSaasMethode } from '../entities/paiement-saas.entity';
+import { IsString, IsInt, IsEmail, IsOptional, Min } from 'class-validator';
 
 export class InitierPaiementDto {
   @IsString()
   licenceId: string;
-
-  @IsEnum(PaiementSaasMethode)
-  methode: PaiementSaasMethode;
 
   @IsInt()
   @Min(1000)
@@ -21,6 +17,10 @@ export class InitierPaiementDto {
   @IsOptional()
   @IsString()
   telephone?: string;
+
+  @IsOptional()
+  @IsString()
+  devise?: string;
 }
 
 export class ValiderPaiementManuelDto {

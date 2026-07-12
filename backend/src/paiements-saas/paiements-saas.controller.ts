@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Req, Headers } from '@nestjs/common';
 import { PaiementsSaasService } from './paiements-saas.service';
 import { InitierPaiementDto, ValiderPaiementManuelDto } from './dto/initier-paiement.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -12,6 +12,7 @@ import { Request } from 'express';
 export class PaiementsSaasController {
   constructor(private readonly service: PaiementsSaasService) {}
 
+  /** Initier un paiement Moneroo — retourne une checkoutUrl */
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   @Post('initier')
@@ -19,18 +20,24 @@ export class PaiementsSaasController {
     return this.service.initier(dto, (req as any).user?.id);
   }
 
+  /** Webhook Moneroo — endpoint public, vérification HMAC interne */
   @SkipThrottle()
-  @Post('webhook/cinetpay')
-  webhookCinetPay(@Body() payload: Record<string, unknown>) {
-    return this.service.webhookCinetPay(payload);
+  @Post('webhook')
+  webhook(
+    @Body() payload: Record<string, unknown>,
+    @Headers('x-moneroo-signature') signature: string,
+  ) {
+    return this.service.webhook(payload, signature ?? '');
   }
 
-  @SkipThrottle()
-  @Post('webhook/orangemoney')
-  webhookOrangeMoney(@Body() payload: Record<string, unknown>) {
-    return this.service.webhookOrangeMoney(payload);
+  /** Vérifier le statut d'une transaction Moneroo (polling depuis le frontend) */
+  @UseGuards(JwtAuthGuard)
+  @Get('statut/:transactionId')
+  verifierStatut(@Param('transactionId') transactionId: string) {
+    return this.service.verifierStatut(transactionId);
   }
 
+  /** Valider manuellement un paiement (virement, chèque) — SUPERADMIN only */
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   @Post('valider-manuel')

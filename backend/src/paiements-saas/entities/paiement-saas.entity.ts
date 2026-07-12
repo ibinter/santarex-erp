@@ -9,8 +9,7 @@ export enum PaiementSaasStatut {
 }
 
 export enum PaiementSaasMethode {
-  CINETPAY = 'cinetpay',
-  ORANGE_MONEY = 'orange_money',
+  MONEROO = 'moneroo',
   MANUEL = 'manuel',
 }
 
