@@ -68,6 +68,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Administration',
     items: [
+      { label: 'Utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} /> },
       { label: 'Ressources Humaines', href: '/rh', icon: <UserCog size={18} /> },
       { label: 'Reporting & BI', href: '/reporting', icon: <BarChart2 size={18} /> },
       { label: 'Support', href: '/support', icon: <MessageSquare size={18} /> },

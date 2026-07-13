@@ -57,8 +57,30 @@ export class UsersService {
 
   async findAll(tenantId: string): Promise<User[]> {
     return this.userRepository.find({
-      where: { tenantId, isActive: true },
+      where: { tenantId },
       order: { lastName: 'ASC', firstName: 'ASC' },
     });
+  }
+
+  async updateUser(id: string, tenantId: string, dto: Partial<Pick<User, 'firstName' | 'lastName' | 'role'>>): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id, tenantId } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    Object.assign(user, dto);
+    return this.userRepository.save(user);
+  }
+
+  async toggleActive(id: string, tenantId: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id, tenantId } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    user.isActive = !user.isActive;
+    return this.userRepository.save(user);
+  }
+
+  async resetPassword(id: string, tenantId: string, newPassword: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id, tenantId } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    user.password = await this.hashPassword(newPassword);
+    await this.userRepository.save(user);
+    return { message: 'Mot de passe réinitialisé avec succès' };
   }
 }
