@@ -1,398 +1,300 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, User, AlertTriangle, Check, ChevronRight, ChevronLeft } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Badge from '@/components/ui/Badge';
+import { ArrowLeft, Search, User, Check, ChevronRight, ChevronLeft, Stethoscope, AlertTriangle } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ─── Mock data ─────────────────────────────────────────────
-const MOCK_PATIENTS = [
-  { id: 'p1', ipp: 'IPP-00142', nom: 'Kouassi', prenom: 'Ama Bernadette', age: 42, groupeSanguin: 'A+', allergies: 'Pénicilline, Aspirine' },
-  { id: 'p2', ipp: 'IPP-00087', nom: 'Traoré', prenom: 'Moussa', age: 35, groupeSanguin: 'O+', allergies: '' },
-  { id: 'p3', ipp: 'IPP-00215', nom: 'N\'Guessan', prenom: 'Brice', age: 28, groupeSanguin: 'B-', allergies: 'Latex' },
-];
+type Patient = { id: string; ipp?: string; nom: string; prenom: string; dateNaissance?: string; groupeSanguin?: string; allergies?: string };
+type Medecin = { id: string; nom: string; prenom: string; specialite?: string; role?: string };
 
-const MOCK_MEDECINS = [
-  { id: 'm1', nom: 'Koffi', prenom: 'Ange', specialite: 'Médecine générale' },
-  { id: 'm2', nom: 'Diallo', prenom: 'Mariam', specialite: 'Cardiologie' },
-  { id: 'm3', nom: 'Soro', prenom: 'Jean', specialite: 'Pédiatrie' },
-];
+type FormData = {
+  patientId: string; medecinId: string; motif: string;
+  anamnese: string; examenClinique: string; diagnostic: string; codeCIM10: string;
+  planSoins: string; conclusion: string;
+  ta: string; fc: string; temperature: string; poids: string; taille: string; spo2: string;
+};
 
-// ─── Progress Bar ──────────────────────────────────────────
-function ProgressBar({ step, total }: { step: number; total: number }) {
-  return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-2">
-        {Array.from({ length: total }, (_, i) => {
-          const stepNum = i + 1;
-          const done = stepNum < step;
-          const active = stepNum === step;
-          return (
-            <div key={stepNum} className="flex items-center flex-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                done ? 'bg-primary text-white' : active ? 'bg-primary text-white ring-4 ring-primary/20' : 'bg-gray-100 text-text-secondary'
-              }`}>
-                {done ? <Check size={16} /> : stepNum}
-              </div>
-              {i < total - 1 && (
-                <div className={`flex-1 h-1 mx-2 rounded ${done ? 'bg-primary' : 'bg-gray-200'}`} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex justify-between text-xs text-text-secondary">
-        <span className={step === 1 ? 'font-semibold text-primary' : ''}>Patient & Médecin</span>
-        <span className={step === 2 ? 'font-semibold text-primary' : ''}>Examen clinique</span>
-        <span className={step === 3 ? 'font-semibold text-primary' : ''}>Diagnostic & Plan</span>
-      </div>
-    </div>
-  );
-}
+const STEPS = ['Patient', 'Médecin', 'Motif & Anamnèse', 'Examen & Diagnostic', 'Récapitulatif'];
 
-// ─── Main Page ─────────────────────────────────────────────
 export default function NouvelleConsultationPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Step 1 state
-  const [patientSearch, setPatientSearch] = useState('');
-  const [patientResults, setPatientResults] = useState<typeof MOCK_PATIENTS>([]);
-  const [selectedPatient, setSelectedPatient] = useState<typeof MOCK_PATIENTS[0] | null>(null);
-  const [selectedMedecin, setSelectedMedecin] = useState('');
-  const [showResults, setShowResults] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [medecins, setMedecins] = useState<Medecin[]>([]);
+  const [pSearch, setPSearch] = useState('');
+  const [mSearch, setMSearch] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedMedecin, setSelectedMedecin] = useState<Medecin | null>(null);
 
-  // Step 2 state
-  const [motif, setMotif] = useState('');
-  const [constantes, setConstantes] = useState({
+  const [form, setForm] = useState<FormData>({
+    patientId: '', medecinId: '', motif: '', anamnese: '', examenClinique: '',
+    diagnostic: '', codeCIM10: '', planSoins: '', conclusion: '',
     ta: '', fc: '', temperature: '', poids: '', taille: '', spo2: '',
   });
-  const [anamnese, setAnamnese] = useState('');
-  const [examenClinique, setExamenClinique] = useState('');
 
-  // Step 3 state
-  const [diagnostic, setDiagnostic] = useState('');
-  const [codeCIM10, setCodeCIM10] = useState('');
-  const [conclusion, setConclusion] = useState('');
-  const [planSoins, setPlanSoins] = useState('');
-  const [prochainRdv, setProchainRdv] = useState('');
-  const [loading, setLoading] = useState(false);
+  const pTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const mTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const searchPatients = (q: string) => {
-    setPatientSearch(q);
-    if (q.length < 2) { setPatientResults([]); setShowResults(false); return; }
-    const results = MOCK_PATIENTS.filter(p =>
-      `${p.prenom} ${p.nom} ${p.ipp}`.toLowerCase().includes(q.toLowerCase())
-    );
-    setPatientResults(results);
-    setShowResults(true);
+  const searchPatients = useCallback(async (q: string) => {
+    try {
+      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=8`);
+      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+    } catch { setPatients([]); }
+  }, []);
+
+  const searchMedecins = useCallback(async (q: string) => {
+    try {
+      const data = await apiClient<any>(`/users?role=medecin&q=${encodeURIComponent(q)}&limit=8`);
+      setMedecins(Array.isArray(data) ? data : data?.items ?? []);
+    } catch { setMedecins([]); }
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(pTimerRef.current);
+    pTimerRef.current = setTimeout(() => searchPatients(pSearch), 300);
+    return () => clearTimeout(pTimerRef.current);
+  }, [pSearch, searchPatients]);
+
+  useEffect(() => {
+    clearTimeout(mTimerRef.current);
+    mTimerRef.current = setTimeout(() => searchMedecins(mSearch), 300);
+    return () => clearTimeout(mTimerRef.current);
+  }, [mSearch, searchMedecins]);
+
+  useEffect(() => { searchPatients(''); searchMedecins(''); }, []);
+
+  const upd = (k: keyof FormData, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSubmit = async () => {
+    setSaving(true); setError(null);
+    try {
+      await apiClient('/consultations', {
+        method: 'POST',
+        body: {
+          patientId: selectedPatient!.id,
+          medecinId: selectedMedecin!.id,
+          motif: form.motif,
+          anamnese: form.anamnese || undefined,
+          examenClinique: form.examenClinique || undefined,
+          diagnostic: form.diagnostic || undefined,
+          codeCIM10: form.codeCIM10 || undefined,
+          planSoins: form.planSoins || undefined,
+          conclusion: form.conclusion || undefined,
+          constantesVitales: {
+            ta: form.ta || undefined, fc: form.fc ? Number(form.fc) : undefined,
+            temperature: form.temperature ? Number(form.temperature) : undefined,
+            poids: form.poids ? Number(form.poids) : undefined,
+            taille: form.taille ? Number(form.taille) : undefined,
+            spo2: form.spo2 ? Number(form.spo2) : undefined,
+          },
+        },
+      });
+      router.push('/consultations');
+    } catch (e: any) {
+      setError(e?.message ?? 'Erreur lors de la création');
+    } finally { setSaving(false); }
   };
 
-  const selectPatient = (p: typeof MOCK_PATIENTS[0]) => {
-    setSelectedPatient(p);
-    setPatientSearch(`${p.prenom} ${p.nom}`);
-    setShowResults(false);
+  const canNext = () => {
+    if (step === 1) return !!selectedPatient;
+    if (step === 2) return !!selectedMedecin;
+    if (step === 3) return form.motif.trim().length > 0;
+    return true;
   };
 
-  const handleSubmit = async (draft = false) => {
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    router.push('/consultations');
-  };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, outline: 'none', color: '#37474F', boxSizing: 'border-box' };
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 };
 
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary mb-3 transition-colors"
-          >
-            <ArrowLeft size={16} /> Retour
-          </button>
-          <h1 className="text-2xl font-bold text-text-primary">Nouvelle Consultation</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Étape {step} sur 3</p>
-        </div>
+    <div style={{ padding: 16, maxWidth: 760, margin: '0 auto' }}>
+      <button onClick={() => router.push('/consultations')}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
+        <ArrowLeft size={14} /> Retour
+      </button>
 
-        {/* Progress */}
-        <ProgressBar step={step} total={3} />
-
-        {/* Form Card */}
-        <div className="bg-white rounded-card border border-border p-6">
-
-          {/* ── ÉTAPE 1 ── */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <h2 className="text-base font-semibold text-text-primary">Patient & Médecin</h2>
-
-              {/* Recherche patient */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">
-                  Patient <span className="text-danger">*</span>
-                </label>
-                <div className="relative">
-                  <Input
-                    placeholder="Rechercher par nom, prénom ou IPP..."
-                    value={patientSearch}
-                    onChange={e => searchPatients(e.target.value)}
-                    leftIcon={<Search size={16} />}
-                    onFocus={() => patientResults.length > 0 && setShowResults(true)}
-                  />
-                  {showResults && patientResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-card shadow-lg z-20 overflow-hidden">
-                      {patientResults.map(p => (
-                        <button
-                          key={p.id}
-                          onClick={() => selectPatient(p)}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors text-left"
-                        >
-                          <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
-                            {p.prenom[0]}{p.nom[0]}
-                          </div>
-                          <div>
-                            <p className="font-medium text-text-primary text-sm">{p.prenom} {p.nom}</p>
-                            <p className="text-xs text-text-secondary">{p.ipp} • {p.age} ans</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Résumé patient sélectionné */}
-                {selectedPatient && (
-                  <div className="mt-3 border border-blue-200 bg-blue-50 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold flex-shrink-0">
-                        {selectedPatient.prenom[0]}{selectedPatient.nom[0]}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-text-primary">
-                          {selectedPatient.prenom} {selectedPatient.nom}
-                        </p>
-                        <p className="text-xs text-text-secondary">{selectedPatient.ipp} • {selectedPatient.age} ans</p>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                            {selectedPatient.groupeSanguin}
-                          </span>
-                          {selectedPatient.allergies && (
-                            <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                              <AlertTriangle size={12} className="text-danger" />
-                              <span className="text-xs text-danger font-medium">
-                                Allergies : {selectedPatient.allergies}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => { setSelectedPatient(null); setPatientSearch(''); }}
-                        className="text-text-secondary hover:text-danger text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
+      {/* Progress */}
+      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+          {STEPS.map((s, i) => {
+            const n = i + 1;
+            const done = n < step;
+            const active = n === step;
+            return (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: i < STEPS.length - 1 ? 1 : 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, background: done ? '#00695C' : active ? '#1565C0' : '#F0F0F0', color: done || active ? '#fff' : '#90A4AE', transition: 'all 0.2s' }}>
+                    {done ? <Check size={14} /> : n}
                   </div>
-                )}
-              </div>
-
-              {/* Médecin */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">
-                  Médecin <span className="text-danger">*</span>
-                </label>
-                <select
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  value={selectedMedecin}
-                  onChange={e => setSelectedMedecin(e.target.value)}
-                >
-                  <option value="">Sélectionner un médecin...</option>
-                  {MOCK_MEDECINS.map(m => (
-                    <option key={m.id} value={m.id}>Dr. {m.prenom} {m.nom} — {m.specialite}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* ── ÉTAPE 2 ── */}
-          {step === 2 && (
-            <div className="space-y-5">
-              <h2 className="text-base font-semibold text-text-primary">Examen Clinique</h2>
-
-              {/* Motif */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">
-                  Motif de consultation <span className="text-danger">*</span>
-                </label>
-                <textarea
-                  rows={2}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Motif principal de la consultation..."
-                  value={motif}
-                  onChange={e => setMotif(e.target.value)}
-                />
-              </div>
-
-              {/* Constantes vitales */}
-              <div>
-                <p className="text-sm font-medium text-text-primary mb-3">Constantes vitales</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { key: 'ta', label: 'Tension artérielle', unit: 'mmHg', placeholder: '120/80' },
-                    { key: 'fc', label: 'Fréquence cardiaque', unit: 'bpm', placeholder: '72' },
-                    { key: 'temperature', label: 'Température', unit: '°C', placeholder: '37.2' },
-                    { key: 'poids', label: 'Poids', unit: 'kg', placeholder: '70' },
-                    { key: 'taille', label: 'Taille', unit: 'cm', placeholder: '170' },
-                    { key: 'spo2', label: 'SpO₂', unit: '%', placeholder: '98' },
-                  ].map(({ key, label, unit, placeholder }) => (
-                    <div key={key} className="bg-gray-50 border border-border rounded-lg p-3">
-                      <label className="block text-xs text-text-secondary mb-1.5">{label}</label>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          placeholder={placeholder}
-                          className="flex-1 bg-white border border-border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30 min-w-0"
-                          value={(constantes as any)[key]}
-                          onChange={e => setConstantes(c => ({ ...c, [key]: e.target.value }))}
-                        />
-                        <span className="text-xs text-text-secondary font-medium flex-shrink-0">{unit}</span>
-                      </div>
-                    </div>
-                  ))}
+                  <span style={{ fontSize: 10, color: active ? '#1565C0' : done ? '#00695C' : '#90A4AE', fontWeight: active ? 700 : 400, whiteSpace: 'nowrap' }}>{s}</span>
                 </div>
+                {i < STEPS.length - 1 && <div style={{ flex: 1, height: 2, background: done ? '#00695C' : '#E0E0E0', margin: '0 4px', marginBottom: 18 }} />}
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              {/* Anamnèse */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Anamnèse</label>
-                <textarea
-                  rows={4}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Histoire de la maladie, évolution des symptômes..."
-                  value={anamnese}
-                  onChange={e => setAnamnese(e.target.value)}
-                />
-              </div>
-
-              {/* Examen clinique */}
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Examen clinique</label>
-                <textarea
-                  rows={4}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Résultats de l'examen physique..."
-                  value={examenClinique}
-                  onChange={e => setExamenClinique(e.target.value)}
-                />
-              </div>
+      {/* Step content */}
+      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '24px', marginBottom: 16 }}>
+        {step === 1 && (
+          <div>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Sélectionner le patient</h2>
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
+              <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher par nom, IPP…"
+                style={{ ...inputStyle, paddingLeft: 32 }} />
             </div>
-          )}
-
-          {/* ── ÉTAPE 3 ── */}
-          {step === 3 && (
-            <div className="space-y-5">
-              <h2 className="text-base font-semibold text-text-primary">Diagnostic & Plan de soins</h2>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">
-                  Diagnostic <span className="text-danger">*</span>
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Diagnostic principal..."
-                  value={diagnostic}
-                  onChange={e => setDiagnostic(e.target.value)}
-                />
-              </div>
-
-              <Input
-                label="Code CIM-10"
-                placeholder="Ex: J18.9, I10, E11.9..."
-                value={codeCIM10}
-                onChange={e => setCodeCIM10(e.target.value)}
-              />
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Conclusion</label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Conclusion de la consultation..."
-                  value={conclusion}
-                  onChange={e => setConclusion(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Plan de soins</label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  placeholder="Prescriptions, examens complémentaires, références..."
-                  value={planSoins}
-                  onChange={e => setPlanSoins(e.target.value)}
-                />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Input
-                  label="Prochain RDV dans"
-                  type="number"
-                  min="1"
-                  placeholder="Ex: 30"
-                  value={prochainRdv}
-                  onChange={e => setProchainRdv(e.target.value)}
-                  containerClassName="w-40"
-                />
-                <span className="text-sm text-text-secondary mt-5">jours</span>
-              </div>
-            </div>
-          )}
-
-          {/* ── Navigation ── */}
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
-            <div>
-              {step > 1 && (
-                <Button variant="ghost" leftIcon={<ChevronLeft size={16} />} onClick={() => setStep(s => s - 1)}>
-                  Précédent
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-3">
-              {step === 3 && (
-                <Button
-                  variant="secondary"
-                  onClick={() => handleSubmit(true)}
-                  loading={loading}
-                >
-                  Enregistrer comme brouillon
-                </Button>
-              )}
-              {step < 3 ? (
-                <Button
-                  rightIcon={<ChevronRight size={16} />}
-                  onClick={() => setStep(s => s + 1)}
-                  disabled={step === 1 && (!selectedPatient || !selectedMedecin)}
-                >
-                  Suivant
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => handleSubmit(false)}
-                  loading={loading}
-                >
-                  Terminer la consultation
-                </Button>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {patients.map(p => (
+                <div key={p.id} onClick={() => { setSelectedPatient(p); setForm(f => ({ ...f, patientId: p.id })); }}
+                  style={{ padding: '12px 14px', borderRadius: 10, border: `2px solid ${selectedPatient?.id === p.id ? '#1565C0' : '#E0E0E0'}`, background: selectedPatient?.id === p.id ? '#EFF6FF' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#0D47A1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                    {p.prenom.charAt(0)}{p.nom.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1A2332' }}>{p.prenom} {p.nom}</div>
+                    <div style={{ fontSize: 11, color: '#90A4AE' }}>{p.ipp ?? '—'}{p.groupeSanguin && ` • ${p.groupeSanguin}`}</div>
+                    {p.allergies && <div style={{ fontSize: 11, color: '#C62828' }}>⚠ {p.allergies}</div>}
+                  </div>
+                  {selectedPatient?.id === p.id && <Check size={16} color="#1565C0" />}
+                </div>
+              ))}
+              {patients.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>Aucun patient trouvé</p>}
             </div>
           </div>
-        </div>
+        )}
+
+        {step === 2 && (
+          <div>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Sélectionner le médecin</h2>
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
+              <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder="Rechercher un médecin…"
+                style={{ ...inputStyle, paddingLeft: 32 }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {medecins.map(m => (
+                <div key={m.id} onClick={() => { setSelectedMedecin(m); setForm(f => ({ ...f, medecinId: m.id })); }}
+                  style={{ padding: '12px 14px', borderRadius: 10, border: `2px solid ${selectedMedecin?.id === m.id ? '#1565C0' : '#E0E0E0'}`, background: selectedMedecin?.id === m.id ? '#EFF6FF' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#00695C', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Stethoscope size={16} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1A2332' }}>Dr. {m.prenom} {m.nom}</div>
+                    {m.specialite && <div style={{ fontSize: 11, color: '#90A4AE' }}>{m.specialite}</div>}
+                  </div>
+                  {selectedMedecin?.id === m.id && <Check size={16} color="#1565C0" />}
+                </div>
+              ))}
+              {medecins.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>Aucun médecin trouvé</p>}
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Motif & Anamnèse</h2>
+            <div>
+              <label style={labelStyle}>Motif de consultation <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.motif} onChange={e => upd('motif', e.target.value)} placeholder="Ex: Céphalées persistantes…" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Anamnèse</label>
+              <textarea value={form.anamnese} onChange={e => upd('anamnese', e.target.value)} rows={4} placeholder="Histoire de la maladie…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {[
+                { k: 'ta', label: 'TA (mmHg)', ph: '120/80' },
+                { k: 'fc', label: 'FC (bpm)', ph: '75' },
+                { k: 'temperature', label: 'Temp (°C)', ph: '37.0' },
+                { k: 'poids', label: 'Poids (kg)', ph: '70' },
+                { k: 'taille', label: 'Taille (cm)', ph: '170' },
+                { k: 'spo2', label: 'SpO₂ (%)', ph: '98' },
+              ].map(f => (
+                <div key={f.k}>
+                  <label style={labelStyle}>{f.label}</label>
+                  <input value={(form as any)[f.k]} onChange={e => upd(f.k as any, e.target.value)} placeholder={f.ph} style={inputStyle} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Examen clinique & Diagnostic</h2>
+            <div>
+              <label style={labelStyle}>Examen clinique</label>
+              <textarea value={form.examenClinique} onChange={e => upd('examenClinique', e.target.value)} rows={3} placeholder="Résultats de l'examen…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
+              <div>
+                <label style={labelStyle}>Diagnostic</label>
+                <input value={form.diagnostic} onChange={e => upd('diagnostic', e.target.value)} placeholder="Ex: Migraine sans aura" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Code CIM-10</label>
+                <input value={form.codeCIM10} onChange={e => upd('codeCIM10', e.target.value)} placeholder="G43.0" style={inputStyle} />
+              </div>
+            </div>
+            <div>
+              <label style={labelStyle}>Plan de soins</label>
+              <textarea value={form.planSoins} onChange={e => upd('planSoins', e.target.value)} rows={3} placeholder="Traitement et recommandations…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Conclusion</label>
+              <textarea value={form.conclusion} onChange={e => upd('conclusion', e.target.value)} rows={2} placeholder="Conclusion générale…" style={{ ...inputStyle, resize: 'vertical' }} />
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Récapitulatif</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { label: 'Patient', value: selectedPatient ? `${selectedPatient.prenom} ${selectedPatient.nom} (${selectedPatient.ipp ?? '—'})` : '—' },
+                { label: 'Médecin', value: selectedMedecin ? `Dr. ${selectedMedecin.prenom} ${selectedMedecin.nom}` : '—' },
+                { label: 'Motif', value: form.motif || '—' },
+                { label: 'Diagnostic', value: form.diagnostic || '—' },
+                { label: 'Constantes', value: [form.ta && `TA: ${form.ta}`, form.fc && `FC: ${form.fc}`, form.temperature && `T°: ${form.temperature}`].filter(Boolean).join(' • ') || '—' },
+              ].map(r => (
+                <div key={r.label} style={{ display: 'flex', padding: '10px 0', borderBottom: '1px solid #F5F7FA' }}>
+                  <span style={{ width: 120, fontSize: 12, color: '#90A4AE', fontWeight: 600, flexShrink: 0 }}>{r.label}</span>
+                  <span style={{ fontSize: 13, color: '#37474F' }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+            {error && (
+              <div style={{ marginTop: 16, padding: '12px 14px', background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 8, display: 'flex', gap: 8, alignItems: 'center', color: '#C62828', fontSize: 13 }}>
+                <AlertTriangle size={14} /> {error}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button onClick={() => step > 1 ? setStep(s => s - 1) : router.push('/consultations')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+          <ChevronLeft size={14} /> {step === 1 ? 'Annuler' : 'Précédent'}
+        </button>
+        {step < STEPS.length ? (
+          <button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, background: canNext() ? '#1565C0' : '#E0E0E0', border: 'none', cursor: canNext() ? 'pointer' : 'default', fontSize: 13, color: '#fff', fontWeight: 600 }}>
+            Suivant <ChevronRight size={14} />
+          </button>
+        ) : (
+          <button onClick={handleSubmit} disabled={saving}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, background: '#00695C', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Enregistrement…' : 'Créer la consultation'}
+          </button>
+        )}
       </div>
     </div>
   );
