@@ -1319,20 +1319,20 @@ export default function LandingPage() {
                 <li><a href="tel:+2252722276014">+225 27 22 27 60 14</a></li>
                 <li><a href="https://wa.me/2250778882592">WhatsApp +225 07 78 88 25 92</a></li>
                 <li>Abidjan, Côte d&apos;Ivoire</li>
-                <li style={{ marginTop: 8 }}>Lun–Ven : 8h – 18h</li>
+                <li style={{ marginTop: 8 }}>{lang === 'fr' ? 'Lun–Ven : 8h – 18h' : 'Mon–Fri: 8am – 6pm'}</li>
               </ul>
             </div>
           </div>
           <div className="lp-footer-partner-row">
             <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-footer-partner-cta">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Devenir partenaire revendeur SANTAREX →
+              {t('footer_partner_cta')}
             </a>
           </div>
           <div className="lp-footer-bottom">
             <div>
-              <span className="lp-footer-copy">© {new Date().getFullYear()} SANTAREX ERP. Tous droits réservés.</span>
-              <span className="lp-footer-copy" style={{ display: 'block', marginTop: 4, fontSize: '.7rem' }}>Logiciel conçu, édité et exploité par IBIG Soft, une marque de IBIG SARL — Intermark Business International Group.</span>
+              <span className="lp-footer-copy">© {new Date().getFullYear()} SANTAREX ERP. {lang === 'fr' ? 'Tous droits réservés.' : 'All rights reserved.'}</span>
+              <span className="lp-footer-copy" style={{ display: 'block', marginTop: 4, fontSize: '.7rem' }}>{lang === 'fr' ? 'Logiciel conçu, édité et exploité par IBIG Soft, une marque de IBIG SARL — Intermark Business International Group.' : 'Software designed, published and operated by IBIG Soft, a brand of IBIG SARL — Intermark Business International Group.'}</span>
             </div>
             <span className="lp-footer-made">SANTAREX ERP v2.0 · <span>Made for Africa</span></span>
           </div>
