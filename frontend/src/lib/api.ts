@@ -1,6 +1,6 @@
 import type { LoginCredentials, LoginResponse, ApiResponse, PaginatedResponse, Patient } from '@/types';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://185.98.139.38:3002/api/v1';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://santarex.ibigsoft.com/api/v1';
 const API_BASE = API_URL;
 
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
