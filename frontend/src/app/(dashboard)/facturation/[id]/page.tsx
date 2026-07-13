@@ -9,7 +9,7 @@ type LigneFacture = { id: string; libelle?: string; type?: string; quantite?: nu
 type Paiement = { id: string; reference?: string; dateCreation?: string; modePaiement?: string; montant?: number; statut?: string; notes?: string };
 
 type Facture = {
-  id: string; numero?: string; statut?: string;
+  id: string; numero?: string; reference?: string; statut?: string;
   patient?: { id: string; ipp?: string; nom: string; prenom: string; dateNaissance?: string };
   consultation?: { id: string; numero?: string; motif?: string };
   lignes?: LigneFacture[];
@@ -120,7 +120,16 @@ export default function FactureDetailPage() {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
                   {scfg.icon} {scfg.label}
                 </span>
-                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>
+                <button onClick={() => {
+                  const token = localStorage.getItem('access_token');
+                  const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://santarex.ibigsoft.com/api/v1';
+                  const a = document.createElement('a');
+                  a.href = `${base}/exports/factures/${facture.id}/pdf` + (token ? `?token=${encodeURIComponent(token)}` : '');
+                  a.download = `facture-${facture.reference ?? facture.id}.pdf`; a.click();
+                }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
+                  <Download size={13} /> PDF
+                </button>
+                <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>
                   <Printer size={13} /> Imprimer
                 </button>
                 {reste > 0 && facture.statut !== 'annulee' && (

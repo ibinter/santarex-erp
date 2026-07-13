@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package, AlertTriangle, TrendingDown, Plus, Search, RefreshCw, ArrowDownToLine } from 'lucide-react';
+import { Package, AlertTriangle, TrendingDown, Plus, Search, RefreshCw, ArrowDownToLine, Download } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+
+function exportStock() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://santarex.ibigsoft.com/api/v1';
+  const a = document.createElement('a');
+  a.href = `${base}/exports/pharmacie/stock/xlsx` + (token ? `?token=${encodeURIComponent(token)}` : '');
+  a.download = 'stock-pharmacie.xlsx'; a.click();
+}
 
 type Medicament = {
   id: string; code: string; nom: string; nomCommercial?: string; dci?: string;
@@ -98,6 +106,9 @@ export default function PharmaciePage() {
           <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
             <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
             Actualiser
+          </button>
+          <button onClick={exportStock} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: '#E8F5E9', border: '1px solid #A5D6A7', cursor: 'pointer', fontSize: 13, color: '#2E7D32', fontWeight: 600 }}>
+            <Download size={14} /> XLSX
           </button>
           <button onClick={() => router.push('/pharmacie/medicaments/nouveau')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#2E7D32', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
             <Plus size={14} /> Nouveau
