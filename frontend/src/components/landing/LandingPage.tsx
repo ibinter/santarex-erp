@@ -1114,8 +1114,8 @@ export default function LandingPage() {
               <h4>{lang === 'fr' ? 'Ressources' : 'Resources'}</h4>
               <ul>
                 <li><a href="#faq">FAQ</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Centre d\'aide' : 'Help center'}</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Guide utilisateur' : 'User guide'}</a></li>
+                <li><Link href="/guide">{lang === 'fr' ? 'Centre d\'aide' : 'Help center'}</Link></li>
+                <li><Link href="/guide">{lang === 'fr' ? 'Guide utilisateur' : 'User guide'}</Link></li>
                 <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Nouveautés' : 'Changelog'}</a></li>
                 <li><a href="#" onClick={e => { e.preventDefault(); document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click(); }}>{lang === 'fr' ? 'Parler à SARA' : 'Talk to SARA'}</a></li>
               </ul>
@@ -1127,7 +1127,7 @@ export default function LandingPage() {
                 <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'À propos d\'IBIG Soft' : 'About IBIG Soft'}</a></li>
                 <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Autres logiciels' : 'Other software'}</a></li>
                 <li><a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer">IBIG PARTNERS</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">Contact</a></li>
+                <li><a href="#contact">Contact</a></li>
                 <li><a href="mailto:rh@ibigsoft.com">{lang === 'fr' ? 'Recrutement' : 'Careers'}</a></li>
               </ul>
             </div>
