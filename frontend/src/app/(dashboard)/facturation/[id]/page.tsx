@@ -1,255 +1,278 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Printer, CreditCard, X as XIcon } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import PaiementModal from '@/components/facturation/PaiementModal';
-import type { StatutFacture, ModePaiement } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Printer, CreditCard, RefreshCw, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ─── Mock data ───────────────────────────────────────────────
-const MOCK_FACTURE = {
-  id: 'f1', numero: 'FAC-2025-0412',
-  patient: { id: 'p2', ipp: 'IPP-00089', nom: 'TRAORÉ', prenom: 'Ibrahim', dateNaissance: '1972-07-22', sexe: 'M', pays: 'CI' },
-  statut: 'partiellement_payee' as StatutFacture,
-  tiersPayant: true,
-  assuranceNom: 'CNPS',
-  assuranceNumero: 'CNP-44521',
-  lignes: [
-    { id: 'l1', type: 'consultation', libelle: 'Consultation cardiologie', quantite: 1, prixUnitaire: 15000, remise: 0, total: 15000 },
-    { id: 'l2', type: 'analyse', libelle: 'Bilan lipidique', quantite: 1, prixUnitaire: 5000, remise: 0, total: 5000 },
-    { id: 'l3', type: 'analyse', libelle: 'CRP', quantite: 1, prixUnitaire: 2500, remise: 0, total: 2500 },
-    { id: 'l4', type: 'medicament', libelle: 'Amlodipine 5mg x30', quantite: 1, prixUnitaire: 12000, remise: 0, total: 12000 },
-    { id: 'l5', type: 'medicament', libelle: 'Atorvastatine 40mg x30', quantite: 1, prixUnitaire: 10500, remise: 0, total: 10500 },
-  ],
-  sousTotal: 45000, tva: 0, total: 45000,
-  partAssurance: 27000, partPatient: 18000, montantPaye: 10000, resteAPayer: 8000,
-  dateEmission: '2025-07-09T10:30:00', createdAt: '2025-07-09T10:00:00',
-  paiements: [
-    { id: 'pay1', reference: 'PAY-2025-0891', date: '2025-07-09T11:00:00', mode: 'especes' as ModePaiement, montant: 5000, statut: 'valide', notes: 'Acompte à l\'admission' },
-    { id: 'pay2', reference: 'PAY-2025-0892', date: '2025-07-10T09:30:00', mode: 'mobile_money' as ModePaiement, montant: 5000, statut: 'valide', notes: 'Orange Money — TXN-4521' },
-  ],
+type LigneFacture = { id: string; libelle?: string; type?: string; quantite?: number; prixUnitaire?: number; remise?: number; total?: number };
+type Paiement = { id: string; reference?: string; dateCreation?: string; modePaiement?: string; montant?: number; statut?: string; notes?: string };
+
+type Facture = {
+  id: string; numero?: string; statut?: string;
+  patient?: { id: string; ipp?: string; nom: string; prenom: string; dateNaissance?: string };
+  consultation?: { id: string; numero?: string; motif?: string };
+  lignes?: LigneFacture[];
+  sousTotal?: number; tva?: number; total?: number; montantTotal?: number;
+  montantPaye?: number; resteAPayer?: number;
+  partAssurance?: number; partPatient?: number;
+  dateEmission?: string; dateCreation?: string;
+  paiements?: Paiement[];
+  assuranceNom?: string; assuranceNumero?: string; tiersPayant?: boolean;
 };
 
-const STATUT_CONFIG: Record<StatutFacture, { label: string; variant: 'neutral' | 'info' | 'success' | 'warning' | 'danger' }> = {
-  brouillon: { label: 'Brouillon', variant: 'neutral' },
-  emise: { label: 'Émise', variant: 'info' },
-  partiellement_payee: { label: 'Partiellement payée', variant: 'warning' },
-  payee: { label: 'Payée', variant: 'success' },
-  annulee: { label: 'Annulée', variant: 'danger' },
+const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  brouillon:           { label: 'Brouillon',           color: '#546E7A', bg: '#ECEFF1', icon: <Clock size={12} /> },
+  emise:               { label: 'Émise',               color: '#1565C0', bg: '#EFF6FF', icon: <Clock size={12} /> },
+  partiellement_payee: { label: 'Part. payée',         color: '#E65100', bg: '#FFF3E0', icon: <Clock size={12} /> },
+  payee:               { label: 'Payée',               color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={12} /> },
+  annulee:             { label: 'Annulée',             color: '#9E9E9E', bg: '#F5F5F5', icon: <XCircle size={12} /> },
 };
 
-const MODE_LABEL: Record<ModePaiement, string> = {
-  especes: 'Espèces',
-  carte: 'Carte bancaire',
-  mobile_money: 'Mobile Money',
-  virement: 'Virement',
-  assurance: 'Assurance',
+const MODE_CONFIG: Record<string, { label: string; color: string }> = {
+  especes:      { label: 'Espèces',      color: '#2E7D32' },
+  mobile_money: { label: 'Mobile Money', color: '#E65100' },
+  carte:        { label: 'Carte',        color: '#0D47A1' },
+  assurance:    { label: 'Assurance',    color: '#6A1B9A' },
+  virement:     { label: 'Virement',     color: '#37474F' },
 };
 
-function formatXOF(val: number) {
-  return val.toLocaleString('fr-FR') + ' XOF';
+function fmtXOF(v?: number) { return v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—'; }
+function fmtDate(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function DetailFacturePage() {
+export default function FactureDetailPage() {
+  const params = useParams();
   const router = useRouter();
-  const [showPaiementModal, setShowPaiementModal] = useState(false);
-  const [facture, setFacture] = useState(MOCK_FACTURE);
+  const [facture, setFacture] = useState<Facture | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [payModal, setPayModal] = useState(false);
+  const [payMode, setPayMode] = useState('especes');
+  const [payMontant, setPayMontant] = useState('');
+  const [paying, setPaying] = useState(false);
 
-  const cfg = STATUT_CONFIG[facture.statut];
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const data = await apiClient<Facture>(`/facturation/${params.id}`);
+      setFacture(data);
+    } catch (e: any) {
+      setError(e?.message ?? 'Impossible de charger la facture');
+    } finally { setLoading(false); }
+  }, [params.id]);
 
-  const handlePaiement = (data: { montant: number; mode: ModePaiement; operateur?: string; reference?: string; notes?: string }) => {
-    const newPay = {
-      id: `pay${Date.now()}`,
-      reference: `PAY-2025-${Math.floor(Math.random() * 9000 + 1000)}`,
-      date: new Date().toISOString(),
-      mode: data.mode,
-      montant: data.montant,
-      statut: 'valide' as const,
-      notes: data.notes || '',
-    };
-    const newMontantPaye = facture.montantPaye + data.montant;
-    const newResteAPayer = Math.max(0, facture.resteAPayer - data.montant);
-    setFacture(prev => ({
-      ...prev,
-      paiements: [...prev.paiements, newPay],
-      montantPaye: newMontantPaye,
-      resteAPayer: newResteAPayer,
-      statut: newResteAPayer === 0 ? 'payee' : 'partiellement_payee',
-    }));
-    setShowPaiementModal(false);
+  useEffect(() => { load(); }, [load]);
+
+  const handlePay = async () => {
+    if (!payMontant || isNaN(Number(payMontant))) return;
+    setPaying(true);
+    try {
+      await apiClient(`/facturation/${params.id}/paiements`, {
+        method: 'POST',
+        body: { montant: Number(payMontant), modePaiement: payMode },
+      });
+      setPayModal(false); setPayMontant('');
+      await load();
+    } catch (e: any) {
+      alert(e?.message ?? 'Erreur lors du paiement');
+    } finally { setPaying(false); }
   };
 
+  const total = facture?.montantTotal ?? facture?.total ?? 0;
+  const paye = facture?.montantPaye ?? 0;
+  const reste = facture?.resteAPayer ?? (total - paye);
+  const pct = total > 0 ? Math.round((paye / total) * 100) : 0;
+  const scfg = STATUT_CONFIG[facture?.statut ?? 'emise'] ?? STATUT_CONFIG.emise;
+
   return (
-    <div className="p-6 max-w-[1100px] mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <button onClick={() => router.back()} className="text-text-secondary hover:text-text-primary transition-colors text-sm">
-              ← Retour
-            </button>
-            <Badge variant={cfg.variant} dot>{cfg.label}</Badge>
-          </div>
-          <h1 className="text-2xl font-bold text-text-primary font-mono">{facture.numero}</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
-            Patient :{' '}
-            <button className="text-primary hover:underline font-medium" onClick={() => router.push(`/patients`)}>
-              {facture.patient.nom} {facture.patient.prenom}
-            </button>
-            {' '}({facture.patient.ipp}) · Émise le {new Date(facture.dateEmission).toLocaleDateString('fr-FR')}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {facture.statut !== 'annulee' && facture.statut !== 'payee' && (
-            <Button variant="ghost" leftIcon={<XIcon size={16} />}
-              onClick={() => { if (confirm('Annuler cette facture ?')) setFacture(p => ({ ...p, statut: 'annulee' })); }}>
-              Annuler
-            </Button>
-          )}
-          <Button variant="secondary" leftIcon={<Printer size={16} />} onClick={() => alert('Impression...')}>
-            Imprimer
-          </Button>
-        </div>
-      </div>
+    <div style={{ padding: 16, maxWidth: 1000, margin: '0 auto' }}>
+      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
 
-      {/* Assurance */}
-      {facture.tiersPayant && (
-        <div className="bg-teal-50 border border-teal-200 rounded-card p-4 mb-5 flex items-center gap-3">
-          <span className="text-2xl">🏥</span>
-          <div>
-            <p className="font-medium text-teal-800">Tiers-payant : {facture.assuranceNom}</p>
-            <p className="text-sm text-teal-700">N° {facture.assuranceNumero} · Part assurance : {formatXOF(facture.partAssurance)} (60%)</p>
-          </div>
+      <button onClick={() => router.push('/facturation')}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
+        <ArrowLeft size={14} /> Retour à la facturation
+      </button>
+
+      {loading ? (
+        <div style={{ background: '#fff', borderRadius: 12, padding: 60, textAlign: 'center', color: '#90A4AE' }}>
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> Chargement…
         </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
-          {/* Lignes */}
-          <div className="bg-white border border-border rounded-card overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-border">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Libellé</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Qté</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Prix unit.</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Remise</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-text-secondary uppercase">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {facture.lignes.map(l => (
-                  <tr key={l.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <p className="text-text-primary">{l.libelle}</p>
-                      <p className="text-xs text-text-secondary capitalize">{l.type.replace('_', ' ')}</p>
-                    </td>
-                    <td className="px-4 py-3 text-center text-text-secondary">{l.quantite}</td>
-                    <td className="px-4 py-3 text-right text-text-secondary">{formatXOF(l.prixUnitaire)}</td>
-                    <td className="px-4 py-3 text-center text-text-secondary">{l.remise > 0 ? `${l.remise}%` : '—'}</td>
-                    <td className="px-4 py-3 text-right font-medium text-text-primary">{formatXOF(l.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paiements reçus */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-text-primary">Paiements reçus</h2>
-              {facture.resteAPayer > 0 && facture.statut !== 'annulee' && (
-                <Button leftIcon={<CreditCard size={16} />} onClick={() => setShowPaiementModal(true)}>
-                  Enregistrer un paiement
-                </Button>
-              )}
+      ) : error ? (
+        <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: 24, color: '#C62828' }}>⚠ {error}</div>
+      ) : !facture ? null : (
+        <>
+          {/* Header */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h1 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 800, color: '#1A2332' }}>{facture.numero ?? `FAC-${facture.id.slice(0,8).toUpperCase()}`}</h1>
+                <p style={{ margin: 0, fontSize: 12, color: '#90A4AE' }}>Émise le {fmtDate(facture.dateEmission ?? facture.dateCreation)}</p>
+                {facture.patient && (
+                  <p style={{ margin: '8px 0 0', fontSize: 14, color: '#37474F', fontWeight: 600 }}>
+                    {facture.patient.prenom} {facture.patient.nom} {facture.patient.ipp && <span style={{ fontSize: 12, color: '#90A4AE', fontWeight: 400 }}>({facture.patient.ipp})</span>}
+                  </p>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
+                  {scfg.icon} {scfg.label}
+                </span>
+                <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>
+                  <Printer size={13} /> Imprimer
+                </button>
+                {reste > 0 && facture.statut !== 'annulee' && (
+                  <button onClick={() => setPayModal(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 600 }}>
+                    <CreditCard size={13} /> Enregistrer un paiement
+                  </button>
+                )}
+              </div>
             </div>
-            {facture.paiements.length === 0 ? (
-              <p className="text-sm text-text-secondary text-center py-4">Aucun paiement enregistré</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="border-b border-border">
-                  <tr>
-                    <th className="text-left pb-2 text-xs font-semibold text-text-secondary">Date</th>
-                    <th className="text-left pb-2 text-xs font-semibold text-text-secondary">Référence</th>
-                    <th className="text-left pb-2 text-xs font-semibold text-text-secondary">Mode</th>
-                    <th className="text-right pb-2 text-xs font-semibold text-text-secondary">Montant</th>
-                    <th className="text-center pb-2 text-xs font-semibold text-text-secondary">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {facture.paiements.map(pay => (
-                    <tr key={pay.id} className="hover:bg-gray-50">
-                      <td className="py-2 text-text-secondary">{new Date(pay.date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="py-2 font-mono text-xs text-text-primary">{pay.reference}</td>
-                      <td className="py-2 text-text-secondary">{MODE_LABEL[pay.mode]}</td>
-                      <td className="py-2 text-right font-medium text-success">{formatXOF(pay.montant)}</td>
-                      <td className="py-2 text-center">
-                        <Badge variant="success" dot>Validé</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
           </div>
-        </div>
 
-        {/* Récapitulatif financier */}
-        <div className="lg:col-span-1">
-          <div className="bg-white border border-border rounded-card p-5 sticky top-4">
-            <h2 className="text-base font-semibold text-text-primary mb-4">Récapitulatif financier</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-text-secondary">
-                <span>Sous-total HT</span>
-                <span>{formatXOF(facture.sousTotal)}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
+            {/* Lignes de facturation */}
+            <div>
+              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden', marginBottom: 16 }}>
+                <div style={{ padding: '14px 18px', borderBottom: '1px solid #F5F7FA', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Détail des prestations</div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
+                    <thead style={{ background: '#F8FAFC' }}>
+                      <tr>
+                        {['Prestation', 'Qté', 'Prix unitaire', 'Total'].map(h => (
+                          <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(facture.lignes ?? []).map((l, i) => (
+                        <tr key={l.id} style={{ borderTop: '1px solid #F5F7FA' }}>
+                          <td style={{ padding: '10px 14px' }}>
+                            <div style={{ fontSize: 13, color: '#37474F', fontWeight: 600 }}>{l.libelle ?? '—'}</div>
+                            {l.type && <div style={{ fontSize: 11, color: '#90A4AE', textTransform: 'capitalize' }}>{l.type}</div>}
+                          </td>
+                          <td style={{ padding: '10px 14px', fontSize: 13, color: '#546E7A' }}>{l.quantite ?? 1}</td>
+                          <td style={{ padding: '10px 14px', fontSize: 13, color: '#546E7A', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(l.prixUnitaire)}</td>
+                          <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(l.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>TVA (0%)</span>
-                <span>{formatXOF(facture.tva)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-text-primary border-t border-border pt-2">
-                <span>Total TTC</span>
-                <span>{formatXOF(facture.total)}</span>
-              </div>
-              {facture.tiersPayant && (
-                <div className="flex justify-between text-teal-700">
-                  <span>Part assurance</span>
-                  <span>{formatXOF(facture.partAssurance)}</span>
+
+              {/* Historique paiements */}
+              {facture.paiements && facture.paiements.length > 0 && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+                  <div style={{ padding: '14px 18px', borderBottom: '1px solid #F5F7FA', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Paiements reçus</div>
+                  <div style={{ padding: '8px 0' }}>
+                    {facture.paiements.map(p => {
+                      const mc = MODE_CONFIG[p.modePaiement ?? 'especes'] ?? MODE_CONFIG.especes;
+                      return (
+                        <div key={p.id} style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #F5F7FA' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#37474F' }}>{p.reference ?? p.id.slice(0,12).toUpperCase()}</div>
+                            <div style={{ fontSize: 11, color: '#90A4AE' }}>{fmtDate(p.dateCreation)}{p.notes && ` • ${p.notes}`}</div>
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 10, background: '#F5F7FA', color: mc.color }}>{mc.label}</span>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: '#2E7D32', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(p.montant)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <div className="flex justify-between font-bold" style={{ color: '#0D47A1' }}>
-                <span>Part patient</span>
-                <span>{formatXOF(facture.partPatient)}</span>
+            </div>
+
+            {/* Panneau total */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px' }}>
+                <p style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Récapitulatif</p>
+                {[
+                  { label: 'Sous-total', value: facture.sousTotal },
+                  { label: 'TVA', value: facture.tva ?? 0 },
+                  { label: 'Total', value: total, bold: true },
+                  ...(facture.tiersPayant ? [
+                    { label: 'Part assurance', value: facture.partAssurance },
+                    { label: 'Part patient', value: facture.partPatient },
+                  ] : []),
+                ].filter(r => r.value != null).map(r => (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: r.bold ? '1px solid #E0E0E0' : 'none', marginTop: r.bold ? 6 : 0 }}>
+                    <span style={{ fontSize: r.bold ? 13 : 12, fontWeight: r.bold ? 700 : 400, color: r.bold ? '#1A2332' : '#546E7A' }}>{r.label}</span>
+                    <span style={{ fontSize: r.bold ? 14 : 13, fontWeight: r.bold ? 800 : 500, color: '#37474F', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(r.value)}</span>
+                  </div>
+                ))}
+
+                {/* Barre de paiement */}
+                <div style={{ marginTop: 16, padding: '12px 14px', background: reste > 0 ? '#FFF3E0' : '#E8F5E9', borderRadius: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, color: '#546E7A' }}>Payé</span>
+                    <span style={{ fontSize: 11, color: '#546E7A' }}>{pct}%</span>
+                  </div>
+                  <div style={{ height: 6, background: '#E0E0E0', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }}>
+                    <div style={{ height: '100%', background: reste > 0 ? '#E65100' : '#2E7D32', width: `${pct}%`, borderRadius: 3, transition: 'width 0.4s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: '#90A4AE' }}>Montant payé</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#2E7D32', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(paye)}</div>
+                    </div>
+                    {reste > 0 && (
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 10, color: '#90A4AE' }}>Reste à payer</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#C62828', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(reste)}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between text-success">
-                <span>Déjà payé</span>
-                <span>{formatXOF(facture.montantPaye)}</span>
-              </div>
-              <div className={`flex justify-between font-bold text-lg border-t border-border pt-2 ${facture.resteAPayer > 0 ? 'text-danger' : 'text-success'}`}>
-                <span>Reste à payer</span>
-                <span>{formatXOF(facture.resteAPayer)}</span>
+
+              {facture.tiersPayant && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tiers payant</p>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{facture.assuranceNom ?? '—'}</div>
+                  {facture.assuranceNumero && <div style={{ fontSize: 12, color: '#90A4AE' }}>N° {facture.assuranceNumero}</div>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Modal paiement */}
+          {payModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+              <div style={{ background: '#fff', borderRadius: 14, padding: '24px', width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Enregistrer un paiement</h2>
+                  <button onClick={() => setPayModal(false)} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', color: '#546E7A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Montant (XOF)</label>
+                  <input type="number" value={payMontant} onChange={e => setPayMontant(e.target.value)} placeholder={`Max: ${reste.toLocaleString('fr-FR')}`}
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Mode de paiement</label>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {Object.entries(MODE_CONFIG).map(([key, { label, color }]) => (
+                      <button key={key} onClick={() => setPayMode(key)}
+                        style={{ padding: '7px 14px', borderRadius: 8, border: `1px solid ${payMode === key ? color : '#E0E0E0'}`, background: payMode === key ? '#F0F7FF' : '#fff', color: payMode === key ? color : '#546E7A', fontSize: 12, fontWeight: payMode === key ? 700 : 400, cursor: 'pointer' }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={handlePay} disabled={paying || !payMontant}
+                  style={{ width: '100%', padding: '12px', borderRadius: 10, background: '#1565C0', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 14, fontWeight: 700, opacity: (paying || !payMontant) ? 0.7 : 1 }}>
+                  {paying ? 'Enregistrement…' : 'Confirmer le paiement'}
+                </button>
               </div>
             </div>
-            {facture.resteAPayer > 0 && facture.statut !== 'annulee' && (
-              <Button className="w-full mt-4" leftIcon={<CreditCard size={16} />} onClick={() => setShowPaiementModal(true)}>
-                Enregistrer un paiement
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Modal paiement */}
-      <PaiementModal
-        isOpen={showPaiementModal}
-        onClose={() => setShowPaiementModal(false)}
-        resteAPayer={facture.resteAPayer}
-        factureNumero={facture.numero}
-        onSave={handlePaiement}
-      />
+          )}
+        </>
+      )}
     </div>
   );
 }

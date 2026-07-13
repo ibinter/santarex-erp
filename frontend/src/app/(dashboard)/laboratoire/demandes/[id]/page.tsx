@@ -1,300 +1,209 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Printer, CheckCircle, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import type { InterpretationResultat } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, FlaskConical, RefreshCw, CheckCircle, Clock, Zap, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ─── Mock data ───────────────────────────────────────────────
-const MOCK_DEMANDE = {
-  id: 'd2',
-  numero: 'LAB-2025-0311',
-  patient: { nom: 'TRAORÉ', prenom: 'Ibrahim', ipp: 'IPP-00089', dateNaissance: '1972-07-22', sexe: 'M' },
-  medecin: { nom: 'BAMBA', prenom: 'Salimata', specialite: 'Cardiologie' },
-  statut: 'en_analyse' as const,
-  urgence: false,
-  createdAt: '2025-07-10T07:45:00',
-  datePrelevement: '2025-07-10T09:00:00',
-  typesAnalyse: [
-    {
-      id: 'ta3', code: 'BILI', nom: 'Bilan lipidique', categorie: 'Biochimie', prix: 5000,
-      parametres: [
-        { id: 'p1', nom: 'Cholestérol total', unite: 'mmol/L', valeurNormaleMin: 0, valeurNormaleMax: 5.2 },
-        { id: 'p2', nom: 'HDL-Cholestérol', unite: 'mmol/L', valeurNormaleMin: 1.0, valeurNormaleMax: 2.5 },
-        { id: 'p3', nom: 'LDL-Cholestérol', unite: 'mmol/L', valeurNormaleMin: 0, valeurNormaleMax: 3.4 },
-        { id: 'p4', nom: 'Triglycérides', unite: 'mmol/L', valeurNormaleMin: 0, valeurNormaleMax: 1.7 },
-      ],
-    },
-    {
-      id: 'ta4', code: 'CRP', nom: 'CRP (Protéine C-réactive)', categorie: 'Biochimie', prix: 2500,
-      parametres: [
-        { id: 'p5', nom: 'CRP', unite: 'mg/L', valeurNormaleMin: 0, valeurNormaleMax: 5.0 },
-      ],
-    },
-  ],
+type Parametre = { id: string; nom: string; unite?: string; valeurNormaleMin?: number; valeurNormaleMax?: number };
+type TypeAnalyse = { id: string; code?: string; nom: string; categorie?: string; parametres?: Parametre[] };
+type Resultat = { parametreId: string; valeur?: string; interpretation?: string };
+
+type Demande = {
+  id: string; numero?: string; statut?: string; urgence?: boolean;
+  dateCreation?: string; datePrelevement?: string;
+  patient?: { id: string; nom: string; prenom: string; ipp?: string; dateNaissance?: string; sexe?: string };
+  medecin?: { id: string; nom: string; prenom: string; specialite?: string };
+  typesAnalyse?: TypeAnalyse[];
+  resultats?: Resultat[];
+  commentaire?: string;
 };
 
-// Mock résultats (pour état "termine")
-const MOCK_RESULTATS = [
-  { parametreId: 'p1', valeur: '6.8', interpretation: 'ELEVE' as InterpretationResultat },
-  { parametreId: 'p2', valeur: '0.9', interpretation: 'BAS' as InterpretationResultat },
-  { parametreId: 'p3', valeur: '4.2', interpretation: 'ELEVE' as InterpretationResultat },
-  { parametreId: 'p4', valeur: '1.3', interpretation: 'NORMAL' as InterpretationResultat },
-  { parametreId: 'p5', valeur: '12.5', interpretation: 'ELEVE' as InterpretationResultat },
-];
-
-const STATUT_STEPS = [
-  { key: 'attente_prelevement', label: 'Demande' },
-  { key: 'preleve', label: 'Prélèvement' },
-  { key: 'en_analyse', label: 'Analyse' },
-  { key: 'termine', label: 'Résultats' },
-];
-
-const STATUT_ORDER = ['attente_prelevement', 'preleve', 'en_analyse', 'termine'];
-
-const INTERPRETATION_CONFIG: Record<InterpretationResultat, { label: string; className: string }> = {
-  NORMAL: { label: 'NORMAL', className: 'bg-green-50 text-green-700 border border-green-200' },
-  ELEVE: { label: 'ÉLEVÉ', className: 'bg-red-50 text-red-700 border border-red-200' },
-  BAS: { label: 'BAS', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
-  CRITIQUE: { label: 'CRITIQUE', className: 'bg-red-100 text-red-900 border border-red-400 animate-pulse font-bold' },
+const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  en_attente:  { label: 'En attente',  color: '#E65100', bg: '#FFF3E0', icon: <Clock size={12} /> },
+  en_analyse:  { label: 'En analyse',  color: '#1565C0', bg: '#EFF6FF', icon: <RefreshCw size={12} /> },
+  disponible:  { label: 'Disponible',  color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={12} /> },
+  valide:      { label: 'Validé',      color: '#00695C', bg: '#E0F2F1', icon: <CheckCircle size={12} /> },
 };
 
-type StatutDemande = 'attente_prelevement' | 'preleve' | 'en_analyse' | 'termine';
+const INTERP_CONFIG: Record<string, { color: string; bg: string }> = {
+  normal:  { color: '#2E7D32', bg: '#E8F5E9' },
+  eleve:   { color: '#C62828', bg: '#FFEBEE' },
+  bas:     { color: '#1565C0', bg: '#EFF6FF' },
+  critique:{ color: '#7B1FA2', bg: '#F3E5F5' },
+};
 
-function isHorsNormes(valeur: string, min?: number, max?: number): boolean {
-  const v = parseFloat(valeur);
-  if (isNaN(v)) return false;
-  if (min !== undefined && v < min) return true;
-  if (max !== undefined && v > max) return true;
-  return false;
+function fmtDate(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export default function DetailDemandePage() {
+export default function DemandeLaboPage() {
+  const params = useParams();
   const router = useRouter();
-  const [statut, setStatut] = useState<StatutDemande>(MOCK_DEMANDE.statut);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set([MOCK_DEMANDE.typesAnalyse[0].id]));
-  const [valeurs, setValeurs] = useState<Record<string, string>>({});
-  const [interpretations, setInterpretations] = useState<Record<string, string>>({});
+  const [demande, setDemande] = useState<Demande | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string[]>([]);
 
-  const currentIndex = STATUT_ORDER.indexOf(statut);
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const data = await apiClient<Demande>(`/laboratoire/demandes/${params.id}`);
+      setDemande(data);
+      if (data.typesAnalyse?.length) setExpanded([data.typesAnalyse[0].id]);
+    } catch (e: any) { setError(e?.message ?? 'Erreur de chargement'); }
+    finally { setLoading(false); }
+  }, [params.id]);
 
-  const toggleAccordion = (id: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+  useEffect(() => { load(); }, [load]);
 
-  const handleMarquerPreleve = () => {
-    setStatut('preleve');
-  };
+  const toggleExpand = (id: string) =>
+    setExpanded(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const handleValiderResultats = () => {
-    setStatut('termine');
-  };
+  const getResultat = (parametreId: string) =>
+    demande?.resultats?.find(r => r.parametreId === parametreId);
+
+  const scfg = STATUT_CONFIG[demande?.statut ?? 'en_attente'] ?? STATUT_CONFIG.en_attente;
 
   return (
-    <div className="p-6 max-w-[1100px] mx-auto">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <button onClick={() => router.back()} className="text-text-secondary hover:text-text-primary transition-colors text-sm">
-              ← Retour
-            </button>
-          </div>
-          <h1 className="text-2xl font-bold text-text-primary font-mono">{MOCK_DEMANDE.numero}</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
-            Patient : <strong>{MOCK_DEMANDE.patient.nom} {MOCK_DEMANDE.patient.prenom}</strong> ({MOCK_DEMANDE.patient.ipp}) · Prescrit par Dr. {MOCK_DEMANDE.medecin.prenom} {MOCK_DEMANDE.medecin.nom}
-          </p>
-          <p className="text-xs text-text-secondary mt-0.5">
-            Demandé le {new Date(MOCK_DEMANDE.createdAt).toLocaleString('fr-FR')}
-          </p>
-        </div>
-        {statut === 'termine' && (
-          <Button variant="secondary" leftIcon={<Printer size={16} />} onClick={() => alert('Impression PDF...')}>
-            Imprimer / PDF
-          </Button>
-        )}
-      </div>
+    <div style={{ padding: 16, maxWidth: 900, margin: '0 auto' }}>
+      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
 
-      {/* Timeline stepper */}
-      <div className="bg-white border border-border rounded-card p-5 mb-5">
-        <div className="flex items-center">
-          {STATUT_STEPS.map((step, idx) => {
-            const done = idx < currentIndex;
-            const active = idx === currentIndex;
-            return (
-              <div key={step.key} className="flex-1 flex items-center">
-                <div className="flex flex-col items-center flex-1">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
-                    done ? 'bg-primary border-primary text-white' :
-                    active ? 'bg-blue-50 border-primary text-primary' :
-                    'bg-gray-100 border-gray-300 text-gray-400'
-                  }`}>
-                    {done ? <CheckCircle size={16} /> : idx + 1}
-                  </div>
-                  <span className={`mt-1.5 text-xs font-medium whitespace-nowrap ${
-                    active ? 'text-primary' : done ? 'text-text-primary' : 'text-text-secondary'
-                  }`}>{step.label}</span>
+      <button onClick={() => router.push('/laboratoire')}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
+        <ArrowLeft size={14} /> Retour au laboratoire
+      </button>
+
+      {loading ? (
+        <div style={{ background: '#fff', borderRadius: 12, padding: 60, textAlign: 'center', color: '#90A4AE' }}>
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> Chargement…
+        </div>
+      ) : error ? (
+        <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: 24, color: '#C62828' }}>⚠ {error}</div>
+      ) : !demande ? null : (
+        <>
+          {/* Header */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                  <FlaskConical size={20} color="#6A1B9A" />
+                  <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#1A2332' }}>{demande.numero ?? `LAB-${demande.id.slice(0,8).toUpperCase()}`}</h1>
+                  {demande.urgence && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#C62828', padding: '2px 10px', borderRadius: 10, background: '#FFEBEE' }}>
+                      <Zap size={11} /> URGENT
+                    </span>
+                  )}
                 </div>
-                {idx < STATUT_STEPS.length - 1 && (
-                  <div className={`h-0.5 flex-1 mx-2 ${done ? 'bg-primary' : 'bg-gray-200'}`} />
-                )}
+                <p style={{ margin: 0, fontSize: 12, color: '#90A4AE' }}>
+                  Demandé le {fmtDate(demande.dateCreation)}
+                  {demande.datePrelevement && ` • Prélevé le ${fmtDate(demande.datePrelevement)}`}
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Action : Marquer prélevé */}
-      {statut === 'attente_prelevement' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-card p-4 mb-5 flex items-center justify-between">
-          <div>
-            <p className="font-medium text-amber-800">En attente de prélèvement</p>
-            <p className="text-sm text-amber-700">Confirmez le prélèvement pour passer à la phase d'analyse.</p>
-          </div>
-          <Button onClick={handleMarquerPreleve}>
-            Marquer comme prélevé
-          </Button>
-        </div>
-      )}
-
-      {/* Section Saisie des résultats */}
-      {(statut === 'preleve' || statut === 'en_analyse') && (
-        <div className="bg-white border border-border rounded-card p-5 mb-5">
-          <h2 className="text-base font-semibold text-text-primary mb-4">Saisie des résultats</h2>
-          <div className="space-y-3">
-            {MOCK_DEMANDE.typesAnalyse.map(ta => (
-              <div key={ta.id} className="border border-border rounded-lg overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion(ta.id)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-text-primary text-sm">{ta.nom}</span>
-                    <span className="text-xs text-text-secondary bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{ta.code}</span>
-                  </div>
-                  {expanded.has(ta.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {expanded.has(ta.id) && (
-                  <div className="p-4 space-y-3">
-                    {ta.parametres.map(p => {
-                      const val = valeurs[p.id] || '';
-                      const horsNormes = val && isHorsNormes(val, p.valeurNormaleMin, p.valeurNormaleMax);
-                      return (
-                        <div key={p.id} className="grid grid-cols-12 gap-3 items-center">
-                          <div className="col-span-4">
-                            <p className="text-sm font-medium text-text-primary">{p.nom}</p>
-                            <p className="text-xs text-text-secondary">
-                              Normale: {p.valeurNormaleMin} – {p.valeurNormaleMax} {p.unite}
-                            </p>
-                          </div>
-                          <div className="col-span-3">
-                            <input
-                              type="text"
-                              placeholder="Valeur"
-                              value={val}
-                              onChange={e => setValeurs(prev => ({ ...prev, [p.id]: e.target.value }))}
-                              className={`w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 ${
-                                horsNormes
-                                  ? 'border-red-400 bg-red-50 text-red-700 focus:ring-red-200'
-                                  : 'border-border focus:ring-primary/30'
-                              }`}
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-xs text-text-secondary">{p.unite}</span>
-                          </div>
-                          <div className="col-span-3">
-                            {horsNormes && (
-                              <span className="text-xs font-semibold text-red-600 flex items-center gap-1">
-                                <AlertTriangle size={12} /> Hors normes
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div className="mt-3">
-                      <label className="block text-xs font-medium text-text-secondary mb-1">Interprétation du biologiste</label>
-                      <textarea
-                        className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-                        rows={2}
-                        placeholder="Commentaire sur les résultats de cette analyse..."
-                        value={interpretations[ta.id] || ''}
-                        onChange={e => setInterpretations(prev => ({ ...prev, [ta.id]: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button onClick={handleValiderResultats} leftIcon={<CheckCircle size={16} />}>
-              Valider les résultats
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Section Résultats (si terminé) */}
-      {statut === 'termine' && (
-        <div className="bg-white border border-border rounded-card p-5 mb-5">
-          <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-            <CheckCircle size={18} className="text-success" />
-            Résultats validés
-          </h2>
-          {MOCK_DEMANDE.typesAnalyse.map(ta => (
-            <div key={ta.id} className="mb-5">
-              <h3 className="text-sm font-semibold text-text-primary mb-2">{ta.nom}</h3>
-              <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
-                <thead className="bg-gray-50 border-b border-border">
-                  <tr>
-                    <th className="text-left px-3 py-2 text-xs font-semibold text-text-secondary">Paramètre</th>
-                    <th className="text-left px-3 py-2 text-xs font-semibold text-text-secondary">Valeur</th>
-                    <th className="text-left px-3 py-2 text-xs font-semibold text-text-secondary">Unité</th>
-                    <th className="text-left px-3 py-2 text-xs font-semibold text-text-secondary">Normes</th>
-                    <th className="text-left px-3 py-2 text-xs font-semibold text-text-secondary">Interprétation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {ta.parametres.map(p => {
-                    const res = MOCK_RESULTATS.find(r => r.parametreId === p.id);
-                    const interp = res?.interpretation;
-                    const cfg = interp ? INTERPRETATION_CONFIG[interp] : null;
-                    return (
-                      <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 font-medium text-text-primary">{p.nom}</td>
-                        <td className={`px-3 py-2 font-bold ${interp && interp !== 'NORMAL' ? 'text-red-600' : 'text-text-primary'}`}>
-                          {res?.valeur ?? '—'}
-                        </td>
-                        <td className="px-3 py-2 text-text-secondary">{p.unite}</td>
-                        <td className="px-3 py-2 text-text-secondary text-xs">{p.valeurNormaleMin} – {p.valeurNormaleMax}</td>
-                        <td className="px-3 py-2">
-                          {cfg && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${cfg.className}`}>{cfg.label}</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
+                {scfg.icon} {scfg.label}
+              </span>
             </div>
-          ))}
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-1">Interprétation globale du biologiste</p>
-            <p className="text-sm text-text-primary">
-              Dyslipidémie mixte avec hypercholestérolémie (CT : 6.8 mmol/L), hypo-HDL (0.9 mmol/L) et élévation du LDL (4.2 mmol/L). Syndrome inflammatoire modéré (CRP : 12.5 mg/L). Bilan cardiovasculaire à compléter. Traitement hypolipémiant à envisager.
-            </p>
           </div>
-        </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 16, alignItems: 'start' }}>
+            {/* Patient & Médecin */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {demande.patient && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient</p>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{demande.patient.prenom} {demande.patient.nom}</div>
+                  {demande.patient.ipp && <div style={{ fontSize: 11, color: '#90A4AE' }}>{demande.patient.ipp}</div>}
+                  {demande.patient.sexe && (
+                    <div style={{ fontSize: 12, color: '#546E7A', marginTop: 4 }}>{demande.patient.sexe === 'M' ? 'Homme' : 'Femme'}</div>
+                  )}
+                </div>
+              )}
+              {demande.medecin && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prescripteur</p>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Dr. {demande.medecin.prenom} {demande.medecin.nom}</div>
+                  {demande.medecin.specialite && <div style={{ fontSize: 12, color: '#90A4AE' }}>{demande.medecin.specialite}</div>}
+                </div>
+              )}
+            </div>
+
+            {/* Analyses */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(!demande.typesAnalyse || demande.typesAnalyse.length === 0) ? (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: 32, textAlign: 'center', color: '#90A4AE' }}>
+                  Aucune analyse détaillée disponible
+                </div>
+              ) : demande.typesAnalyse.map(ta => {
+                const isOpen = expanded.includes(ta.id);
+                return (
+                  <div key={ta.id} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+                    <button onClick={() => toggleExpand(ta.id)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <FlaskConical size={15} color="#6A1B9A" />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{ta.nom}</div>
+                        {ta.code && <div style={{ fontSize: 11, color: '#90A4AE' }}>{ta.code}{ta.categorie && ` • ${ta.categorie}`}</div>}
+                      </div>
+                      {isOpen ? <ChevronUp size={16} color="#90A4AE" /> : <ChevronDown size={16} color="#90A4AE" />}
+                    </button>
+
+                    {isOpen && ta.parametres && ta.parametres.length > 0 && (
+                      <div style={{ borderTop: '1px solid #F5F7FA' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead style={{ background: '#F8FAFC' }}>
+                            <tr>
+                              {['Paramètre', 'Résultat', 'Normes', 'Interprétation'].map(h => (
+                                <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ta.parametres.map(p => {
+                              const res = getResultat(p.id);
+                              const icfg = INTERP_CONFIG[res?.interpretation ?? 'normal'] ?? INTERP_CONFIG.normal;
+                              return (
+                                <tr key={p.id} style={{ borderTop: '1px solid #F5F7FA' }}>
+                                  <td style={{ padding: '10px 14px', fontSize: 13, color: '#37474F', fontWeight: 500 }}>{p.nom}</td>
+                                  <td style={{ padding: '10px 14px', fontSize: 14, fontWeight: res?.valeur ? 800 : 400, color: res?.valeur ? (INTERP_CONFIG[res.interpretation ?? 'normal']?.color ?? '#37474F') : '#CFD8DC', fontVariantNumeric: 'tabular-nums' }}>
+                                    {res?.valeur ?? '—'}
+                                    {p.unite && res?.valeur && <span style={{ fontSize: 11, fontWeight: 400, color: '#90A4AE', marginLeft: 4 }}>{p.unite}</span>}
+                                  </td>
+                                  <td style={{ padding: '10px 14px', fontSize: 11, color: '#90A4AE', fontVariantNumeric: 'tabular-nums' }}>
+                                    {p.valeurNormaleMin != null && p.valeurNormaleMax != null
+                                      ? `${p.valeurNormaleMin} – ${p.valeurNormaleMax} ${p.unite ?? ''}`
+                                      : '—'}
+                                  </td>
+                                  <td style={{ padding: '10px 14px' }}>
+                                    {res?.interpretation && (
+                                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 10px', borderRadius: 10, background: icfg.bg, color: icfg.color, textTransform: 'capitalize' }}>
+                                        {res.interpretation}
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {demande.commentaire && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Commentaire biologiste</p>
+                  <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.6 }}>{demande.commentaire}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
