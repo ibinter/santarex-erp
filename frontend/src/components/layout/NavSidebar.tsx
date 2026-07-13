@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, Calendar, Stethoscope, FlaskConical, Pill,
   CreditCard, BarChart2, Settings, UserCog, Siren, BedDouble,
   Scissors, Scan, Building2, BookOpen, MessageSquare, ChevronLeft,
-  ChevronRight, LogOut, Receipt, X,
+  ChevronRight, LogOut, Receipt, X, HelpCircle,
 } from 'lucide-react';
 import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -79,6 +79,8 @@ const navGroups: NavGroup[] = [
       { label: 'Utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} />, roles: ADMIN_ONLY },
       { label: 'Ressources Humaines', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
       { label: 'Reporting & BI', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
+      { label: 'Guide utilisateur', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },
+      { label: 'FAQ', href: '/faq', icon: <HelpCircle size={18} />, roles: ALL_ROLES },
       { label: 'Support', href: '/support', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
       { label: 'Paramètres', href: '/parametres', icon: <Settings size={18} />, roles: ADMIN_DIR },
     ],
