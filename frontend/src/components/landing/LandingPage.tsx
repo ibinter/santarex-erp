@@ -1135,12 +1135,12 @@ export default function LandingPage() {
             <div className="lp-footer-col">
               <h4>{lang === 'fr' ? 'Légal' : 'Legal'}</h4>
               <ul>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Mentions légales' : 'Legal notice'}</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'CGU' : 'Terms of use'}</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Confidentialité' : 'Privacy policy'}</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">Cookies</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Contrat de licence' : 'License agreement'}</a></li>
-                <li><a href="mailto:contact@ibigsoft.com">{lang === 'fr' ? 'Sécurité' : 'Security'}</a></li>
+                <li><Link href="/mentions-legales">{lang === 'fr' ? 'Mentions légales' : 'Legal notice'}</Link></li>
+                <li><Link href="/cgu">{lang === 'fr' ? 'CGU' : 'Terms of use'}</Link></li>
+                <li><Link href="/confidentialite">{lang === 'fr' ? 'Confidentialité' : 'Privacy policy'}</Link></li>
+                <li><Link href="/cookies">Cookies</Link></li>
+                <li><Link href="/licence">{lang === 'fr' ? 'Contrat de licence' : 'License agreement'}</Link></li>
+                <li><Link href="/securite">{lang === 'fr' ? 'Sécurité' : 'Security'}</Link></li>
               </ul>
             </div>
             {/* Col 6 */}

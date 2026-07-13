@@ -1,87 +1,119 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import LegalLayout from '@/components/legal/LegalLayout';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité — SANTAREX ERP',
-  description: 'Comment SANTAREX ERP collecte, traite et protège vos données personnelles et médicales.',
+  description: 'Politique de confidentialité et traitement des données personnelles et de santé dans SANTAREX ERP.',
 };
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-8">
-      <h2 className="text-lg font-bold mb-3" style={{ color: '#0D47A1' }}>{title}</h2>
-      <div className="text-gray-600 text-sm leading-relaxed space-y-2">{children}</div>
-    </section>
-  );
-}
 
 export default function ConfidentialitePage() {
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div className="max-w-3xl mx-auto px-5 py-16">
-        <Link href="/" className="text-sm text-blue-700 hover:underline mb-6 inline-block">← Retour à l'accueil</Link>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Politique de confidentialité</h1>
-        <p className="text-sm text-gray-400 mb-10">Dernière mise à jour : 12 juillet 2026</p>
-
-        <Section title="1. Responsable du traitement">
-          <p><strong>IBIG SOFT (IBIG SARL)</strong> — Abidjan, Côte d'Ivoire<br />
-          Contact DPO : <a href="mailto:contact@ibigsoft.com" className="text-blue-700 underline">contact@ibigsoft.com</a></p>
-        </Section>
-
-        <Section title="2. Données collectées">
-          <p><strong>Données d'établissement :</strong> nom, adresse, coordonnées de contact, informations de facturation.</p>
-          <p><strong>Données utilisateurs :</strong> nom, prénom, email professionnel, rôle dans l'établissement.</p>
-          <p><strong>Données patients (hébergées pour le compte de l'établissement) :</strong> identité, coordonnées, données médicales, consultations, prescriptions, résultats d'analyses.</p>
-          <p><strong>Données techniques :</strong> logs de connexion, adresses IP, user-agents, journaux d'audit.</p>
-        </Section>
-
-        <Section title="3. Finalités du traitement">
-          <ul className="list-disc list-inside space-y-1">
-            <li>Fourniture et amélioration du service SANTAREX ERP</li>
-            <li>Gestion des abonnements et de la facturation</li>
-            <li>Sécurité et prévention des fraudes</li>
-            <li>Communication sur les évolutions du service</li>
-            <li>Respect des obligations légales et réglementaires</li>
-          </ul>
-        </Section>
-
-        <Section title="4. Base légale">
-          <p>Le traitement des données est fondé sur :</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>L'exécution du contrat (CGU et accord de service) pour les données de compte</li>
-            <li>L'obligation légale pour certains traitements de données de santé</li>
-            <li>L'intérêt légitime pour la sécurité et les logs techniques</li>
-          </ul>
-        </Section>
-
-        <Section title="5. Hébergement et sécurité des données">
-          <p>Les données sont hébergées sur des serveurs sécurisés. IBIG SOFT met en œuvre des mesures techniques et organisationnelles appropriées : chiffrement TLS, authentification JWT, contrôle d'accès par rôle, journal d'audit complet.</p>
-          <p>Les données médicales des patients restent sous la responsabilité de l'établissement de santé. IBIG SOFT agit en qualité de sous-traitant pour ces données.</p>
-        </Section>
-
-        <Section title="6. Durée de conservation">
-          <ul className="list-disc list-inside space-y-1">
-            <li>Données de compte : durée du contrat + 3 ans</li>
-            <li>Données médicales : selon les exigences légales applicables à l'établissement de santé (minimum 10 ans en Côte d'Ivoire)</li>
-            <li>Logs techniques : 12 mois glissants</li>
-          </ul>
-        </Section>
-
-        <Section title="7. Vos droits">
-          <p>Vous disposez des droits suivants sur vos données personnelles :</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Droit d'accès et de rectification</li>
-            <li>Droit à l'effacement (dans les limites légales)</li>
-            <li>Droit à la portabilité des données</li>
-            <li>Droit d'opposition au traitement</li>
-          </ul>
-          <p>Pour exercer ces droits, contactez : <a href="mailto:contact@ibigsoft.com" className="text-blue-700 underline">contact@ibigsoft.com</a></p>
-        </Section>
-
-        <Section title="8. Cookies">
-          <p>Consultez notre <Link href="/cookies" className="text-blue-700 underline">politique cookies</Link> pour les informations sur l'utilisation des cookies sur SANTAREX ERP.</p>
-        </Section>
+    <LegalLayout
+      title="Politique de confidentialité"
+      subtitle="SANTAREX ERP traite des données de santé. Nous prenons la protection de ces données très au sérieux."
+      updatedAt="13 juillet 2026"
+      currentPath="/confidentialite"
+    >
+      <div className="highlight">
+        <p><strong>SANTAREX ERP opère en tant que sous-traitant</strong> pour le compte des établissements de santé (responsables de traitement). Les données des patients appartiennent à l&apos;établissement, pas à IBIG Soft.</p>
       </div>
-    </div>
+
+      <h2>1. Responsable du traitement</h2>
+      <p>
+        Les données collectées dans SANTAREX ERP sont traitées pour le compte de l&apos;établissement de santé
+        abonné (le <strong>Client</strong>), qui en est le responsable de traitement au sens du RGPD.
+        IBIG SARL (IBIG Soft) intervient en qualité de sous-traitant.
+      </p>
+      <p>
+        Pour toute question : <a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a> · +225 27 22 27 60 14
+      </p>
+
+      <h2>2. Données collectées</h2>
+
+      <h3>2.1 Données des établissements (Clients)</h3>
+      <ul>
+        <li>Informations d&apos;identification de l&apos;établissement (raison sociale, adresse, type de structure)</li>
+        <li>Coordonnées du responsable administratif</li>
+        <li>Données de facturation et de paiement</li>
+        <li>Journaux d&apos;utilisation et d&apos;accès à la plateforme</li>
+      </ul>
+
+      <h3>2.2 Données des utilisateurs (personnel médical et administratif)</h3>
+      <ul>
+        <li>Nom, prénom, email, numéro de téléphone</li>
+        <li>Rôle et droits d&apos;accès dans le système</li>
+        <li>Journaux d&apos;actions (audit trail) pour la traçabilité médicale</li>
+      </ul>
+
+      <h3>2.3 Données de santé des patients</h3>
+      <ul>
+        <li>Identité du patient (nom, prénom, date de naissance, adresse)</li>
+        <li>Dossier Médical Électronique (DME) : antécédents, allergies, pathologies</li>
+        <li>Comptes rendus de consultations, ordonnances, résultats d&apos;analyses</li>
+        <li>Données d&apos;hospitalisation (chambre, diagnostics, traitements)</li>
+        <li>Données de facturation liées aux soins</li>
+      </ul>
+
+      <h2>3. Finalités du traitement</h2>
+      <ul>
+        <li>Fourniture du service SANTAREX ERP et de ses modules</li>
+        <li>Gestion administrative et médicale des patients</li>
+        <li>Facturation et paiement des actes médicaux</li>
+        <li>Maintenance, amélioration et sécurité de la plateforme</li>
+        <li>Support technique et assistance aux utilisateurs</li>
+        <li>Obligations légales et réglementaires</li>
+      </ul>
+
+      <h2>4. Bases légales du traitement</h2>
+      <ul>
+        <li><strong>Exécution du contrat :</strong> pour la fourniture du service SaaS</li>
+        <li><strong>Obligation légale :</strong> conservation des dossiers médicaux</li>
+        <li><strong>Intérêt légitime :</strong> sécurité de la plateforme et prévention de la fraude</li>
+        <li><strong>Consentement du patient :</strong> recueilli par l&apos;établissement de santé</li>
+      </ul>
+
+      <h2>5. Sécurité des données</h2>
+      <ul>
+        <li>Chiffrement AES-256 de toutes les données au repos</li>
+        <li>Chiffrement TLS 1.3 pour toutes les communications</li>
+        <li>Isolation stricte des données entre établissements (multi-tenant sécurisé)</li>
+        <li>Contrôle d&apos;accès basé sur les rôles (RBAC)</li>
+        <li>Journal d&apos;audit complet de toutes les actions utilisateurs</li>
+        <li>Sauvegardes automatiques chiffrées quotidiennes (rétention 30 jours)</li>
+      </ul>
+
+      <h2>6. Durée de conservation</h2>
+      <ul>
+        <li><strong>Données de santé des patients :</strong> 10 ans minimum (réglementation sanitaire)</li>
+        <li><strong>Journaux d&apos;audit :</strong> 5 ans</li>
+        <li><strong>Données de facturation :</strong> 10 ans (obligation fiscale)</li>
+        <li><strong>Données des utilisateurs :</strong> durée de l&apos;abonnement + 30 jours</li>
+      </ul>
+
+      <h2>7. Vos droits</h2>
+      <ul>
+        <li><strong>Droit d&apos;accès :</strong> obtenir une copie de vos données personnelles</li>
+        <li><strong>Droit de rectification :</strong> corriger des données inexactes</li>
+        <li><strong>Droit à l&apos;effacement :</strong> demander la suppression (sous réserve des obligations légales)</li>
+        <li><strong>Droit à la portabilité :</strong> exporter vos données dans un format structuré</li>
+        <li><strong>Droit d&apos;opposition :</strong> s&apos;opposer à certains traitements</li>
+      </ul>
+      <p>Pour exercer vos droits : <a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a>. Réponse sous 30 jours.</p>
+
+      <h2>8. Transferts de données</h2>
+      <p>
+        Les données sont hébergées en Europe (UE/EEE). IBIG SARL ne vend jamais les données
+        des Clients ou des patients à des tiers.
+      </p>
+
+      <h2>9. Cookies</h2>
+      <p>L&apos;utilisation des cookies est décrite dans notre <a href="/cookies">Politique de cookies</a>.</p>
+
+      <h2>10. Modifications</h2>
+      <p>
+        En cas de modification substantielle, les Clients seront informés par email 30 jours avant
+        l&apos;entrée en vigueur des changements.
+      </p>
+    </LegalLayout>
   );
 }
