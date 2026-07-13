@@ -1,3 +1,5 @@
+'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 
 const SantarexIcon = () => (
@@ -18,24 +20,37 @@ const SantarexIcon = () => (
   </svg>
 );
 
-const LEGAL_PAGES = [
-  { href: '/mentions-legales', label: 'Mentions légales' },
-  { href: '/cgu', label: 'CGU' },
-  { href: '/confidentialite', label: 'Confidentialité' },
-  { href: '/cookies', label: 'Cookies' },
-  { href: '/licence', label: 'Contrat de licence' },
-  { href: '/securite', label: 'Sécurité' },
-];
+const LEGAL_PAGES = {
+  fr: [
+    { href: '/mentions-legales', label: 'Mentions légales' },
+    { href: '/cgu', label: 'CGU' },
+    { href: '/confidentialite', label: 'Confidentialité' },
+    { href: '/cookies', label: 'Cookies' },
+    { href: '/licence', label: 'Contrat de licence' },
+    { href: '/securite', label: 'Sécurité' },
+  ],
+  en: [
+    { href: '/mentions-legales', label: 'Legal notice' },
+    { href: '/cgu', label: 'Terms of use' },
+    { href: '/confidentialite', label: 'Privacy policy' },
+    { href: '/cookies', label: 'Cookie policy' },
+    { href: '/licence', label: 'License agreement' },
+    { href: '/securite', label: 'Security policy' },
+  ],
+};
 
 interface LegalLayoutProps {
-  title: string;
-  subtitle?: string;
+  title: { fr: string; en: string };
+  subtitle?: { fr: string; en: string };
   updatedAt: string;
   children: React.ReactNode;
+  childrenEn: React.ReactNode;
   currentPath: string;
 }
 
-export default function LegalLayout({ title, subtitle, updatedAt, children, currentPath }: LegalLayoutProps) {
+export default function LegalLayout({ title, subtitle, updatedAt, children, childrenEn, currentPath }: LegalLayoutProps) {
+  const [lang, setLang] = useState<'fr' | 'en'>('fr');
+
   return (
     <div style={{ background: '#F8FAFC', minHeight: '100vh', fontFamily: 'system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' }}>
 
@@ -51,21 +66,29 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, curr
               <span style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', color: '#4A8090', textTransform: 'uppercase', marginTop: 1 }}>ERP v2.0</span>
             </div>
           </Link>
-          <Link href="/" style={{ fontSize: '0.8125rem', color: '#64748B', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6, transition: 'color .2s' }}>
-            ← Retour à l&apos;accueil
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button
+              onClick={() => setLang(l => l === 'fr' ? 'en' : 'fr')}
+              style={{ background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 6, color: '#CBD5E1', fontSize: '0.75rem', fontWeight: 700, padding: '5px 12px', cursor: 'pointer', letterSpacing: '0.05em' }}
+            >
+              🌐 {lang === 'fr' ? 'EN' : 'FR'}
+            </button>
+            <Link href="/" style={{ fontSize: '0.8125rem', color: '#64748B', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+              ← {lang === 'fr' ? 'Retour à l\'accueil' : 'Back to home'}
+            </Link>
+          </div>
         </div>
       </header>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 48px 80px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 56 }}>
 
-        {/* Sidebar navigation légale */}
+        {/* Sidebar */}
         <aside style={{ position: 'sticky', top: 32, alignSelf: 'start' }}>
           <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#94A3B8', marginBottom: 12 }}>
-            Documents légaux
+            {lang === 'fr' ? 'Documents légaux' : 'Legal documents'}
           </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {LEGAL_PAGES.map(p => (
+            {LEGAL_PAGES[lang].map(p => (
               <Link
                 key={p.href}
                 href={p.href}
@@ -87,7 +110,9 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, curr
             ))}
           </nav>
           <div style={{ marginTop: 32, padding: '16px', background: '#EFF6FF', borderRadius: 8, border: '1px solid #BFDBFE' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1E40AF', marginBottom: 6 }}>Questions légales ?</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1E40AF', marginBottom: 6 }}>
+              {lang === 'fr' ? 'Questions légales ?' : 'Legal questions?'}
+            </div>
             <div style={{ fontSize: '0.75rem', color: '#3B82F6', lineHeight: 1.6 }}>
               <a href="mailto:contact@ibigsoft.com" style={{ color: '#1A56C8', textDecoration: 'none' }}>contact@ibigsoft.com</a><br />
               +225 27 22 27 60 14
@@ -95,32 +120,34 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, curr
           </div>
         </aside>
 
-        {/* Contenu */}
+        {/* Content */}
         <main>
           <div style={{ marginBottom: 40 }}>
             <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748B', marginBottom: 10 }}>
-              Document légal · Dernière mise à jour : {updatedAt}
+              {lang === 'fr' ? `Document légal · Dernière mise à jour : ${updatedAt}` : `Legal document · Last updated: ${updatedAt}`}
             </div>
             <h1 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 8 }}>
-              {title}
+              {title[lang]}
             </h1>
             {subtitle && (
-              <p style={{ fontSize: '1rem', color: '#64748B', lineHeight: 1.65 }}>{subtitle}</p>
+              <p style={{ fontSize: '1rem', color: '#64748B', lineHeight: 1.65 }}>{subtitle[lang]}</p>
             )}
           </div>
           <div className="legal-content">
-            {children}
+            {lang === 'fr' ? children : childrenEn}
           </div>
         </main>
       </div>
 
-      {/* Footer minimal */}
+      {/* Footer */}
       <footer style={{ background: '#03090F', borderTop: '1px solid rgba(255,255,255,.05)', padding: '24px 48px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ fontSize: '0.75rem', color: '#2D4255' }}>
             © {new Date().getFullYear()} SANTAREX ERP — IBIG Soft · Intermark Business International Group · Abidjan, Côte d&apos;Ivoire
           </span>
-          <Link href="/" style={{ fontSize: '0.75rem', color: '#4A6580', textDecoration: 'none' }}>← Retour à l&apos;accueil</Link>
+          <Link href="/" style={{ fontSize: '0.75rem', color: '#4A6580', textDecoration: 'none' }}>
+            ← {lang === 'fr' ? 'Retour à l\'accueil' : 'Back to home'}
+          </Link>
         </div>
       </footer>
 
