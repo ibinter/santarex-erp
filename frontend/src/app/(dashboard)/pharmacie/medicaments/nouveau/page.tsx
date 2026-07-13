@@ -1,289 +1,187 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import { ArrowLeft, Save, Pill, AlertTriangle } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 const FORMES = [
-  { value: 'comprime', label: 'Comprimé' },
-  { value: 'gelule', label: 'Gélule' },
-  { value: 'sirop', label: 'Sirop' },
-  { value: 'injectable', label: 'Injectable' },
-  { value: 'pommade', label: 'Pommade' },
-  { value: 'collyre', label: 'Collyre' },
-  { value: 'suppositoire', label: 'Suppositoire' },
-  { value: 'patch', label: 'Patch' },
-  { value: 'spray', label: 'Spray' },
-  { value: 'autre', label: 'Autre' },
+  { value: 'comprime', label: 'Comprimé' }, { value: 'gelule', label: 'Gélule' },
+  { value: 'sirop', label: 'Sirop' }, { value: 'injectable', label: 'Injectable' },
+  { value: 'pommade', label: 'Pommade' }, { value: 'collyre', label: 'Collyre' },
+  { value: 'suppositoire', label: 'Suppositoire' }, { value: 'patch', label: 'Patch' },
+  { value: 'spray', label: 'Spray' }, { value: 'autre', label: 'Autre' },
 ];
 
 const CATEGORIES = [
-  { value: 'antibiotique', label: 'Antibiotique' },
-  { value: 'antalgique', label: 'Antalgique' },
-  { value: 'antihypertenseur', label: 'Antihypertenseur' },
-  { value: 'antipaludeen', label: 'Antipaludéen' },
-  { value: 'antiretroviral', label: 'Antirétroviral' },
-  { value: 'vaccin', label: 'Vaccin' },
+  { value: 'antibiotique', label: 'Antibiotique' }, { value: 'antalgique', label: 'Antalgique' },
+  { value: 'antihypertenseur', label: 'Antihypertenseur' }, { value: 'antipaludeen', label: 'Antipaludéen' },
+  { value: 'antiretroviral', label: 'Antirétroviral' }, { value: 'vaccin', label: 'Vaccin' },
+  { value: 'cardiovasculaire', label: 'Cardiovasculaire' }, { value: 'diabetologie', label: 'Diabétologie' },
   { value: 'autre', label: 'Autre' },
 ];
 
-interface FormState {
-  nom: string;
-  nomCommercial: string;
-  dci: string;
-  forme: string;
-  dosage: string;
-  unite: string;
-  categorie: string;
-  classeTherapeutique: string;
-  stockMinimum: string;
-  stockMaximum: string;
-  prixUnitaireAchat: string;
-  prixVente: string;
-  ordonnanceRequise: boolean;
-  actif: boolean;
-}
-
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <label className="flex items-center gap-3 cursor-pointer">
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-gray-300'}`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}
-        />
-      </button>
-      <span className="text-sm text-text-primary">{label}</span>
-    </label>
-  );
-}
+type FormData = {
+  nom: string; dci: string; forme: string; dosage: string; categorie: string;
+  fabricant: string; prixVente: string; stockActuel: string; stockMinimum: string;
+  dateExpiration: string; ordonnanceRequise: boolean; description: string;
+};
 
 export default function NouveauMedicamentPage() {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>({
-    nom: '', nomCommercial: '', dci: '', forme: 'comprime', dosage: '', unite: 'comprimé',
-    categorie: 'antibiotique', classeTherapeutique: '', stockMinimum: '10', stockMaximum: '1000',
-    prixUnitaireAchat: '', prixVente: '', ordonnanceRequise: false, actif: true,
-  });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<FormData>({
+    nom: '', dci: '', forme: 'comprime', dosage: '', categorie: 'autre',
+    fabricant: '', prixVente: '', stockActuel: '0', stockMinimum: '10',
+    dateExpiration: '', ordonnanceRequise: false, description: '',
+  });
 
-  const set = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [field]: e.target.value }));
+  const upd = <K extends keyof FormData>(k: K, v: FormData[K]) => setForm(f => ({ ...f, [k]: v }));
 
-  const validate = () => {
-    const errs: typeof errors = {};
-    if (!form.nom.trim()) errs.nom = 'Le nom est obligatoire';
-    if (!form.dosage.trim()) errs.dosage = 'Le dosage est obligatoire';
-    if (!form.unite.trim()) errs.unite = 'L\'unité est obligatoire';
-    if (Number(form.prixVente) < 0) errs.prixVente = 'Prix invalide';
-    return errs;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 700));
-    setLoading(false);
-    router.push('/pharmacie');
+    if (!form.nom.trim()) { setError('Le nom du médicament est obligatoire.'); return; }
+    setLoading(true); setError(null);
+    try {
+      await apiClient('/pharmacie/medicaments', {
+        method: 'POST',
+        body: {
+          nom: form.nom.trim(),
+          dci: form.dci || undefined,
+          forme: form.forme,
+          dosage: form.dosage || undefined,
+          categorie: form.categorie,
+          fabricant: form.fabricant || undefined,
+          prixVente: form.prixVente ? parseFloat(form.prixVente) : undefined,
+          stockActuel: parseInt(form.stockActuel) || 0,
+          stockMinimum: parseInt(form.stockMinimum) || 10,
+          dateExpiration: form.dateExpiration || undefined,
+          ordonnanceRequise: form.ordonnanceRequise,
+          description: form.description || undefined,
+        },
+      });
+      router.push('/pharmacie');
+    } catch (e: any) {
+      setError(e?.message ?? 'Erreur lors de la création');
+    } finally { setLoading(false); }
   };
+
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, outline: 'none', color: '#37474F', boxSizing: 'border-box', background: '#FAFAFA' };
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 };
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16 }}>
+      <h2 style={{ margin: '0 0 16px', fontSize: 14, fontWeight: 700, color: '#1A2332', borderBottom: '2px solid #E0F2F1', paddingBottom: 10 }}>{title}</h2>
+      {children}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary mb-3 transition-colors"
-          >
-            <ArrowLeft size={16} /> Retour à la pharmacie
-          </button>
-          <h1 className="text-2xl font-bold text-text-primary">Nouveau Médicament</h1>
-          <p className="text-sm text-text-secondary mt-0.5">Renseigner les informations du médicament</p>
+    <div style={{ padding: 16, maxWidth: 760, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={() => router.push('/pharmacie')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+          <ArrowLeft size={14} /> Retour
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#E0F2F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Pill size={18} color="#00695C" />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouveau médicament</h1>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Identification */}
-          <div className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-4 pb-3 border-b border-border">
-              Identification du médicament
-            </h2>
-            <div className="space-y-4">
-              <Input
-                label="Nom *"
-                placeholder="Ex: Amoxicilline 500mg"
-                value={form.nom}
-                onChange={set('nom')}
-                error={errors.nom}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Nom commercial (optionnel)"
-                  placeholder="Ex: Clamoxyl"
-                  value={form.nomCommercial}
-                  onChange={set('nomCommercial')}
-                />
-                <Input
-                  label="DCI (optionnel)"
-                  placeholder="Dénomination commune internationale"
-                  value={form.dci}
-                  onChange={set('dci')}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1">Forme *</label>
-                  <select
-                    className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={form.forme}
-                    onChange={set('forme')}
-                  >
-                    {FORMES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1">Catégorie *</label>
-                  <select
-                    className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={form.categorie}
-                    onChange={set('categorie')}
-                  >
-                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Dosage *"
-                  placeholder="Ex: 500mg, 5mg/ml"
-                  value={form.dosage}
-                  onChange={set('dosage')}
-                  error={errors.dosage}
-                />
-                <Input
-                  label="Unité *"
-                  placeholder="Ex: comprimé, flacon"
-                  value={form.unite}
-                  onChange={set('unite')}
-                  error={errors.unite}
-                />
-              </div>
-              <Input
-                label="Classe thérapeutique (optionnel)"
-                placeholder="Ex: Bêtalactamine, AINS..."
-                value={form.classeTherapeutique}
-                onChange={set('classeTherapeutique')}
-              />
-            </div>
-          </div>
-
-          {/* Stock */}
-          <div className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-4 pb-3 border-b border-border">
-              Paramètres de stock
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Stock minimum"
-                type="number"
-                min="0"
-                value={form.stockMinimum}
-                onChange={set('stockMinimum')}
-              />
-              <Input
-                label="Stock maximum"
-                type="number"
-                min="0"
-                value={form.stockMaximum}
-                onChange={set('stockMaximum')}
-              />
-            </div>
-          </div>
-
-          {/* Prix */}
-          <div className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-4 pb-3 border-b border-border">
-              Tarification
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Prix unitaire achat</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="flex-1 border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    value={form.prixUnitaireAchat}
-                    onChange={set('prixUnitaireAchat')}
-                  />
-                  <span className="text-xs text-text-secondary font-medium">XOF</span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-1">Prix de vente</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className={`flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 ${errors.prixVente ? 'border-danger' : 'border-border'}`}
-                    value={form.prixVente}
-                    onChange={set('prixVente')}
-                  />
-                  <span className="text-xs text-text-secondary font-medium">XOF</span>
-                </div>
-                {errors.prixVente && <p className="text-xs text-danger mt-1">{errors.prixVente}</p>}
-              </div>
-            </div>
-            {form.prixUnitaireAchat && form.prixVente && Number(form.prixVente) > 0 && (
-              <p className="text-xs text-text-secondary mt-3">
-                Marge : <span className="font-semibold text-success">
-                  {((Number(form.prixVente) - Number(form.prixUnitaireAchat)) / Number(form.prixVente) * 100).toFixed(1)}%
-                </span>
-                {' '}({(Number(form.prixVente) - Number(form.prixUnitaireAchat)).toLocaleString('fr-FR')} XOF)
-              </p>
-            )}
-          </div>
-
-          {/* Options */}
-          <div className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-4 pb-3 border-b border-border">
-              Options
-            </h2>
-            <div className="space-y-4">
-              <Toggle
-                checked={form.ordonnanceRequise}
-                onChange={v => setForm(f => ({ ...f, ordonnanceRequise: v }))}
-                label="Ordonnance requise"
-              />
-              <Toggle
-                checked={form.actif}
-                onChange={v => setForm(f => ({ ...f, actif: v }))}
-                label="Médicament actif"
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={() => router.back()}>
-              Annuler
-            </Button>
-            <Button type="submit" leftIcon={<Save size={16} />} loading={loading}>
-              Enregistrer le médicament
-            </Button>
-          </div>
-        </form>
       </div>
+
+      <form onSubmit={handleSubmit} noValidate>
+        <Section title="Identification">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div>
+              <label style={labelStyle}>Nom commercial <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.nom} onChange={e => upd('nom', e.target.value)} placeholder="Ex: Amoxicilline 500mg" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>DCI (substance active)</label>
+              <input value={form.dci} onChange={e => upd('dci', e.target.value)} placeholder="Ex: Amoxicilline" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Forme pharmaceutique</label>
+              <select value={form.forme} onChange={e => upd('forme', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                {FORMES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Dosage</label>
+              <input value={form.dosage} onChange={e => upd('dosage', e.target.value)} placeholder="Ex: 500mg, 250mg/5mL" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Catégorie</label>
+              <select value={form.categorie} onChange={e => upd('categorie', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Fabricant / Laboratoire</label>
+              <input value={form.fabricant} onChange={e => upd('fabricant', e.target.value)} placeholder="Ex: Sanofi, Pfizer…" style={inputStyle} />
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Stock & Prix">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+            <div>
+              <label style={labelStyle}>Prix de vente (XOF)</label>
+              <input type="number" min={0} value={form.prixVente} onChange={e => upd('prixVente', e.target.value)} placeholder="0" style={{ ...inputStyle, textAlign: 'right' }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Stock actuel</label>
+              <input type="number" min={0} value={form.stockActuel} onChange={e => upd('stockActuel', e.target.value)} style={{ ...inputStyle, textAlign: 'right' }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Stock minimum</label>
+              <input type="number" min={0} value={form.stockMinimum} onChange={e => upd('stockMinimum', e.target.value)} style={{ ...inputStyle, textAlign: 'right' }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Date d'expiration</label>
+              <input type="date" value={form.dateExpiration} onChange={e => upd('dateExpiration', e.target.value)} style={inputStyle} />
+            </div>
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+              <button type="button" onClick={() => upd('ordonnanceRequise', !form.ordonnanceRequise)}
+                style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: form.ordonnanceRequise ? '#00695C' : '#CFD8DC', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                <span style={{ position: 'absolute', top: 3, left: form.ordonnanceRequise ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+              </button>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>Ordonnance requise</div>
+                <div style={{ fontSize: 11, color: '#90A4AE' }}>Ce médicament nécessite une prescription médicale</div>
+              </div>
+            </label>
+          </div>
+        </Section>
+
+        <Section title="Description">
+          <textarea value={form.description} onChange={e => upd('description', e.target.value)} rows={3}
+            placeholder="Indications, contre-indications, notes particulières…"
+            style={{ ...inputStyle, resize: 'vertical' }} />
+        </Section>
+
+        {error && (
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '12px 16px', background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 10, marginBottom: 16, color: '#C62828', fontSize: 13 }}>
+            <AlertTriangle size={15} /> {error}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingBottom: 32 }}>
+          <button type="button" onClick={() => router.push('/pharmacie')}
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+            Annuler
+          </button>
+          <button type="submit" disabled={loading}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 8, background: '#00695C', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
+            <Save size={14} /> {loading ? 'Enregistrement…' : 'Enregistrer le médicament'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

@@ -1,20 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, Trash2, Save, Send } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import type { Patient, TypeLigneFacture } from '@/types';
+import { ArrowLeft, Search, Plus, Trash2, Save, Receipt, AlertTriangle } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ─── Mock data ───────────────────────────────────────────────
-const MOCK_PATIENTS: Patient[] = [
-  { id: 'p1', ipp: 'IPP-00145', nom: 'KOUASSI', prenom: 'Adjoua Marie', dateNaissance: '1985-03-12', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-  { id: 'p2', ipp: 'IPP-00089', nom: 'TRAORÉ', prenom: 'Ibrahim', dateNaissance: '1972-07-22', sexe: 'M', pays: 'CI', assuranceTiersPayant: true, assuranceNom: 'CNPS', assuranceNumero: 'CNP-44521', statut: 'actif', createdAt: '' },
-  { id: 'p3', ipp: 'IPP-00213', nom: 'KONÉ', prenom: 'Fatoumata', dateNaissance: '1990-11-05', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-];
+type Patient = { id: string; ipp?: string; nom: string; prenom: string; assuranceTiersPayant?: boolean; assuranceNom?: string };
+type LigneForm = { id: string; type: string; libelle: string; quantite: number; prixUnitaire: number };
 
-const TYPES_LIGNES: { value: TypeLigneFacture; label: string }[] = [
+const TYPES_LIGNES = [
   { value: 'consultation', label: 'Consultation' },
   { value: 'medicament', label: 'Médicament' },
   { value: 'analyse', label: 'Analyse' },
@@ -24,261 +18,183 @@ const TYPES_LIGNES: { value: TypeLigneFacture; label: string }[] = [
   { value: 'autre', label: 'Autre' },
 ];
 
-interface LigneForm {
-  id: string;
-  type: TypeLigneFacture;
-  libelle: string;
-  quantite: number;
-  prixUnitaire: number;
-  remise: number;
-}
-
 function newLigne(): LigneForm {
-  return { id: `l${Date.now()}`, type: 'consultation', libelle: '', quantite: 1, prixUnitaire: 0, remise: 0 };
+  return { id: Math.random().toString(36).slice(2), type: 'consultation', libelle: '', quantite: 1, prixUnitaire: 0 };
 }
 
-function calcTotal(l: LigneForm) {
-  return l.quantite * l.prixUnitaire * (1 - l.remise / 100);
-}
-
-function formatXOF(val: number) {
-  return val.toLocaleString('fr-FR') + ' XOF';
-}
+function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
 
 export default function NouvelleFacturePage() {
   const router = useRouter();
-  const [patientSearch, setPatientSearch] = useState('');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [pSearch, setPSearch] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [tiersPayant, setTiersPayant] = useState(false);
   const [lignes, setLignes] = useState<LigneForm[]>([newLigne()]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const suggestions = MOCK_PATIENTS.filter(p =>
-    patientSearch.length >= 2 &&
-    (`${p.nom} ${p.prenom}`.toLowerCase().includes(patientSearch.toLowerCase()) ||
-      p.ipp.toLowerCase().includes(patientSearch.toLowerCase()))
-  );
+  const searchPatients = useCallback(async (q: string) => {
+    try {
+      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`);
+      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+    } catch { setPatients([]); }
+  }, []);
 
-  const updateLigne = (id: string, field: keyof LigneForm, value: string | number) => {
-    setLignes(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l));
+  useEffect(() => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => searchPatients(pSearch), 300);
+    return () => clearTimeout(timerRef.current);
+  }, [pSearch, searchPatients]);
+
+  useEffect(() => { searchPatients(''); }, []);
+
+  const total = lignes.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
+
+  const updLigne = (id: string, key: keyof LigneForm, value: any) =>
+    setLignes(ls => ls.map(l => l.id === id ? { ...l, [key]: value } : l));
+
+  const handleSubmit = async () => {
+    if (!selectedPatient) { setError('Veuillez sélectionner un patient.'); return; }
+    if (lignes.some(l => !l.libelle.trim())) { setError('Tous les libellés sont obligatoires.'); return; }
+    setLoading(true); setError(null);
+    try {
+      const created = await apiClient<any>('/facturation', {
+        method: 'POST',
+        body: {
+          patientId: selectedPatient.id,
+          lignes: lignes.map(l => ({ type: l.type, libelle: l.libelle.trim(), quantite: l.quantite, prixUnitaire: l.prixUnitaire })),
+        },
+      });
+      router.push(created?.id ? `/facturation/${created.id}` : '/facturation');
+    } catch (e: any) {
+      setError(e?.message ?? 'Erreur lors de la création');
+    } finally { setLoading(false); }
   };
 
-  const removeLigne = (id: string) => setLignes(prev => prev.filter(l => l.id !== id));
-
-  const sousTotal = lignes.reduce((acc, l) => acc + calcTotal(l), 0);
-  const tva = 0; // santé = 0%
-  const total = sousTotal + tva;
-  const partAssurance = tiersPayant && selectedPatient?.assuranceTiersPayant ? total * 0.6 : 0;
-  const partPatient = total - partAssurance;
-
-  const handleSubmit = (emit: boolean) => {
-    if (!selectedPatient) return alert('Veuillez sélectionner un patient.');
-    if (lignes.every(l => !l.libelle)) return alert('Veuillez saisir au moins une ligne de facturation.');
-    alert(`Facture ${emit ? 'émise' : 'enregistrée en brouillon'} pour ${selectedPatient.nom} ${selectedPatient.prenom}`);
-    router.push('/facturation');
-  };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '9px 11px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: 13, outline: 'none', color: '#37474F', boxSizing: 'border-box', background: '#FAFAFA' };
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 5 };
 
   return (
-    <div className="p-6 max-w-[1100px] mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-text-secondary hover:text-text-primary transition-colors text-sm">
-          ← Retour
+    <div style={{ padding: 16, maxWidth: 900, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={() => router.push('/facturation')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+          <ArrowLeft size={14} /> Retour
         </button>
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Nouvelle facture</h1>
-          <p className="text-sm text-text-secondary">Créer une nouvelle facture patient</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Receipt size={18} color="#1565C0" />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouvelle facture</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Colonne principale */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Section Patient */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">1</span>
-              Patient
-            </h2>
-            <div className="relative">
-              <Input
-                label="Rechercher patient"
-                placeholder="Nom, prénom ou IPP..."
-                value={selectedPatient ? `${selectedPatient.nom} ${selectedPatient.prenom} — ${selectedPatient.ipp}` : patientSearch}
-                onChange={e => { setPatientSearch(e.target.value); setSelectedPatient(null); setShowSuggestions(true); setTiersPayant(false); }}
-                onFocus={() => setShowSuggestions(true)}
-                leftIcon={<Search size={16} />}
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-border rounded-lg shadow-lg">
-                  {suggestions.map(p => (
-                    <button key={p.id} className="w-full text-left px-4 py-2.5 hover:bg-gray-50 border-b border-border last:border-0"
-                      onClick={() => { setSelectedPatient(p); setPatientSearch(''); setShowSuggestions(false); if (p.assuranceTiersPayant) setTiersPayant(true); }}>
-                      <p className="font-medium text-text-primary">{p.nom} {p.prenom}</p>
-                      <p className="text-xs text-text-secondary">{p.ipp} {p.assuranceTiersPayant ? `· Assuré: ${p.assuranceNom}` : ''}</p>
-                    </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 16, alignItems: 'start' }}>
+        {/* Main */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Patient */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
+            <h2 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Patient</h2>
+            {selectedPatient ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#EFF6FF', border: '2px solid #1565C0' }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{selectedPatient.prenom} {selectedPatient.nom}</div>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{selectedPatient.ipp ?? '—'}{selectedPatient.assuranceTiersPayant && ` • ${selectedPatient.assuranceNom ?? 'Tiers payant'}`}</div>
+                </div>
+                <button onClick={() => setSelectedPatient(null)} style={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#546E7A', fontSize: 14 }}>×</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ position: 'relative', marginBottom: 10 }}>
+                  <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
+                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {patients.map(p => (
+                    <div key={p.id} onClick={() => setSelectedPatient(p)}
+                      style={{ padding: '9px 12px', borderRadius: 9, border: '1px solid #E0E0E0', cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'center', transition: 'background 0.1s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F5F7FA')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#1565C0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                        {p.prenom.charAt(0)}{p.nom.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{p.prenom} {p.nom}</div>
+                        <div style={{ fontSize: 11, color: '#90A4AE' }}>{p.ipp ?? '—'}</div>
+                      </div>
+                    </div>
                   ))}
                 </div>
-              )}
-            </div>
-            {selectedPatient && (
-              <div className="mt-3 space-y-2">
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-white text-sm flex items-center justify-center font-bold flex-shrink-0">
-                    {selectedPatient.prenom[0]}{selectedPatient.nom[0]}
-                  </div>
-                  <div className="flex-1 text-sm">
-                    <p className="font-semibold text-text-primary">{selectedPatient.nom} {selectedPatient.prenom}</p>
-                    <p className="text-text-secondary">{selectedPatient.ipp}</p>
-                  </div>
-                  <button onClick={() => { setSelectedPatient(null); setTiersPayant(false); }} className="text-text-secondary hover:text-danger text-xs">✕</button>
-                </div>
-                {selectedPatient.assuranceTiersPayant && (
-                  <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-teal-800">Patient assuré : {selectedPatient.assuranceNom}</p>
-                        <p className="text-xs text-teal-700">N° {selectedPatient.assuranceNumero}</p>
-                      </div>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <span className="text-xs text-teal-800 font-medium">Appliquer tiers-payant</span>
-                        <button type="button" onClick={() => setTiersPayant(!tiersPayant)}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${tiersPayant ? 'bg-teal-600' : 'bg-gray-300'}`}>
-                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${tiersPayant ? 'translate-x-5' : 'translate-x-1'}`} />
-                        </button>
-                      </label>
-                    </div>
-                  </div>
-                )}
-              </div>
+              </>
             )}
           </div>
 
-          {/* Section Lignes de facturation */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">2</span>
-              Lignes de facturation
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left pb-2 text-xs font-semibold text-text-secondary">Type</th>
-                    <th className="text-left pb-2 text-xs font-semibold text-text-secondary pl-2">Libellé</th>
-                    <th className="text-center pb-2 text-xs font-semibold text-text-secondary w-16">Qté</th>
-                    <th className="text-right pb-2 text-xs font-semibold text-text-secondary w-28">Prix unit.</th>
-                    <th className="text-center pb-2 text-xs font-semibold text-text-secondary w-16">Remise %</th>
-                    <th className="text-right pb-2 text-xs font-semibold text-text-secondary w-28">Total</th>
-                    <th className="w-8"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {lignes.map(l => (
-                    <tr key={l.id}>
-                      <td className="py-2 pr-2">
-                        <select
-                          className="border border-border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary/30 w-full"
-                          value={l.type}
-                          onChange={e => updateLigne(l.id, 'type', e.target.value as TypeLigneFacture)}
-                        >
-                          {TYPES_LIGNES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                        </select>
-                      </td>
-                      <td className="py-2 pl-2">
-                        <input
-                          type="text" placeholder="Description..."
-                          className="w-full border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={l.libelle}
-                          onChange={e => updateLigne(l.id, 'libelle', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        <input type="number" min="1"
-                          className="w-14 border border-border rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={l.quantite}
-                          onChange={e => updateLigne(l.id, 'quantite', Math.max(1, parseInt(e.target.value) || 1))}
-                        />
-                      </td>
-                      <td className="py-2 px-2">
-                        <input type="number" min="0"
-                          className="w-28 border border-border rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={l.prixUnitaire}
-                          onChange={e => updateLigne(l.id, 'prixUnitaire', parseFloat(e.target.value) || 0)}
-                        />
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        <input type="number" min="0" max="100"
-                          className="w-16 border border-border rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={l.remise}
-                          onChange={e => updateLigne(l.id, 'remise', Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
-                        />
-                      </td>
-                      <td className="py-2 px-2 text-right font-medium text-text-primary whitespace-nowrap">
-                        {formatXOF(calcTotal(l))}
-                      </td>
-                      <td className="py-2 pl-1">
-                        <button onClick={() => removeLigne(l.id)} disabled={lignes.length === 1}
-                          className="p-1 rounded hover:bg-red-50 text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Lignes */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Prestations</h2>
+              <button onClick={() => setLignes(ls => [...ls, newLigne()])}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, background: '#EFF6FF', border: 'none', cursor: 'pointer', color: '#1565C0', fontSize: 12, fontWeight: 700 }}>
+                <Plus size={13} /> Ajouter
+              </button>
             </div>
-            <button
-              onClick={() => setLignes(prev => [...prev, newLigne()])}
-              className="mt-3 flex items-center gap-2 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-            >
-              <Plus size={16} /> Ajouter une ligne
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {lignes.map((l, i) => (
+                <div key={l.id} style={{ padding: '12px 14px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E8EAED' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px 110px 28px', gap: 8, alignItems: 'start' }}>
+                    <div>
+                      {i === 0 && <label style={labelStyle}>Type</label>}
+                      <select value={l.type} onChange={e => updLigne(l.id, 'type', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                        {TYPES_LIGNES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      {i === 0 && <label style={labelStyle}>Libellé *</label>}
+                      <input value={l.libelle} onChange={e => updLigne(l.id, 'libelle', e.target.value)} placeholder="Description…" style={inputStyle} />
+                    </div>
+                    <div>
+                      {i === 0 && <label style={labelStyle}>Qté</label>}
+                      <input type="number" min={1} value={l.quantite} onChange={e => updLigne(l.id, 'quantite', Math.max(1, parseInt(e.target.value) || 1))} style={{ ...inputStyle, textAlign: 'right' }} />
+                    </div>
+                    <div>
+                      {i === 0 && <label style={labelStyle}>Prix unitaire</label>}
+                      <input type="number" min={0} value={l.prixUnitaire} onChange={e => updLigne(l.id, 'prixUnitaire', parseInt(e.target.value) || 0)} style={{ ...inputStyle, textAlign: 'right' }} />
+                    </div>
+                    <div style={{ paddingTop: i === 0 ? 22 : 0 }}>
+                      <button onClick={() => setLignes(ls => ls.filter(x => x.id !== l.id))} disabled={lignes.length === 1}
+                        style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #FFCDD2', background: '#FFEBEE', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C62828', opacity: lignes.length === 1 ? 0.4 : 1 }}>
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 700, color: '#0D47A1', marginTop: 4 }}>
+                    = {fmtXOF(l.quantite * l.prixUnitaire)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Récapitulatif */}
-        <div className="lg:col-span-1">
-          <div className="bg-white border border-border rounded-card p-5 sticky top-4">
-            <h2 className="text-base font-semibold text-text-primary mb-4">Récapitulatif</h2>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-text-secondary">
-                <span>Sous-total HT</span>
-                <span>{formatXOF(sousTotal)}</span>
-              </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>TVA (0% — santé)</span>
-                <span>{formatXOF(tva)}</span>
-              </div>
-              <div className="border-t border-border pt-2 flex justify-between font-bold text-text-primary text-base">
-                <span>Total TTC</span>
-                <span>{formatXOF(total)}</span>
-              </div>
-              {tiersPayant && (
-                <>
-                  <div className="flex justify-between text-teal-700">
-                    <span>Part assurance (60%)</span>
-                    <span>{formatXOF(partAssurance)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg border-t border-border pt-2" style={{ color: '#0D47A1' }}>
-                    <span>Part patient</span>
-                    <span>{formatXOF(partPatient)}</span>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="mt-6 flex flex-col gap-2">
-              <Button variant="secondary" leftIcon={<Save size={16} />} onClick={() => handleSubmit(false)} className="w-full">
-                Enregistrer brouillon
-              </Button>
-              <Button leftIcon={<Send size={16} />} onClick={() => handleSubmit(true)} className="w-full">
-                Émettre la facture
-              </Button>
-              <Button variant="ghost" onClick={() => router.back()} className="w-full">
-                Annuler
-              </Button>
-            </div>
+        {/* Summary */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 76 }}>
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
+            <p style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</p>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#0D47A1', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(total)}</div>
+            <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>{lignes.length} prestation(s)</div>
           </div>
+
+          {error && (
+            <div style={{ padding: '10px 14px', background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 10, display: 'flex', gap: 8, alignItems: 'center', color: '#C62828', fontSize: 12 }}>
+              <AlertTriangle size={13} /> {error}
+            </div>
+          )}
+
+          <button onClick={handleSubmit} disabled={loading || !selectedPatient}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: (!selectedPatient || loading) ? '#E0E0E0' : '#1565C0', border: 'none', cursor: (!selectedPatient || loading) ? 'default' : 'pointer', fontSize: 14, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
+            <Save size={15} /> {loading ? 'Création…' : 'Créer la facture'}
+          </button>
         </div>
       </div>
     </div>

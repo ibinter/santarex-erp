@@ -1,353 +1,261 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ChevronDown, ChevronUp, AlertTriangle, FlaskConical } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import type { Patient } from '@/types';
+import { ArrowLeft, Search, FlaskConical, ChevronDown, ChevronUp, Zap, AlertTriangle, Check, Save } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ─── Types d'analyses par catégorie ────────────────────────
-const TYPES_ANALYSES = [
-  {
-    categorie: 'hematologie',
-    label: 'Hématologie',
-    analyses: [
-      { id: 'NFS', code: 'NFS', nom: 'Numération Formule Sanguine', prix: 3500 },
-      { id: 'GRP', code: 'GRP', nom: 'Groupage sanguin', prix: 4000 },
-      { id: 'INR', code: 'INR', nom: 'INR / TP', prix: 3000 },
-      { id: 'VS', code: 'VS', nom: 'Vitesse de sédimentation', prix: 1500 },
-    ],
-  },
-  {
-    categorie: 'biochimie',
-    label: 'Biochimie',
-    analyses: [
-      { id: 'GLYC', code: 'GLYC', nom: 'Glycémie', prix: 2000 },
-      { id: 'CREAT', code: 'CREAT', nom: 'Créatinine', prix: 2000 },
-      { id: 'TGOTGP', code: 'TGOTGP', nom: 'Transaminases (TGO/TGP)', prix: 3500 },
-      { id: 'BILI', code: 'BILI', nom: 'Bilan lipidique', prix: 5000 },
-      { id: 'CRP', code: 'CRP', nom: 'CRP (Protéine C-réactive)', prix: 2500 },
-      { id: 'IONOG', code: 'IONOG', nom: 'Ionogramme sanguin', prix: 4500 },
-      { id: 'HBA1C', code: 'HBA1C', nom: 'HbA1c', prix: 6000 },
-      { id: 'URIC', code: 'URIC', nom: 'Uricémie', prix: 2000 },
-    ],
-  },
-  {
-    categorie: 'serologie',
-    label: 'Sérologie',
-    analyses: [
-      { id: 'HIV', code: 'HIV', nom: 'Sérologie HIV 1&2', prix: 8000 },
-      { id: 'AGHBS', code: 'AGHBS', nom: 'Ag HBs (Hépatite B)', prix: 7000 },
-      { id: 'HEPC', code: 'HEPC', nom: 'Sérologie Hépatite C', prix: 9000 },
-      { id: 'TPHA', code: 'TPHA', nom: 'TPHA/VDRL (Syphilis)', prix: 4000 },
-      { id: 'BHCG', code: 'BHCG', nom: 'Beta-HCG (Grossesse)', prix: 5000 },
-    ],
-  },
-  {
-    categorie: 'microbiologie',
-    label: 'Microbiologie',
-    analyses: [
-      { id: 'ECBU', code: 'ECBU', nom: 'ECBU (Examen Cytobactériologique des Urines)', prix: 6000 },
-      { id: 'PALU', code: 'PALU', nom: 'Test paludisme (TDR + frottis)', prix: 3000 },
-    ],
-  },
-  {
-    categorie: 'hormonologie',
-    label: 'Hormonologie',
-    analyses: [
-      { id: 'TSH', code: 'TSH', nom: 'TSH (Thyréostimuline)', prix: 7500 },
-      { id: 'PSA', code: 'PSA', nom: 'PSA (Antigène Prostatique)', prix: 8000 },
-    ],
-  },
+type Patient = { id: string; ipp?: string; nom: string; prenom: string };
+type Analyse = { id: string; code?: string; nom: string; prix?: number };
+type CategorieAnalyse = { categorie: string; label: string; analyses: Analyse[] };
+
+// Catalogue local — utilisé si /laboratoire/types-analyses n'existe pas encore
+const CATALOGUE_LOCAL: CategorieAnalyse[] = [
+  { categorie: 'hematologie', label: 'Hématologie', analyses: [
+    { id: 'NFS', code: 'NFS', nom: 'NFS (Numération Formule Sanguine)', prix: 3500 },
+    { id: 'GRP', code: 'GRP', nom: 'Groupage sanguin + Rhésus', prix: 4000 },
+    { id: 'INR', code: 'INR', nom: 'INR / TP', prix: 3000 },
+    { id: 'VS', code: 'VS', nom: 'Vitesse de sédimentation', prix: 1500 },
+  ]},
+  { categorie: 'biochimie', label: 'Biochimie', analyses: [
+    { id: 'GLYC', code: 'GLYC', nom: 'Glycémie à jeun', prix: 2000 },
+    { id: 'CREAT', code: 'CREAT', nom: 'Créatinine', prix: 2000 },
+    { id: 'TGOTGP', code: 'TGOTGP', nom: 'Transaminases (TGO/TGP)', prix: 3500 },
+    { id: 'BILI', code: 'BILI', nom: 'Bilan lipidique', prix: 5000 },
+    { id: 'CRP', code: 'CRP', nom: 'CRP (Protéine C-réactive)', prix: 2500 },
+    { id: 'HBA1C', code: 'HBA1C', nom: 'HbA1c', prix: 6000 },
+    { id: 'IONOG', code: 'IONOG', nom: 'Ionogramme sanguin', prix: 4500 },
+  ]},
+  { categorie: 'serologie', label: 'Sérologie', analyses: [
+    { id: 'HIV', code: 'HIV', nom: 'Sérologie HIV 1&2', prix: 8000 },
+    { id: 'HEP', code: 'HEP', nom: 'Hépatite B & C', prix: 7500 },
+    { id: 'SYPHI', code: 'SYPHI', nom: 'TPHA / VDRL (Syphilis)', prix: 5000 },
+  ]},
+  { categorie: 'bacteriologie', label: 'Bactériologie', analyses: [
+    { id: 'ECBU', code: 'ECBU', nom: 'ECBU + Antibiogramme', prix: 6000 },
+    { id: 'HEMO', code: 'HEMO', nom: 'Hémoculture', prix: 8000 },
+    { id: 'PARASIT', code: 'PARASIT', nom: 'Examen parasitologique des selles', prix: 4000 },
+    { id: 'GE', code: 'GE', nom: 'Goutte épaisse / TDR Paludisme', prix: 3500 },
+  ]},
 ];
 
-const MOCK_PATIENTS: Patient[] = [
-  { id: 'p1', ipp: 'IPP-00145', nom: 'KOUASSI', prenom: 'Adjoua Marie', dateNaissance: '1985-03-12', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-  { id: 'p2', ipp: 'IPP-00089', nom: 'TRAORÉ', prenom: 'Ibrahim', dateNaissance: '1972-07-22', sexe: 'M', pays: 'CI', assuranceTiersPayant: true, assuranceNom: 'CNPS', assuranceNumero: 'CNP-44521', statut: 'actif', createdAt: '' },
-  { id: 'p3', ipp: 'IPP-00213', nom: 'KONÉ', prenom: 'Fatoumata', dateNaissance: '1990-11-05', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-];
+function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
 
-const MEDECINS = [
-  { id: 'm1', nom: 'DIALLO', prenom: 'Mamadou', specialite: 'Médecine Générale' },
-  { id: 'm2', nom: 'BAMBA', prenom: 'Salimata', specialite: 'Cardiologie' },
-  { id: 'm3', nom: 'COULIBALY', prenom: 'Dramane', specialite: 'Pédiatrie' },
-];
-
-function formatXOF(val: number) {
-  return val.toLocaleString('fr-FR') + ' XOF';
-}
-
-export default function NouvelleDemandeAnalysePage() {
+export default function NouvelleDemandeLaboratoirePage() {
   const router = useRouter();
-  const [patientSearch, setPatientSearch] = useState('');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [pSearch, setPSearch] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [showPatientSuggestions, setShowPatientSuggestions] = useState(false);
-  const [medecinId, setMedecinId] = useState('');
+  const [catalogue, setCatalogue] = useState<CategorieAnalyse[]>(CATALOGUE_LOCAL);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(['hematologie', 'biochimie']));
   const [urgence, setUrgence] = useState(false);
-  const [selectedAnalyses, setSelectedAnalyses] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['hematologie', 'biochimie']));
-  const [notes, setNotes] = useState('');
+  const [motif, setMotif] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const patientSuggestions = MOCK_PATIENTS.filter(p =>
-    patientSearch.length >= 2 &&
-    (`${p.nom} ${p.prenom}`.toLowerCase().includes(patientSearch.toLowerCase()) ||
-      p.ipp.toLowerCase().includes(patientSearch.toLowerCase()))
-  );
+  const searchPatients = useCallback(async (q: string) => {
+    try {
+      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`);
+      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+    } catch { setPatients([]); }
+  }, []);
 
-  const toggleCategorie = (cat: string) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(cat)) next.delete(cat); else next.add(cat);
-      return next;
-    });
-  };
+  useEffect(() => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => searchPatients(pSearch), 300);
+    return () => clearTimeout(timerRef.current);
+  }, [pSearch, searchPatients]);
+
+  useEffect(() => {
+    searchPatients('');
+    // Essai de charger le catalogue depuis l'API
+    apiClient<any>('/laboratoire/types-analyses').then(data => {
+      if (Array.isArray(data) && data.length > 0) setCatalogue(data);
+    }).catch(() => { /* utilise le catalogue local */ });
+  }, []);
 
   const toggleAnalyse = (id: string) => {
-    setSelectedAnalyses(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+    setSelectedIds(s => {
+      const next = new Set(s);
+      next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
   };
 
-  const getSelectedItems = () => {
-    const items: { id: string; nom: string; prix: number }[] = [];
-    for (const grp of TYPES_ANALYSES) {
-      for (const a of grp.analyses) {
-        if (selectedAnalyses.has(a.id)) items.push(a);
-      }
-    }
-    return items;
+  const toggleCat = (cat: string) => {
+    setExpanded(s => {
+      const next = new Set(s);
+      next.has(cat) ? next.delete(cat) : next.add(cat);
+      return next;
+    });
   };
 
-  const total = getSelectedItems().reduce((acc, a) => acc + a.prix, 0);
+  const selectedAnalyses = catalogue.flatMap(c => c.analyses).filter(a => selectedIds.has(a.id));
+  const total = selectedAnalyses.reduce((s, a) => s + (a.prix ?? 0), 0);
 
-  const handleSubmit = () => {
-    if (!selectedPatient) return alert('Veuillez sélectionner un patient.');
-    if (!medecinId) return alert('Veuillez sélectionner un prescripteur.');
-    if (selectedAnalyses.size === 0) return alert('Veuillez sélectionner au moins une analyse.');
-    alert(`Demande enregistrée pour ${selectedPatient.nom} ${selectedPatient.prenom}. Total: ${formatXOF(total)}`);
-    router.push('/laboratoire');
+  const handleSubmit = async () => {
+    if (!selectedPatient) { setError('Veuillez sélectionner un patient.'); return; }
+    if (selectedIds.size === 0) { setError('Veuillez sélectionner au moins une analyse.'); return; }
+    setLoading(true); setError(null);
+    try {
+      const created = await apiClient<any>('/laboratoire/demandes', {
+        method: 'POST',
+        body: {
+          patientId: selectedPatient.id,
+          urgence,
+          motif: motif || undefined,
+          typesAnalyseIds: Array.from(selectedIds),
+        },
+      });
+      router.push(created?.id ? `/laboratoire/demandes/${created.id}` : '/laboratoire');
+    } catch (e: any) {
+      setError(e?.message ?? 'Erreur lors de la création');
+    } finally { setLoading(false); }
   };
+
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '9px 11px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: 13, outline: 'none', color: '#37474F', boxSizing: 'border-box', background: '#FAFAFA' };
 
   return (
-    <div className="p-6 max-w-[1100px] mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="text-text-secondary hover:text-text-primary transition-colors text-sm">
-          ← Retour
+    <div style={{ padding: 16, maxWidth: 1000, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <button onClick={() => router.push('/laboratoire')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+          <ArrowLeft size={14} /> Retour
         </button>
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Nouvelle demande d'analyse</h1>
-          <p className="text-sm text-text-secondary">Remplissez les informations pour créer la demande</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FlaskConical size={18} color="#6A1B9A" />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouvelle demande d'analyses</h1>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Colonne principale */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Section Patient */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">1</span>
-              Patient
-            </h2>
-            <div className="relative">
-              <Input
-                label="Rechercher patient (nom, prénom, IPP)"
-                placeholder="Tapez au moins 2 caractères..."
-                value={selectedPatient ? `${selectedPatient.nom} ${selectedPatient.prenom} — ${selectedPatient.ipp}` : patientSearch}
-                onChange={e => {
-                  setPatientSearch(e.target.value);
-                  setSelectedPatient(null);
-                  setShowPatientSuggestions(true);
-                }}
-                onFocus={() => setShowPatientSuggestions(true)}
-                leftIcon={<Search size={16} />}
-              />
-              {showPatientSuggestions && patientSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-border rounded-lg shadow-lg">
-                  {patientSuggestions.map(p => (
-                    <button
-                      key={p.id}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors border-b border-border last:border-0"
-                      onClick={() => { setSelectedPatient(p); setPatientSearch(''); setShowPatientSuggestions(false); }}
-                    >
-                      <p className="font-medium text-text-primary">{p.nom} {p.prenom}</p>
-                      <p className="text-xs text-text-secondary">{p.ipp} · {p.sexe === 'M' ? 'Homme' : 'Femme'} · né(e) le {new Date(p.dateNaissance).toLocaleDateString('fr-FR')}</p>
-                    </button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 16, alignItems: 'start' }}>
+        {/* Left */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Patient */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
+            <h2 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Patient</h2>
+            {selectedPatient ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#EFF6FF', border: '2px solid #1565C0' }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{selectedPatient.prenom} {selectedPatient.nom}</div>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{selectedPatient.ipp ?? '—'}</div>
+                </div>
+                <button onClick={() => setSelectedPatient(null)} style={{ width: 22, height: 22, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#546E7A', fontSize: 14 }}>×</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
+                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {patients.slice(0, 5).map(p => (
+                    <div key={p.id} onClick={() => setSelectedPatient(p)}
+                      style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', cursor: 'pointer', display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#F5F7FA')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#1565C0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                        {p.prenom.charAt(0)}{p.nom.charAt(0)}
+                      </div>
+                      <span style={{ fontWeight: 600, color: '#1A2332' }}>{p.prenom} {p.nom}</span>
+                      <span style={{ fontSize: 11, color: '#90A4AE' }}>{p.ipp ?? ''}</span>
+                    </div>
                   ))}
                 </div>
-              )}
-            </div>
-            {selectedPatient && (
-              <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary text-white text-sm flex items-center justify-center font-bold flex-shrink-0">
-                  {selectedPatient.prenom[0]}{selectedPatient.nom[0]}
-                </div>
-                <div className="text-sm">
-                  <p className="font-semibold text-text-primary">{selectedPatient.nom} {selectedPatient.prenom}</p>
-                  <p className="text-text-secondary">{selectedPatient.ipp} · {selectedPatient.sexe === 'M' ? 'Homme' : 'Femme'} · né(e) le {new Date(selectedPatient.dateNaissance).toLocaleDateString('fr-FR')}</p>
-                  {selectedPatient.assuranceTiersPayant && (
-                    <p className="mt-0.5 text-teal-700 font-medium">Assuré : {selectedPatient.assuranceNom} ({selectedPatient.assuranceNumero})</p>
-                  )}
-                </div>
-                <button onClick={() => setSelectedPatient(null)} className="ml-auto text-text-secondary hover:text-danger text-xs">✕</button>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Section Prescription */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">2</span>
-              Prescription
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Options */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 20px', display: 'flex', gap: 20, alignItems: 'center' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+              <button type="button" onClick={() => setUrgence(!urgence)}
+                style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: urgence ? '#C62828' : '#CFD8DC', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                <span style={{ position: 'absolute', top: 3, left: urgence ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
+              </button>
               <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Médecin prescripteur *</label>
-                <select
-                  className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  value={medecinId} onChange={e => setMedecinId(e.target.value)}
-                >
-                  <option value="">Sélectionner un médecin...</option>
-                  {MEDECINS.map(m => (
-                    <option key={m.id} value={m.id}>Dr. {m.prenom} {m.nom} — {m.specialite}</option>
-                  ))}
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: urgence ? '#C62828' : '#37474F' }}>
+                  <Zap size={13} /> Urgente
+                </div>
+                <div style={{ fontSize: 11, color: '#90A4AE' }}>Traitement prioritaire</div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-text-secondary mb-1">Consultation liée (optionnel)</label>
-                <select className="w-full border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  <option value="">Aucune consultation liée</option>
-                  <option value="c1">CONS-2025-0145 — 10/07/2025</option>
-                </select>
-              </div>
+            </label>
+            <div style={{ flex: 1 }}>
+              <input value={motif} onChange={e => setMotif(e.target.value)} placeholder="Motif de prescription (optionnel)…" style={inputStyle} />
             </div>
-            <div className="mt-4">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <span className="text-sm font-medium text-text-primary">Demande urgente</span>
-                <button
-                  type="button"
-                  onClick={() => setUrgence(!urgence)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${urgence ? 'bg-red-600' : 'bg-gray-200'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${urgence ? 'translate-x-6' : 'translate-x-1'}`} />
+          </div>
+
+          {/* Catalogue */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid #F5F7FA', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Sélectionner les analyses</div>
+            {catalogue.map(cat => (
+              <div key={cat.categorie}>
+                <button onClick={() => toggleCat(cat.categorie)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 20px', border: 'none', background: '#F8FAFC', cursor: 'pointer', borderTop: '1px solid #F5F7FA', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                  <span>{cat.label}</span>
+                  {expanded.has(cat.categorie) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
-                {urgence && (
-                  <span className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
-                    <AlertTriangle size={12} /> URGENT
-                  </span>
-                )}
-              </label>
-            </div>
-          </div>
-
-          {/* Section Analyses */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">3</span>
-              Analyses à effectuer
-            </h2>
-            <div className="space-y-2">
-              {TYPES_ANALYSES.map(grp => {
-                const expanded = expandedCategories.has(grp.categorie);
-                const selectedInGroup = grp.analyses.filter(a => selectedAnalyses.has(a.id)).length;
-                return (
-                  <div key={grp.categorie} className="border border-border rounded-lg overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => toggleCategorie(grp.categorie)}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
-                    >
-                      <span className="font-medium text-text-primary text-sm">{grp.label}</span>
-                      <div className="flex items-center gap-2">
-                        {selectedInGroup > 0 && (
-                          <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full">{selectedInGroup} sélectionné{selectedInGroup > 1 ? 's' : ''}</span>
-                        )}
-                        {expanded ? <ChevronUp size={16} className="text-text-secondary" /> : <ChevronDown size={16} className="text-text-secondary" />}
-                      </div>
-                    </button>
-                    {expanded && (
-                      <div className="divide-y divide-border">
-                        {grp.analyses.map(a => (
-                          <label key={a.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-blue-50/50 transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={selectedAnalyses.has(a.id)}
-                              onChange={() => toggleAnalyse(a.id)}
-                              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/30"
-                            />
-                            <span className="flex-1 text-sm text-text-primary">{a.nom}</span>
-                            <span className="text-xs font-medium text-text-secondary bg-gray-100 px-2 py-0.5 rounded">
-                              {formatXOF(a.prix)}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
+                {expanded.has(cat.categorie) && (
+                  <div style={{ padding: '6px 0' }}>
+                    {cat.analyses.map(a => {
+                      const sel = selectedIds.has(a.id);
+                      return (
+                        <div key={a.id} onClick={() => toggleAnalyse(a.id)}
+                          style={{ padding: '9px 20px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', background: sel ? '#F0F7FF' : 'transparent', transition: 'background 0.1s' }}
+                          onMouseEnter={e => { if (!sel) e.currentTarget.style.background = '#F8FAFC'; }}
+                          onMouseLeave={e => { if (!sel) e.currentTarget.style.background = 'transparent'; }}>
+                          <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${sel ? '#1565C0' : '#CFD8DC'}`, background: sel ? '#1565C0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                            {sel && <Check size={11} color="#fff" />}
+                          </div>
+                          {a.code && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: '#F3E5F5', color: '#6A1B9A', flexShrink: 0 }}>{a.code}</span>}
+                          <span style={{ flex: 1, fontSize: 13, color: '#37474F', fontWeight: sel ? 600 : 400 }}>{a.nom}</span>
+                          {a.prix != null && <span style={{ fontSize: 11, color: '#90A4AE', flexShrink: 0 }}>{fmtXOF(a.prix)}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="bg-white border border-border rounded-card p-5">
-            <h2 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">4</span>
-              Notes
-            </h2>
-            <textarea
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-              rows={3}
-              placeholder="Instructions particulières, contexte clinique..."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-            />
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Résumé */}
-        <div className="lg:col-span-1">
-          <div className="bg-white border border-border rounded-card p-5 sticky top-4">
-            <h2 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <FlaskConical size={16} className="text-primary" />
-              Résumé de la demande
-            </h2>
-            {getSelectedItems().length === 0 ? (
-              <p className="text-sm text-text-secondary text-center py-6">Aucune analyse sélectionnée</p>
+        {/* Right — Résumé */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 76 }}>
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Récapitulatif</p>
+            {selectedAnalyses.length === 0 ? (
+              <p style={{ color: '#CFD8DC', fontSize: 13, textAlign: 'center', padding: '12px 0' }}>Aucune analyse sélectionnée</p>
             ) : (
-              <div className="space-y-2 mb-4">
-                {getSelectedItems().map(item => (
-                  <div key={item.id} className="flex items-center justify-between text-sm">
-                    <span className="text-text-primary">{item.nom}</span>
-                    <span className="font-medium text-text-secondary ml-2 flex-shrink-0">{formatXOF(item.prix)}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+                {selectedAnalyses.map(a => (
+                  <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#37474F' }}>
+                    <span>{a.nom}</span>
+                    <span style={{ color: '#6A1B9A', fontWeight: 600 }}>{a.prix != null ? fmtXOF(a.prix) : '—'}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div className="border-t border-border pt-3 mt-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-text-primary">Total à facturer</span>
-                <span className="text-xl font-bold" style={{ color: '#0D47A1' }}>{formatXOF(total)}</span>
-              </div>
-            </div>
-            {urgence && (
-              <div className="mt-3 p-2 bg-red-50 rounded border border-red-200 flex items-center gap-2 text-xs text-red-700 font-medium">
-                <AlertTriangle size={13} /> Demande marquée URGENTE
-              </div>
-            )}
-            <div className="mt-5 flex flex-col gap-2">
-              <Button onClick={handleSubmit} className="w-full" disabled={!selectedPatient || selectedAnalyses.size === 0}>
-                Enregistrer la demande
-              </Button>
-              <Button variant="ghost" onClick={() => router.back()} className="w-full">
-                Annuler
-              </Button>
+            <div style={{ borderTop: '1px solid #F5F7FA', paddingTop: 10 }}>
+              <div style={{ fontSize: 10, color: '#90A4AE' }}>{selectedIds.size} analyse(s) • Total estimatif</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: '#6A1B9A', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(total)}</div>
             </div>
           </div>
+
+          {error && (
+            <div style={{ padding: '10px 14px', background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 10, display: 'flex', gap: 8, alignItems: 'flex-start', color: '#C62828', fontSize: 12 }}>
+              <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
+            </div>
+          )}
+
+          <button onClick={handleSubmit} disabled={loading || !selectedPatient || selectedIds.size === 0}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: (!selectedPatient || selectedIds.size === 0 || loading) ? '#E0E0E0' : '#6A1B9A', border: 'none', cursor: (!selectedPatient || selectedIds.size === 0 || loading) ? 'default' : 'pointer', fontSize: 14, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
+            <Save size={15} /> {loading ? 'Création…' : 'Créer la demande'}
+          </button>
         </div>
       </div>
     </div>
