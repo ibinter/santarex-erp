@@ -326,47 +326,69 @@ async function callGroq(msg: string): Promise<string> {
   }
 }
 
-const SARA_QUICK = [
-  "C'est quoi SANTAREX ERP ?",
-  "Quels sont les tarifs ?",
-  "Essai gratuit disponible ?",
-  "Quels modules inclus ?",
-  "Comment contacter le support ?",
-];
+const SARA_QUICK: Record<Lang, string[]> = {
+  fr: ["C'est quoi SANTAREX ERP ?","Quels sont les tarifs ?","Essai gratuit disponible ?","Quels modules inclus ?","Comment contacter le support ?"],
+  en: ["What is SANTAREX ERP?","What are the prices?","Is there a free trial?","Which modules are included?","How to contact support?"],
+};
 
 /* ═══════════════════════════════════════════════════════
    DONNÉES
 ═══════════════════════════════════════════════════════ */
-const HERO_SLIDES = [
-  { line1: 'La clinique', accent: 'connectée.', line3: "L'Afrique digitale.", sub: 'SANTAREX ERP centralise toute la gestion de votre établissement — dossiers patients, consultations, pharmacie, laboratoire, facturation — dans une seule plateforme cloud.' },
-  { line1: "L'hôpital", accent: 'numérique.', line3: 'Zéro paperasse.', sub: 'Ordonnances électroniques, résultats labo instantanés, prescriptions directement reliées à la pharmacie. Votre établissement tourne à plein régime.' },
-  { line1: 'La pharmacie', accent: 'intelligente.', line3: 'Zéro rupture de stock.', sub: 'Alertes automatiques de péremption, synchronisation temps réel avec les prescriptions médecin, gestion des lots et traçabilité complète.' },
-  { line1: 'La facturation', accent: 'simplifiée.', line3: 'Mobile Money intégré.', sub: "Orange Money, MTN MoMo, Wave — tous les modes de paiement de vos patients intégrés nativement. Tiers-payant, mutuelles, espèces : tout en un." },
-  { line1: 'Votre assistante IA', accent: 'SARA.', line3: 'Disponible 24h/24.', sub: "SARA guide vos équipes, répond aux questions et aide chaque utilisateur à maîtriser SANTAREX ERP — à chaque instant, depuis n'importe quel appareil." },
+const HERO_SLIDES: { line1: Record<Lang,string>; accent: Record<Lang,string>; line3: Record<Lang,string>; sub: Record<Lang,string> }[] = [
+  {
+    line1: { fr: 'La clinique', en: 'The connected' },
+    accent: { fr: 'connectée.', en: 'clinic.' },
+    line3: { fr: "L'Afrique digitale.", en: 'Digital Africa.' },
+    sub: { fr: 'SANTAREX ERP centralise toute la gestion de votre établissement — dossiers patients, consultations, pharmacie, laboratoire, facturation — dans une seule plateforme cloud.', en: 'SANTAREX ERP centralizes your entire facility management — patient records, consultations, pharmacy, laboratory, billing — in one cloud platform.' },
+  },
+  {
+    line1: { fr: "L'hôpital", en: 'The digital' },
+    accent: { fr: 'numérique.', en: 'hospital.' },
+    line3: { fr: 'Zéro paperasse.', en: 'Zero paperwork.' },
+    sub: { fr: 'Ordonnances électroniques, résultats labo instantanés, prescriptions directement reliées à la pharmacie. Votre établissement tourne à plein régime.', en: 'Electronic prescriptions, instant lab results, prescriptions directly linked to the pharmacy. Your facility runs at full capacity.' },
+  },
+  {
+    line1: { fr: 'La pharmacie', en: 'The intelligent' },
+    accent: { fr: 'intelligente.', en: 'pharmacy.' },
+    line3: { fr: 'Zéro rupture de stock.', en: 'Zero stockouts.' },
+    sub: { fr: 'Alertes automatiques de péremption, synchronisation temps réel avec les prescriptions médecin, gestion des lots et traçabilité complète.', en: 'Automatic expiry alerts, real-time sync with doctor prescriptions, batch management and full traceability.' },
+  },
+  {
+    line1: { fr: 'La facturation', en: 'Billing,' },
+    accent: { fr: 'simplifiée.', en: 'simplified.' },
+    line3: { fr: 'Mobile Money intégré.', en: 'Mobile Money built in.' },
+    sub: { fr: 'Orange Money, MTN MoMo, Wave — tous les modes de paiement de vos patients intégrés nativement. Tiers-payant, mutuelles, espèces : tout en un.', en: 'Orange Money, MTN MoMo, Wave — every patient payment method built in natively. Third-party payers, insurance, cash: all in one.' },
+  },
+  {
+    line1: { fr: 'Votre assistante IA', en: 'Your AI assistant' },
+    accent: { fr: 'SARA.', en: 'SARA.' },
+    line3: { fr: 'Disponible 24h/24.', en: 'Available 24/7.' },
+    sub: { fr: "SARA guide vos équipes, répond aux questions et aide chaque utilisateur à maîtriser SANTAREX ERP — à chaque instant, depuis n'importe quel appareil.", en: 'SARA guides your teams, answers questions and helps every user master SANTAREX ERP — at any time, from any device.' },
+  },
 ];
 
-const PROBLEMS = [
-  { icon: '📋', before: 'Registres papier dispersés, risque de perte de dossiers', after: 'Dossiers médicaux électroniques centralisés, accessibles en temps réel par toute l\'équipe' },
-  { icon: '💊', before: 'Stocks de médicaments gérés manuellement — ruptures et péremptions non détectées', after: 'Alertes automatiques en temps réel. Zéro rupture non détectée, zéro médicament périmé distribué' },
-  { icon: '🧾', before: 'Facturation laborieuse avec des erreurs de calcul fréquentes', after: 'Facturation automatique avec Mobile Money intégré, reçus numériques générés instantanément' },
-  { icon: '📊', before: 'Aucune visibilité sur les performances de l\'établissement', after: 'Tableau de bord avec KPIs en temps réel — recettes, taux d\'occupation, activité médicale' },
-  { icon: '🔬', before: 'Résultats de laboratoire transmis manuellement au médecin', after: 'Résultats disponibles dans le DME dès validation du biologiste — alertes critiques immédiates' },
-  { icon: '📱', before: 'Impossible de travailler depuis un smartphone ou hors connexion', after: 'SANTAREX ERP fonctionne sur tous les appareils — ordinateur, tablette, smartphone, hors ligne' },
+const PROBLEMS: { icon: string; before: Record<Lang,string>; after: Record<Lang,string> }[] = [
+  { icon: '📋', before: { fr: 'Registres papier dispersés, risque de perte de dossiers', en: 'Scattered paper registers, risk of losing patient files' }, after: { fr: "Dossiers médicaux électroniques centralisés, accessibles en temps réel par toute l'équipe", en: 'Centralized electronic medical records, accessible in real time by the whole team' } },
+  { icon: '💊', before: { fr: 'Stocks de médicaments gérés manuellement — ruptures et péremptions non détectées', en: 'Manually managed drug inventory — stockouts and expiries undetected' }, after: { fr: 'Alertes automatiques en temps réel. Zéro rupture non détectée, zéro médicament périmé distribué', en: 'Real-time automatic alerts. Zero undetected stockout, zero expired drug dispensed' } },
+  { icon: '🧾', before: { fr: 'Facturation laborieuse avec des erreurs de calcul fréquentes', en: 'Tedious billing with frequent calculation errors' }, after: { fr: 'Facturation automatique avec Mobile Money intégré, reçus numériques générés instantanément', en: 'Automatic billing with built-in Mobile Money, digital receipts generated instantly' } },
+  { icon: '📊', before: { fr: "Aucune visibilité sur les performances de l'établissement", en: 'No visibility on facility performance' }, after: { fr: "Tableau de bord avec KPIs en temps réel — recettes, taux d'occupation, activité médicale", en: 'Real-time KPI dashboard — revenue, occupancy rate, medical activity' } },
+  { icon: '🔬', before: { fr: 'Résultats de laboratoire transmis manuellement au médecin', en: 'Lab results transmitted manually to the doctor' }, after: { fr: "Résultats disponibles dans le DME dès validation du biologiste — alertes critiques immédiates", en: 'Results available in the EHR as soon as validated by the biologist — immediate critical alerts' } },
+  { icon: '📱', before: { fr: 'Impossible de travailler depuis un smartphone ou hors connexion', en: 'Impossible to work from a smartphone or offline' }, after: { fr: 'SANTAREX ERP fonctionne sur tous les appareils — ordinateur, tablette, smartphone, hors ligne', en: 'SANTAREX ERP works on all devices — computer, tablet, smartphone, offline' } },
 ];
 
-const MODULES = [
-  { title: 'Patients & DME', desc: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-  { title: 'Rendez-vous', desc: "Agenda multi-médecins, créneaux disponibles, rappels SMS, liste d'attente.", tag: 'Core', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-  { title: 'Consultations', desc: 'CIM-10, constantes vitales, ordonnances numériques, certificats médicaux, plan de soins.', tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> },
-  { title: 'Pharmacie', desc: 'Stock temps réel, alertes rupture & péremption, gestion des lots, dispensation sur ordonnance.', tag: 'Cabinet+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg> },
-  { title: 'Laboratoire', desc: "Demandes d'analyses, saisie & validation des résultats, interface biologiste, historique labo.", tag: 'Cabinet+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> },
-  { title: 'Hospitalisation', desc: 'Plan des lits temps réel, prescriptions médicales, notes infirmières, sorties et transferts.', tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-  { title: 'Urgences', desc: 'Triage Manchester, file attente temps réel, suivi des passages, alertes critiques.', tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
-  { title: 'Facturation', desc: 'Devis, factures, tiers-payant, paiement mobile money (Orange, MTN, Wave), historique.', tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-  { title: 'Reporting & BI', desc: 'KPIs temps réel, tableau de bord direction, exports PDF/Excel, analyses de performance.', tag: 'Clinique+', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
-  { title: 'Imagerie médicale', desc: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus, PACS basique.', tag: 'Hôpital+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
-  { title: 'Ressources humaines', desc: 'Personnel médical & administratif, plannings, congés, paie mensuelle, organigramme.', tag: 'Hôpital+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-  { title: 'Bloc opératoire', desc: 'Programme chirurgical, gestion des salles, protocoles anesthésie, comptes rendus opératoires.', tag: 'Hôpital+', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
+const MODULES: { title: Record<Lang,string>; desc: Record<Lang,string>; tag: string; iconColor: string; strokeColor: string; icon: React.ReactNode }[] = [
+  { title: { fr: 'Patients & DME', en: 'Patients & EHR' }, desc: { fr: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', en: 'Complete electronic health records, automatic patient ID, history, allergies, medical background.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  { title: { fr: 'Rendez-vous', en: 'Appointments' }, desc: { fr: "Agenda multi-médecins, créneaux disponibles, rappels SMS, liste d'attente.", en: 'Multi-doctor schedule, available slots, SMS reminders, waiting list.' }, tag: 'Core', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+  { title: { fr: 'Consultations', en: 'Consultations' }, desc: { fr: 'CIM-10, constantes vitales, ordonnances numériques, certificats médicaux, plan de soins.', en: 'ICD-10, vital signs, digital prescriptions, medical certificates, care plan.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> },
+  { title: { fr: 'Pharmacie', en: 'Pharmacy' }, desc: { fr: 'Stock temps réel, alertes rupture & péremption, gestion des lots, dispensation sur ordonnance.', en: 'Real-time stock, stockout & expiry alerts, batch management, prescription dispensing.' }, tag: 'Cabinet+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg> },
+  { title: { fr: 'Laboratoire', en: 'Laboratory' }, desc: { fr: "Demandes d'analyses, saisie & validation des résultats, interface biologiste, historique labo.", en: 'Test requests, result entry & validation, biologist interface, lab history.' }, tag: 'Cabinet+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> },
+  { title: { fr: 'Hospitalisation', en: 'Inpatient care' }, desc: { fr: 'Plan des lits temps réel, prescriptions médicales, notes infirmières, sorties et transferts.', en: 'Real-time bed plan, medical prescriptions, nursing notes, discharges and transfers.' }, tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  { title: { fr: 'Urgences', en: 'Emergency' }, desc: { fr: 'Triage Manchester, file attente temps réel, suivi des passages, alertes critiques.', en: 'Manchester triage, real-time queue, patient tracking, critical alerts.' }, tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
+  { title: { fr: 'Facturation', en: 'Billing' }, desc: { fr: 'Devis, factures, tiers-payant, paiement mobile money (Orange, MTN, Wave), historique.', en: 'Quotes, invoices, third-party billing, mobile money payment (Orange, MTN, Wave), history.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+  { title: { fr: 'Reporting & BI', en: 'Reporting & BI' }, desc: { fr: 'KPIs temps réel, tableau de bord direction, exports PDF/Excel, analyses de performance.', en: 'Real-time KPIs, management dashboard, PDF/Excel exports, performance analytics.' }, tag: 'Clinique+', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
+  { title: { fr: 'Imagerie médicale', en: 'Medical imaging' }, desc: { fr: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus, PACS basique.', en: 'Exam management (X-ray, Echo, CT, MRI), reports, basic PACS.' }, tag: 'Hôpital+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
+  { title: { fr: 'Ressources humaines', en: 'Human resources' }, desc: { fr: 'Personnel médical & administratif, plannings, congés, paie mensuelle, organigramme.', en: 'Medical & admin staff, schedules, leave, monthly payroll, org chart.' }, tag: 'Hôpital+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+  { title: { fr: 'Bloc opératoire', en: 'Operating room' }, desc: { fr: 'Programme chirurgical, gestion des salles, protocoles anesthésie, comptes rendus opératoires.', en: 'Surgical schedule, room management, anaesthesia protocols, operative reports.' }, tag: 'Hôpital+', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
 ];
 
 const PLANS = [
@@ -432,13 +454,13 @@ const PLANS = [
   },
 ];
 
-const ACTIVITES = [
-  { title: 'Hôpital & Clinique', desc: 'Gestion complète multi-services : urgences, consultations, pharmacie, labo, bloc opératoire, imagerie.', tags: ['DME','Urgences','Bloc op.','Imagerie'], color: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
-  { title: 'Pharmacie autonome', desc: 'Stocks, dispensation sur ordonnance, alertes péremption, facturation — sans module hospitalier.', tags: ['Stocks','Dispensation','Alertes','Facturation'], color: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
-  { title: 'Cabinet médical', desc: 'Agenda, consultations CIM-10, ordonnances numériques et facturation pour praticiens en cabinet.', tags: ['Agenda','DME','Ordonnances','Facturation'], color: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> },
-  { title: "Laboratoire d'analyses", desc: 'Réception des demandes, saisie & validation des résultats, interface biologiste, historique complet.', tags: ['Demandes','Résultats','Validation','Historique'], color: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> },
-  { title: 'Centre de santé', desc: 'Solution légère pour les CSP, dispensaires et centres communautaires. Déploiement en 48h.', tags: ['Patients','Consultations','Médicaments','Reporting'], color: '#34D399', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
-  { title: 'Clinique spécialisée', desc: 'Ophtalmologie, dentisterie, kinésithérapie, maternité — configuré selon votre spécialité.', tags: ['Spécialités','Planning','DME','Facturation'], color: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
+const ACTIVITES: { title: Record<Lang,string>; desc: Record<Lang,string>; tags: Record<Lang,string[]>; color: string; icon: React.ReactNode }[] = [
+  { title: { fr: 'Hôpital & Clinique', en: 'Hospital & Clinic' }, desc: { fr: 'Gestion complète multi-services : urgences, consultations, pharmacie, labo, bloc opératoire, imagerie.', en: 'Full multi-department management: emergency, consultations, pharmacy, lab, operating room, imaging.' }, tags: { fr: ['DME','Urgences','Bloc op.','Imagerie'], en: ['EHR','Emergency','OR','Imaging'] }, color: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+  { title: { fr: 'Pharmacie autonome', en: 'Standalone Pharmacy' }, desc: { fr: 'Stocks, dispensation sur ordonnance, alertes péremption, facturation — sans module hospitalier.', en: 'Inventory, prescription dispensing, expiry alerts, billing — without the hospital module.' }, tags: { fr: ['Stocks','Dispensation','Alertes','Facturation'], en: ['Stock','Dispensing','Alerts','Billing'] }, color: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+  { title: { fr: 'Cabinet médical', en: 'Medical Practice' }, desc: { fr: 'Agenda, consultations CIM-10, ordonnances numériques et facturation pour praticiens en cabinet.', en: 'Schedule, ICD-10 consultations, digital prescriptions and billing for private practitioners.' }, tags: { fr: ['Agenda','DME','Ordonnances','Facturation'], en: ['Schedule','EHR','Prescriptions','Billing'] }, color: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> },
+  { title: { fr: "Laboratoire d'analyses", en: 'Analysis Laboratory' }, desc: { fr: 'Réception des demandes, saisie & validation des résultats, interface biologiste, historique complet.', en: 'Test request reception, result entry & validation, biologist interface, complete history.' }, tags: { fr: ['Demandes','Résultats','Validation','Historique'], en: ['Requests','Results','Validation','History'] }, color: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> },
+  { title: { fr: 'Centre de santé', en: 'Health Center' }, desc: { fr: 'Solution légère pour les CSP, dispensaires et centres communautaires. Déploiement en 48h.', en: 'Lightweight solution for dispensaries and community health centers. 48h deployment.' }, tags: { fr: ['Patients','Consultations','Médicaments','Reporting'], en: ['Patients','Consultations','Medicines','Reporting'] }, color: '#34D399', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+  { title: { fr: 'Clinique spécialisée', en: 'Specialist Clinic' }, desc: { fr: 'Ophtalmologie, dentisterie, kinésithérapie, maternité — configuré selon votre spécialité.', en: 'Ophthalmology, dentistry, physiotherapy, maternity — configured for your specialty.' }, tags: { fr: ['Spécialités','Planning','DME','Facturation'], en: ['Specialties','Planning','EHR','Billing'] }, color: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
 ];
 
 const INTEGRATIONS = [
@@ -458,29 +480,29 @@ const INTEGRATIONS = [
 ];
 
 
-const FAQ_ITEMS = [
-  { q: "Qu'est-ce que SANTAREX ERP ?", a: "SANTAREX ERP est un logiciel de gestion hospitalière complet, conçu pour les établissements de santé en Afrique de l'Ouest et Centrale. Il centralise la gestion des patients, consultations, pharmacie, laboratoire, facturation et bien plus dans une seule plateforme cloud." },
-  { q: "À qui s'adresse SANTAREX ERP ?", a: "SANTAREX ERP s'adresse aux hôpitaux, cliniques, polycliniques, cabinets médicaux, pharmacies autonomes, laboratoires d'analyses, centres de santé et cliniques spécialisées (ophtalmologie, dentaire, kinésithérapie…)." },
-  { q: "Y a-t-il une période d'essai gratuite ?", a: "Oui. Un essai gratuit de 30 jours est disponible sans carte bancaire et sans engagement. Vous accédez à toutes les fonctionnalités de la formule choisie durant cette période." },
-  { q: "Quels sont les tarifs ?", a: "4 formules : Pharmacie à 12 000 FCFA/mois, Cabinet à 15 000 FCFA/mois, Clinique à 75 000 FCFA/mois et Hôpital à 150 000 FCFA/mois. Tous les tarifs incluent hébergement, maintenance et support." },
-  { q: "Est-il disponible hors connexion ?", a: "SANTAREX ERP propose un mode hors-ligne partiel pour les consultations et la pharmacie. Les données saisies sont synchronisées automatiquement au retour de connexion internet." },
-  { q: "Puis-je l'installer sur mon téléphone ?", a: "Oui. SANTAREX ERP est une Progressive Web App (PWA). Installez-la sur votre smartphone, tablette ou ordinateur directement depuis votre navigateur, sans passer par l'App Store ou le Play Store." },
-  { q: "Quels modes de paiement sont pris en charge ?", a: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, carte bancaire et espèces. Tous les modes de paiement courants en Afrique sont intégrés nativement." },
-  { q: "Combien de temps pour être opérationnel ?", a: "La mise en route prend généralement 48 heures : création du compte, configuration de votre établissement, import des données existantes et formation de vos équipes." },
-  { q: "Où sont hébergées mes données ?", a: "Vos données sont hébergées sur des serveurs sécurisés, chiffrées AES-256 en transit et au repos. Chaque établissement dispose de son propre espace isolé. Des sauvegardes automatiques sont effectuées quotidiennement." },
-  { q: "Y a-t-il un engagement minimum ?", a: "Non. SANTAREX ERP fonctionne sur abonnement mensuel sans engagement de durée. Vous pouvez résilier à tout moment depuis votre espace administration, sans frais." },
+const FAQ_ITEMS: { q: Record<Lang,string>; a: Record<Lang,string> }[] = [
+  { q: { fr: "Qu'est-ce que SANTAREX ERP ?", en: "What is SANTAREX ERP?" }, a: { fr: "SANTAREX ERP est un logiciel de gestion hospitalière complet, conçu pour les établissements de santé en Afrique de l'Ouest et Centrale. Il centralise la gestion des patients, consultations, pharmacie, laboratoire, facturation et bien plus dans une seule plateforme cloud.", en: "SANTAREX ERP is a complete hospital management software designed for healthcare facilities in West and Central Africa. It centralizes patient management, consultations, pharmacy, laboratory, billing and more in a single cloud platform." } },
+  { q: { fr: "À qui s'adresse SANTAREX ERP ?", en: "Who is SANTAREX ERP for?" }, a: { fr: "SANTAREX ERP s'adresse aux hôpitaux, cliniques, polycliniques, cabinets médicaux, pharmacies autonomes, laboratoires d'analyses, centres de santé et cliniques spécialisées (ophtalmologie, dentaire, kinésithérapie…).", en: "SANTAREX ERP is designed for hospitals, clinics, polyclinics, medical practices, standalone pharmacies, analysis labs, health centers and specialist clinics (ophthalmology, dental, physiotherapy…)." } },
+  { q: { fr: "Y a-t-il une période d'essai gratuite ?", en: "Is there a free trial period?" }, a: { fr: "Oui. Un essai gratuit de 30 jours est disponible sans carte bancaire et sans engagement. Vous accédez à toutes les fonctionnalités de la formule choisie durant cette période.", en: "Yes. A 30-day free trial is available with no credit card and no commitment. You have access to all features of your chosen plan during this period." } },
+  { q: { fr: "Quels sont les tarifs ?", en: "What are the prices?" }, a: { fr: "4 formules : Pharmacie à 12 000 FCFA/mois, Cabinet à 15 000 FCFA/mois, Clinique à 75 000 FCFA/mois et Hôpital à 150 000 FCFA/mois. Tous les tarifs incluent hébergement, maintenance et support.", en: "4 plans: Pharmacy at 12,000 FCFA/month, Practice at 15,000 FCFA/month, Clinic at 75,000 FCFA/month, and Hospital at 150,000 FCFA/month. All prices include hosting, maintenance and support." } },
+  { q: { fr: "Est-il disponible hors connexion ?", en: "Is it available offline?" }, a: { fr: "SANTAREX ERP propose un mode hors-ligne partiel pour les consultations et la pharmacie. Les données saisies sont synchronisées automatiquement au retour de connexion internet.", en: "SANTAREX ERP offers a partial offline mode for consultations and pharmacy. Data entered is automatically synced when internet connection is restored." } },
+  { q: { fr: "Puis-je l'installer sur mon téléphone ?", en: "Can I install it on my phone?" }, a: { fr: "Oui. SANTAREX ERP est une Progressive Web App (PWA). Installez-la sur votre smartphone, tablette ou ordinateur directement depuis votre navigateur, sans passer par l'App Store ou le Play Store.", en: "Yes. SANTAREX ERP is a Progressive Web App (PWA). Install it on your smartphone, tablet or computer directly from your browser, without going through the App Store or Play Store." } },
+  { q: { fr: "Quels modes de paiement sont pris en charge ?", en: "Which payment methods are supported?" }, a: { fr: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, carte bancaire et espèces. Tous les modes de paiement courants en Afrique sont intégrés nativement.", en: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, bank card and cash. All common payment methods in Africa are natively integrated." } },
+  { q: { fr: "Combien de temps pour être opérationnel ?", en: "How long to get started?" }, a: { fr: "La mise en route prend généralement 48 heures : création du compte, configuration de votre établissement, import des données existantes et formation de vos équipes.", en: "Getting started generally takes 48 hours: account creation, facility configuration, existing data import and team training." } },
+  { q: { fr: "Où sont hébergées mes données ?", en: "Where is my data hosted?" }, a: { fr: "Vos données sont hébergées sur des serveurs sécurisés, chiffrées AES-256 en transit et au repos. Chaque établissement dispose de son propre espace isolé. Des sauvegardes automatiques sont effectuées quotidiennement.", en: "Your data is hosted on secure servers, AES-256 encrypted in transit and at rest. Each facility has its own isolated space. Automatic backups are performed daily." } },
+  { q: { fr: "Y a-t-il un engagement minimum ?", en: "Is there a minimum commitment?" }, a: { fr: "Non. SANTAREX ERP fonctionne sur abonnement mensuel sans engagement de durée. Vous pouvez résilier à tout moment depuis votre espace administration, sans frais.", en: "No. SANTAREX ERP operates on a monthly subscription with no duration commitment. You can cancel at any time from your admin panel, with no fees." } },
 ];
 
-const TESTIMONIALS = [
-  { initial: 'K', name: 'Dr. Konan Akissi', role: 'Directeur médical — Clinique Sainte-Marie, Douala', quote: 'SANTAREX a transformé notre pharmacie. La synchronisation avec les prescriptions médecin est instantanée — plus aucune rupture non détectée.' },
-  { initial: 'T', name: 'Mme Traoré Fatoumata', role: 'Responsable administratif — Polyclinique Dakar Santé', quote: "Le tableau de bord nous donne enfin une visibilité complète sur nos recettes et notre taux d'occupation. On pilote l'hôpital avec des données." },
-  { initial: 'C', name: 'Dr. Coulibaly Moussa', role: 'Médecin généraliste — Cabinet Excellence, Lomé', quote: "Les ordonnances numériques et le DME m'économisent 2 heures par jour. Je me concentre sur mes patients, pas sur la paperasse." },
+const TESTIMONIALS: { initial: string; name: string; role: Record<Lang,string>; quote: Record<Lang,string> }[] = [
+  { initial: 'K', name: 'Dr. Konan Akissi', role: { fr: 'Directeur médical — Clinique Sainte-Marie, Douala', en: 'Medical Director — Clinique Sainte-Marie, Douala' }, quote: { fr: 'SANTAREX a transformé notre pharmacie. La synchronisation avec les prescriptions médecin est instantanée — plus aucune rupture non détectée.', en: 'SANTAREX transformed our pharmacy. Synchronization with doctor prescriptions is instant — no more undetected stockouts.' } },
+  { initial: 'T', name: 'Mme Traoré Fatoumata', role: { fr: 'Responsable administratif — Polyclinique Dakar Santé', en: 'Administrative Manager — Polyclinique Dakar Santé' }, quote: { fr: "Le tableau de bord nous donne enfin une visibilité complète sur nos recettes et notre taux d'occupation. On pilote l'hôpital avec des données.", en: "The dashboard finally gives us complete visibility on our revenue and occupancy rate. We manage the hospital with real data." } },
+  { initial: 'C', name: 'Dr. Coulibaly Moussa', role: { fr: 'Médecin généraliste — Cabinet Excellence, Lomé', en: 'General Practitioner — Cabinet Excellence, Lomé' }, quote: { fr: "Les ordonnances numériques et le DME m'économisent 2 heures par jour. Je me concentre sur mes patients, pas sur la paperasse.", en: "Digital prescriptions and the EHR save me 2 hours a day. I focus on my patients, not on paperwork." } },
 ];
 
 /* ═══════════════════════════════════════════════════════
    COMPOSANT SARA FLOTTANT
 ═══════════════════════════════════════════════════════ */
-function SaraChat() {
+function SaraChat({ lang }: { lang: Lang }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<{ from: 'sara' | 'user'; text: string }[]>([
     { from: 'sara', text: "Bonjour ! Je suis SARA, votre assistante SANTAREX ERP 👋\n\nComment puis-je vous aider ?" },
@@ -541,7 +563,7 @@ function SaraChat() {
           </div>
           {messages.length === 1 && (
             <div className="lp-sara-quick">
-              {SARA_QUICK.map(q => (
+              {SARA_QUICK[lang].map(q => (
                 <button key={q} className="lp-sara-quick-btn" onClick={() => send(q)}>{q}</button>
               ))}
             </div>
@@ -680,9 +702,15 @@ function DemoForm({ lang }: { lang: Lang }) {
         <label className="lp-form-label">{tl('form_type')}</label>
         <select className="lp-form-input lp-select" disabled={state === 'success'}>
           <option value="">{tl('form_select')}</option>
-          <option>Hôpital</option><option>Clinique privée</option><option>Polyclinique</option>
-          <option>Cabinet médical</option><option>Pharmacie autonome</option>
-          <option>Laboratoire d&apos;analyses</option><option>Centre de santé</option>
+          {lang === 'fr' ? <>
+            <option>Hôpital</option><option>Clinique privée</option><option>Polyclinique</option>
+            <option>Cabinet médical</option><option>Pharmacie autonome</option>
+            <option>Laboratoire d&apos;analyses</option><option>Centre de santé</option>
+          </> : <>
+            <option>Hospital</option><option>Private clinic</option><option>Polyclinic</option>
+            <option>Medical practice</option><option>Standalone pharmacy</option>
+            <option>Analysis laboratory</option><option>Health center</option>
+          </>}
         </select>
       </div>
       <div className="lp-form-group">
@@ -779,15 +807,15 @@ export default function LandingPage() {
               {t('hero_eyebrow')}
             </div>
             <div className="lp-hero-ibig-badge">
-              Un produit&nbsp;<a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">IBIG SOFT</a>&nbsp;·&nbsp;ibigsoft.com
+              {lang === 'fr' ? 'Un produit' : 'A product by'}&nbsp;<a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">IBIG SOFT</a>&nbsp;·&nbsp;ibigsoft.com
             </div>
             <h1 className={`lp-hero-title ${sliding ? 'lp-slide-out' : 'lp-slide-in'}`}>
-              {slide.line1}<br />
-              <span className="accent">{slide.accent}</span><br />
-              <span className="line2">{slide.line3}</span>
+              {slide.line1[lang]}<br />
+              <span className="accent">{slide.accent[lang]}</span><br />
+              <span className="line2">{slide.line3[lang]}</span>
             </h1>
             <p className={`lp-hero-desc ${sliding ? 'lp-slide-out' : 'lp-slide-in'}`} style={{ transitionDelay: sliding ? '0ms' : '60ms' }}>
-              {slide.sub}
+              {slide.sub[lang]}
             </p>
             <div className="lp-hero-ctas">
               <a href="#contact" className="lp-btn-primary"><ArrowRight />{t('hero_cta1')}</a>
@@ -901,12 +929,12 @@ export default function LandingPage() {
                 <div className="lp-problem-icon">{p.icon}</div>
                 <div className="lp-problem-before">
                   <div className="lp-problem-label before">{t('problem_before_label')}</div>
-                  <p>{p.before}</p>
+                  <p>{p.before[lang]}</p>
                 </div>
                 <div className="lp-problem-arrow">→</div>
                 <div className="lp-problem-after">
                   <div className="lp-problem-label after">{t('problem_after_label')}</div>
-                  <p>{p.after}</p>
+                  <p>{p.after[lang]}</p>
                 </div>
               </div>
             ))}
@@ -930,9 +958,9 @@ export default function LandingPage() {
             </div>
             <div className="lp-modules-grid">
               {MODULES.map(m => (
-                <div key={m.title} className="lp-module-card">
+                <div key={m.title.fr} className="lp-module-card">
                   <div className="lp-module-icon" style={{ background: m.iconColor }}><span style={{ color: m.strokeColor }}>{m.icon}</span></div>
-                  <h3>{m.title}</h3><p>{m.desc}</p><span className="lp-module-tag">{m.tag}</span>
+                  <h3>{m.title[lang]}</h3><p>{m.desc[lang]}</p><span className="lp-module-tag">{m.tag}</span>
                 </div>
               ))}
             </div>
@@ -1009,11 +1037,11 @@ export default function LandingPage() {
           </div>
           <div className="lp-activites-grid">
             {ACTIVITES.map(a => (
-              <div key={a.title} className="lp-activite-card">
+              <div key={a.title.fr} className="lp-activite-card">
                 <div className="lp-activite-icon" style={{ color: a.color, background: `${a.color}18` }}>{a.icon}</div>
-                <h3 className="lp-activite-title">{a.title}</h3>
-                <p className="lp-activite-desc">{a.desc}</p>
-                <div className="lp-activite-tags">{a.tags.map(t => <span key={t} className="lp-activite-tag" style={{ borderColor: `${a.color}40`, color: a.color }}>{t}</span>)}</div>
+                <h3 className="lp-activite-title">{a.title[lang]}</h3>
+                <p className="lp-activite-desc">{a.desc[lang]}</p>
+                <div className="lp-activite-tags">{a.tags[lang].map(tag => <span key={tag} className="lp-activite-tag" style={{ borderColor: `${a.color}40`, color: a.color }}>{tag}</span>)}</div>
               </div>
             ))}
           </div>
@@ -1130,13 +1158,13 @@ export default function LandingPage() {
           <span className="lp-eyebrow">{t('testimonials_eyebrow')}</span>
           <h2 className="lp-section-title">{t('testimonials_title')}</h2>
           <div className="lp-testi-grid">
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} className="lp-testi-card">
+            {TESTIMONIALS.map(testi => (
+              <div key={testi.name} className="lp-testi-card">
                 <div className="lp-stars">★★★★★</div>
-                <p className="lp-testi-quote">{t.quote}</p>
+                <p className="lp-testi-quote">{testi.quote[lang]}</p>
                 <div className="lp-testi-author">
-                  <div className="lp-testi-avatar">{t.initial}</div>
-                  <div><div className="lp-testi-name">{t.name}</div><div className="lp-testi-role">{t.role}</div></div>
+                  <div className="lp-testi-avatar">{testi.initial}</div>
+                  <div><div className="lp-testi-name">{testi.name}</div><div className="lp-testi-role">{testi.role[lang]}</div></div>
                 </div>
               </div>
             ))}
@@ -1155,9 +1183,9 @@ export default function LandingPage() {
             {FAQ_ITEMS.map((item, i) => (
               <div key={i} className={`lp-faq-item ${openFaq === i ? 'open' : ''}`}>
                 <button className="lp-faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span>{item.q}</span><ChevronDown open={openFaq === i} />
+                  <span>{item.q[lang]}</span><ChevronDown open={openFaq === i} />
                 </button>
-                {openFaq === i && <div className="lp-faq-answer">{item.a}</div>}
+                {openFaq === i && <div className="lp-faq-answer">{item.a[lang]}</div>}
               </div>
             ))}
           </div>
@@ -1312,7 +1340,7 @@ export default function LandingPage() {
       </footer>
 
       {/* ══ FLOTTANTS ══ */}
-      <SaraChat />
+      <SaraChat lang={lang} />
       <WhatsAppButton />
       <CookieBanner />
       <PwaBanner />
