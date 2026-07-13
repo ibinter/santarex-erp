@@ -1,207 +1,216 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  ArrowLeft, User, Stethoscope, Activity, Thermometer, Heart,
-  Weight, Ruler, Wind, Pill, FlaskConical, CreditCard, Check, Plus,
-} from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { ArrowLeft, User, Activity, Thermometer, Heart, Weight, Ruler, Wind, Pill, FlaskConical, FileText, RefreshCw } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-const MOCK_CONSULTATION = {
-  id: 'c001',
-  numero: 'CONS-2024-001',
-  patient: { id: 'p1', nom: 'Kouassi Ama Bernadette', ipp: 'IPP-00142', age: 42, groupeSanguin: 'A+', allergies: 'Pénicilline' },
-  medecin: { nom: 'Koffi Ange', specialite: 'Médecine générale' },
-  dateHeure: '2024-06-15T09:30',
-  motif: 'Céphalées persistantes depuis 3 jours, résistantes aux antalgiques habituels.',
-  anamnese: 'Patiente de 42 ans consultant pour des céphalées frontales intenses débutées il y a 3 jours. Douleur pulsatile 7/10, aggravée par la lumière et les bruits. Nausées associées. Pas de vomissements. Antécédents de migraines depuis l\'adolescence.',
-  examenClinique: 'État général conservé. PA : 128/82 mmHg. FC : 76 bpm. Temp : 37.1°C. Examen neurologique : absence de raideur de nuque, signe de Kernig négatif. Fond d\'œil normal. Pas de déficit focal.',
-  diagnostic: 'Migraine sans aura (G43.0)',
-  codeCIM10: 'G43.0',
-  conclusion: 'Migraine sans aura typique. Bonne réponse au Triptan lors des crises antérieures. Recommandation d\'un traitement de fond devant la fréquence des crises.',
-  planSoins: '1. Sumatriptan 50mg en cas de crise\n2. Ibuprofène 400mg si crise légère\n3. Eviter les facteurs déclenchants (stress, manque de sommeil)\n4. RDV neurologie pour envisager un traitement de fond',
-  constantesVitales: { ta: '128/82', fc: 76, temperature: 37.1, poids: 64, taille: 162, spo2: 98 },
-  statut: 'terminee' as const,
-  ordonnances: [
-    { id: 'o1', numero: 'ORD-2024-0142', statut: 'active' as const, lignes: ['Sumatriptan 50mg — 1 cp si crise, max 2/j', 'Ibuprofène 400mg — 1 cp x3/j si crise légère'] },
-  ],
-  demandesAnalyses: ['NFS complète', 'VS - CRP'],
+type Consultation = {
+  id: string; numero?: string; statut?: string;
+  patient?: { id: string; nom: string; prenom: string; ipp?: string; dateNaissance?: string; groupeSanguin?: string; allergies?: string };
+  medecin?: { id: string; nom: string; prenom: string; specialite?: string };
+  dateHeure?: string; motif?: string; anamnese?: string; examenClinique?: string;
+  diagnostic?: string; codeCIM10?: string; conclusion?: string; planSoins?: string;
+  constantesVitales?: { ta?: string; fc?: number; temperature?: number; poids?: number; taille?: number; spo2?: number };
+  ordonnances?: { id: string; numero?: string; statut?: string; lignes?: string[] }[];
+  demandesAnalyses?: string[];
 };
 
-const CONSTANTES_META = [
-  { key: 'ta', label: 'Tension artérielle', unit: 'mmHg', icon: <Activity size={18} />, color: 'text-red-600 bg-red-50 border-red-200' },
-  { key: 'fc', label: 'Fréquence cardiaque', unit: 'bpm', icon: <Heart size={18} />, color: 'text-pink-600 bg-pink-50 border-pink-200' },
-  { key: 'temperature', label: 'Température', unit: '°C', icon: <Thermometer size={18} />, color: 'text-orange-600 bg-orange-50 border-orange-200' },
-  { key: 'poids', label: 'Poids', unit: 'kg', icon: <Weight size={18} />, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  { key: 'taille', label: 'Taille', unit: 'cm', icon: <Ruler size={18} />, color: 'text-purple-600 bg-purple-50 border-purple-200' },
-  { key: 'spo2', label: 'SpO₂', unit: '%', icon: <Wind size={18} />, color: 'text-teal-600 bg-teal-50 border-teal-200' },
-];
+const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  en_cours:  { label: 'En cours',  color: '#1565C0', bg: '#EFF6FF' },
+  terminee:  { label: 'Terminée',  color: '#2E7D32', bg: '#E8F5E9' },
+  facturee:  { label: 'Facturée',  color: '#6A1B9A', bg: '#F3E5F5' },
+};
+
+function fmtDate(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function calcAge(dateNaissance?: string) {
+  if (!dateNaissance) return '';
+  return ` • ${Math.floor((Date.now() - new Date(dateNaissance).getTime()) / (365.25 * 24 * 3600000))} ans`;
+}
 
 export default function ConsultationDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const c = MOCK_CONSULTATION;
+  const [consultation, setConsultation] = useState<Consultation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const data = await apiClient<Consultation>(`/consultations/${params.id}`);
+      setConsultation(data);
+    } catch (e: any) {
+      setError(e?.message ?? 'Impossible de charger la consultation');
+    } finally { setLoading(false); }
+  }, [params.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const VITAUX = [
+    { key: 'ta',          label: 'Tension artérielle', unit: 'mmHg', icon: <Activity size={16} />,    color: '#C62828', bg: '#FFEBEE' },
+    { key: 'fc',          label: 'Fréquence cardiaque', unit: 'bpm', icon: <Heart size={16} />,       color: '#AD1457', bg: '#FCE4EC' },
+    { key: 'temperature', label: 'Température',         unit: '°C',  icon: <Thermometer size={16} />, color: '#E65100', bg: '#FFF3E0' },
+    { key: 'poids',       label: 'Poids',               unit: 'kg',  icon: <Weight size={16} />,      color: '#0D47A1', bg: '#EFF6FF' },
+    { key: 'taille',      label: 'Taille',              unit: 'cm',  icon: <Ruler size={16} />,       color: '#6A1B9A', bg: '#F3E5F5' },
+    { key: 'spo2',        label: 'SpO₂',                unit: '%',   icon: <Wind size={16} />,        color: '#00695C', bg: '#E0F2F1' },
+  ];
 
   return (
-    <div className="min-h-screen bg-bg">
-      {/* Header */}
-      <div className="bg-white border-b border-border px-6 py-4">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary mb-3 transition-colors"
-        >
-          <ArrowLeft size={16} /> Retour aux consultations
-        </button>
+    <div style={{ padding: '16px', maxWidth: '1100px', margin: '0 auto' }}>
+      {/* Back nav */}
+      <button onClick={() => router.push('/consultations')}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
+        <ArrowLeft size={14} /> Retour aux consultations
+      </button>
 
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-text-primary">{c.numero}</h1>
-              <Badge variant={(c.statut as string) === 'terminee' ? 'success' : (c.statut as string) === 'en_cours' ? 'info' : 'neutral'} dot>
-                {(c.statut as string) === 'en_cours' ? 'En cours' : (c.statut as string) === 'terminee' ? 'Terminée' : 'Facturée'}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary flex-wrap">
-              <span className="flex items-center gap-1"><User size={14} /> {c.patient.nom}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1"><Stethoscope size={14} /> Dr. {c.medecin.nom}</span>
-              <span>•</span>
-              <span>{new Date(c.dateHeure).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</span>
-              <span>à {new Date(c.dateHeure).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-          </div>
-          <div className="flex gap-2 flex-shrink-0">
-            {(c.statut as string) === 'en_cours' && (
-              <Button leftIcon={<Check size={16} />}>Terminer la consultation</Button>
-            )}
-            {(c.statut as string) === 'terminee' && (
-              <Button variant="secondary" leftIcon={<CreditCard size={16} />}>Facturer</Button>
-            )}
-          </div>
+      {loading ? (
+        <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', color: '#90A4AE', boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} />
+          Chargement…
+          <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
         </div>
-      </div>
-
-      <div className="p-6 max-w-5xl mx-auto space-y-5">
-        {/* Constantes vitales */}
-        <section>
-          <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Constantes vitales</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {CONSTANTES_META.map(({ key, label, unit, icon, color }) => {
-              const val = (c.constantesVitales as any)[key];
-              return (
-                <div key={key} className={`rounded-lg border p-3 text-center ${color}`}>
-                  <div className="flex justify-center mb-1">{icon}</div>
-                  <p className="text-lg font-bold">{val ?? '—'}</p>
-                  <p className="text-[10px] font-medium opacity-70">{unit}</p>
-                  <p className="text-[10px] mt-0.5 font-medium leading-tight">{label}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Motif & Anamnèse */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <section className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-2">Motif de consultation</h2>
-            <p className="text-sm text-text-primary leading-relaxed">{c.motif}</p>
-          </section>
-          <section className="bg-white rounded-card border border-border p-5">
-            <h2 className="text-sm font-semibold text-text-primary mb-2">Anamnèse</h2>
-            <p className="text-sm text-text-primary leading-relaxed whitespace-pre-line">{c.anamnese}</p>
-          </section>
+      ) : error ? (
+        <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: '24px 28px', color: '#C62828', fontSize: 14 }}>
+          ⚠ {error}
+          <button onClick={load} style={{ marginLeft: 16, padding: '6px 12px', borderRadius: 6, border: '1px solid #C62828', background: 'transparent', color: '#C62828', cursor: 'pointer', fontSize: 12 }}>Réessayer</button>
         </div>
-
-        {/* Examen clinique */}
-        <section className="bg-white rounded-card border border-border p-5">
-          <h2 className="text-sm font-semibold text-text-primary mb-2">Examen clinique</h2>
-          <p className="text-sm text-text-primary leading-relaxed">{c.examenClinique}</p>
-        </section>
-
-        {/* Diagnostic */}
-        <section className="bg-white rounded-card border border-border p-5">
-          <div className="flex items-start justify-between">
+      ) : !consultation ? null : (
+        <>
+          {/* Header card */}
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h2 className="text-sm font-semibold text-text-primary mb-2">Diagnostic</h2>
-              <p className="text-base font-bold text-primary">{c.diagnostic}</p>
-              {c.codeCIM10 && <p className="text-xs text-text-secondary mt-1">Code CIM-10 : {c.codeCIM10}</p>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FileText size={20} color="#1565C0" />
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>{consultation.numero ?? `CONS-${consultation.id.slice(0,8).toUpperCase()}`}</h1>
+                  <p style={{ margin: 0, fontSize: 12, color: '#546E7A' }}>{fmtDate(consultation.dateHeure)}</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {consultation.statut && (
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: STATUT_CONFIG[consultation.statut]?.bg ?? '#F5F5F5', color: STATUT_CONFIG[consultation.statut]?.color ?? '#546E7A' }}>
+                  {STATUT_CONFIG[consultation.statut]?.label ?? consultation.statut}
+                </span>
+              )}
             </div>
           </div>
-          {c.conclusion && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <h3 className="text-sm font-semibold text-text-primary mb-1">Conclusion</h3>
-              <p className="text-sm text-text-primary leading-relaxed">{c.conclusion}</p>
-            </div>
-          )}
-        </section>
 
-        {/* Plan de soins */}
-        <section className="bg-white rounded-card border border-border p-5">
-          <h2 className="text-sm font-semibold text-text-primary mb-2">Plan de soins</h2>
-          <p className="text-sm text-text-primary leading-relaxed whitespace-pre-line">{c.planSoins}</p>
-        </section>
-
-        {/* Ordonnances */}
-        <section className="bg-white rounded-card border border-border p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-              <Pill size={16} className="text-green-600" /> Ordonnances
-            </h2>
-            <Button size="sm" variant="secondary" leftIcon={<Plus size={14} />}>
-              Nouvelle ordonnance
-            </Button>
-          </div>
-          {c.ordonnances.length > 0 ? (
-            <div className="space-y-3">
-              {c.ordonnances.map(o => (
-                <div key={o.id} className="border border-green-100 bg-green-50 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold">{o.numero}</span>
-                    <Badge variant="success">Active</Badge>
+          <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, alignItems: 'start' }}>
+            {/* Colonne gauche — Patient */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {/* Patient */}
+              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#0D47A1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>
+                    <User size={20} />
                   </div>
-                  <ul className="space-y-1">
-                    {o.lignes.map((l, i) => (
-                      <li key={i} className="text-xs flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                          {i + 1}
-                        </span>
-                        {l}
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{consultation.patient ? `${consultation.patient.prenom} ${consultation.patient.nom}` : '—'}</div>
+                    <div style={{ fontSize: 11, color: '#90A4AE' }}>{consultation.patient?.ipp}{calcAge(consultation.patient?.dateNaissance)}</div>
+                  </div>
+                </div>
+                {consultation.patient?.groupeSanguin && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '1px solid #F5F7FA' }}>
+                    <span style={{ fontSize: 12, color: '#90A4AE' }}>Groupe sanguin</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#C62828' }}>{consultation.patient.groupeSanguin}</span>
+                  </div>
+                )}
+                {consultation.patient?.allergies && (
+                  <div style={{ marginTop: 8, padding: '8px 10px', background: '#FFEBEE', borderRadius: 6, fontSize: 12, color: '#C62828' }}>
+                    ⚠ Allergies: {consultation.patient.allergies}
+                  </div>
+                )}
+              </div>
+
+              {/* Médecin */}
+              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Médecin</p>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#37474F' }}>
+                  {consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—'}
+                </div>
+                {consultation.medecin?.specialite && <div style={{ fontSize: 12, color: '#90A4AE', marginTop: 2 }}>{consultation.medecin.specialite}</div>}
+              </div>
+
+              {/* Constantes vitales */}
+              {consultation.constantesVitales && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Constantes vitales</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {VITAUX.map(v => {
+                      const val = (consultation.constantesVitales as any)?.[v.key];
+                      if (!val) return null;
+                      return (
+                        <div key={v.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: v.bg, borderRadius: 8 }}>
+                          <span style={{ color: v.color }}>{v.icon}</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 10, color: v.color, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>{v.label}</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: v.color }}>{val} <span style={{ fontSize: 11, fontWeight: 400 }}>{v.unit}</span></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Colonne droite — Contenu médical */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { title: 'Motif de consultation', value: consultation.motif, icon: '💬' },
+                { title: 'Anamnèse', value: consultation.anamnese, icon: '📋' },
+                { title: 'Examen clinique', value: consultation.examenClinique, icon: '🔬' },
+                { title: 'Diagnostic', value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : null, icon: '🎯' },
+                { title: 'Conclusion', value: consultation.conclusion, icon: '📝' },
+                { title: 'Plan de soins', value: consultation.planSoins, icon: '📌' },
+              ].filter(s => s.value).map(s => (
+                <div key={s.title} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{s.icon} {s.title}</p>
+                  <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{s.value}</p>
                 </div>
               ))}
-            </div>
-          ) : (
-            <p className="text-sm text-text-secondary">Aucune ordonnance émise.</p>
-          )}
-        </section>
 
-        {/* Demandes analyses */}
-        <section className="bg-white rounded-card border border-border p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-              <FlaskConical size={16} className="text-purple-600" /> Demandes d'analyses
-            </h2>
-            <Button size="sm" variant="secondary" leftIcon={<Plus size={14} />}>
-              Demander des analyses
-            </Button>
+              {/* Ordonnances */}
+              {consultation.ordonnances && consultation.ordonnances.length > 0 && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Pill size={15} /> Ordonnances
+                  </p>
+                  {consultation.ordonnances.map(ord => (
+                    <div key={ord.id} style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: 8, marginBottom: 8, borderLeft: '3px solid #1565C0' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1565C0', marginBottom: 6 }}>{ord.numero ?? ord.id}</div>
+                      {ord.lignes?.map((l, i) => <div key={i} style={{ fontSize: 12, color: '#37474F', padding: '3px 0', borderTop: i > 0 ? '1px solid #F0F0F0' : 'none' }}>• {l}</div>)}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Demandes d'analyses */}
+              {consultation.demandesAnalyses && consultation.demandesAnalyses.length > 0 && (
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <FlaskConical size={15} /> Demandes d'analyses
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {consultation.demandesAnalyses.map((a, i) => (
+                      <span key={i} style={{ padding: '4px 12px', borderRadius: 20, background: '#EFF6FF', color: '#1565C0', fontSize: 12, fontWeight: 600 }}>{a}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          {c.demandesAnalyses.length > 0 ? (
-            <ul className="flex gap-2 flex-wrap">
-              {c.demandesAnalyses.map(a => (
-                <li key={a}>
-                  <Badge variant="info">{a}</Badge>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-text-secondary">Aucune analyse demandée.</p>
-          )}
-        </section>
-      </div>
+        </>
+      )}
     </div>
   );
 }
