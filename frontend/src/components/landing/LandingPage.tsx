@@ -117,6 +117,40 @@ const T = {
     footer_about: 'À propos d\'IBIG Soft', footer_other: 'Autres logiciels', footer_careers: 'Recrutement',
     footer_mentions: 'Mentions légales', footer_cgu: 'CGU', footer_privacy: 'Confidentialité',
     footer_licence: 'Contrat de licence', footer_security: 'Sécurité',
+    // inline JSX
+    scroll_discover: 'Découvrir',
+    hero_badge: 'Un produit IBIG SOFT · ibigsoft.com',
+    trust_count: 'établissements actifs',
+    problem_before_label: 'Avant', problem_after_label: 'Avec SANTAREX',
+    modules_desc: 'Chaque module communique en temps réel. Une prescription générée en consultation alerte automatiquement la pharmacie. Un résultat labo apparaît dans le DME dès validation.',
+    modules_check1: 'Données synchronisées en temps réel',
+    modules_check2: 'Déployable module par module',
+    modules_check3: 'Formation incluse dans tous les plans',
+    pricing_desc: 'Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.',
+    activities_desc: "SANTAREX ERP se configure automatiquement selon votre type de structure. Les modules, tableaux de bord et flux de travail s'adaptent à votre métier — pas l'inverse.",
+    activities_cta_text: "À l'inscription, sélectionnez votre activité — le système configure vos modules, tableau de bord et droits d'accès automatiquement.",
+    pwa_desc: "Accédez plus rapidement à votre espace depuis votre ordinateur, votre tablette ou votre smartphone, sans passer par une boutique d'applications.",
+    pwa_f1: "Accès rapide depuis l'écran d'accueil", pwa_f2: 'Ouverture en plein écran', pwa_f3: 'Mises à jour automatiques',
+    pwa_f4: 'Compatible Android, iOS et PC', pwa_f5: 'Fonctionne partiellement hors connexion', pwa_f6: 'Aucun fichier lourd à télécharger',
+    pwa_ios: "Sur iPhone : appuyez sur Partager puis Ajouter à l'écran d'accueil",
+    pwa_ios_bold1: 'Partager', pwa_ios_bold2: "Ajouter à l'écran d'accueil",
+    partners_desc: "Rejoignez gratuitement le programme de partenariat IBIG et recommandez SANTAREX ERP à votre réseau. Accédez aux outils, suivez vos recommandations et percevez des commissions.",
+    partners_p1: 'Inscription 100% gratuite', partners_p2: 'Accès aux outils IBIG Partners',
+    partners_p3: 'Suivi en temps réel de vos recommandations', partners_p4: 'Commissions sur chaque contrat signé',
+    partners_p5: 'Accompagnement et support dédié', partners_p6: 'Formation aux produits IBIG Soft',
+    partners_btn1: 'Devenir partenaire', partners_btn2: 'Découvrir le programme',
+    partners_disclaimer: '* Les commissions varient selon les contrats. Aucun revenu garanti n\'est promis.',
+    partners_badge_sub: 'Programme officiel\nIBIG Soft',
+    footer_brand_desc: 'La technologie au service de la santé.',
+    footer_brand_sub: 'Un produit IBIG SOFT — Intermark Business International Group. Conçu en Côte d\'Ivoire pour toute l\'Afrique.',
+    int_available: 'Disponible', int_wip: 'En intégration', int_soon: 'Bientôt',
+    why1_title: 'Paiements locaux intégrés', why1_desc: 'Orange Money, MTN MoMo, Wave, Moov, carte bancaire, espèces — tous les modes de paiement que vos patients utilisent, sans intermédiaire.', why1_badge: 'FCFA natif',
+    why2_title: 'Résilient aux coupures réseau', why2_desc: 'Mode hors-ligne partiel pour les consultations et la pharmacie. Synchronisation automatique au retour de connexion, sans perte de données.', why2_badge: 'Offline-first',
+    why3_title: 'Sécurité médicale stricte', why3_desc: "Chiffrement AES-256 au repos et en transit. Contrôle d'accès par rôle. Journal d'audit complet. Conformité RGPD.", why3_badge: 'ISO 27001 en cours',
+    why4_title: 'Déploiement en 48h', why4_desc: "Aucune installation de serveur. Compte créé, données importées, équipes formées — 48h pour être opérationnel, support sur site disponible.", why4_badge: 'Support sur site',
+    step1_title: 'Inscription & configuration', step1_desc: 'Créez votre compte, renseignez les informations de votre établissement, configurez vos services et tarifs. Moins de 30 minutes.',
+    step2_title: 'Formation & import', step2_desc: 'Notre équipe forme vos agents en visioconférence ou sur site. Import de vos patients existants via fichier Excel si besoin.',
+    step3_title: 'Lancement en production', step3_desc: "Votre établissement est en ligne. Support disponible par WhatsApp, téléphone et email pendant les 30 premiers jours.",
   },
   en: {
     topbar: "Try SANTAREX ERP free for 30 days",
@@ -183,6 +217,40 @@ const T = {
     footer_about: 'About IBIG Soft', footer_other: 'Other software', footer_careers: 'Careers',
     footer_mentions: 'Legal notice', footer_cgu: 'Terms of use', footer_privacy: 'Privacy policy',
     footer_licence: 'License agreement', footer_security: 'Security',
+    // inline JSX
+    scroll_discover: 'Scroll down',
+    hero_badge: 'A product by IBIG SOFT · ibigsoft.com',
+    trust_count: 'active facilities',
+    problem_before_label: 'Before', problem_after_label: 'With SANTAREX',
+    modules_desc: 'Every module communicates in real time. A prescription from a consultation automatically alerts the pharmacy. A lab result appears in the EHR as soon as it is validated.',
+    modules_check1: 'Data synchronized in real time',
+    modules_check2: 'Deploy module by module',
+    modules_check3: 'Training included in all plans',
+    pricing_desc: 'All plans include hosting, maintenance and support. No hidden fees. Cancel anytime.',
+    activities_desc: 'SANTAREX ERP auto-configures based on your type of facility. Modules, dashboards and workflows adapt to your role — not the other way around.',
+    activities_cta_text: 'At sign-up, select your activity — the system configures your modules, dashboard and access rights automatically.',
+    pwa_desc: 'Access your workspace faster from your computer, tablet or smartphone, without going through an app store.',
+    pwa_f1: 'Quick access from home screen', pwa_f2: 'Full-screen launch', pwa_f3: 'Automatic updates',
+    pwa_f4: 'Compatible with Android, iOS and PC', pwa_f5: 'Works partially offline', pwa_f6: 'No large files to download',
+    pwa_ios: 'On iPhone: tap Share then Add to Home Screen',
+    pwa_ios_bold1: 'Share', pwa_ios_bold2: 'Add to Home Screen',
+    partners_desc: 'Join the IBIG partner program for free and recommend SANTAREX ERP to your network. Access tools, track referrals and earn commissions.',
+    partners_p1: '100% free to join', partners_p2: 'Access to IBIG Partners tools',
+    partners_p3: 'Real-time tracking of your referrals', partners_p4: 'Commission on every signed contract',
+    partners_p5: 'Dedicated support and coaching', partners_p6: 'IBIG Soft product training',
+    partners_btn1: 'Become a partner', partners_btn2: 'Discover the program',
+    partners_disclaimer: '* Commissions vary by contract. No guaranteed income is promised.',
+    partners_badge_sub: 'Official program\nIBIG Soft',
+    footer_brand_desc: 'Technology at the service of healthcare.',
+    footer_brand_sub: 'A product by IBIG SOFT — Intermark Business International Group. Built in Côte d\'Ivoire for all of Africa.',
+    int_available: 'Available', int_wip: 'In progress', int_soon: 'Coming soon',
+    why1_title: 'Local payments built in', why1_desc: 'Orange Money, MTN MoMo, Wave, Moov, bank card, cash — every payment method your patients use, with no middleman.', why1_badge: 'Native FCFA',
+    why2_title: 'Resilient to power cuts', why2_desc: 'Partial offline mode for consultations and pharmacy. Automatic sync when connectivity returns, with no data loss.', why2_badge: 'Offline-first',
+    why3_title: 'Strict medical security', why3_desc: 'AES-256 encryption at rest and in transit. Role-based access control. Full audit trail. GDPR compliant.', why3_badge: 'ISO 27001 in progress',
+    why4_title: '48-hour deployment', why4_desc: 'No server to install. Account created, data imported, teams trained — live in 48 hours, on-site support available.', why4_badge: 'On-site support',
+    step1_title: 'Sign up & configure', step1_desc: 'Create your account, enter your facility details, configure your services and rates. Under 30 minutes.',
+    step2_title: 'Training & data import', step2_desc: 'Our team trains your staff via video call or on-site. Import existing patients from an Excel file if needed.',
+    step3_title: 'Go live', step3_desc: 'Your facility is online. Support available by WhatsApp, phone and email for the first 30 days.',
   },
 } as const;
 type Lang = 'fr' | 'en';
@@ -374,19 +442,19 @@ const ACTIVITES = [
 ];
 
 const INTEGRATIONS = [
-  { name: 'Orange Money', status: 'Disponible', color: '#FF6B00' },
-  { name: 'MTN MoMo', status: 'Disponible', color: '#FFCC00' },
-  { name: 'Wave', status: 'Disponible', color: '#1DC9FF' },
-  { name: 'Moov Money', status: 'Disponible', color: '#0066CC' },
-  { name: 'Moneroo', status: 'Disponible', color: '#6C3EDB' },
-  { name: 'CinetPay', status: 'Disponible', color: '#E63946' },
-  { name: 'WhatsApp Business', status: 'Disponible', color: '#25D366' },
-  { name: 'Email SMTP', status: 'Disponible', color: '#4A8AF4' },
-  { name: 'API REST', status: 'Disponible', color: '#00C8B8' },
-  { name: 'FedaPay', status: 'En intégration', color: '#1A56C8' },
-  { name: 'Paystack', status: 'En intégration', color: '#00C3F7' },
-  { name: 'SMS Gateway', status: 'Bientôt', color: '#64748B' },
-  { name: 'Stripe', status: 'Bientôt', color: '#635BFF' },
+  { name: 'Orange Money', statusKey: 'int_available' as const, color: '#FF6B00' },
+  { name: 'MTN MoMo', statusKey: 'int_available' as const, color: '#FFCC00' },
+  { name: 'Wave', statusKey: 'int_available' as const, color: '#1DC9FF' },
+  { name: 'Moov Money', statusKey: 'int_available' as const, color: '#0066CC' },
+  { name: 'Moneroo', statusKey: 'int_available' as const, color: '#6C3EDB' },
+  { name: 'CinetPay', statusKey: 'int_available' as const, color: '#E63946' },
+  { name: 'WhatsApp Business', statusKey: 'int_available' as const, color: '#25D366' },
+  { name: 'Email SMTP', statusKey: 'int_available' as const, color: '#4A8AF4' },
+  { name: 'API REST', statusKey: 'int_available' as const, color: '#00C8B8' },
+  { name: 'FedaPay', statusKey: 'int_wip' as const, color: '#1A56C8' },
+  { name: 'Paystack', statusKey: 'int_wip' as const, color: '#00C3F7' },
+  { name: 'SMS Gateway', statusKey: 'int_soon' as const, color: '#64748B' },
+  { name: 'Stripe', statusKey: 'int_soon' as const, color: '#635BFF' },
 ];
 
 
@@ -797,7 +865,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="lp-scroll-indicator"><div className="lp-scroll-line" />Découvrir</div>
+        <div className="lp-scroll-indicator"><div className="lp-scroll-line" />{t('scroll_discover')}</div>
       </section>
 
       {/* ══ TRUST BAR ══ */}
@@ -809,7 +877,7 @@ export default function LandingPage() {
               <span key={n} className="lp-trust-logo">{n}</span>
             ))}
           </div>
-          <div className="lp-trust-count"><strong>60+</strong> {lang === 'fr' ? 'établissements actifs' : 'active facilities'}</div>
+          <div className="lp-trust-count"><strong>60+</strong> {t('trust_count')}</div>
         </div>
       </div>
 
@@ -832,12 +900,12 @@ export default function LandingPage() {
               <div key={i} className="lp-problem-card">
                 <div className="lp-problem-icon">{p.icon}</div>
                 <div className="lp-problem-before">
-                  <div className="lp-problem-label before">Avant</div>
+                  <div className="lp-problem-label before">{t('problem_before_label')}</div>
                   <p>{p.before}</p>
                 </div>
                 <div className="lp-problem-arrow">→</div>
                 <div className="lp-problem-after">
-                  <div className="lp-problem-label after">Avec SANTAREX</div>
+                  <div className="lp-problem-label after">{t('problem_after_label')}</div>
                   <p>{p.after}</p>
                 </div>
               </div>
@@ -853,10 +921,10 @@ export default function LandingPage() {
             <div className="lp-modules-sticky">
               <span className="lp-eyebrow">{t('modules_eyebrow')}</span>
               <h2 className="lp-section-title">{t('modules_title')}<br />{t('modules_title2')}</h2>
-              <p className="lp-section-desc" style={{ marginTop: 14 }}>Chaque module communique en temps réel. Une prescription générée en consultation alerte automatiquement la pharmacie. Un résultat labo apparaît dans le DME dès validation.</p>
+              <p className="lp-section-desc" style={{ marginTop: 14 }}>{t('modules_desc')}</p>
               <div className="lp-modules-checklist">
-                {['Données synchronisées en temps réel', 'Déployable module par module', 'Formation incluse dans tous les plans'].map(t => (
-                  <div key={t} className="lp-check-item"><div className="lp-check-icon"><CheckIcon /></div>{t}</div>
+                {[t('modules_check1'), t('modules_check2'), t('modules_check3')].map(item => (
+                  <div key={item} className="lp-check-item"><div className="lp-check-icon"><CheckIcon /></div>{item}</div>
                 ))}
               </div>
             </div>
@@ -884,7 +952,7 @@ export default function LandingPage() {
               <div key={g.name} className="lp-integration-card">
                 <div className="lp-integration-dot" style={{ background: g.color }} />
                 <div className="lp-integration-name">{g.name}</div>
-                <div className={`lp-integration-status lp-int-${g.status === 'Disponible' ? 'ok' : g.status === 'En intégration' ? 'wip' : 'soon'}`}>{g.status}</div>
+                <div className={`lp-integration-status lp-int-${g.statusKey === 'int_available' ? 'ok' : g.statusKey === 'int_wip' ? 'wip' : 'soon'}`}>{t(g.statusKey)}</div>
               </div>
             ))}
           </div>
@@ -900,10 +968,10 @@ export default function LandingPage() {
           </div>
           <div className="lp-why-grid">
             {[
-              { n: '01', title: 'Paiements locaux intégrés', desc: 'Orange Money, MTN MoMo, Wave, Moov, carte bancaire, espèces — tous les modes de paiement que vos patients utilisent, sans intermédiaire.', badge: 'FCFA natif' },
-              { n: '02', title: 'Résilient aux coupures réseau', desc: 'Mode hors-ligne partiel pour les consultations et la pharmacie. Synchronisation automatique au retour de connexion, sans perte de données.', badge: 'Offline-first' },
-              { n: '03', title: 'Sécurité médicale stricte', desc: "Chiffrement AES-256 au repos et en transit. Contrôle d'accès par rôle. Journal d'audit complet. Conformité RGPD.", badge: 'ISO 27001 en cours' },
-              { n: '04', title: 'Déploiement en 48h', desc: 'Aucune installation de serveur. Compte créé, données importées, équipes formées — 48h pour être opérationnel, support sur site disponible.', badge: 'Support sur site' },
+              { n: '01', title: t('why1_title'), desc: t('why1_desc'), badge: t('why1_badge') },
+              { n: '02', title: t('why2_title'), desc: t('why2_desc'), badge: t('why2_badge') },
+              { n: '03', title: t('why3_title'), desc: t('why3_desc'), badge: t('why3_badge') },
+              { n: '04', title: t('why4_title'), desc: t('why4_desc'), badge: t('why4_badge') },
             ].map(({ n, title, desc, badge }) => (
               <div key={n} className="lp-why-card">
                 <div className="lp-why-num">{n}</div>
@@ -924,7 +992,7 @@ export default function LandingPage() {
             <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('onboarding_title')}</h2>
           </div>
           <div className="lp-how-steps">
-            {[{ n: 1, title: 'Inscription & configuration', desc: 'Créez votre compte, renseignez les informations de votre établissement, configurez vos services et tarifs. Moins de 30 minutes.' }, { n: 2, title: 'Formation & import', desc: 'Notre équipe forme vos agents en visioconférence ou sur site. Import de vos patients existants via fichier Excel si besoin.' }, { n: 3, title: 'Lancement en production', desc: 'Votre établissement est en ligne. Support disponible par WhatsApp, téléphone et email pendant les 30 premiers jours.' }].map(({ n, title, desc }) => (
+            {[{ n: 1, title: t('step1_title'), desc: t('step1_desc') }, { n: 2, title: t('step2_title'), desc: t('step2_desc') }, { n: 3, title: t('step3_title'), desc: t('step3_desc') }].map(({ n, title, desc }) => (
               <div key={n} className="lp-how-step"><div className="lp-step-num">{n}</div><div className="lp-step-title">{title}</div><p className="lp-step-desc">{desc}</p></div>
             ))}
           </div>
@@ -937,7 +1005,7 @@ export default function LandingPage() {
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
             <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{t('activities_eyebrow')}</span>
             <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('activities_title')}<br /><span style={{ color: 'var(--teal)' }}>{t('activities_title2')}</span></h2>
-            <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 560 }}>SANTAREX ERP se configure automatiquement selon votre type de structure. Les modules, tableaux de bord et flux de travail s&apos;adaptent à votre métier — pas l&apos;inverse.</p>
+            <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 560 }}>{t('activities_desc')}</p>
           </div>
           <div className="lp-activites-grid">
             {ACTIVITES.map(a => (
@@ -950,8 +1018,8 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="lp-activites-cta">
-            <div className="lp-activites-cta-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>À l&apos;inscription, sélectionnez votre activité — le système configure vos modules, tableau de bord et droits d&apos;accès automatiquement.</div>
-            <a href="#contact" className="lp-btn-cta" style={{ whiteSpace: 'nowrap' }}>Voir une démo →</a>
+            <div className="lp-activites-cta-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{t('activities_cta_text')}</div>
+            <a href="#contact" className="lp-btn-cta" style={{ whiteSpace: 'nowrap' }}>{t('see_demo')}</a>
           </div>
         </div>
       </section>
@@ -962,15 +1030,15 @@ export default function LandingPage() {
           <div className="lp-pwa-section-text">
             <span className="lp-eyebrow">{t('pwa_eyebrow')}</span>
             <h2 className="lp-section-title">{t('pwa_title')}<br />{t('pwa_title2')}</h2>
-            <p className="lp-section-desc" style={{ marginTop: 16 }}>Accédez plus rapidement à votre espace depuis votre ordinateur, votre tablette ou votre smartphone, sans passer par une boutique d&apos;applications.</p>
+            <p className="lp-section-desc" style={{ marginTop: 16 }}>{t('pwa_desc')}</p>
             <div className="lp-pwa-features">
-              {['Accès rapide depuis l\'écran d\'accueil', 'Ouverture en plein écran', 'Mises à jour automatiques', 'Compatible Android, iOS et PC', 'Fonctionne partiellement hors connexion', 'Aucun fichier lourd à télécharger'].map(f => (
+              {[t('pwa_f1'), t('pwa_f2'), t('pwa_f3'), t('pwa_f4'), t('pwa_f5'), t('pwa_f6')].map(f => (
                 <div key={f} className="lp-check-item"><div className="lp-check-icon"><CheckIcon /></div>{f}</div>
               ))}
             </div>
             <div className="lp-pwa-ios-tip">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-              Sur iPhone : appuyez sur <strong>Partager</strong> puis <strong>Ajouter à l&apos;écran d&apos;accueil</strong>
+              {lang === 'fr' ? <>Sur iPhone : appuyez sur <strong>{t('pwa_ios_bold1')}</strong> puis <strong>{t('pwa_ios_bold2')}</strong></> : <>On iPhone: tap <strong>{t('pwa_ios_bold1')}</strong> then <strong>{t('pwa_ios_bold2')}</strong></>}
             </div>
           </div>
           <div className="lp-pwa-section-visual">
@@ -997,7 +1065,7 @@ export default function LandingPage() {
         <div className="lp-pricing-inner">
           <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{t('pricing_eyebrow')}</span>
           <h2 className="lp-section-title dark">{t('pricing_title')}</h2>
-          <p className="lp-section-desc">{lang === 'fr' ? 'Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.' : 'All plans include hosting, maintenance and support. No hidden fees. Cancel anytime.'}</p>
+          <p className="lp-section-desc">{t('pricing_desc')}</p>
 
           {/* Toggle mensuel / annuel */}
           <div className="lp-billing-toggle">
@@ -1111,17 +1179,17 @@ export default function LandingPage() {
             <div className="lp-partners-text">
               <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{t('partners_eyebrow')}</span>
               <h2 className="lp-section-title dark">{t('partners_title')} <span style={{ color: 'var(--teal)' }}>IBIG PARTNERS</span></h2>
-              <p style={{ color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>Rejoignez gratuitement le programme de partenariat IBIG et recommandez SANTAREX ERP à votre réseau. Accédez aux outils, suivez vos recommandations et percevez des commissions.</p>
+              <p style={{ color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>{t('partners_desc')}</p>
               <div className="lp-partners-perks">
-                {['Inscription 100% gratuite', 'Accès aux outils IBIG Partners', 'Suivi en temps réel de vos recommandations', 'Commissions sur chaque contrat signé', 'Accompagnement et support dédié', 'Formation aux produits IBIG Soft'].map(p => (
+                {[t('partners_p1'), t('partners_p2'), t('partners_p3'), t('partners_p4'), t('partners_p5'), t('partners_p6')].map(p => (
                   <div key={p} className="lp-check-item" style={{ color: '#475569' }}><div className="lp-check-icon"><CheckIcon /></div>{p}</div>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32 }}>
-                <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-btn-primary"><ArrowRight />Devenir partenaire</a>
-                <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-btn-secondary">Découvrir le programme</a>
+                <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-btn-primary"><ArrowRight />{t('partners_btn1')}</a>
+                <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-btn-secondary">{t('partners_btn2')}</a>
               </div>
-              <p style={{ fontSize: '.75rem', color: '#94A3B8', marginTop: 16 }}>* Les commissions varient selon les contrats. Aucun revenu garanti n&apos;est promis.</p>
+              <p style={{ fontSize: '.75rem', color: '#94A3B8', marginTop: 16 }}>{t('partners_disclaimer')}</p>
             </div>
             <div className="lp-partners-badge">
               <div className="lp-partners-badge-inner">
@@ -1129,7 +1197,7 @@ export default function LandingPage() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="#00C8B8" strokeWidth="1.5" width="48" height="48"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div className="lp-partners-badge-title">IBIG<br /><strong>PARTNERS</strong></div>
-                <div className="lp-partners-badge-sub">Programme officiel<br />IBIG Soft</div>
+                <div className="lp-partners-badge-sub">{lang === 'fr' ? 'Programme officiel' : 'Official program'}<br />IBIG Soft</div>
                 <a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer" className="lp-partners-badge-link">ibigpartners.com ↗</a>
               </div>
             </div>
@@ -1141,8 +1209,8 @@ export default function LandingPage() {
       <section id="contact" className="lp-cta-section">
         <div className="lp-cta-inner">
           <div className="lp-cta-left">
-            <h2>Prêt à moderniser votre établissement ?</h2>
-            <p>Parlez à notre équipe. Réponse garantie sous 24h, démo adaptée à votre type de structure.</p>
+            <h2>{t('contact_title')}</h2>
+            <p>{t('contact_sub')}</p>
             <div className="lp-cta-contacts">
               <a href="mailto:contact@ibigsoft.com" className="lp-cta-contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>contact@ibigsoft.com</a>
               <a href="tel:+2252722276014" className="lp-cta-contact-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>+225 27 22 27 60 14</a>
@@ -1166,7 +1234,7 @@ export default function LandingPage() {
                   <span className="lp-footer-wordmark-sub">ERP v2.0</span>
                 </div>
               </div>
-              <p>La technologie au service de la santé.<br />Un produit <strong>IBIG SOFT</strong> — Intermark Business International Group.<br />Conçu en Côte d&apos;Ivoire pour toute l&apos;Afrique.</p>
+              <p>{t('footer_brand_desc')}<br />{t('footer_brand_sub')}</p>
               <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer" className="lp-footer-ibig">ibigsoft.com ↗</a>
             </div>
             {/* Col 2 */}
