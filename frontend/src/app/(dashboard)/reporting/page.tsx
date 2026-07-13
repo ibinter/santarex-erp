@@ -1,157 +1,209 @@
 'use client';
 
-import { useState } from 'react';
-import { BarChart2, TrendingUp, TrendingDown, Users, CreditCard, Activity, Download, Construction } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { BarChart2, TrendingUp, Users, CreditCard, Activity, Download, RefreshCw, Bed } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-const MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul'];
-const PATIENTS_DATA = [142, 158, 171, 163, 189, 203, 247];
-const RECETTES_DATA = [32.4, 38.1, 41.2, 37.8, 48.5, 52.1, 58.4];
-const CONSULTATIONS_DATA = [284, 312, 298, 341, 378, 401, 89];
+type FactureStats = { totalHT?: number; totalTTC?: number; totalPaye?: number; nbFactures?: number; tauxRecouvrement?: number; parStatut?: Record<string, number> };
+type HospStats = { totalSejours?: number; sejoursActifs?: number; totalLits?: number; litsOccupes?: number; tauxOccupation?: number };
+type LaboStats = { totalDemandes?: number; demandesUrgentes?: number; demandesTraitees?: number };
 
-const SERVICES_DATA = [
-  { service: 'Consultations', pct: 35, valeur: '20,4M XOF', color: '#0D47A1' },
-  { service: 'Hospitalisation', pct: 28, valeur: '16,4M XOF', color: '#1565C0' },
-  { service: 'Pharmacie', pct: 18, valeur: '10,5M XOF', color: '#00838F' },
-  { service: 'Laboratoire', pct: 12, valeur: '7,0M XOF', color: '#6A1B9A' },
-  { service: 'Imagerie', pct: 7, valeur: '4,1M XOF', color: '#00695C' },
+function fmtXOF(v?: number) { if (v == null) return '—'; if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M XOF'; return v.toLocaleString('fr-FR') + ' XOF'; }
+function pct(v?: number) { return v != null ? v.toFixed(1) + '%' : '—'; }
+
+const SERVICES_COLORS = ['#0D47A1','#1565C0','#00838F','#6A1B9A','#00695C'];
+
+const RAPPORT_ITEMS = [
+  { titre: "Rapport d'activité médicale", desc: 'Consultations, actes, diagnostics', color: '#0D47A1', bg: '#EFF6FF' },
+  { titre: 'Rapport financier mensuel', desc: 'Recettes, dépenses, résultat', color: '#2E7D32', bg: '#E8F5E9' },
+  { titre: 'Tableau de bord DRH', desc: 'Personnel, absences, heures sup.', color: '#37474F', bg: '#ECEFF1' },
+  { titre: 'Rapport pharmacie & stocks', desc: 'Mouvements, ruptures, valorisation', color: '#E65100', bg: '#FFF3E0' },
+  { titre: 'Rapport épidémiologique', desc: 'Maladies, tendances, alertes', color: '#6A1B9A', bg: '#F3E5F5' },
+  { titre: 'Rapport qualité soins', desc: 'Satisfaction, incidents, indicateurs', color: '#00695C', bg: '#E0F2F1' },
 ];
 
-function MiniBar({ data, color, max }: { data: number[]; color: string; max: number }) {
+export default function ReportingPage() {
+  const [factureStats, setFactureStats] = useState<FactureStats | null>(null);
+  const [hospStats, setHospStats] = useState<HospStats | null>(null);
+  const [laboStats, setLaboStats] = useState<LaboStats | null>(null);
+  const [nbPatients, setNbPatients] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [f, h, l, p] = await Promise.allSettled([
+      apiClient<FactureStats>('/facturation/stats'),
+      apiClient<HospStats>('/hospitalisation/sejours/stats'),
+      apiClient<LaboStats>('/laboratoire/stats/jour'),
+      apiClient<any>('/patients?limit=1'),
+    ]);
+    if (f.status === 'fulfilled') setFactureStats(f.value);
+    if (h.status === 'fulfilled') setHospStats(h.value);
+    if (l.status === 'fulfilled') setLaboStats(l.value);
+    if (p.status === 'fulfilled') {
+      const v = p.value;
+      setNbPatients(v?.total ?? v?.count ?? (Array.isArray(v) ? v.length : null));
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const kpis = [
+    {
+      label: 'Total patients',
+      value: nbPatients != null ? nbPatients.toLocaleString('fr-FR') : '—',
+      sub: 'dossiers enregistrés',
+      color: '#0D47A1', bg: '#EFF6FF',
+      icon: <Users size={20} color="#0D47A1" />,
+    },
+    {
+      label: 'Recettes totales',
+      value: fmtXOF(factureStats?.totalTTC ?? factureStats?.totalHT),
+      sub: `${nbFactures(factureStats)} factures · ${pct(factureStats?.tauxRecouvrement)} recouvrés`,
+      color: '#2E7D32', bg: '#E8F5E9',
+      icon: <CreditCard size={20} color="#2E7D32" />,
+    },
+    {
+      label: "Taux d'occupation",
+      value: hospStats?.tauxOccupation != null ? pct(hospStats.tauxOccupation) : '—',
+      sub: hospStats ? `${hospStats.litsOccupes ?? '—'} / ${hospStats.totalLits ?? '—'} lits` : 'Hospitalisation',
+      color: '#1565C0', bg: '#E3F2FD',
+      icon: <Bed size={20} color="#1565C0" />,
+    },
+    {
+      label: 'Analyses du jour',
+      value: laboStats?.totalDemandes != null ? laboStats.totalDemandes.toString() : '—',
+      sub: laboStats?.demandesUrgentes ? `${laboStats.demandesUrgentes} urgente(s)` : 'Laboratoire',
+      color: '#6A1B9A', bg: '#F3E5F5',
+      icon: <Activity size={20} color="#6A1B9A" />,
+    },
+  ];
+
+  const parStatut = factureStats?.parStatut ?? {};
+  const statuts = Object.entries(parStatut);
+  const totalStatuts = statuts.reduce((s, [, v]) => s + v, 0);
+
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
-      {data.map((v, i) => (
-        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '100%', background: i === data.length - 1 ? color : color + '55', borderRadius: '4px 4px 0 0', height: `${(v / max) * 70}px`, minHeight: '4px', transition: 'height 0.3s ease' }} />
-          <span style={{ fontSize: '9px', color: '#90A4AE' }}>{MOIS[i]}</span>
+    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BarChart2 size={22} color="#1565C0" />
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1A2332' }}>Reporting & Indicateurs</h1>
+            <p style={{ margin: 0, fontSize: 13, color: '#546E7A' }}>Tableaux de bord et indicateurs clés d'activité</p>
+          </div>
         </div>
-      ))}
+        <button onClick={load} disabled={loading}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600, opacity: loading ? 0.6 : 1 }}>
+          <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Actualiser
+        </button>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
+        {kpis.map((k, i) => (
+          <div key={i} style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderTop: `3px solid ${k.color}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{k.icon}</div>
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: k.color, fontVariantNumeric: 'tabular-nums' }}>
+              {loading ? <span style={{ display: 'inline-block', width: 80, height: 28, background: '#F0F4F8', borderRadius: 6 }} /> : k.value}
+            </div>
+            <div style={{ fontSize: 12, color: '#546E7A', marginTop: 4 }}>{k.label}</div>
+            <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        {/* Répartition factures par statut */}
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#37474F', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Factures par statut
+          </div>
+          {loading ? (
+            [1,2,3].map(i => <div key={i} style={{ height: 32, background: '#F0F4F8', borderRadius: 6, marginBottom: 10 }} />)
+          ) : statuts.length === 0 ? (
+            <p style={{ color: '#CFD8DC', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Aucune donnée disponible</p>
+          ) : statuts.map(([s, n], i) => {
+            const p = totalStatuts > 0 ? (n / totalStatuts) * 100 : 0;
+            const col = SERVICES_COLORS[i % SERVICES_COLORS.length];
+            const labelMap: Record<string, string> = { payee: 'Payée', partielle: 'Partielle', impayee: 'Impayée', annulee: 'Annulée', en_attente: 'En attente' };
+            return (
+              <div key={s} style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, color: '#37474F' }}>{labelMap[s] ?? s}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: col }}>{n} ({p.toFixed(0)}%)</span>
+                </div>
+                <div style={{ height: 8, background: '#F5F7FA', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${p}%`, background: col, borderRadius: 4, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
+            );
+          })}
+          {factureStats?.totalPaye != null && (
+            <div style={{ marginTop: 16, padding: '10px 14px', background: '#E8F5E9', borderRadius: 8, display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 12, color: '#2E7D32', fontWeight: 600 }}>Total encaissé</span>
+              <span style={{ fontSize: 13, color: '#2E7D32', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(factureStats.totalPaye)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Hospitalisation */}
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#37474F', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Hospitalisation
+          </div>
+          {loading ? (
+            [1,2,3].map(i => <div key={i} style={{ height: 40, background: '#F0F4F8', borderRadius: 6, marginBottom: 10 }} />)
+          ) : hospStats ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              {[
+                { l: 'Séjours actifs', v: hospStats.sejoursActifs, color: '#1565C0', bg: '#EFF6FF' },
+                { l: 'Total lits', v: hospStats.totalLits, color: '#37474F', bg: '#ECEFF1' },
+                { l: 'Lits occupés', v: hospStats.litsOccupes, color: '#E65100', bg: '#FFF3E0' },
+                { l: "Taux d'occupation", v: hospStats.tauxOccupation != null ? pct(hospStats.tauxOccupation) : '—', color: '#00695C', bg: '#E0F2F1' },
+              ].map((item, i) => (
+                <div key={i} style={{ padding: '14px', borderRadius: 10, background: item.bg, textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: item.color, fontVariantNumeric: 'tabular-nums' }}>{item.v ?? '—'}</div>
+                  <div style={{ fontSize: 11, color: '#546E7A', marginTop: 4 }}>{item.l}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: '#CFD8DC', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>Aucune donnée disponible</p>
+          )}
+        </div>
+      </div>
+
+      {/* Rapports disponibles */}
+      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#37474F', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Exports disponibles</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          {RAPPORT_ITEMS.map((r, i) => (
+            <div key={i} style={{ padding: 14, borderRadius: 10, background: r.bg, border: `1px solid ${r.color}22`, cursor: 'pointer' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; }}>
+              <div style={{ fontWeight: 700, fontSize: 12, color: r.color, marginBottom: 4 }}>{r.titre}</div>
+              <div style={{ fontSize: 11, color: '#546E7A', marginBottom: 10 }}>{r.desc}</div>
+              <button style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 6, background: r.color, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
+                <Download size={11} /> Générer PDF
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-export default function ReportingPage() {
-  const [periode, setPeriode] = useState<'mois' | 'trimestre' | 'annee'>('mois');
-
-  return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: 10, marginBottom: 20, fontSize: 13, color: '#E65100' }}>
-        <Construction size={16} />
-        <span><strong>Module en intégration</strong> — Les données affichées sont indicatives. La connexion API est en cours de déploiement.</span>
-      </div>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart2 size={22} color="#1565C0" />
-            </div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1A2332' }}>Reporting & Business Intelligence</h1>
-          </div>
-          <p style={{ margin: 0, fontSize: '13px', color: '#546E7A' }}>Tableaux de bord, indicateurs clés et rapports d'activité</p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ display: 'flex', gap: '4px', background: '#F5F7FA', padding: '4px', borderRadius: '10px' }}>
-            {(['mois', 'trimestre', 'annee'] as const).map(p => (
-              <button key={p} onClick={() => setPeriode(p)} style={{ padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, background: periode === p ? '#fff' : 'transparent', color: periode === p ? '#1565C0' : '#90A4AE', boxShadow: periode === p ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>
-                {p === 'mois' ? 'Mois' : p === 'trimestre' ? 'Trimestre' : 'Année'}
-              </button>
-            ))}
-          </div>
-          <button style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '8px', background: '#1565C0', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
-            <Download size={14} /> Exporter PDF
-          </button>
-        </div>
-      </div>
-
-      {/* KPIs row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
-        {[
-          { label: 'Patients pris en charge', value: '247', trend: '+21.7%', up: true, sub: 'vs mois précédent', color: '#0D47A1', bg: '#EFF6FF', icon: <Users size={20} color="#0D47A1" /> },
-          { label: 'Recettes totales', value: '58,4M XOF', trend: '+12.1%', up: true, sub: 'vs mois précédent', color: '#2E7D32', bg: '#E8F5E9', icon: <CreditCard size={20} color="#2E7D32" /> },
-          { label: 'Taux d\'occupation lits', value: '72,5%', trend: '+5.2%', up: true, sub: '87 / 120 lits', color: '#1565C0', bg: '#E3F2FD', icon: <Activity size={20} color="#1565C0" /> },
-          { label: 'Satisfaction patients', value: '94,2%', trend: '+1.8%', up: true, sub: 'Sur 186 avis', color: '#00838F', bg: '#E0F7FA', icon: <TrendingUp size={20} color="#00838F" /> },
-        ].map((k, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderTop: `3px solid ${k.color}` }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{k.icon}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#E8F5E9', padding: '2px 8px', borderRadius: '20px' }}>
-                <TrendingUp size={10} color="#2E7D32" />
-                <span style={{ fontSize: '10px', color: '#2E7D32', fontWeight: 700 }}>{k.trend}</span>
-              </div>
-            </div>
-            <div style={{ marginTop: '12px' }}>
-              <div style={{ fontSize: '22px', fontWeight: 800, color: k.color }}>{k.value}</div>
-              <div style={{ fontSize: '12px', color: '#546E7A', marginTop: '2px' }}>{k.label}</div>
-              <div style={{ fontSize: '10px', color: '#90A4AE', marginTop: '2px' }}>{k.sub}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-        {[
-          { titre: 'Patients par mois', data: PATIENTS_DATA, max: 300, color: '#0D47A1', unite: '' },
-          { titre: 'Recettes (M XOF)', data: RECETTES_DATA, max: 70, color: '#2E7D32', unite: 'M' },
-          { titre: 'Consultations', data: CONSULTATIONS_DATA, max: 450, color: '#00838F', unite: '' },
-        ].map((chart, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#37474F', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{chart.titre}</div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: chart.color, marginBottom: '14px' }}>
-              {chart.data[chart.data.length - 1]}{chart.unite}
-            </div>
-            <MiniBar data={chart.data} color={chart.color} max={chart.max} />
-          </div>
-        ))}
-      </div>
-
-      {/* Répartition des recettes + Tableau de bord par service */}
-      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '16px' }}>
-        {/* Répartition */}
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#37474F', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Répartition des recettes</div>
-          {SERVICES_DATA.map((s, i) => (
-            <div key={i} style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ fontSize: '12px', color: '#37474F', fontWeight: 500 }}>{s.service}</span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: s.color }}>{s.valeur}</span>
-              </div>
-              <div style={{ height: '8px', background: '#F5F7FA', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${s.pct}%`, background: s.color, borderRadius: '4px', transition: 'width 0.5s ease' }} />
-              </div>
-              <div style={{ fontSize: '10px', color: '#90A4AE', marginTop: '2px' }}>{s.pct}% du total</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Rapports disponibles */}
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#37474F', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rapports disponibles</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {[
-              { titre: 'Rapport d\'activité médicale', desc: 'Consultations, actes, diagnostics', date: '01 Juillet 2026', color: '#0D47A1', bg: '#EFF6FF' },
-              { titre: 'Rapport financier mensuel', desc: 'Recettes, dépenses, résultat', date: '01 Juillet 2026', color: '#2E7D32', bg: '#E8F5E9' },
-              { titre: 'Tableau de bord DRH', desc: 'Personnel, absences, heures sup.', date: '01 Juillet 2026', color: '#37474F', bg: '#ECEFF1' },
-              { titre: 'Rapport pharmacie & stocks', desc: 'Mouvements, ruptures, valorisation', date: '01 Juillet 2026', color: '#E65100', bg: '#FFF3E0' },
-              { titre: 'Rapport épidémiologique', desc: 'Maladies, tendances, alertes', date: '30 Juin 2026', color: '#6A1B9A', bg: '#F3E5F5' },
-              { titre: 'Rapport qualité soins', desc: 'Satisfaction, incidents, indicateurs', date: '30 Juin 2026', color: '#00695C', bg: '#E0F2F1' },
-            ].map((r, i) => (
-              <div key={i} style={{ padding: '14px', borderRadius: '10px', background: r.bg, cursor: 'pointer', border: `1px solid ${r.color}22` }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; }}>
-                <div style={{ fontWeight: 700, fontSize: '12px', color: r.color, marginBottom: '4px' }}>{r.titre}</div>
-                <div style={{ fontSize: '11px', color: '#546E7A', marginBottom: '8px' }}>{r.desc}</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '10px', color: '#90A4AE' }}>Généré le {r.date}</span>
-                  <button style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: r.color, color: '#fff', border: 'none', cursor: 'pointer', fontSize: '10px', fontWeight: 600 }}>
-                    <Download size={10} /> PDF
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function nbFactures(s: FactureStats | null) {
+  if (!s?.nbFactures) return '0';
+  return s.nbFactures.toString();
 }
