@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { PatientUrgence, CategorieManchester } from '@/types';
 import AdmissionUrgenceModal from '@/components/urgences/AdmissionUrgenceModal';
 import TriageModal from '@/components/urgences/TriageModal';
+import { apiClient } from '@/lib/api';
 
 // ── Couleurs Manchester ──────────────────────────────────
 const MANCHESTER_CONFIG: Record<CategorieManchester, { bg: string; border: string; text: string; badge: string; label: string; order: number }> = {
@@ -21,48 +22,6 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   en_observation: { label: 'En observation', color: '#6A1B9A' },
 };
 
-// ── Données mock ─────────────────────────────────────────
-const MOCK_PATIENTS: PatientUrgence[] = [
-  {
-    id: '1', numero: 'URG-20240001', categorieManchester: 'ROUGE', statut: 'en_soins',
-    modeArrivee: 'ambulance', motif: 'Douleur thoracique intense, dyspnée sévère',
-    constantes: { tensionArterielle: '170/110', frequenceCardiaque: 112, temperature: 37.2, spo2: 88, glasgow: 14 },
-    heureArrivee: new Date(Date.now() - 155 * 60000).toISOString(), createdAt: new Date().toISOString(),
-    medecin: { id: 'm1', nom: 'Konan', prenom: 'Dr. Ahoua', specialite: 'Urgentiste' },
-    nomProvisoire: undefined,
-    patient: { id: 'p1', ipp: 'IPP001', nom: 'KOFFI', prenom: 'Emmanuel', dateNaissance: '1968-03-14', sexe: 'M', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-  },
-  {
-    id: '2', numero: 'URG-20240002', categorieManchester: 'ORANGE', statut: 'en_triage',
-    modeArrivee: 'pompiers', motif: 'Traumatisme crânien suite à accident de la route',
-    constantes: { tensionArterielle: '145/95', frequenceCardiaque: 98, temperature: 36.8, spo2: 95, glasgow: 12 },
-    heureArrivee: new Date(Date.now() - 22 * 60000).toISOString(), createdAt: new Date().toISOString(),
-    nomProvisoire: 'Patient non identifié',
-    medecin: { id: 'm2', nom: 'Mensah', prenom: 'Dr. Ama', specialite: 'Neurologie' },
-  },
-  {
-    id: '3', numero: 'URG-20240003', categorieManchester: 'JAUNE', statut: 'attente_triage',
-    modeArrivee: 'propre_pied', motif: 'Douleurs abdominales modérées depuis 6h',
-    constantes: { tensionArterielle: '118/76', frequenceCardiaque: 82, temperature: 37.8, spo2: 98 },
-    heureArrivee: new Date(Date.now() - 45 * 60000).toISOString(), createdAt: new Date().toISOString(),
-    patient: { id: 'p2', ipp: 'IPP002', nom: 'TOURÉ', prenom: 'Fatima', dateNaissance: '1990-07-22', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-  },
-  {
-    id: '4', numero: 'URG-20240004', categorieManchester: 'VERT', statut: 'attente_triage',
-    modeArrivee: 'accompagne', motif: 'Fièvre légère et toux depuis 3 jours',
-    constantes: { temperature: 38.1, frequenceCardiaque: 76, spo2: 99 },
-    heureArrivee: new Date(Date.now() - 15 * 60000).toISOString(), createdAt: new Date().toISOString(),
-    patient: { id: 'p3', ipp: 'IPP003', nom: 'BAMBA', prenom: 'Moussa', dateNaissance: '2010-01-05', sexe: 'M', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' },
-  },
-  {
-    id: '5', numero: 'URG-20240005', categorieManchester: 'ROUGE', statut: 'en_observation',
-    modeArrivee: 'smur', motif: 'AVC ischémique — déficit moteur hémicorps gauche',
-    constantes: { tensionArterielle: '185/120', frequenceCardiaque: 88, temperature: 37.5, spo2: 91, glasgow: 10 },
-    heureArrivee: new Date(Date.now() - 90 * 60000).toISOString(), createdAt: new Date().toISOString(),
-    patient: { id: 'p4', ipp: 'IPP004', nom: 'COULIBALY', prenom: 'Mariam', dateNaissance: '1955-11-30', sexe: 'F', pays: 'CI', assuranceTiersPayant: true, statut: 'actif', createdAt: '' },
-    medecin: { id: 'm1', nom: 'Konan', prenom: 'Dr. Ahoua', specialite: 'Urgentiste' },
-  },
-];
 
 // ── Utilitaires ───────────────────────────────────────────
 function tempsDepuisArrivee(heureArrivee: string): string {
@@ -194,18 +153,31 @@ function PatientCard({
 
 // ── Page principale ───────────────────────────────────────
 export default function UrgencesPage() {
-  const [patients, setPatients] = useState<PatientUrgence[]>(MOCK_PATIENTS);
+  const [patients, setPatients] = useState<PatientUrgence[]>([]);
+  const [loading, setLoading] = useState(true);
   const [heure, setHeure] = useState(new Date());
   const [showAdmission, setShowAdmission] = useState(false);
   const [triagePatient, setTriagePatient] = useState<PatientUrgence | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
-  // Mise à jour heure + refresh simulé toutes les 30s
-  useEffect(() => {
-    const tick = setInterval(() => setHeure(new Date()), 1000);
-    const refresh = setInterval(() => setLastRefresh(new Date()), 30000);
-    return () => { clearInterval(tick); clearInterval(refresh); };
+  const load = useCallback(async () => {
+    try {
+      const data = await apiClient<PatientUrgence[]>('/urgences/actifs');
+      setPatients(Array.isArray(data) ? data : (data as any)?.items ?? []);
+      setLastRefresh(new Date());
+    } catch {
+      // keep current data on error
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+    const tick = setInterval(() => setHeure(new Date()), 1000);
+    const refresh = setInterval(() => load(), 30000);
+    return () => { clearInterval(tick); clearInterval(refresh); };
+  }, [load]);
 
   const patientsActifs = patients.filter(p => !['sorti', 'hospitalise', 'decede'].includes(p.statut));
   const patientsTries = [...patientsActifs].sort((a, b) =>
@@ -220,25 +192,23 @@ export default function UrgencesPage() {
     total:  patientsActifs.length,
   };
 
-  const handleAdmit = useCallback((data: Partial<PatientUrgence>) => {
-    const nouveau: PatientUrgence = {
-      id: String(Date.now()),
-      numero: `URG-${Date.now().toString().slice(-8)}`,
-      categorieManchester: data.categorieManchester || 'VERT',
-      statut: 'attente_triage',
-      modeArrivee: data.modeArrivee || 'propre_pied',
-      motif: data.motif || '',
-      constantes: data.constantes,
-      nomProvisoire: data.nomProvisoire,
-      heureArrivee: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-    setPatients(prev => [...prev, nouveau]);
-  }, []);
+  const handleAdmit = useCallback(async (data: Partial<PatientUrgence>) => {
+    try {
+      await apiClient('/urgences/admettre', { method: 'POST', body: data });
+    } catch { /* ignore */ }
+    load();
+  }, [load]);
 
-  const handleUpdateTriage = useCallback((id: string, data: Partial<PatientUrgence>) => {
-    setPatients(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));
-  }, []);
+  const handleUpdateTriage = useCallback(async (id: string, data: Partial<PatientUrgence>) => {
+    try {
+      if (data.categorieManchester || data.constantes) {
+        await apiClient(`/urgences/${id}/triage`, { method: 'PATCH', body: data });
+      } else if (data.statut === 'en_soins') {
+        await apiClient(`/urgences/${id}/soins`, { method: 'PATCH', body: data });
+      }
+    } catch { /* ignore */ }
+    load();
+  }, [load]);
 
   return (
     <div className="min-h-screen" style={{ background: '#F5F7FA' }}>

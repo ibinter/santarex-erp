@@ -1,263 +1,253 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import type { LitHospitalier, SejourHospitalisation, ServiceHospitalisation } from '@/types';
-import AdmissionHospitalisationModal from '@/components/hospitalisation/AdmissionHospitalisationModal';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { BedDouble, RefreshCw, Plus, Users, AlertTriangle } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-// ── Couleurs statut lit ───────────────────────────────────
-const LIT_CONFIG = {
-  libre:      { bg: '#fff',     border: '#CBD5E1', text: '#64748B', label: 'Libre',       icon: '🛏️' },
-  occupe:     { bg: '#E3F2FD',  border: '#1976D2', text: '#0D47A1', label: 'Occupé',      icon: '👤' },
-  nettoyage:  { bg: '#F5F5F5',  border: '#90A4AE', text: '#546E7A', label: 'Nettoyage',  icon: '🧹' },
-  reserve:    { bg: '#FFFDE7',  border: '#F9A825', text: '#E65100', label: 'Réservé',     icon: '📋' },
+type StatutLit = 'libre' | 'occupe' | 'nettoyage' | 'reserve';
+
+type Lit = {
+  id: string; numero: string; service?: string; salle?: string; statut: StatutLit;
+  patient?: { id: string; nom: string; prenom: string };
+  patientNom?: string; joursHospitalisation?: number;
 };
 
-const SERVICES: ServiceHospitalisation[] = [
-  'Médecine Générale', 'Chirurgie', 'Maternité', 'Pédiatrie',
-  'Réanimation', 'Orthopédie', 'Ophtalmologie',
-];
+type Sejour = {
+  id: string; numero?: string; service?: string;
+  patient?: { id: string; nom: string; prenom: string; ipp?: string };
+  lit?: { id: string; numero: string; service?: string };
+  medecin?: { id: string; nom: string; prenom: string };
+  diagnosticEntree?: string; dateAdmission: string; statut: string;
+};
 
-// ── Données mock ─────────────────────────────────────────
-const LITS_MOCK: LitHospitalier[] = [
-  { id: 'l1',  numero: 'MG-101', service: 'Médecine Générale', salle: 'Salle A', statut: 'occupe',    patientNom: 'Koffi Emmanuel',   joursHospitalisation: 3 },
-  { id: 'l2',  numero: 'MG-102', service: 'Médecine Générale', salle: 'Salle A', statut: 'libre' },
-  { id: 'l3',  numero: 'MG-103', service: 'Médecine Générale', salle: 'Salle A', statut: 'nettoyage' },
-  { id: 'l4',  numero: 'MG-201', service: 'Médecine Générale', salle: 'Salle B', statut: 'occupe',    patientNom: 'Touré Fatima',     joursHospitalisation: 1 },
-  { id: 'l5',  numero: 'MG-202', service: 'Médecine Générale', salle: 'Salle B', statut: 'libre' },
-  { id: 'l6',  numero: 'MG-203', service: 'Médecine Générale', salle: 'Salle B', statut: 'reserve',   patientReserveNom: 'Coulibaly A.', dateAdmissionPrevue: '2026-07-12' },
-  { id: 'l7',  numero: 'CH-101', service: 'Chirurgie', salle: 'Salle C', statut: 'occupe',    patientNom: 'Bamba Moussa',     joursHospitalisation: 5 },
-  { id: 'l8',  numero: 'CH-102', service: 'Chirurgie', salle: 'Salle C', statut: 'libre' },
-  { id: 'l9',  numero: 'MA-101', service: 'Maternité', salle: 'Salle D', statut: 'occupe',    patientNom: 'Diallo Aminata',   joursHospitalisation: 2 },
-  { id: 'l10', numero: 'MA-102', service: 'Maternité', salle: 'Salle D', statut: 'libre' },
-  { id: 'l11', numero: 'PE-101', service: 'Pédiatrie', salle: 'Salle E', statut: 'libre' },
-  { id: 'l12', numero: 'PE-102', service: 'Pédiatrie', salle: 'Salle E', statut: 'libre' },
-  { id: 'l13', numero: 'REA-01', service: 'Réanimation', salle: 'Réa', statut: 'occupe',    patientNom: 'Coulibaly Mariam', joursHospitalisation: 7 },
-  { id: 'l14', numero: 'REA-02', service: 'Réanimation', salle: 'Réa', statut: 'occupe',    patientNom: 'Kra Serge',        joursHospitalisation: 4 },
-  { id: 'l15', numero: 'OR-101', service: 'Orthopédie', salle: 'Salle F', statut: 'libre' },
-  { id: 'l16', numero: 'OP-101', service: 'Ophtalmologie', salle: 'Salle G', statut: 'nettoyage' },
-];
+type StatsHospitalisation = { litsLibres?: number; litsOccupes?: number; totalLits?: number; tauxOccupation?: number };
 
-const SEJOURS_MOCK: (SejourHospitalisation & { litNumero: string; medecinLabel: string })[] = [
-  { id: 's1', numero: 'SEJ-001', patientId: 'p1', litId: 'l1', litNumero: 'MG-101', service: 'Médecine Générale', medecinId: 'm1', medecinLabel: 'Dr. Konan Ahoua', typeHospitalisation: 'urgente', diagnosticEntree: 'Crise hypertensive', dateAdmission: '2026-07-07T14:00:00Z', statut: 'actif', createdAt: '2026-07-07T14:00:00Z', patient: { id: 'p1', ipp: 'IPP001', nom: 'KOFFI', prenom: 'Emmanuel', dateNaissance: '1968-03-14', sexe: 'M', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' } },
-  { id: 's2', numero: 'SEJ-002', patientId: 'p2', litId: 'l4', litNumero: 'MG-201', service: 'Médecine Générale', medecinId: 'm2', medecinLabel: 'Dr. Mensah Ama', typeHospitalisation: 'programmee', diagnosticEntree: 'Appendicite aiguë', dateAdmission: '2026-07-09T08:30:00Z', statut: 'actif', createdAt: '2026-07-09T08:30:00Z', patient: { id: 'p2', ipp: 'IPP002', nom: 'TOURÉ', prenom: 'Fatima', dateNaissance: '1990-07-22', sexe: 'F', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' } },
-  { id: 's3', numero: 'SEJ-003', patientId: 'p3', litId: 'l7', litNumero: 'CH-101', service: 'Chirurgie', medecinId: 'm3', medecinLabel: 'Dr. Akoto Pierre', typeHospitalisation: 'urgente', diagnosticEntree: 'Fracture fémur droit', dateAdmission: '2026-07-05T16:00:00Z', statut: 'actif', createdAt: '2026-07-05T16:00:00Z', patient: { id: 'p3', ipp: 'IPP003', nom: 'BAMBA', prenom: 'Moussa', dateNaissance: '2010-01-05', sexe: 'M', pays: 'CI', assuranceTiersPayant: false, statut: 'actif', createdAt: '' } },
-  { id: 's4', numero: 'SEJ-004', patientId: 'p4', litId: 'l13', litNumero: 'REA-01', service: 'Réanimation', medecinId: 'm1', medecinLabel: 'Dr. Konan Ahoua', typeHospitalisation: 'urgente', diagnosticEntree: 'AVC ischémique', dateAdmission: '2026-07-03T09:15:00Z', statut: 'actif', createdAt: '2026-07-03T09:15:00Z', patient: { id: 'p4', ipp: 'IPP004', nom: 'COULIBALY', prenom: 'Mariam', dateNaissance: '1955-11-30', sexe: 'F', pays: 'CI', assuranceTiersPayant: true, statut: 'actif', createdAt: '' } },
-];
+const LIT_CONFIG: Record<StatutLit, { bg: string; border: string; text: string; label: string; icon: string }> = {
+  libre:      { bg: '#fff',    border: '#CBD5E1', text: '#64748B', label: 'Libre',      icon: '🛏️' },
+  occupe:     { bg: '#E3F2FD', border: '#1976D2', text: '#0D47A1', label: 'Occupé',     icon: '👤' },
+  nettoyage:  { bg: '#F5F5F5', border: '#90A4AE', text: '#546E7A', label: 'Nettoyage', icon: '🧹' },
+  reserve:    { bg: '#FFFDE7', border: '#F9A825', text: '#E65100', label: 'Réservé',    icon: '📋' },
+};
+
+const SERVICES_ORDER = ['Médecine Générale', 'Chirurgie', 'Maternité', 'Pédiatrie', 'Réanimation', 'Orthopédie', 'Ophtalmologie'];
 
 function joursDepuis(dateAdmission: string): number {
-  return Math.floor((Date.now() - new Date(dateAdmission).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.floor((Date.now() - new Date(dateAdmission).getTime()) / (1000 * 60 * 60 * 24)));
 }
 
-function LitCard({ lit, onClick }: { lit: LitHospitalier; onClick: () => void }) {
-  const cfg = LIT_CONFIG[lit.statut];
-  return (
-    <button
-      onClick={onClick}
-      className="relative aspect-square rounded-xl border-2 p-3 text-left transition-all hover:shadow-md hover:scale-[1.02] flex flex-col justify-between"
-      style={{ background: cfg.bg, borderColor: cfg.border }}
-    >
-      <div>
-        <div className="text-xs font-bold" style={{ color: cfg.text }}>{lit.numero}</div>
-        <div className="text-lg mt-1">{cfg.icon}</div>
-      </div>
-      {lit.statut === 'occupe' && (
-        <div>
-          <p className="text-[10px] font-semibold text-blue-800 leading-tight line-clamp-2">{lit.patientNom}</p>
-          <p className="text-[10px] text-blue-600 mt-0.5">{lit.joursHospitalisation}j</p>
-        </div>
-      )}
-      {lit.statut === 'reserve' && (
-        <div>
-          <p className="text-[10px] font-semibold text-orange-700 leading-tight line-clamp-1">{lit.patientReserveNom}</p>
-          <p className="text-[10px] text-orange-600 mt-0.5">{lit.dateAdmissionPrevue}</p>
-        </div>
-      )}
-      {lit.statut === 'libre' && (
-        <p className="text-[10px] text-gray-400">Disponible</p>
-      )}
-      {lit.statut === 'nettoyage' && (
-        <p className="text-[10px] text-gray-400">En cours</p>
-      )}
-    </button>
-  );
+function fmtDate(iso: string) {
+  try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+  catch { return '—'; }
 }
-
-const TYPE_BADGE: Record<string, { label: string; color: string }> = {
-  programmee:        { label: 'Programmée',        color: '#00838F' },
-  urgente:           { label: 'Urgente',            color: '#C62828' },
-  transfert_interne: { label: 'Transfert interne',  color: '#1565C0' },
-  transfert_externe: { label: 'Transfert externe',  color: '#6A1B9A' },
-};
 
 export default function HospitalisationPage() {
-  const [service, setService] = useState<ServiceHospitalisation | 'Tous'>('Tous');
-  const [showAdmission, setShowAdmission] = useState(false);
-  const [sejours, setSejours] = useState(SEJOURS_MOCK);
-  const [lits] = useState(LITS_MOCK);
+  const router = useRouter();
+  const [lits, setLits] = useState<Lit[]>([]);
+  const [sejours, setSejours] = useState<Sejour[]>([]);
+  const [stats, setStats] = useState<StatsHospitalisation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [serviceFilter, setServiceFilter] = useState('');
+  const [tab, setTab] = useState<'lits' | 'sejours'>('lits');
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const litsFiltered = service === 'Tous' ? lits : lits.filter(l => l.service === service);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [litsRes, sejoursRes, statsRes] = await Promise.allSettled([
+        apiClient<any>('/hospitalisation/lits'),
+        apiClient<any>('/hospitalisation/sejours/actifs'),
+        apiClient<StatsHospitalisation>('/hospitalisation/sejours/stats'),
+      ]);
+      if (litsRes.status === 'fulfilled') {
+        const d = litsRes.value;
+        setLits(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
+      }
+      if (sejoursRes.status === 'fulfilled') {
+        const d = sejoursRes.value;
+        setSejours(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
+      }
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value);
+      setLastRefresh(new Date());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const stats = {
-    occupes:    lits.filter(l => l.statut === 'occupe').length,
-    libres:     lits.filter(l => l.statut === 'libre').length,
-    total:      lits.length,
-    sortiesJour: 2, // mock
-  };
-  const tauxOccupation = Math.round((stats.occupes / stats.total) * 100);
+  useEffect(() => { load(); }, [load]);
+
+  const litsAffiches = lits.filter(l => !serviceFilter || l.service === serviceFilter);
+  const services = Array.from(new Set(lits.map(l => l.service).filter(Boolean) as string[])).sort((a, b) => {
+    const ia = SERVICES_ORDER.indexOf(a); const ib = SERVICES_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+
+  const libres = lits.filter(l => l.statut === 'libre').length;
+  const occupes = lits.filter(l => l.statut === 'occupe').length;
+  const taux = lits.length > 0 ? Math.round((occupes / lits.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7FA' }}>
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
+      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <h1 className="text-2xl font-black" style={{ color: '#0D47A1' }}>🛏️ Hospitalisation</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Gestion des lits et séjours</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BedDouble size={20} color="#1976D2" />
+            </div>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Hospitalisation</h1>
+          </div>
+          <p style={{ margin: '4px 0 0 48px', fontSize: 12, color: '#546E7A' }}>
+            {loading ? '…' : `${lits.length} lits — ${occupes} occupés`}
+            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
+          </p>
         </div>
-        <button
-          onClick={() => setShowAdmission(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition"
-          style={{ background: '#0D47A1' }}
-        >
-          + Admettre un patient
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
+            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          </button>
+          <button onClick={() => router.push('/hospitalisation/admettre')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#1976D2', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
+            <Plus size={14} /> Admettre un patient
+          </button>
+        </div>
       </div>
 
-      {/* StatsBar */}
-      <div className="mx-6 mb-6 grid grid-cols-4 gap-4">
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Lits occupés',          value: stats.occupes,      color: '#1565C0', bg: '#E3F2FD', icon: '🔵' },
-          { label: 'Lits disponibles',       value: stats.libres,       color: '#2E7D32', bg: '#E8F5E9', icon: '🟢' },
-          { label: "Taux d'occupation",      value: `${tauxOccupation}%`, color: tauxOccupation > 85 ? '#C62828' : '#F57F17', bg: tauxOccupation > 85 ? '#FFEBEE' : '#FFFDE7', icon: '📊' },
-          { label: 'Sorties prévues auj.',   value: stats.sortiesJour,  color: '#00838F', bg: '#E0F7FA', icon: '🚪' },
-        ].map((s, i) => (
-          <div key={i} className="rounded-2xl p-4 shadow-sm border border-gray-100" style={{ background: s.bg }}>
-            <div className="text-2xl mb-1">{s.icon}</div>
-            <div className="text-2xl font-black" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
+          { label: 'Total lits', value: loading ? '…' : lits.length, color: '#546E7A', bg: '#F5F5F5', icon: <BedDouble size={18} color="#546E7A" /> },
+          { label: 'Lits occupés', value: loading ? '…' : occupes, color: '#1976D2', bg: '#E3F2FD', icon: <Users size={18} color="#1976D2" /> },
+          { label: 'Lits libres', value: loading ? '…' : libres, color: '#2E7D32', bg: '#E8F5E9', icon: <BedDouble size={18} color="#2E7D32" /> },
+          { label: 'Taux occupation', value: loading ? '…' : `${taux}%`, color: taux > 90 ? '#C62828' : taux > 70 ? '#E65100' : '#2E7D32', bg: taux > 90 ? '#FFEBEE' : taux > 70 ? '#FFF3E0' : '#E8F5E9', icon: <AlertTriangle size={18} color={taux > 80 ? '#E65100' : '#2E7D32'} /> },
+        ].map((k, i) => (
+          <div key={i} style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderTop: `3px solid ${k.color}` }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>{k.icon}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
+            <div style={{ fontSize: 11, color: '#546E7A', marginTop: 2 }}>{k.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Sélecteur service */}
-      <div className="mx-6 mb-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {(['Tous', ...SERVICES] as const).map(s => (
-            <button
-              key={s}
-              onClick={() => setService(s as any)}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${service === s ? 'text-white shadow' : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'}`}
-              style={service === s ? { background: '#0D47A1', borderColor: '#0D47A1' } : {}}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+        {[{ id: 'lits' as const, label: 'Plan des lits' }, { id: 'sejours' as const, label: `Séjours actifs (${sejours.length})` }].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{ padding: '7px 16px', borderRadius: 8, border: `1px solid ${tab === t.id ? '#1976D2' : '#E0E0E0'}`, background: tab === t.id ? '#1976D2' : '#fff', color: tab === t.id ? '#fff' : '#546E7A', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Plan des lits */}
-      <div className="mx-6 mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-800">Plan des lits</h2>
-          <div className="flex gap-3 text-xs">
+      {tab === 'lits' ? (
+        <>
+          {/* Filtre service */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+            {['', ...services].map(s => (
+              <button key={s || 'tous'} onClick={() => setServiceFilter(s)}
+                style={{ padding: '5px 14px', borderRadius: 20, border: `1px solid ${serviceFilter === s ? '#1976D2' : '#E0E0E0'}`, background: serviceFilter === s ? '#1976D2' : '#fff', color: serviceFilter === s ? '#fff' : '#546E7A', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                {s || 'Tous les services'}
+              </button>
+            ))}
+          </div>
+
+          {/* Légende */}
+          <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
             {Object.entries(LIT_CONFIG).map(([k, v]) => (
-              <span key={k} className="flex items-center gap-1">
-                <span className="w-3 h-3 rounded-sm border" style={{ background: v.bg, borderColor: v.border }}></span>
+              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#546E7A' }}>
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: v.bg, border: `2px solid ${v.border}` }} />
                 {v.label}
-              </span>
+              </div>
             ))}
           </div>
-        </div>
-        {litsFiltered.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-8">Aucun lit dans ce service</p>
-        ) : (
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
-            {litsFiltered.map(lit => (
-              <LitCard key={lit.id} lit={lit} onClick={() => {}} />
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Tableau séjours actifs */}
-      <div className="mx-6 mb-8 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-bold text-gray-800">Séjours actifs</h2>
-          <span className="text-sm text-gray-400">{sejours.length} séjour(s)</span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                <th className="px-4 py-3">N°</th>
-                <th className="px-4 py-3">Patient</th>
-                <th className="px-4 py-3">Service</th>
-                <th className="px-4 py-3">Lit</th>
-                <th className="px-4 py-3">Médecin référent</th>
-                <th className="px-4 py-3">Admission</th>
-                <th className="px-4 py-3">Jours</th>
-                <th className="px-4 py-3">Diagnostic</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {sejours.map(sejour => {
-                const badge = TYPE_BADGE[sejour.typeHospitalisation];
-                const jours = joursDepuis(sejour.dateAdmission);
+          {/* Grille des lits */}
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+              {Array.from({ length: 16 }).map((_, i) => (
+                <div key={i} style={{ height: 100, background: '#F0F0F0', borderRadius: 10, animation: 'none' }} />
+              ))}
+            </div>
+          ) : litsAffiches.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 60, color: '#90A4AE' }}>
+              <BedDouble size={40} style={{ margin: '0 auto 12px', opacity: 0.3, display: 'block' }} />
+              Aucun lit trouvé
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 8 }}>
+              {litsAffiches.map(l => {
+                const cfg = LIT_CONFIG[l.statut] ?? LIT_CONFIG.libre;
+                const nomPatient = l.patientNom || (l.patient ? `${l.patient.prenom} ${l.patient.nom}` : null);
                 return (
-                  <tr key={sejour.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{sejour.numero}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-gray-800">{sejour.patient?.prenom} {sejour.patient?.nom}</div>
-                      <div className="text-xs text-gray-400">{sejour.patient?.ipp}</div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{sejour.service}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-mono text-xs font-bold">{sejour.litNumero}</span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{sejour.medecinLabel}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {new Date(sejour.dateAdmission).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`font-bold ${jours > 7 ? 'text-orange-600' : 'text-gray-700'}`}>{jours}j</span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 max-w-[160px]">
-                      <span className="line-clamp-1 text-xs">{sejour.diagnosticEntree}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                        style={{ backgroundColor: badge?.color || '#546E7A' }}
-                      >
-                        {badge?.label || sejour.typeHospitalisation}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/hospitalisation/${sejour.id}`}
-                        className="text-xs text-blue-600 font-semibold hover:underline"
-                      >
-                        Voir dossier →
-                      </Link>
-                    </td>
-                  </tr>
+                  <div key={l.id} style={{ borderRadius: 10, border: `2px solid ${cfg.border}`, background: cfg.bg, padding: '10px 12px', minHeight: 95, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)')}
+                    onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.boxShadow = 'none')}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: cfg.text, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{l.numero}</div>
+                      {l.service && <div style={{ fontSize: 10, color: '#90A4AE', marginTop: 2 }}>{l.service}</div>}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 18 }}>{cfg.icon}</div>
+                      {nomPatient && <div style={{ fontSize: 11, fontWeight: 600, color: cfg.text, marginTop: 4, lineHeight: 1.2 }}>{nomPatient}</div>}
+                      {l.joursHospitalisation !== undefined && <div style={{ fontSize: 10, color: '#90A4AE' }}>{l.joursHospitalisation}j</div>}
+                      {!nomPatient && <div style={{ fontSize: 11, color: cfg.text, marginTop: 4 }}>{cfg.label}</div>}
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Vue séjours */
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
+              <thead style={{ background: '#F8FAFC' }}>
+                <tr>
+                  {['N° Séjour', 'Patient', 'Lit / Service', 'Médecin', 'Admission', 'Durée', 'Diagnostic', 'Statut'].map(h => (
+                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? Array.from({ length: 4 }).map((_, i) => (
+                  <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
+                    {Array.from({ length: 8 }).map((_, j) => (
+                      <td key={j} style={{ padding: '12px 14px' }}><div style={{ height: 14, background: '#F0F0F0', borderRadius: 4, width: j === 1 ? 120 : 70 }} /></td>
+                    ))}
+                  </tr>
+                )) : sejours.length === 0 ? (
+                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#90A4AE' }}>
+                    Aucun séjour actif
+                  </td></tr>
+                ) : sejours.map(s => (
+                  <tr key={s.id} style={{ borderTop: '1px solid #F5F7FA', cursor: 'pointer' }}
+                    onClick={() => router.push(`/hospitalisation/${s.id}`)}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFC')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <td style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, color: '#546E7A', fontFamily: 'monospace' }}>{s.numero || s.id.slice(0, 8)}</td>
+                    <td style={{ padding: '10px 14px' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{s.patient ? `${s.patient.prenom} ${s.patient.nom}` : '—'}</div>
+                      {s.patient?.ipp && <div style={{ fontSize: 11, color: '#90A4AE' }}>{s.patient.ipp}</div>}
+                    </td>
+                    <td style={{ padding: '10px 14px' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1976D2' }}>{s.lit?.numero || '—'}</div>
+                      <div style={{ fontSize: 11, color: '#90A4AE' }}>{s.service || s.lit?.service || '—'}</div>
+                    </td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{s.medecin ? `Dr. ${s.medecin.prenom} ${s.medecin.nom}` : '—'}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A', whiteSpace: 'nowrap' }}>{fmtDate(s.dateAdmission)}</td>
+                    <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{joursDepuis(s.dateAdmission)}j</td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.diagnosticEntree || '—'}</td>
+                    <td style={{ padding: '10px 14px' }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: '#E3F2FD', color: '#1976D2' }}>Actif</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-
-      {showAdmission && (
-        <AdmissionHospitalisationModal
-          onClose={() => setShowAdmission(false)}
-          onAdmit={(data) => {
-            // En production, appeler api.admettreHospitalisation(data)
-            setShowAdmission(false);
-          }}
-        />
       )}
     </div>
   );
