@@ -81,6 +81,42 @@ const T = {
     install: 'Installer', later: 'Plus tard',
     cookie_text: 'Nous utilisons des cookies pour améliorer votre expérience.',
     cookie_accept: 'Tout accepter', cookie_refuse: 'Refuser',
+    // sections
+    problems_eyebrow: 'Problèmes résolus',
+    problems_title: 'Avant SANTAREX ERP.',
+    problems_title2: 'Après SANTAREX ERP.',
+    modules_eyebrow: 'Modules',
+    modules_title: 'Une seule plateforme.',
+    modules_title2: 'Tout votre hôpital.',
+    integrations_eyebrow: 'Intégrations',
+    why_eyebrow: 'Pourquoi SANTAREX',
+    why_title: 'Conçu pour vos contraintes.',
+    why_title2: 'Pas pour les contourner.',
+    onboarding_eyebrow: 'Mise en route',
+    onboarding_title: 'Opérationnel en 3 étapes',
+    activities_eyebrow: 'Une plateforme, plusieurs métiers',
+    activities_title: 'À l\'inscription, vous choisissez',
+    activities_title2: 'votre activité.',
+    pwa_eyebrow: 'Application web progressive',
+    pwa_title: 'Installez SANTAREX ERP',
+    pwa_title2: 'sur votre appareil.',
+    pricing_eyebrow: 'Tarifs',
+    pricing_title: 'Transparent. Sans surprise.',
+    testimonials_eyebrow: 'Témoignages',
+    testimonials_title: 'Ils ont modernisé leur établissement.',
+    faq_eyebrow: 'FAQ',
+    partners_eyebrow: 'Programme partenaire',
+    partners_title: 'Développez vos revenus avec',
+    stats_modules: 'Modules cliniques intégrés',
+    stats_trial: 'Essai gratuit sans engagement',
+    stats_uptime: 'Disponibilité garantie SLA',
+    stats_support: 'Support technique inclus',
+    footer_col2: 'Produit', footer_col3: 'Ressources', footer_col4: 'IBIG Soft', footer_col5: 'Légal',
+    footer_references: 'Références', footer_demo: 'Démo gratuite',
+    footer_helpdesk: 'Centre d\'aide', footer_guide: 'Guide utilisateur', footer_changelog: 'Nouveautés', footer_sara: 'Parler à SARA',
+    footer_about: 'À propos d\'IBIG Soft', footer_other: 'Autres logiciels', footer_careers: 'Recrutement',
+    footer_mentions: 'Mentions légales', footer_cgu: 'CGU', footer_privacy: 'Confidentialité',
+    footer_licence: 'Contrat de licence', footer_security: 'Sécurité',
   },
   en: {
     topbar: "Try SANTAREX ERP free for 30 days",
@@ -111,6 +147,42 @@ const T = {
     install: 'Install', later: 'Later',
     cookie_text: 'We use cookies to improve your experience.',
     cookie_accept: 'Accept all', cookie_refuse: 'Decline',
+    // sections
+    problems_eyebrow: 'Problems solved',
+    problems_title: 'Before SANTAREX ERP.',
+    problems_title2: 'After SANTAREX ERP.',
+    modules_eyebrow: 'Modules',
+    modules_title: 'One platform.',
+    modules_title2: 'Your entire hospital.',
+    integrations_eyebrow: 'Integrations',
+    why_eyebrow: 'Why SANTAREX',
+    why_title: 'Built for your constraints.',
+    why_title2: 'Not to work around them.',
+    onboarding_eyebrow: 'Getting started',
+    onboarding_title: 'Live in 3 steps',
+    activities_eyebrow: 'One platform, many roles',
+    activities_title: 'At sign-up, you choose',
+    activities_title2: 'your activity.',
+    pwa_eyebrow: 'Progressive web app',
+    pwa_title: 'Install SANTAREX ERP',
+    pwa_title2: 'on your device.',
+    pricing_eyebrow: 'Pricing',
+    pricing_title: 'Transparent. No surprises.',
+    testimonials_eyebrow: 'Testimonials',
+    testimonials_title: 'They modernized their facility.',
+    faq_eyebrow: 'FAQ',
+    partners_eyebrow: 'Partner program',
+    partners_title: 'Grow your revenue with',
+    stats_modules: 'Integrated clinical modules',
+    stats_trial: 'Free trial, no commitment',
+    stats_uptime: 'SLA guaranteed uptime',
+    stats_support: 'Technical support included',
+    footer_col2: 'Product', footer_col3: 'Resources', footer_col4: 'IBIG Soft', footer_col5: 'Legal',
+    footer_references: 'References', footer_demo: 'Free demo',
+    footer_helpdesk: 'Help center', footer_guide: 'User guide', footer_changelog: 'Changelog', footer_sara: 'Talk to SARA',
+    footer_about: 'About IBIG Soft', footer_other: 'Other software', footer_careers: 'Careers',
+    footer_mentions: 'Legal notice', footer_cgu: 'Terms of use', footer_privacy: 'Privacy policy',
+    footer_licence: 'License agreement', footer_security: 'Security',
   },
 } as const;
 type Lang = 'fr' | 'en';
@@ -744,7 +816,7 @@ export default function LandingPage() {
       {/* ══ STATS ══ */}
       <section className="lp-stats-section">
         <div className="lp-stats-inner">
-          {[{ num: '12', sup: '', lbl: lang === 'fr' ? 'Modules cliniques intégrés' : 'Integrated clinical modules' }, { num: '30', sup: 'j', lbl: lang === 'fr' ? 'Essai gratuit sans engagement' : 'Free trial, no commitment' }, { num: '99', sup: '%', lbl: lang === 'fr' ? 'Disponibilité garantie SLA' : 'SLA guaranteed uptime' }, { num: '24', sup: '/7', lbl: lang === 'fr' ? 'Support technique inclus' : 'Technical support included' }].map(({ num, sup, lbl }) => (
+          {[{ num: '12', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
             <div key={lbl} className="lp-stat-box"><div className="lp-stat-num">{num}<span>{sup}</span></div><div className="lp-stat-lbl">{lbl}</div></div>
           ))}
         </div>
@@ -753,8 +825,8 @@ export default function LandingPage() {
       {/* ══ PROBLÈMES RÉSOLUS ══ */}
       <section className="lp-problems-section">
         <div className="lp-problems-inner">
-          <span className="lp-eyebrow">Problèmes résolus</span>
-          <h2 className="lp-section-title dark">Avant SANTAREX ERP.<br /><span style={{ color: 'var(--teal)' }}>Après SANTAREX ERP.</span></h2>
+          <span className="lp-eyebrow">{t('problems_eyebrow')}</span>
+          <h2 className="lp-section-title dark">{t('problems_title')}<br /><span style={{ color: 'var(--teal)' }}>{t('problems_title2')}</span></h2>
           <div className="lp-problems-grid">
             {PROBLEMS.map((p, i) => (
               <div key={i} className="lp-problem-card">
@@ -779,8 +851,8 @@ export default function LandingPage() {
         <div className="lp-modules-inner">
           <div className="lp-modules-layout">
             <div className="lp-modules-sticky">
-              <span className="lp-eyebrow">Modules</span>
-              <h2 className="lp-section-title">Une seule plateforme.<br />Tout votre hôpital.</h2>
+              <span className="lp-eyebrow">{t('modules_eyebrow')}</span>
+              <h2 className="lp-section-title">{t('modules_title')}<br />{t('modules_title2')}</h2>
               <p className="lp-section-desc" style={{ marginTop: 14 }}>Chaque module communique en temps réel. Une prescription générée en consultation alerte automatiquement la pharmacie. Un résultat labo apparaît dans le DME dès validation.</p>
               <div className="lp-modules-checklist">
                 {['Données synchronisées en temps réel', 'Déployable module par module', 'Formation incluse dans tous les plans'].map(t => (
@@ -804,7 +876,7 @@ export default function LandingPage() {
       <section className="lp-integrations-section">
         <div className="lp-integrations-inner">
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{lang === 'fr' ? 'Intégrations' : 'Integrations'}</span>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{t('integrations_eyebrow')}</span>
             <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('integrations_title')}</h2>
           </div>
           <div className="lp-integrations-grid">
@@ -823,8 +895,8 @@ export default function LandingPage() {
       <section className="lp-why-section">
         <div className="lp-why-inner">
           <div style={{ marginBottom: 56 }}>
-            <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>Pourquoi SANTAREX</span>
-            <h2 className="lp-section-title dark">Conçu pour vos contraintes.<br />Pas pour les contourner.</h2>
+            <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{t('why_eyebrow')}</span>
+            <h2 className="lp-section-title dark">{t('why_title')}<br />{t('why_title2')}</h2>
           </div>
           <div className="lp-why-grid">
             {[
@@ -848,8 +920,8 @@ export default function LandingPage() {
       <section className="lp-how-section">
         <div className="lp-how-inner">
           <div style={{ textAlign: 'center' }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Mise en route</span>
-            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>Opérationnel en 3 étapes</h2>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{t('onboarding_eyebrow')}</span>
+            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('onboarding_title')}</h2>
           </div>
           <div className="lp-how-steps">
             {[{ n: 1, title: 'Inscription & configuration', desc: 'Créez votre compte, renseignez les informations de votre établissement, configurez vos services et tarifs. Moins de 30 minutes.' }, { n: 2, title: 'Formation & import', desc: 'Notre équipe forme vos agents en visioconférence ou sur site. Import de vos patients existants via fichier Excel si besoin.' }, { n: 3, title: 'Lancement en production', desc: 'Votre établissement est en ligne. Support disponible par WhatsApp, téléphone et email pendant les 30 premiers jours.' }].map(({ n, title, desc }) => (
@@ -863,8 +935,8 @@ export default function LandingPage() {
       <section id="activites" className="lp-activites-section">
         <div className="lp-activites-inner">
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Une plateforme, plusieurs métiers</span>
-            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>À l&apos;inscription, vous choisissez<br /><span style={{ color: 'var(--teal)' }}>votre activité.</span></h2>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{t('activities_eyebrow')}</span>
+            <h2 className="lp-section-title" style={{ textAlign: 'center' }}>{t('activities_title')}<br /><span style={{ color: 'var(--teal)' }}>{t('activities_title2')}</span></h2>
             <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 560 }}>SANTAREX ERP se configure automatiquement selon votre type de structure. Les modules, tableaux de bord et flux de travail s&apos;adaptent à votre métier — pas l&apos;inverse.</p>
           </div>
           <div className="lp-activites-grid">
@@ -888,8 +960,8 @@ export default function LandingPage() {
       <section className="lp-pwa-section">
         <div className="lp-pwa-section-inner">
           <div className="lp-pwa-section-text">
-            <span className="lp-eyebrow">Application web progressive</span>
-            <h2 className="lp-section-title">Installez SANTAREX ERP<br />sur votre appareil.</h2>
+            <span className="lp-eyebrow">{t('pwa_eyebrow')}</span>
+            <h2 className="lp-section-title">{t('pwa_title')}<br />{t('pwa_title2')}</h2>
             <p className="lp-section-desc" style={{ marginTop: 16 }}>Accédez plus rapidement à votre espace depuis votre ordinateur, votre tablette ou votre smartphone, sans passer par une boutique d&apos;applications.</p>
             <div className="lp-pwa-features">
               {['Accès rapide depuis l\'écran d\'accueil', 'Ouverture en plein écran', 'Mises à jour automatiques', 'Compatible Android, iOS et PC', 'Fonctionne partiellement hors connexion', 'Aucun fichier lourd à télécharger'].map(f => (
@@ -923,8 +995,8 @@ export default function LandingPage() {
       {/* ══ PRICING ══ */}
       <section id="pricing" className="lp-pricing-section">
         <div className="lp-pricing-inner">
-          <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{lang === 'fr' ? 'Tarifs' : 'Pricing'}</span>
-          <h2 className="lp-section-title dark">{lang === 'fr' ? 'Transparent. Sans surprise.' : 'Transparent. No surprises.'}</h2>
+          <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{t('pricing_eyebrow')}</span>
+          <h2 className="lp-section-title dark">{t('pricing_title')}</h2>
           <p className="lp-section-desc">{lang === 'fr' ? 'Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.' : 'All plans include hosting, maintenance and support. No hidden fees. Cancel anytime.'}</p>
 
           {/* Toggle mensuel / annuel */}
@@ -987,8 +1059,8 @@ export default function LandingPage() {
       {/* ══ TESTIMONIALS ══ */}
       <section id="testimonials" className="lp-testi-section">
         <div className="lp-testi-inner">
-          <span className="lp-eyebrow">Témoignages</span>
-          <h2 className="lp-section-title">Ils ont modernisé leur établissement.</h2>
+          <span className="lp-eyebrow">{t('testimonials_eyebrow')}</span>
+          <h2 className="lp-section-title">{t('testimonials_title')}</h2>
           <div className="lp-testi-grid">
             {TESTIMONIALS.map(t => (
               <div key={t.name} className="lp-testi-card">
@@ -1008,7 +1080,7 @@ export default function LandingPage() {
       <section id="faq" className="lp-faq-section">
         <div className="lp-faq-inner">
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>FAQ</span>
+            <span className="lp-eyebrow" style={{ display: 'block', textAlign: 'center' }}>{t('faq_eyebrow')}</span>
             <h2 className="lp-section-title dark" style={{ textAlign: 'center' }}>{t('faq_title')}</h2>
           </div>
           <div className="lp-faq-list">
@@ -1037,8 +1109,8 @@ export default function LandingPage() {
         <div className="lp-partners-inner">
           <div className="lp-partners-content">
             <div className="lp-partners-text">
-              <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>Programme partenaire</span>
-              <h2 className="lp-section-title dark">Développez vos revenus avec <span style={{ color: 'var(--teal)' }}>IBIG PARTNERS</span></h2>
+              <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{t('partners_eyebrow')}</span>
+              <h2 className="lp-section-title dark">{t('partners_title')} <span style={{ color: 'var(--teal)' }}>IBIG PARTNERS</span></h2>
               <p style={{ color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>Rejoignez gratuitement le programme de partenariat IBIG et recommandez SANTAREX ERP à votre réseau. Accédez aux outils, suivez vos recommandations et percevez des commissions.</p>
               <div className="lp-partners-perks">
                 {['Inscription 100% gratuite', 'Accès aux outils IBIG Partners', 'Suivi en temps réel de vos recommandations', 'Commissions sur chaque contrat signé', 'Accompagnement et support dédié', 'Formation aux produits IBIG Soft'].map(p => (
@@ -1099,48 +1171,48 @@ export default function LandingPage() {
             </div>
             {/* Col 2 */}
             <div className="lp-footer-col">
-              <h4>{lang === 'fr' ? 'Produit' : 'Product'}</h4>
+              <h4>{t('footer_col2')}</h4>
               <ul>
                 <li><a href="#modules">{t('nav_modules')}</a></li>
                 <li><a href="#activites">{t('nav_solutions')}</a></li>
                 <li><a href="#pricing">{t('nav_pricing')}</a></li>
-                <li><a href="#testimonials">{lang === 'fr' ? 'Références' : 'References'}</a></li>
+                <li><a href="#testimonials">{t('footer_references')}</a></li>
                 <li><Link href="/login">{t('nav_login')}</Link></li>
-                <li><a href="#contact">{lang === 'fr' ? 'Démo gratuite' : 'Free demo'}</a></li>
+                <li><a href="#contact">{t('footer_demo')}</a></li>
               </ul>
             </div>
             {/* Col 3 */}
             <div className="lp-footer-col">
-              <h4>{lang === 'fr' ? 'Ressources' : 'Resources'}</h4>
+              <h4>{t('footer_col3')}</h4>
               <ul>
                 <li><a href="#faq">FAQ</a></li>
-                <li><Link href="/guide">{lang === 'fr' ? 'Centre d\'aide' : 'Help center'}</Link></li>
-                <li><Link href="/guide">{lang === 'fr' ? 'Guide utilisateur' : 'User guide'}</Link></li>
-                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Nouveautés' : 'Changelog'}</a></li>
-                <li><a href="#" onClick={e => { e.preventDefault(); document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click(); }}>{lang === 'fr' ? 'Parler à SARA' : 'Talk to SARA'}</a></li>
+                <li><Link href="/guide">{t('footer_helpdesk')}</Link></li>
+                <li><Link href="/guide">{t('footer_guide')}</Link></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{t('footer_changelog')}</a></li>
+                <li><a href="#" onClick={e => { e.preventDefault(); document.querySelector<HTMLButtonElement>('.lp-sara-btn')?.click(); }}>{t('footer_sara')}</a></li>
               </ul>
             </div>
             {/* Col 4 */}
             <div className="lp-footer-col">
-              <h4>IBIG Soft</h4>
+              <h4>{t('footer_col4')}</h4>
               <ul>
-                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'À propos d\'IBIG Soft' : 'About IBIG Soft'}</a></li>
-                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{lang === 'fr' ? 'Autres logiciels' : 'Other software'}</a></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{t('footer_about')}</a></li>
+                <li><a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer">{t('footer_other')}</a></li>
                 <li><a href="https://ibigpartners.com/" target="_blank" rel="noopener noreferrer">IBIG PARTNERS</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="mailto:rh@ibigsoft.com">{lang === 'fr' ? 'Recrutement' : 'Careers'}</a></li>
+                <li><a href="mailto:rh@ibigsoft.com">{t('footer_careers')}</a></li>
               </ul>
             </div>
             {/* Col 5 */}
             <div className="lp-footer-col">
-              <h4>{lang === 'fr' ? 'Légal' : 'Legal'}</h4>
+              <h4>{t('footer_col5')}</h4>
               <ul>
-                <li><Link href="/mentions-legales">{lang === 'fr' ? 'Mentions légales' : 'Legal notice'}</Link></li>
-                <li><Link href="/cgu">{lang === 'fr' ? 'CGU' : 'Terms of use'}</Link></li>
-                <li><Link href="/confidentialite">{lang === 'fr' ? 'Confidentialité' : 'Privacy policy'}</Link></li>
+                <li><Link href="/mentions-legales">{t('footer_mentions')}</Link></li>
+                <li><Link href="/cgu">{t('footer_cgu')}</Link></li>
+                <li><Link href="/confidentialite">{t('footer_privacy')}</Link></li>
                 <li><Link href="/cookies">Cookies</Link></li>
-                <li><Link href="/licence">{lang === 'fr' ? 'Contrat de licence' : 'License agreement'}</Link></li>
-                <li><Link href="/securite">{lang === 'fr' ? 'Sécurité' : 'Security'}</Link></li>
+                <li><Link href="/licence">{t('footer_licence')}</Link></li>
+                <li><Link href="/securite">{t('footer_security')}</Link></li>
               </ul>
             </div>
             {/* Col 6 */}

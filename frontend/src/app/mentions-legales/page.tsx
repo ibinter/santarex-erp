@@ -23,9 +23,6 @@ export default function MentionsLegalesPage() {
         <li><strong>Raison sociale :</strong> IBIG SARL</li>
         <li><strong>Forme juridique :</strong> Société à Responsabilité Limitée (SARL)</li>
         <li><strong>Siège social :</strong> Abidjan, Côte d'Ivoire</li>
-        <li><strong>Capital social :</strong> Confidentiel</li>
-        <li><strong>Registre du commerce :</strong> En cours d'enregistrement RCCM</li>
-        <li><strong>N° contribuable :</strong> Disponible sur demande</li>
         <li><strong>Téléphone :</strong> +225 27 22 27 60 14</li>
         <li><strong>WhatsApp :</strong> +225 07 78 88 25 92</li>
         <li><strong>Email :</strong> <a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a></li>
@@ -40,12 +37,12 @@ export default function MentionsLegalesPage() {
 
       <h2>3. Hébergement</h2>
       <p>
-        SANTAREX ERP est hébergé sur des serveurs sécurisés en Europe et en Afrique.
+        SANTAREX ERP est hébergé sur des serveurs sécurisés en Europe.
         Les données des établissements de santé sont stockées de manière isolée et chiffrée.
       </p>
       <ul>
-        <li><strong>Prestataire d'infrastructure :</strong> Serveurs dédiés OVH / Hetzner</li>
-        <li><strong>Localisation des données :</strong> Europe (serveurs de traitement) et Afrique (CDN)</li>
+        <li><strong>Prestataire d'infrastructure :</strong> LWS (serveurs dédiés)</li>
+        <li><strong>Localisation des données :</strong> Europe</li>
         <li><strong>Disponibilité garantie :</strong> 99,9 % (SLA)</li>
       </ul>
 
