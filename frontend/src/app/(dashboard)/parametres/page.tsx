@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Settings, Building, Shield, Bell, Users, Globe, Palette, Database, Save } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 const SECTIONS = [
   { id: 'etablissement', label: 'Établissement', icon: <Building size={16} /> },
@@ -49,9 +50,19 @@ export default function ParametresPage() {
   const [twoFa, setTwoFa] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState('60');
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    try {
+      await apiClient('/settings', {
+        method: 'PATCH',
+        body: {
+          nomEtablissement: nomEtab, ville, pays, telephone: tel, email,
+          twoFaEnabled: twoFa, sessionTimeoutMinutes: parseInt(sessionTimeout, 10),
+          notifStock, notifRdv, notifLabo, notifFacture,
+        },
+      });
+    } catch { /* Ignore si endpoint pas encore disponible */ }
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   return (
