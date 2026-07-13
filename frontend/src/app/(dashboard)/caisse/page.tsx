@@ -1,206 +1,240 @@
 'use client';
 
-import { useState } from 'react';
-import { DollarSign, Receipt, Banknote, Smartphone, CreditCard, Shield } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import StatsBar from '@/components/dashboard/StatsBar';
+import { useState, useEffect, useCallback } from 'react';
+import { DollarSign, Receipt, Banknote, Smartphone, CreditCard, Shield, RefreshCw, Download } from 'lucide-react';
+import { api, apiClient } from '@/lib/api';
 import type { ModePaiement } from '@/types';
 
-// ─── Mock data ───────────────────────────────────────────────
-const TODAY = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+const TODAY_STR = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-interface Transaction {
-  id: string;
-  heure: string;
-  reference: string;
-  patient: string;
-  facture: string;
-  mode: ModePaiement;
-  montant: number;
-  statut: 'valide' | 'annule';
-}
-
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 't1', heure: '08:15', reference: 'PAY-2025-0891', patient: 'KOUASSI Adjoua', facture: 'FAC-2025-0408', mode: 'especes', montant: 22000, statut: 'valide' },
-  { id: 't2', heure: '09:30', reference: 'PAY-2025-0892', patient: 'TRAORÉ Ibrahim', facture: 'FAC-2025-0409', mode: 'mobile_money', montant: 5000, statut: 'valide' },
-  { id: 't3', heure: '10:00', reference: 'PAY-2025-0893', patient: 'KONÉ Fatoumata', facture: 'FAC-2025-0410', mode: 'carte', montant: 35000, statut: 'valide' },
-  { id: 't4', heure: '11:20', reference: 'PAY-2025-0894', patient: 'OUATTARA Seydou', facture: 'FAC-2025-0411', mode: 'assurance', montant: 27000, statut: 'valide' },
-  { id: 't5', heure: '13:45', reference: 'PAY-2025-0895', patient: 'BAMBA Mariam', facture: 'FAC-2025-0412', mode: 'mobile_money', montant: 8500, statut: 'valide' },
-  { id: 't6', heure: '14:30', reference: 'PAY-2025-0896', patient: 'DIALLO Moussa', facture: 'FAC-2025-0413', mode: 'especes', montant: 12000, statut: 'valide' },
-  { id: 't7', heure: '15:10', reference: 'PAY-2025-0897', patient: 'COULIBALY Awa', facture: 'FAC-2025-0414', mode: 'virement', montant: 45000, statut: 'valide' },
-  { id: 't8', heure: '15:55', reference: 'PAY-2025-0898', patient: 'SANOGO Daouda', facture: 'FAC-2025-0415', mode: 'especes', montant: 3000, statut: 'annule' },
-];
-
-const MODE_CONFIG: Record<ModePaiement, { label: string; badgeClass: string; icon: React.ReactNode }> = {
-  especes: { label: 'Espèces', badgeClass: 'bg-green-100 text-green-800 border border-green-200', icon: <Banknote size={14} /> },
-  mobile_money: { label: 'Mobile Money', badgeClass: 'bg-orange-100 text-orange-800 border border-orange-200', icon: <Smartphone size={14} /> },
-  carte: { label: 'Carte', badgeClass: 'bg-blue-100 text-blue-800 border border-blue-200', icon: <CreditCard size={14} /> },
-  assurance: { label: 'Assurance', badgeClass: 'bg-purple-100 text-purple-800 border border-purple-200', icon: <Shield size={14} /> },
-  virement: { label: 'Virement', badgeClass: 'bg-gray-100 text-gray-800 border border-gray-200', icon: <DollarSign size={14} /> },
+const MODE_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  especes:      { label: 'Espèces',      color: '#2E7D32', bg: '#E8F5E9', icon: <Banknote size={14} /> },
+  mobile_money: { label: 'Mobile Money', color: '#E65100', bg: '#FFF3E0', icon: <Smartphone size={14} /> },
+  carte:        { label: 'Carte',        color: '#0D47A1', bg: '#EFF6FF', icon: <CreditCard size={14} /> },
+  assurance:    { label: 'Assurance',    color: '#6A1B9A', bg: '#F3E5F5', icon: <Shield size={14} /> },
+  virement:     { label: 'Virement',     color: '#37474F', bg: '#ECEFF1', icon: <DollarSign size={14} /> },
 };
 
-function formatXOF(val: number) {
+function fmtXOF(val: number) {
   return val.toLocaleString('fr-FR') + ' XOF';
 }
 
+function fmtTime(iso: string) {
+  try { return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+  catch { return '—'; }
+}
+
+interface StatsCaisse {
+  totalJour: number;
+  parMode: { modePaiement: string; total: string; count: string }[];
+}
+
+interface Paiement {
+  id: string;
+  reference: string;
+  modePaiement: string;
+  montant: number;
+  statut: string;
+  createdAt: string;
+  patient?: { nomComplet?: string; nom?: string; prenom?: string };
+  facture?: { reference?: string };
+}
+
 export default function CaissePage() {
-  const [modeFilter, setModeFilter] = useState<ModePaiement | ''>('');
+  const [stats, setStats] = useState<StatsCaisse | null>(null);
+  const [paiements, setPaiements] = useState<Paiement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modeFilter, setModeFilter] = useState('');
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const valides = MOCK_TRANSACTIONS.filter(t => t.statut === 'valide');
-  const totalEncaisse = valides.reduce((acc, t) => acc + t.montant, 0);
-  const totalEspeces = valides.filter(t => t.mode === 'especes').reduce((acc, t) => acc + t.montant, 0);
-  const totalMobile = valides.filter(t => t.mode === 'mobile_money').reduce((acc, t) => acc + t.montant, 0);
-  const totalCarte = valides.filter(t => t.mode === 'carte').reduce((acc, t) => acc + t.montant, 0);
-  const totalAssurance = valides.filter(t => t.mode === 'assurance').reduce((acc, t) => acc + t.montant, 0);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [statsData, paiementsData] = await Promise.allSettled([
+        apiClient('/paiements/stats-caisse'),
+        apiClient('/paiements?limit=50'),
+      ]);
+      if (statsData.status === 'fulfilled') setStats(statsData.value as StatsCaisse);
+      if (paiementsData.status === 'fulfilled') {
+        const d = paiementsData.value as any;
+        setPaiements(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
+      }
+      setLastRefresh(new Date());
+    } catch {
+      //
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const repartition = [
-    { mode: 'especes' as ModePaiement, label: 'Espèces', montant: totalEspeces, color: '#2E7D32', barClass: 'bg-green-600' },
-    { mode: 'mobile_money' as ModePaiement, label: 'Mobile Money', montant: totalMobile, color: '#E65100', barClass: 'bg-orange-500' },
-    { mode: 'carte' as ModePaiement, label: 'Carte', montant: totalCarte, color: '#0D47A1', barClass: 'bg-blue-700' },
-    { mode: 'assurance' as ModePaiement, label: 'Assurance', montant: totalAssurance, color: '#6A1B9A', barClass: 'bg-purple-700' },
-  ];
+  useEffect(() => { load(); }, [load]);
 
-  const filtered = MOCK_TRANSACTIONS.filter(t => !modeFilter || t.mode === modeFilter);
+  const totalJour = stats?.totalJour ?? 0;
+  const totalEspeces = stats?.parMode?.find(m => m.modePaiement === 'especes') ? Number(stats.parMode.find(m => m.modePaiement === 'especes')!.total) : 0;
+  const totalMobile = stats?.parMode?.find(m => m.modePaiement === 'mobile_money') ? Number(stats.parMode.find(m => m.modePaiement === 'mobile_money')!.total) : 0;
+  const totalCarte = stats?.parMode?.find(m => m.modePaiement === 'carte') ? Number(stats.parMode.find(m => m.modePaiement === 'carte')!.total) : 0;
+  const nbTransactions = stats?.parMode?.reduce((acc, m) => acc + Number(m.count), 0) ?? 0;
+
+  const filtered = paiements.filter(p => !modeFilter || p.modePaiement === modeFilter);
+
+  const patientName = (p: Paiement) => p.patient?.nomComplet || (p.patient?.prenom && p.patient?.nom ? `${p.patient.prenom} ${p.patient.nom}` : '—');
+
+  const repartition = (stats?.parMode ?? []).map(m => ({
+    mode: m.modePaiement,
+    label: MODE_CONFIG[m.modePaiement]?.label ?? m.modePaiement,
+    montant: Number(m.total),
+    count: Number(m.count),
+    color: MODE_CONFIG[m.modePaiement]?.color ?? '#546E7A',
+  }));
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Caisse du jour</h1>
-          <p className="text-sm text-text-secondary mt-0.5 capitalize">{TODAY}</p>
-        </div>
-        <Button variant="secondary" onClick={() => alert('Clôture de caisse...')} leftIcon={<Receipt size={16} />}>
-          Clôturer la caisse
-        </Button>
-      </div>
-
-      {/* KPI Row */}
-      <StatsBar
-        className="mb-6"
-        stats={[
-          { label: 'Total encaissé', value: formatXOF(totalEncaisse), icon: <DollarSign size={18} />, color: 'success' },
-          { label: 'Nb transactions', value: valides.length, icon: <Receipt size={18} />, color: 'primary' },
-          { label: 'Espèces', value: formatXOF(totalEspeces), icon: <Banknote size={18} />, color: 'secondary' },
-          { label: 'Mobile Money', value: formatXOF(totalMobile), icon: <Smartphone size={18} />, color: 'warning' },
-        ]}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        {/* Graphique répartition */}
-        <div className="bg-white border border-border rounded-card p-5">
-          <h2 className="text-base font-semibold text-text-primary mb-4">Répartition par mode</h2>
-          <div className="space-y-3">
-            {repartition.filter(r => r.montant > 0).map(r => {
-              const pct = totalEncaisse > 0 ? Math.round((r.montant / totalEncaisse) * 100) : 0;
-              return (
-                <div key={r.mode}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-text-secondary">{r.label}</span>
-                    <span className="font-semibold text-text-primary">{pct}%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${r.barClass}`} style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="text-xs text-text-secondary mt-0.5">{formatXOF(r.montant)}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Autres KPIs */}
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4 content-start">
-          {[
-            { label: 'Carte bancaire', value: totalCarte, icon: <CreditCard size={18} />, cls: 'bg-blue-50', iconCls: 'text-blue-700' },
-            { label: 'Assurance', value: totalAssurance, icon: <Shield size={18} />, cls: 'bg-purple-50', iconCls: 'text-purple-700' },
-            { label: 'Virements', value: MOCK_TRANSACTIONS.filter(t => t.mode === 'virement').reduce((a, t) => a + t.montant, 0), icon: <DollarSign size={18} />, cls: 'bg-gray-50', iconCls: 'text-gray-600' },
-            { label: 'Annulations', value: MOCK_TRANSACTIONS.filter(t => t.statut === 'annule').length, icon: <Receipt size={18} />, cls: 'bg-red-50', iconCls: 'text-red-600' },
-          ].map((k, i) => (
-            <div key={i} className="bg-white border border-border rounded-card p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${k.cls}`}>
-                <span className={k.iconCls}>{k.icon}</span>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text-primary">{typeof k.value === 'number' && k.value > 999 ? formatXOF(k.value) : k.value}</p>
-                <p className="text-xs text-text-secondary">{k.label}</p>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '3px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CreditCard size={20} color="#2E7D32" />
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Filtre mode */}
-      <div className="bg-white border border-border rounded-card p-4 mb-4 flex items-center gap-3">
-        <span className="text-sm font-medium text-text-secondary">Filtrer par mode :</span>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setModeFilter('')}
-            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${!modeFilter ? 'bg-primary text-white border-primary' : 'border-border text-text-secondary hover:border-primary'}`}
-          >
-            Tous
-          </button>
-          {Object.entries(MODE_CONFIG).map(([mode, cfg]) => (
-            <button
-              key={mode}
-              onClick={() => setModeFilter(mode as ModePaiement)}
-              className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors flex items-center gap-1 ${modeFilter === mode ? 'bg-primary text-white border-primary' : 'border-border text-text-secondary hover:border-primary'}`}
-            >
-              {cfg.icon} {cfg.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tableau transactions */}
-      <div className="bg-white border border-border rounded-card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-border">
-            <tr>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Heure</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Référence</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Patient</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Facture</th>
-              <th className="text-center px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Mode</th>
-              <th className="text-right px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Montant</th>
-              <th className="text-center px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Statut</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {filtered.map(t => {
-              const cfg = MODE_CONFIG[t.mode];
-              return (
-                <tr key={t.id} className={`hover:bg-gray-50 transition-colors ${t.statut === 'annule' ? 'opacity-50' : ''}`}>
-                  <td className="px-4 py-3 font-mono text-xs text-text-secondary">{t.heure}</td>
-                  <td className="px-4 py-3 font-mono text-xs font-semibold text-text-primary">{t.reference}</td>
-                  <td className="px-4 py-3 text-text-primary">{t.patient}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-text-secondary">{t.facture}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${cfg.badgeClass}`}>
-                      {cfg.icon} {cfg.label}
-                    </span>
-                  </td>
-                  <td className={`px-4 py-3 text-right font-bold ${t.statut === 'annule' ? 'line-through text-text-secondary' : 'text-text-primary'}`}>
-                    {formatXOF(t.montant)}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Badge variant={t.statut === 'valide' ? 'success' : 'danger'} dot>
-                      {t.statut === 'valide' ? 'Validé' : 'Annulé'}
-                    </Badge>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-text-secondary">
-            <Receipt size={36} className="mx-auto mb-2 opacity-30" />
-            <p>Aucune transaction pour ce filtre.</p>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#1A2332' }}>Caisse du jour</h1>
           </div>
-        )}
+          <p style={{ margin: 0, fontSize: '12px', color: '#546E7A', textTransform: 'capitalize' }}>
+            {TODAY_STR}
+            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• Actualisé à {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: '13px', color: '#546E7A', fontWeight: 600 }}>
+            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            Actualiser
+          </button>
+          <button style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', background: '#0D47A1', border: 'none', cursor: 'pointer', fontSize: '13px', color: '#fff', fontWeight: 600 }}>
+            <Download size={14} />
+            Exporter
+          </button>
+        </div>
       </div>
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+        {[
+          { label: 'Total encaissé', value: loading ? '…' : fmtXOF(totalJour), icon: <DollarSign size={18} color="#2E7D32" />, color: '#2E7D32', bg: '#E8F5E9' },
+          { label: 'Nb transactions', value: loading ? '…' : nbTransactions, icon: <Receipt size={18} color="#0D47A1" />, color: '#0D47A1', bg: '#EFF6FF' },
+          { label: 'Espèces', value: loading ? '…' : fmtXOF(totalEspeces), icon: <Banknote size={18} color="#2E7D32" />, color: '#2E7D32', bg: '#F1F8E9' },
+          { label: 'Mobile Money', value: loading ? '…' : fmtXOF(totalMobile), icon: <Smartphone size={18} color="#E65100" />, color: '#E65100', bg: '#FFF3E0' },
+          { label: 'Carte bancaire', value: loading ? '…' : fmtXOF(totalCarte), icon: <CreditCard size={18} color="#0D47A1" />, color: '#0D47A1', bg: '#E3F2FD' },
+        ].map((k, i) => (
+          <div key={i} style={{ background: '#fff', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderTop: `3px solid ${k.color}` }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>{k.icon}</div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: k.color }}>{k.value}</div>
+            <div style={{ fontSize: '11px', color: '#546E7A', marginTop: '2px' }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: '16px', marginBottom: '16px', alignItems: 'start' }}>
+
+        {/* Tableau */}
+        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+          {/* Filtres */}
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #F5F7FA', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: '#546E7A', fontWeight: 600 }}>Mode :</span>
+            {['', ...Object.keys(MODE_CONFIG)].map(mode => (
+              <button key={mode || 'all'} onClick={() => setModeFilter(mode)}
+                style={{ padding: '4px 12px', borderRadius: '20px', border: `1px solid ${modeFilter === mode ? '#0D47A1' : '#E0E0E0'}`, background: modeFilter === mode ? '#0D47A1' : '#fff', color: modeFilter === mode ? '#fff' : '#546E7A', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
+                {mode ? MODE_CONFIG[mode]?.label : 'Tous'}
+              </button>
+            ))}
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '560px' }}>
+              <thead style={{ background: '#F8FAFC' }}>
+                <tr>
+                  {['Heure', 'Référence', 'Patient', 'Facture', 'Mode', 'Montant', 'Statut'].map(h => (
+                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: '10px', fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <td key={j} style={{ padding: '12px 14px' }}>
+                          <div style={{ height: 14, background: '#F0F0F0', borderRadius: 4, width: j === 2 ? 100 : 60 }} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#90A4AE', fontSize: '13px' }}>
+                      <Receipt size={32} style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
+                      Aucune transaction pour ce filtre
+                    </td>
+                  </tr>
+                ) : filtered.map(t => {
+                  const cfg = MODE_CONFIG[t.modePaiement] ?? MODE_CONFIG['especes'];
+                  const annule = t.statut?.toLowerCase().includes('annul');
+                  return (
+                    <tr key={t.id} style={{ borderTop: '1px solid #F5F7FA', opacity: annule ? 0.55 : 1 }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFC')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                      <td style={{ padding: '11px 14px', fontSize: '12px', color: '#546E7A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{fmtTime(t.createdAt)}</td>
+                      <td style={{ padding: '11px 14px', fontSize: '11px', fontWeight: 700, color: '#1A2332', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{t.reference || '—'}</td>
+                      <td style={{ padding: '11px 14px', fontSize: '12px', color: '#37474F' }}>{patientName(t)}</td>
+                      <td style={{ padding: '11px 14px', fontSize: '11px', color: '#546E7A' }}>{t.facture?.reference || '—'}</td>
+                      <td style={{ padding: '11px 14px' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, color: cfg.color, background: cfg.bg, padding: '3px 10px', borderRadius: '20px' }}>
+                          {cfg.icon} {cfg.label}
+                        </span>
+                      </td>
+                      <td style={{ padding: '11px 14px', fontSize: '13px', fontWeight: 700, color: annule ? '#90A4AE' : '#1A2332', textDecoration: annule ? 'line-through' : 'none', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        {fmtXOF(t.montant)}
+                      </td>
+                      <td style={{ padding: '11px 14px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '20px', background: annule ? '#FFEBEE' : '#E8F5E9', color: annule ? '#C62828' : '#2E7D32' }}>
+                          {annule ? 'Annulé' : 'Validé'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Répartition */}
+        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px' }}>
+          <h3 style={{ margin: '0 0 14px', fontSize: '12px', fontWeight: 700, color: '#37474F', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Répartition</h3>
+          {repartition.length === 0 ? (
+            <p style={{ fontSize: '12px', color: '#90A4AE', textAlign: 'center', margin: '20px 0' }}>Aucune donnée</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {repartition.map(r => {
+                const pct = totalJour > 0 ? Math.round((r.montant / totalJour) * 100) : 0;
+                return (
+                  <div key={r.mode}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
+                      <span style={{ color: '#37474F', fontWeight: 600 }}>{r.label}</span>
+                      <span style={{ color: r.color, fontWeight: 700 }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: '6px', background: '#F0F0F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: r.color, borderRadius: '3px', transition: 'width 0.5s ease' }} />
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#90A4AE', marginTop: '2px' }}>{fmtXOF(r.montant)} • {r.count} transaction(s)</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
