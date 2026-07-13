@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart2, TrendingUp, TrendingDown, Users, CreditCard, Activity, Download } from 'lucide-react';
+import { BarChart2, TrendingUp, TrendingDown, Users, CreditCard, Activity, Download, Construction } from 'lucide-react';
 
 const MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul'];
 const PATIENTS_DATA = [142, 158, 171, 163, 189, 203, 247];
@@ -34,6 +34,10 @@ export default function ReportingPage() {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: 10, marginBottom: 20, fontSize: 13, color: '#E65100' }}>
+        <Construction size={16} />
+        <span><strong>Module en intégration</strong> — Les données affichées sont indicatives. La connexion API est en cours de déploiement.</span>
+      </div>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>

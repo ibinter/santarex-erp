@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { getCurrentUser, getUserInitials, getFullName } from '@/lib/auth';
+import { apiClient } from '@/lib/api';
 import type { User } from '@/types';
 
 type Section = 'info' | 'security' | 'preferences';
@@ -9,6 +10,8 @@ type Section = 'info' | 'security' | 'preferences';
 export default function ProfilPage() {
   const [user, setUser] = useState<User | null>(null);
   const [saved, setSaved] = useState<Section | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Info form
   const [infoForm, setInfoForm] = useState({ firstName: '', lastName: '', email: '' });
@@ -34,28 +37,31 @@ export default function ProfilPage() {
     setTimeout(() => setSaved(null), 2500);
   }
 
-  function handleInfoSubmit(e: FormEvent) {
+  async function handleInfoSubmit(e: FormEvent) {
     e.preventDefault();
-    showSaved('info');
+    setSaving(true); setSaveError(null);
+    try {
+      await apiClient('/auth/me', { method: 'PATCH', body: { firstName: infoForm.firstName, lastName: infoForm.lastName } });
+      showSaved('info');
+    } catch (err: any) {
+      setSaveError(err?.message ?? 'Erreur lors de la sauvegarde');
+    } finally { setSaving(false); }
   }
 
-  function handleSecSubmit(e: FormEvent) {
+  async function handleSecSubmit(e: FormEvent) {
     e.preventDefault();
     setSecError(null);
-    if (!secForm.current || !secForm.next || !secForm.confirm) {
-      setSecError('Veuillez remplir tous les champs.');
-      return;
-    }
-    if (secForm.next !== secForm.confirm) {
-      setSecError('Les mots de passe ne correspondent pas.');
-      return;
-    }
-    if (secForm.next.length < 8) {
-      setSecError('Le mot de passe doit contenir au moins 8 caractères.');
-      return;
-    }
-    setSecForm({ current: '', next: '', confirm: '' });
-    showSaved('security');
+    if (!secForm.current || !secForm.next || !secForm.confirm) { setSecError('Veuillez remplir tous les champs.'); return; }
+    if (secForm.next !== secForm.confirm) { setSecError('Les mots de passe ne correspondent pas.'); return; }
+    if (secForm.next.length < 8) { setSecError('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+    setSaving(true);
+    try {
+      await apiClient('/auth/change-password', { method: 'POST', body: { currentPassword: secForm.current, newPassword: secForm.next } });
+      setSecForm({ current: '', next: '', confirm: '' });
+      showSaved('security');
+    } catch (err: any) {
+      setSecError(err?.message ?? 'Mot de passe actuel incorrect');
+    } finally { setSaving(false); }
   }
 
   function handlePrefSubmit(e: FormEvent) {

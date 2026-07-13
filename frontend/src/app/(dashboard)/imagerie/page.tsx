@@ -1,148 +1,231 @@
 'use client';
 
-import { useState } from 'react';
-import { Scan, Plus, Clock, CheckCircle, AlertCircle, FileImage } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Scan, RefreshCw, Plus, Clock, CheckCircle, AlertCircle, FileImage, Zap } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
-const TYPES = ['Radiographie', 'Échographie', 'Scanner (TDM)', 'IRM', 'Mammographie', 'Scintigraphie'];
+type StatutExamen = 'EN_ATTENTE' | 'EN_COURS' | 'TERMINE' | 'VALIDE' | string;
 
-const EXAMENS = [
-  { id: 'IMG-001', patient: 'Konan Marie-Ange', age: 34, type: 'Échographie', region: 'Abdomen', medecin: 'Dr. Diallo Amara', statut: 'EN_ATTENTE', date: '2026-07-12', heure: '08:30', urgence: false, resultat: null },
-  { id: 'IMG-002', patient: 'Traoré Ibrahim', age: 52, type: 'Scanner (TDM)', region: 'Thorax', medecin: 'Dr. Koné Mamadou', statut: 'EN_COURS', date: '2026-07-12', heure: '09:15', urgence: true, resultat: null },
-  { id: 'IMG-003', patient: 'Bah Mariama', age: 28, type: 'IRM', region: 'Cerveau', medecin: 'Dr. Bah Fatoumata', statut: 'TERMINE', date: '2026-07-12', heure: '07:45', urgence: false, resultat: 'Aucune anomalie décelée. Structures cérébrales normales.' },
-  { id: 'IMG-004', patient: 'Ouédraogo Paul', age: 67, type: 'Radiographie', region: 'Genou droit', medecin: 'Dr. Touré Ibrahim', statut: 'VALIDE', date: '2026-07-12', heure: '07:00', urgence: false, resultat: 'Arthrose fémoro-tibiale grade II. Ostéophytes marginaux.' },
-  { id: 'IMG-005', patient: 'Sanogo Fatoumata', age: 45, type: 'Mammographie', region: 'Seins', medecin: 'Dr. Yao Emmanuel', statut: 'EN_ATTENTE', date: '2026-07-12', heure: '10:30', urgence: false, resultat: null },
-  { id: 'IMG-006', patient: 'Coulibaly Adama', age: 38, type: 'Échographie', region: 'Thyroïde', medecin: 'Dr. Diallo Amara', statut: 'TERMINE', date: '2026-07-12', heure: '08:00', urgence: false, resultat: 'Nodule thyroïdien droit 12mm. Surveillance recommandée.' },
-];
-
-const statutConfig: Record<string, { label: string; color: string; bg: string }> = {
-  EN_ATTENTE: { label: 'En attente', color: '#E65100', bg: '#FFF3E0' },
-  EN_COURS: { label: 'En cours', color: '#1565C0', bg: '#E3F2FD' },
-  TERMINE: { label: 'Terminé', color: '#00695C', bg: '#E0F2F1' },
-  VALIDE: { label: 'Validé', color: '#2E7D32', bg: '#E8F5E9' },
+type Examen = {
+  id: string;
+  numero?: string;
+  patient?: { id: string; nom: string; prenom: string };
+  medecin?: { id: string; nom: string; prenom: string };
+  typeExamen?: string; type?: string;
+  regionAnatomique?: string; region?: string;
+  statut: StatutExamen;
+  dateExamen?: string; date?: string;
+  heure?: string;
+  urgence?: boolean;
+  resultat?: string | null;
 };
 
-export default function ImagériePage() {
-  const [filtre, setFiltre] = useState<string>('TOUS');
-  const [selected, setSelected] = useState<typeof EXAMENS[0] | null>(null);
+type Stats = { total?: number; enAttente?: number; enCours?: number; termines?: number };
 
-  const filtred = filtre === 'TOUS' ? EXAMENS : EXAMENS.filter(e => e.statut === filtre);
+const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  EN_ATTENTE: { label: 'En attente', color: '#E65100', bg: '#FFF3E0', icon: <Clock size={12} /> },
+  EN_COURS:   { label: 'En cours',   color: '#1565C0', bg: '#EFF6FF', icon: <RefreshCw size={12} /> },
+  TERMINE:    { label: 'Terminé',    color: '#00695C', bg: '#E0F2F1', icon: <CheckCircle size={12} /> },
+  VALIDE:     { label: 'Validé',     color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={12} /> },
+};
+
+function patientName(e: Examen) {
+  if (!e.patient) return '—';
+  return `${e.patient.prenom} ${e.patient.nom}`;
+}
+
+function typeLabel(e: Examen) { return e.typeExamen ?? e.type ?? '—'; }
+function regionLabel(e: Examen) { return e.regionAnatomique ?? e.region ?? '—'; }
+
+export default function ImagériePage() {
+  const [examens, setExamens] = useState<Examen[]>([]);
+  const [stats, setStats] = useState<Stats>({});
+  const [loading, setLoading] = useState(true);
+  const [filtre, setFiltre] = useState<string>('TOUS');
+  const [selected, setSelected] = useState<Examen | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [examRes, statsRes] = await Promise.allSettled([
+        apiClient<any>('/imagerie/examens?limit=100'),
+        apiClient<any>('/imagerie/stats/jour'),
+      ]);
+      if (examRes.status === 'fulfilled') {
+        const data = examRes.value;
+        setExamens(Array.isArray(data) ? data : data?.items ?? data?.data ?? []);
+      }
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value ?? {});
+      }
+      setLastRefresh(new Date());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filtered = filtre === 'TOUS' ? examens : examens.filter(e => e.statut === filtre);
+
+  const kpis = [
+    { label: 'Total du jour', value: stats.total ?? examens.length, color: '#0D47A1', bg: '#EFF6FF' },
+    { label: 'En attente', value: stats.enAttente ?? examens.filter(e => e.statut === 'EN_ATTENTE').length, color: '#E65100', bg: '#FFF3E0' },
+    { label: 'En cours', value: stats.enCours ?? examens.filter(e => e.statut === 'EN_COURS').length, color: '#1565C0', bg: '#E3F2FD' },
+    { label: 'Terminés', value: stats.termines ?? examens.filter(e => ['TERMINE','VALIDE'].includes(e.statut)).length, color: '#2E7D32', bg: '#E8F5E9' },
+  ];
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
+      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#E0F2F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Scan size={22} color="#00695C" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: '#E0F2F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Scan size={20} color="#00695C" />
             </div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1A2332' }}>Imagerie Médicale</h1>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Imagerie Médicale</h1>
           </div>
-          <p style={{ margin: 0, fontSize: '13px', color: '#546E7A' }}>Radiologie, échographie, scanner, IRM — gestion des examens</p>
+          <p style={{ margin: '4px 0 0 48px', fontSize: 12, color: '#546E7A' }}>
+            {loading ? '…' : `${filtered.length} examen(s) affiché(s)`}
+            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
+          </p>
         </div>
-        <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '8px', background: '#00695C', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-          <Plus size={16} /> Prescrire un examen
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A' }}>
+            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          </button>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#00695C', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
+            <Plus size={14} /> Nouvel examen
+          </button>
+        </div>
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
-        {[
-          { label: 'Examens aujourd\'hui', value: String(EXAMENS.length), color: '#00695C', bg: '#E0F2F1' },
-          { label: 'En attente', value: String(EXAMENS.filter(e => e.statut === 'EN_ATTENTE').length), color: '#E65100', bg: '#FFF3E0' },
-          { label: 'En cours', value: String(EXAMENS.filter(e => e.statut === 'EN_COURS').length), color: '#1565C0', bg: '#E3F2FD' },
-          { label: 'Validés', value: String(EXAMENS.filter(e => e.statut === 'VALIDE').length), color: '#2E7D32', bg: '#E8F5E9' },
-        ].map((k, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderLeft: `4px solid ${k.color}` }}>
-            <div style={{ fontSize: '26px', fontWeight: 800, color: k.color }}>{k.value}</div>
-            <div style={{ fontSize: '12px', color: '#546E7A', marginTop: '2px' }}>{k.label}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+        {kpis.map(k => (
+          <div key={k.label} style={{ background: '#fff', borderRadius: 10, padding: '14px 16px', boxShadow: '0 1px 6px rgba(0,0,0,0.06)', borderLeft: `3px solid ${k.color}` }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>
+              {loading ? <div style={{ height: 24, width: 40, background: '#F0F0F0', borderRadius: 4 }} /> : k.value}
+            </div>
+            <div style={{ fontSize: 11, color: '#546E7A', marginTop: 2 }}>{k.label}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '20px', alignItems: 'start' }}>
-        {/* Liste */}
-        <div>
-          {/* Filtres */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            {['TOUS', 'EN_ATTENTE', 'EN_COURS', 'TERMINE', 'VALIDE'].map(f => (
-              <button key={f} onClick={() => setFiltre(f)}
-                style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: filtre === f ? '#00695C' : 'transparent', color: filtre === f ? '#fff' : '#546E7A', borderColor: filtre === f ? '#00695C' : '#B0BEC5' }}>
-                {f === 'TOUS' ? 'Tous' : statutConfig[f]?.label || f}
-              </button>
-            ))}
-          </div>
+      {/* Filtres */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {['TOUS', 'EN_ATTENTE', 'EN_COURS', 'TERMINE', 'VALIDE'].map(f => {
+          const cfg = f === 'TOUS' ? null : STATUT_CONFIG[f];
+          const active = filtre === f;
+          return (
+            <button key={f} onClick={() => setFiltre(f)}
+              style={{ padding: '6px 14px', borderRadius: 20, border: `1px solid ${active ? (cfg?.color ?? '#0D47A1') : '#E0E0E0'}`, background: active ? (cfg?.bg ?? '#EFF6FF') : '#fff', color: active ? (cfg?.color ?? '#0D47A1') : '#546E7A', fontSize: 12, fontWeight: active ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+              {f === 'TOUS' ? 'Tous' : cfg?.label ?? f}
+            </button>
+          );
+        })}
+      </div>
 
-          <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-            {filtred.map((ex, i) => {
-              const cfg = statutConfig[ex.statut];
-              const isSelected = selected?.id === ex.id;
-              return (
-                <div key={ex.id} onClick={() => setSelected(isSelected ? null : ex)}
-                  style={{ padding: '14px 18px', borderBottom: i < filtred.length - 1 ? '1px solid #F5F7FA' : 'none', cursor: 'pointer', background: isSelected ? '#F0F7FF' : 'transparent', transition: 'background 0.12s' }}
-                  onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = '#FAFBFC'; }}
-                  onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <FileImage size={20} color={cfg.color} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '13px', color: '#1A2332' }}>{ex.patient}</span>
-                        {ex.urgence && <span style={{ background: '#FFEBEE', color: '#C62828', fontSize: '10px', fontWeight: 700, padding: '1px 6px', borderRadius: '10px' }}>URGENT</span>}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#546E7A', marginTop: '2px' }}>{ex.type} — {ex.region} | {ex.medecin}</div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <span style={{ background: cfg.bg, color: cfg.color, fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', display: 'block', marginBottom: '4px' }}>{cfg.label}</span>
-                      <span style={{ fontSize: '11px', color: '#90A4AE' }}>{ex.heure}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: selected ? '1fr 380px' : '1fr', alignItems: 'start' }}>
+        {/* Table */}
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 580 }}>
+              <thead style={{ background: '#F8FAFC' }}>
+                <tr>
+                  {['N°', 'Patient', 'Type d\'examen', 'Région', 'Médecin', 'Urgence', 'Statut'].map(h => (
+                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
+                    {Array.from({ length: 7 }).map((_, j) => (
+                      <td key={j} style={{ padding: '12px 14px' }}><div style={{ height: 13, background: '#F0F0F0', borderRadius: 4, width: j === 1 ? 120 : 80 }} /></td>
+                    ))}
+                  </tr>
+                )) : filtered.length === 0 ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', padding: '48px 20px', color: '#90A4AE' }}>
+                    <FileImage size={32} style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
+                    Aucun examen
+                  </td></tr>
+                ) : filtered.map(e => {
+                  const cfg = STATUT_CONFIG[e.statut] ?? STATUT_CONFIG.EN_ATTENTE;
+                  const active = selected?.id === e.id;
+                  return (
+                    <tr key={e.id} onClick={() => setSelected(active ? null : e)}
+                      style={{ borderTop: '1px solid #F5F7FA', cursor: 'pointer', background: active ? '#F0F7FF' : 'transparent', transition: 'background 0.15s' }}
+                      onMouseEnter={ev => !active && (ev.currentTarget.style.background = '#FAFBFC')}
+                      onMouseLeave={ev => !active && (ev.currentTarget.style.background = 'transparent')}>
+                      <td style={{ padding: '10px 14px', fontSize: 11, fontFamily: 'monospace', color: '#546E7A' }}>{e.numero ?? e.id.slice(0,8).toUpperCase()}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{patientName(e)}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F' }}>{typeLabel(e)}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{regionLabel(e)}</td>
+                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>
+                        {e.medecin ? `Dr. ${e.medecin.prenom} ${e.medecin.nom}` : '—'}
+                      </td>
+                      <td style={{ padding: '10px 14px' }}>
+                        {e.urgence && (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#C62828', fontWeight: 700 }}>
+                            <Zap size={12} /> Urgent
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>
+                          {cfg.icon} {cfg.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Détail */}
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px', minHeight: '200px' }}>
-          {selected ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #F5F7FA' }}>
-                <FileImage size={24} color="#00695C" />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '14px', color: '#1A2332' }}>{selected.id}</div>
-                  <div style={{ fontSize: '12px', color: '#546E7A' }}>{selected.type}</div>
-                </div>
+        {/* Panneau détail */}
+        {selected && (
+          <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px', position: 'sticky', top: 76 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 11, color: '#90A4AE', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Détail de l'examen</p>
+                <p style={{ margin: '2px 0 0', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{typeLabel(selected)}</p>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { label: 'Patient', value: `${selected.patient}, ${selected.age} ans` },
-                  { label: 'Région', value: selected.region },
-                  { label: 'Prescripteur', value: selected.medecin },
-                  { label: 'Date / Heure', value: `${selected.date} à ${selected.heure}` },
-                  { label: 'Statut', value: statutConfig[selected.statut].label },
-                ].map(row => (
-                  <div key={row.label}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#90A4AE', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{row.label}</div>
-                    <div style={{ fontSize: '13px', color: '#37474F', marginTop: '2px', fontWeight: 500 }}>{row.value}</div>
-                  </div>
-                ))}
-                {selected.resultat && (
-                  <div style={{ marginTop: '8px', padding: '12px', background: '#E8F5E9', borderRadius: '8px', borderLeft: '3px solid #2E7D32' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#2E7D32', marginBottom: '6px', textTransform: 'uppercase' }}>Compte-rendu</div>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#37474F', lineHeight: 1.6 }}>{selected.resultat}</p>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#90A4AE' }}>
-              <Scan size={40} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-              <p style={{ margin: 0, fontSize: '13px' }}>Sélectionnez un examen<br />pour voir les détails</p>
+              <button onClick={() => setSelected(null)} style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 16, color: '#546E7A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
-          )}
-        </div>
+
+            {[
+              { label: 'Patient', value: patientName(selected) },
+              { label: 'Région', value: regionLabel(selected) },
+              { label: 'Médecin', value: selected.medecin ? `Dr. ${selected.medecin.prenom} ${selected.medecin.nom}` : '—' },
+              { label: 'Statut', value: STATUT_CONFIG[selected.statut]?.label ?? selected.statut },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F5F7FA' }}>
+                <span style={{ fontSize: 12, color: '#90A4AE' }}>{row.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#37474F' }}>{row.value}</span>
+              </div>
+            ))}
+
+            {selected.resultat && (
+              <div style={{ marginTop: 16, padding: '12px 14px', background: '#F8FAFC', borderRadius: 8, borderLeft: '3px solid #00695C' }}>
+                <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Résultat</p>
+                <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.5 }}>{selected.resultat}</p>
+              </div>
+            )}
+
+            {!selected.resultat && (
+              <div style={{ marginTop: 16, padding: '12px 14px', background: '#FFF3E0', borderRadius: 8, borderLeft: '3px solid #E65100' }}>
+                <p style={{ margin: 0, fontSize: 12, color: '#E65100' }}>Résultat en attente</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

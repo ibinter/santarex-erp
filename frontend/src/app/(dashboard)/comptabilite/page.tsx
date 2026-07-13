@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, Plus, TrendingUp, TrendingDown, DollarSign, FileText } from 'lucide-react';
+import { Building2, Plus, TrendingUp, TrendingDown, DollarSign, FileText, Construction } from 'lucide-react';
 
 const ECRITURES = [
   { ref: 'EC-2026-0841', date: '2026-07-12', libelle: 'Recettes consultations — Juillet', debit: null, credit: '2 450 000', compte: '706 — Prestations de services', statut: 'VALIDE' },
@@ -32,6 +32,10 @@ export default function ComptabilitePage() {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: 10, marginBottom: 20, fontSize: 13, color: '#E65100' }}>
+        <Construction size={16} />
+        <span><strong>Module en intégration</strong> — Les données affichées sont indicatives. La connexion API est en cours de déploiement.</span>
+      </div>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>

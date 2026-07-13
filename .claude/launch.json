@@ -5,6 +5,7 @@
       "name": "Frontend (Next.js)",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "-p", "3003"],
+      "cwd": "${workspaceFolder}/frontend",
       "port": 3003,
       "autoPort": false
     },
@@ -12,14 +13,8 @@
       "name": "Backend (NestJS)",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start:dev"],
-      "port": 3002,
-      "autoPort": false
-    },
-    {
-      "name": "Full Stack (Frontend + Backend)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3003,
+      "cwd": "${workspaceFolder}/backend",
+      "port": 3001,
       "autoPort": false
     }
   ]
