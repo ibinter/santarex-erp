@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Bell, User as UserIcon, Settings, ChevronDown, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getFullName, getUserInitials } from '@/lib/auth';
+import { apiClient } from '@/lib/api';
 import type { User } from '@/types';
+
+type Notification = { id: string; message: string; type?: string; lue: boolean; createdAt: string };
 
 export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
   sidebarCollapsed: boolean;
@@ -15,8 +18,53 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [notifCount, setNotifCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
 
   useEffect(() => { setUser(getCurrentUser()); }, []);
+
+  // Poll notification count every 60s
+  const fetchCount = useCallback(async () => {
+    try {
+      const data = await apiClient<any>('/notifications/count');
+      setNotifCount(data?.count ?? data?.nonLues ?? 0);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000);
+    return () => clearInterval(interval);
+  }, [fetchCount]);
+
+  const openNotifications = useCallback(async () => {
+    if (notifLoading) return;
+    setNotifLoading(true);
+    try {
+      const data = await apiClient<any>('/notifications?limit=10');
+      const list: Notification[] = Array.isArray(data) ? data : data?.items ?? [];
+      setNotifications(list);
+    } catch { /* keep empty */ } finally {
+      setNotifLoading(false);
+    }
+  }, [notifLoading]);
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await apiClient('/notifications/tout-lire', { method: 'PATCH' });
+      setNotifCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, lue: true })));
+    } catch { /* ignore */ }
+  }, []);
+
+  function timeAgo(iso: string): string {
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (diff < 1) return 'À l\'instant';
+    if (diff < 60) return `Il y a ${diff} min`;
+    if (diff < 1440) return `Il y a ${Math.floor(diff / 60)}h`;
+    return `Il y a ${Math.floor(diff / 1440)}j`;
+  }
 
   const leftOffset = sidebarCollapsed ? '64px' : '260px';
 
@@ -133,57 +181,41 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
           {/* Notifications */}
           <div style={{ position: 'relative' }}>
             <button
-              onClick={() => { setNotifOpen(!notifOpen); setDropdownOpen(false); }}
-              style={{
-                position: 'relative',
-                padding: '8px',
-                borderRadius: '50%',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: '#546E7A',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              onClick={() => { const next = !notifOpen; setNotifOpen(next); setDropdownOpen(false); if (next) openNotifications(); }}
+              style={{ position: 'relative', padding: '8px', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', color: '#546E7A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#F5F7FA'; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
             >
               <Bell size={20} />
-              <span style={{
-                position: 'absolute', top: '4px', right: '4px',
-                width: '16px', height: '16px', background: '#C62828',
-                color: '#fff', fontSize: '9px', fontWeight: 700,
-                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>3</span>
+              {notifCount > 0 && (
+                <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#C62828', color: '#fff', fontSize: '9px', fontWeight: 700, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+                  {notifCount > 99 ? '99+' : notifCount}
+                </span>
+              )}
             </button>
             {notifOpen && (
-              <div style={{
-                position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                width: 'min(320px, calc(100vw - 32px))', background: '#fff', borderRadius: '12px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: '1px solid #E8EAED', zIndex: 100,
-              }}>
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 'min(320px, calc(100vw - 32px))', background: '#fff', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: '1px solid #E8EAED', zIndex: 100 }}>
                 <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8EAED', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>Notifications</span>
-                  <span style={{ fontSize: '11px', color: '#1976D2', cursor: 'pointer' }}>Tout marquer lu</span>
+                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>Notifications {notifCount > 0 && <span style={{ color: '#C62828' }}>({notifCount})</span>}</span>
+                  {notifCount > 0 && <span onClick={markAllRead} style={{ fontSize: '11px', color: '#1976D2', cursor: 'pointer' }}>Tout marquer lu</span>}
                 </div>
-                {[
-                  { msg: 'Stock Ténofovir en rupture critique', time: 'Il y a 5 min', dot: '#C62828' },
-                  { msg: 'Résultats labo prêts à valider (x3)', time: 'Il y a 28 min', dot: '#F57F17' },
-                  { msg: 'Rendez-vous Dr. KONE annulé', time: 'Il y a 1h', dot: '#1565C0' },
-                ].map((n, i) => (
-                  <div key={i} style={{ padding: '12px 16px', borderBottom: i < 2 ? '1px solid #F5F7FA' : 'none', display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer' }}
+                {notifLoading ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>Chargement…</div>
+                ) : notifications.length === 0 ? (
+                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>Aucune notification</div>
+                ) : notifications.map((n, i) => (
+                  <div key={n.id} style={{ padding: '12px 16px', borderBottom: i < notifications.length - 1 ? '1px solid #F5F7FA' : 'none', display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer', opacity: n.lue ? 0.6 : 1 }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#F5F7FA'; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: n.dot, flexShrink: 0, marginTop: '4px' }} />
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: n.lue ? '#90A4AE' : '#1976D2', flexShrink: 0, marginTop: '5px' }} />
                     <div>
-                      <p style={{ margin: 0, fontSize: '12px', color: '#37474F', fontWeight: 500 }}>{n.msg}</p>
-                      <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#90A4AE' }}>{n.time}</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#37474F', fontWeight: n.lue ? 400 : 600 }}>{n.message}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#90A4AE' }}>{timeAgo(n.createdAt)}</p>
                     </div>
                   </div>
                 ))}
-                <div style={{ padding: '10px 16px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#1976D2', cursor: 'pointer' }}>Voir toutes les notifications</span>
+                <div style={{ padding: '10px 16px', textAlign: 'center', borderTop: '1px solid #F5F7FA' }}>
+                  <span onClick={() => { setNotifOpen(false); router.push('/notifications'); }} style={{ fontSize: '12px', color: '#1976D2', cursor: 'pointer' }}>Voir toutes les notifications</span>
                 </div>
               </div>
             )}

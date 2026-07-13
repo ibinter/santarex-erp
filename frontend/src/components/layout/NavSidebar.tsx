@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -9,8 +9,15 @@ import {
   Scissors, Scan, Building2, BookOpen, MessageSquare, ChevronLeft,
   ChevronRight, LogOut, Receipt, X,
 } from 'lucide-react';
-import { logout } from '@/lib/auth';
+import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+
+// Role-based visibility
+type RoleKey = string;
+const ALL_ROLES: RoleKey[] = ['superadmin','admin','medecin','infirmier','caissier','pharmacien','laborantin','drh','directeur'];
+const CLINICAL: RoleKey[] = ['superadmin','admin','directeur','medecin','infirmier'];
+const ADMIN_ONLY: RoleKey[] = ['superadmin','admin'];
+const ADMIN_DIR: RoleKey[] = ['superadmin','admin','directeur'];
 
 interface NavItem {
   label: string;
@@ -18,6 +25,7 @@ interface NavItem {
   icon: React.ReactNode;
   badge?: number;
   alert?: boolean;
+  roles?: RoleKey[];
 }
 
 interface NavGroup {
@@ -29,50 +37,50 @@ const navGroups: NavGroup[] = [
   {
     label: 'Tableau de bord',
     items: [
-      { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} /> },
+      { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} />, roles: ALL_ROLES },
     ],
   },
   {
     label: 'Patients & Consultations',
     items: [
-      { label: 'Patients', href: '/patients', icon: <Users size={18} /> },
-      { label: 'Consultations', href: '/consultations', icon: <Stethoscope size={18} /> },
-      { label: 'Rendez-vous', href: '/rendez-vous', icon: <Calendar size={18} /> },
-      { label: 'Dossier Médical (DME)', href: '/dme', icon: <BookOpen size={18} /> },
+      { label: 'Patients', href: '/patients', icon: <Users size={18} />, roles: CLINICAL },
+      { label: 'Consultations', href: '/consultations', icon: <Stethoscope size={18} />, roles: CLINICAL },
+      { label: 'Rendez-vous', href: '/rendez-vous', icon: <Calendar size={18} />, roles: CLINICAL },
+      { label: 'Dossier Médical (DME)', href: '/dme', icon: <BookOpen size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
     ],
   },
   {
     label: 'Soins & Hospitalisation',
     items: [
-      { label: 'Hospitalisation', href: '/hospitalisation', icon: <BedDouble size={18} /> },
-      { label: 'Bloc Opératoire', href: '/bloc-operatoire', icon: <Scissors size={18} /> },
-      { label: 'Urgences', href: '/urgences', icon: <Siren size={18} />, alert: true },
-      { label: 'Imagerie Médicale', href: '/imagerie', icon: <Scan size={18} /> },
+      { label: 'Hospitalisation', href: '/hospitalisation', icon: <BedDouble size={18} />, roles: CLINICAL },
+      { label: 'Bloc Opératoire', href: '/bloc-operatoire', icon: <Scissors size={18} />, roles: ['superadmin','admin','medecin'] },
+      { label: 'Urgences', href: '/urgences', icon: <Siren size={18} />, alert: true, roles: CLINICAL },
+      { label: 'Imagerie Médicale', href: '/imagerie', icon: <Scan size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
     ],
   },
   {
     label: 'Médical & Pharmacie',
     items: [
-      { label: 'Laboratoire', href: '/laboratoire', icon: <FlaskConical size={18} /> },
-      { label: 'Pharmacie', href: '/pharmacie', icon: <Pill size={18} /> },
+      { label: 'Laboratoire', href: '/laboratoire', icon: <FlaskConical size={18} />, roles: ['superadmin','admin','medecin','laborantin'] },
+      { label: 'Pharmacie', href: '/pharmacie', icon: <Pill size={18} />, roles: ['superadmin','admin','pharmacien','medecin'] },
     ],
   },
   {
     label: 'Finance & Facturation',
     items: [
-      { label: 'Facturation', href: '/facturation', icon: <Receipt size={18} /> },
-      { label: 'Caisse', href: '/caisse', icon: <CreditCard size={18} /> },
-      { label: 'Comptabilité', href: '/comptabilite', icon: <Building2 size={18} /> },
+      { label: 'Facturation', href: '/facturation', icon: <Receipt size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { label: 'Caisse', href: '/caisse', icon: <CreditCard size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { label: 'Comptabilité', href: '/comptabilite', icon: <Building2 size={18} />, roles: ADMIN_DIR },
     ],
   },
   {
     label: 'Administration',
     items: [
-      { label: 'Utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} /> },
-      { label: 'Ressources Humaines', href: '/rh', icon: <UserCog size={18} /> },
-      { label: 'Reporting & BI', href: '/reporting', icon: <BarChart2 size={18} /> },
-      { label: 'Support', href: '/support', icon: <MessageSquare size={18} /> },
-      { label: 'Paramètres', href: '/parametres', icon: <Settings size={18} /> },
+      { label: 'Utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} />, roles: ADMIN_ONLY },
+      { label: 'Ressources Humaines', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
+      { label: 'Reporting & BI', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
+      { label: 'Support', href: '/support', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
+      { label: 'Paramètres', href: '/parametres', icon: <Settings size={18} />, roles: ADMIN_DIR },
     ],
   },
 ];
@@ -87,6 +95,18 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    const u = getCurrentUser();
+    setUserRole(u?.role ?? '');
+  }, []);
+
+  const canSee = (item: NavItem) => {
+    if (!item.roles || item.roles.length === 0) return true;
+    if (!userRole) return true; // show all while loading
+    return item.roles.includes(userRole);
+  };
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -219,7 +239,10 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {navGroups.map((group) => (
+          {navGroups.map((group) => {
+            const visibleItems = group.items.filter(canSee);
+            if (visibleItems.length === 0) return null;
+            return (
             <div key={group.label} style={{ marginBottom: '4px' }}>
               {!collapsed && (
                 <div
@@ -237,7 +260,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
               )}
               {collapsed && <div style={{ height: '8px' }} />}
               <ul style={{ listStyle: 'none', margin: 0, padding: '0 8px' }}>
-                {group.items.map((item) => {
+                {visibleItems.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <li key={item.href}>
@@ -320,7 +343,8 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
                 })}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Footer */}
