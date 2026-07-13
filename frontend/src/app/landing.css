@@ -296,7 +296,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 /* ── PRICING ── */
 .lp-pricing-section{padding:96px 48px;background:var(--off)}
 .lp-pricing-inner{max-width:1280px;margin:0 auto}
-.lp-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border-light);margin-top:56px}
+.lp-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border-light);margin-top:32px}
 .lp-pricing-4col{grid-template-columns:repeat(4,1fr)}
 .lp-pricing-5col{grid-template-columns:repeat(5,1fr)}
 .lp-plan-users{font-size:.8rem;color:#94A3B8;margin-bottom:16px;margin-top:2px}
@@ -323,6 +323,35 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;b
 .lp-plan-btn-fill:hover{background:#00DDD0;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,200,184,.25)}
 .lp-plan-btn-ghost{border-color:rgba(255,255,255,.2);color:#E2E8F0;background:transparent}
 .lp-plan-btn-ghost:hover{border-color:rgba(255,255,255,.5);color:var(--white)}
+
+/* ── BILLING TOGGLE ── */
+.lp-billing-toggle{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#E2E8F0;border-radius:8px;padding:4px;
+  margin:32px auto 0;display:flex;width:fit-content;
+}
+.lp-billing-btn{
+  padding:8px 20px;border-radius:6px;border:none;cursor:pointer;
+  font-size:.875rem;font-weight:600;font-family:inherit;
+  background:transparent;color:#64748B;transition:all .2s;
+  display:flex;align-items:center;gap:8px;
+}
+.lp-billing-btn.active{background:#fff;color:#0F172A;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lp-billing-badge{
+  font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:99px;background:#00C8B8;color:#06101F;
+}
+.lp-annual-info{
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  font-size:.8125rem;color:#1A56C8;margin-top:14px;
+  padding:10px 20px;background:rgba(26,86,200,.06);border-radius:8px;
+  border:1px solid rgba(26,86,200,.15);max-width:600px;margin-left:auto;margin-right:auto;
+}
+.lp-plan-saving{
+  font-size:.75rem;color:#94A3B8;margin-bottom:12px;margin-top:-12px;
+  font-style:italic;
+}
+.lp-plan-card.featured .lp-plan-saving{color:#64748B}
 
 /* ── TESTIMONIALS ── */
 .lp-testi-section{padding:96px 48px;background:var(--navy)}

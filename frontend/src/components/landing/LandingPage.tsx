@@ -60,7 +60,10 @@ const T = {
     hero_eyebrow: 'Logiciel SaaS — Made for Africa',
     hero_cta1: 'Essai gratuit 30 jours', hero_cta2: 'Voir les modules',
     try_free: 'Essai gratuit 30 jours', see_demo: 'Voir une démo →',
-    pricing_note: "Tous les prix sont HT · Essai gratuit 30 jours sans carte bancaire · Facturation annuelle disponible (−15%)",
+    pricing_note: "Tous les prix sont HT · Essai gratuit 30 jours sans carte bancaire · Forfait annuel = 10 mois payés, 2 mois offerts",
+    billing_monthly: 'Mensuel', billing_annual: 'Annuel',
+    billing_badge: '2 mois offerts',
+    pricing_annual_note: "Forfait annuel : 10 mois facturés, 2 mois offerts — économisez jusqu'à 300 000 FCFA/an",
     form_title: 'Demander une démo gratuite',
     form_nom: 'Nom complet', form_email: 'Email professionnel',
     form_type: "Type d'établissement", form_pays: 'Pays',
@@ -87,7 +90,10 @@ const T = {
     hero_eyebrow: 'SaaS Software — Made for Africa',
     hero_cta1: '30-day free trial', hero_cta2: 'View modules',
     try_free: '30-day free trial', see_demo: 'See a demo →',
-    pricing_note: "All prices excl. tax · 30-day free trial, no credit card · Annual billing available (−15%)",
+    pricing_note: "All prices excl. tax · 30-day free trial, no credit card · Annual plan = 10 months paid, 2 months free",
+    billing_monthly: 'Monthly', billing_annual: 'Annual',
+    billing_badge: '2 months free',
+    pricing_annual_note: "Annual plan: 10 months billed, 2 months free — save up to 300,000 FCFA/year",
     form_title: 'Request a free demo',
     form_nom: 'Full name', form_email: 'Work email',
     form_type: 'Facility type', form_pays: 'Country',
@@ -113,8 +119,8 @@ type Lang = 'fr' | 'en';
    SARA — BASE DE CONNAISSANCES
 ═══════════════════════════════════════════════════════ */
 const SARA_KB = [
-  { t: ['prix','tarif','coût','abonnement','combien','price','cost','licence','formule'],
-    r: 'SANTAREX ERP propose 4 formules :\n• 💊 Pharmacie : 12 000 FCFA/mois\n• 🏥 Cabinet : 15 000 FCFA/mois\n• 🏪 Clinique : 75 000 FCFA/mois\n• 🏦 Hôpital : 150 000 FCFA/mois\n\nEssai gratuit 30 jours, sans carte bancaire.' },
+  { t: ['prix','tarif','coût','abonnement','combien','price','cost','licence','formule','annuel','mensuel'],
+    r: 'SANTAREX ERP propose 5 formules :\n• 💊 Pharmacie : 12 000 FCFA/mois (1-3 utilisateurs)\n• 🏥 Cabinet : 18 000 FCFA/mois (1-5 utilisateurs)\n• 🏨 Centre de santé : 35 000 FCFA/mois (jusqu\'à 15 utilisateurs)\n• 🏪 Clinique : 75 000 FCFA/mois (jusqu\'à 30 utilisateurs)\n• 🏦 Hôpital : 150 000 FCFA/mois (illimité)\n\n📅 Forfait annuel = 10 mois payés, 2 mois offerts !\nEssai gratuit 30 jours, sans carte bancaire.' },
   { t: ['essai','gratuit','trial','free','tester','commencer','démarrer'],
     r: "Oui ! L'essai est gratuit pendant 30 jours, sans carte bancaire et sans engagement. Cliquez sur « Démo gratuite » pour commencer." },
   { t: ['module','fonctionnalité','feature','quoi','faire','propose','contient','inclus'],
@@ -148,7 +154,7 @@ const SARA_KB = [
 const SARA_GROQ_KEY = ['gsk_nSy9kIik08HF5GAwnBJoWG','dyb3FYJr2YGDHM37GHH2uJ8qu','wyEu1'].join('');
 const SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
 SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
-Plans : Pharmacie 12 000 FCFA/mois | Cabinet 15 000 FCFA/mois | Clinique 75 000 FCFA/mois | Hôpital 150 000 FCFA/mois.
+Plans mensuels : Pharmacie 12 000 | Cabinet 18 000 | Centre de santé 35 000 | Clinique 75 000 | Hôpital 150 000 FCFA/mois. Forfait annuel = 10 mois payés 2 mois offerts.
 14 modules : Patients/DME, Consultations, Rendez-vous, Pharmacie, Laboratoire, Hospitalisation, Urgences, Facturation, BI, Imagerie, RH, Bloc opératoire.
 Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
 Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
@@ -224,18 +230,66 @@ const MODULES = [
 ];
 
 const PLANS = [
-  { code: 'Pharmacie', eyebrow: 'Pharmacie autonome', price: '12 000', cycle: 'FCFA / mois', users: '1 à 5 utilisateurs', featured: false, badge: 'Nouveau',
-    features: ['Gestion des stocks complète','Dispensation sur ordonnance','Alertes péremption & rupture','Gestion des lots & traçabilité','Facturation & Mobile Money','Support WhatsApp 5j/7'],
-    btnClass: 'lp-plan-btn-outline', btnLabel: "Démarrer l'essai gratuit" },
-  { code: 'Cabinet', eyebrow: 'Cabinet médical', price: '15 000', cycle: 'FCFA / mois', users: '1 à 5 utilisateurs', featured: false, badge: null,
-    features: ["Jusqu'à 5 utilisateurs",'Patients & DME illimités','Consultations & ordonnances','Rendez-vous & agenda','Facturation mobile money','Support WhatsApp 5j/7'],
-    btnClass: 'lp-plan-btn-outline', btnLabel: "Démarrer l'essai gratuit" },
-  { code: 'Clinique', eyebrow: 'Clinique & polyclinique', price: '75 000', cycle: 'FCFA / mois', users: "Jusqu'à 30 utilisateurs", featured: true, badge: 'Le plus populaire',
-    features: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation & plan des lits','Dashboard BI & reporting','Support 7j/7 prioritaire'],
-    btnClass: 'lp-plan-btn-fill', btnLabel: "Démarrer l'essai gratuit" },
-  { code: 'Hôpital', eyebrow: 'Hôpital & groupe', price: '150 000', cycle: 'FCFA / mois', users: 'Utilisateurs illimités', featured: false, badge: null,
-    features: ['Utilisateurs illimités','Tous les 14 modules','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99.9% · Support 24/7','Account manager dédié'],
-    btnClass: 'lp-plan-btn-outline', btnLabel: 'Nous contacter' },
+  {
+    code: 'Pharmacie',
+    eyebrow: { fr: 'Pharmacie autonome', en: 'Standalone Pharmacy' },
+    priceM: '12 000', priceA: '120 000', cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users: { fr: '1 à 3 utilisateurs', en: '1 to 3 users' },
+    featured: false, badge: { fr: 'Nouveau', en: 'New' },
+    features: {
+      fr: ['Gestion des stocks complète','Dispensation sur ordonnance','Alertes péremption & rupture','Gestion des lots & traçabilité','Facturation & Mobile Money','Support WhatsApp 5j/7'],
+      en: ['Full inventory management','Prescription dispensing','Expiry & stockout alerts','Batch & traceability management','Billing & Mobile Money','WhatsApp support 5d/7'],
+    },
+    btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
+  },
+  {
+    code: 'Cabinet',
+    eyebrow: { fr: 'Cabinet médical', en: 'Medical Practice' },
+    priceM: '18 000', priceA: '180 000', cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users: { fr: '1 à 5 utilisateurs', en: '1 to 5 users' },
+    featured: false, badge: null,
+    features: {
+      fr: ["Jusqu'à 5 utilisateurs",'Patients & DME illimités','Consultations & ordonnances CIM-10','Rendez-vous & agenda médecin','Facturation & Mobile Money','Support WhatsApp 5j/7'],
+      en: ['Up to 5 users','Unlimited patients & EHR','Consultations & ICD-10 prescriptions','Appointments & doctor schedule','Billing & Mobile Money','WhatsApp support 5d/7'],
+    },
+    btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
+  },
+  {
+    code: 'Centre',
+    eyebrow: { fr: 'Centre de santé', en: 'Health Center' },
+    priceM: '35 000', priceA: '350 000', cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users: { fr: "Jusqu'à 15 utilisateurs", en: 'Up to 15 users' },
+    featured: false, badge: null,
+    features: {
+      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire basique','Facturation & reporting','Déploiement en 48h · Support 6j/7'],
+      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Basic laboratory','Billing & reporting','48h deployment · Support 6d/7'],
+    },
+    btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
+  },
+  {
+    code: 'Clinique',
+    eyebrow: { fr: 'Clinique & polyclinique', en: 'Clinic & Polyclinic' },
+    priceM: '75 000', priceA: '750 000', cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users: { fr: "Jusqu'à 30 utilisateurs", en: 'Up to 30 users' },
+    featured: true, badge: { fr: 'Le plus populaire', en: 'Most popular' },
+    features: {
+      fr: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation & plan des lits','Dashboard BI & reporting','Support 7j/7 prioritaire'],
+      en: ['Up to 30 users','Patients, EHR & consultations','Pharmacy & inventory','Laboratory & results','Hospitalization & bed plan','BI dashboard & reporting','Priority 7d/7 support'],
+    },
+    btnClass: 'lp-plan-btn-fill', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
+  },
+  {
+    code: 'Hôpital',
+    eyebrow: { fr: 'Hôpital & groupe', en: 'Hospital & Group' },
+    priceM: '150 000', priceA: '1 500 000', cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users: { fr: 'Utilisateurs illimités', en: 'Unlimited users' },
+    featured: false, badge: null,
+    features: {
+      fr: ['Utilisateurs illimités','Tous les 12 modules','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
+      en: ['Unlimited users','All 12 modules','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
+    },
+    btnClass: 'lp-plan-btn-outline', btnLabel: { fr: 'Nous contacter', en: 'Contact us' },
+  },
 ];
 
 const ACTIVITES = [
@@ -515,6 +569,7 @@ export default function LandingPage() {
   const [sliding, setSliding] = useState(false);
   const [lang, setLang] = useState<Lang>('fr');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [annual, setAnnual] = useState(false);
   const t = (k: keyof typeof T.fr) => T[lang][k];
 
   useEffect(() => {
@@ -689,7 +744,7 @@ export default function LandingPage() {
       {/* ══ STATS ══ */}
       <section className="lp-stats-section">
         <div className="lp-stats-inner">
-          {[{ num: '14', sup: '+', lbl: 'Modules cliniques intégrés' }, { num: '30', sup: 'j', lbl: 'Essai gratuit sans engagement' }, { num: '99', sup: '%', lbl: 'Disponibilité garantie SLA' }, { num: '24', sup: '/7', lbl: 'Support technique inclus' }].map(({ num, sup, lbl }) => (
+          {[{ num: '12', sup: '', lbl: lang === 'fr' ? 'Modules cliniques intégrés' : 'Integrated clinical modules' }, { num: '30', sup: 'j', lbl: lang === 'fr' ? 'Essai gratuit sans engagement' : 'Free trial, no commitment' }, { num: '99', sup: '%', lbl: lang === 'fr' ? 'Disponibilité garantie SLA' : 'SLA guaranteed uptime' }, { num: '24', sup: '/7', lbl: lang === 'fr' ? 'Support technique inclus' : 'Technical support included' }].map(({ num, sup, lbl }) => (
             <div key={lbl} className="lp-stat-box"><div className="lp-stat-num">{num}<span>{sup}</span></div><div className="lp-stat-lbl">{lbl}</div></div>
           ))}
         </div>
@@ -868,28 +923,63 @@ export default function LandingPage() {
       {/* ══ PRICING ══ */}
       <section id="pricing" className="lp-pricing-section">
         <div className="lp-pricing-inner">
-          <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>Tarifs</span>
-          <h2 className="lp-section-title dark">Transparent. Sans surprise.</h2>
-          <p className="lp-section-desc">Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.</p>
+          <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{lang === 'fr' ? 'Tarifs' : 'Pricing'}</span>
+          <h2 className="lp-section-title dark">{lang === 'fr' ? 'Transparent. Sans surprise.' : 'Transparent. No surprises.'}</h2>
+          <p className="lp-section-desc">{lang === 'fr' ? 'Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.' : 'All plans include hosting, maintenance and support. No hidden fees. Cancel anytime.'}</p>
+
+          {/* Toggle mensuel / annuel */}
+          <div className="lp-billing-toggle">
+            <button className={`lp-billing-btn ${!annual ? 'active' : ''}`} onClick={() => setAnnual(false)}>
+              {t('billing_monthly')}
+            </button>
+            <button className={`lp-billing-btn ${annual ? 'active' : ''}`} onClick={() => setAnnual(true)}>
+              {t('billing_annual')}
+              <span className="lp-billing-badge">{t('billing_badge')}</span>
+            </button>
+          </div>
+
+          {annual && (
+            <div className="lp-annual-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              {t('pricing_annual_note')}
+            </div>
+          )}
+
           <div className="lp-pricing-grid lp-pricing-5col">
-            {PLANS.map(p => (
-              <div key={p.code} className={`lp-plan-card ${p.featured ? 'featured' : ''}`}>
-                {p.badge && <div className="lp-plan-badge">{p.badge}</div>}
-                <div className="lp-plan-eyebrow">{p.eyebrow}</div>
-                <div className="lp-plan-name">{p.code}</div>
-                <div className="lp-plan-users">{p.users}</div>
-                <div style={{ marginBottom: 20 }}>
-                  <span className="lp-plan-amount" style={p.price === 'Sur devis' ? { fontSize: '1.375rem', color: '#1A56C8' } : {}}>{p.price}</span>
-                  {p.cycle && <span className="lp-plan-cycle">{p.cycle}</span>}
+            {PLANS.map(p => {
+              const price = annual ? p.priceA : p.priceM;
+              const cycle = annual ? p.cycleA : p.cycleM;
+              const badge = p.badge ? p.badge[lang] : null;
+              const eyebrow = p.eyebrow[lang];
+              const users = p.users[lang];
+              const features = p.features[lang];
+              const btnLabel = p.btnLabel[lang];
+              return (
+                <div key={p.code} className={`lp-plan-card ${p.featured ? 'featured' : ''}`}>
+                  {badge && <div className="lp-plan-badge">{badge}</div>}
+                  <div className="lp-plan-eyebrow">{eyebrow}</div>
+                  <div className="lp-plan-name">{p.code}</div>
+                  <div className="lp-plan-users">{users}</div>
+                  <div style={{ marginBottom: 20 }}>
+                    <span className="lp-plan-amount">{price}</span>
+                    <span className="lp-plan-cycle"> {cycle}</span>
+                  </div>
+                  {annual && (
+                    <div className="lp-plan-saving">
+                      {lang === 'fr' ? `soit ${p.priceM} FCFA/mois` : `= ${p.priceM} FCFA/month`}
+                    </div>
+                  )}
+                  <div className="lp-plan-divider" />
+                  <ul className="lp-plan-features">
+                    {features.map(f => <li key={f}><div className="lp-feature-check"><CheckIcon /></div>{f}</li>)}
+                  </ul>
+                  <a href="#contact" className={`lp-plan-btn ${p.btnClass}`}>{btnLabel}</a>
                 </div>
-                <div className="lp-plan-divider" />
-                <ul className="lp-plan-features">{p.features.map(f => <li key={f}><div className="lp-feature-check"><CheckIcon /></div>{f}</li>)}</ul>
-                <a href="#contact" className={`lp-plan-btn ${p.btnClass}`}>{p.btnLabel}</a>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: '.8125rem', color: '#64748B' }}>
-            Tous les prix sont HT · Essai gratuit 30 jours sans carte bancaire · Facturation annuelle disponible (−15%)
+            {t('pricing_note')}
           </p>
         </div>
       </section>
