@@ -55,7 +55,7 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, chil
     <div style={{ background: '#F8FAFC', minHeight: '100vh', fontFamily: 'system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' }}>
 
       {/* Header */}
-      <header style={{ background: '#06101F', borderBottom: '1px solid rgba(255,255,255,.07)', padding: '0 48px' }}>
+      <header style={{ background: '#06101F', borderBottom: '1px solid rgba(255,255,255,.07)', padding: '0 clamp(16px, 4vw, 48px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <SantarexIcon />
@@ -80,7 +80,7 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, chil
         </div>
       </header>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 48px 80px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 56 }}>
+      <div className="legal-layout-grid" style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(24px, 4vw, 48px) clamp(16px, 4vw, 48px) 80px', display: 'grid', gridTemplateColumns: '220px 1fr', gap: 56 }}>
 
         {/* Sidebar */}
         <aside style={{ position: 'sticky', top: 32, alignSelf: 'start' }}>
@@ -140,7 +140,7 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, chil
       </div>
 
       {/* Footer */}
-      <footer style={{ background: '#03090F', borderTop: '1px solid rgba(255,255,255,.05)', padding: '24px 48px' }}>
+      <footer style={{ background: '#03090F', borderTop: '1px solid rgba(255,255,255,.05)', padding: '24px clamp(16px, 4vw, 48px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ fontSize: '0.75rem', color: '#2D4255' }}>
             © {new Date().getFullYear()} SANTAREX ERP — IBIG Soft · Intermark Business International Group · Abidjan, Côte d&apos;Ivoire
@@ -161,6 +161,9 @@ export default function LegalLayout({ title, subtitle, updatedAt, children, chil
         .legal-content strong { color: #0F172A; }
         .legal-content .highlight { background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
         .legal-content .highlight p { color: #0369A1; margin: 0; }
+        @media (max-width: 767px) {
+          .legal-layout-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+        }
       `}</style>
     </div>
   );

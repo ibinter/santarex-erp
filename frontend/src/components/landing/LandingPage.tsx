@@ -738,6 +738,7 @@ export default function LandingPage() {
   const [lang, setLang] = useState<Lang>('fr');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [annual, setAnnual] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = (k: keyof typeof T.fr) => T[lang][k];
 
   useEffect(() => {
@@ -795,8 +796,42 @@ export default function LandingPage() {
           </a>
           <Link href="/login" className="lp-btn-ghost">{t('nav_login')}</Link>
           <a href="#contact" className="lp-btn-cta">{t('nav_demo')}</a>
+          {/* Mobile hamburger */}
+          <button
+            className="lp-nav-hamburger"
+            onClick={() => setMobileMenuOpen(v => !v)}
+            aria-label="Menu"
+          >
+            {mobileMenuOpen
+              ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            }
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="lp-mobile-menu">
+          <div className="lp-mobile-menu-inner">
+            {[
+              { href: '#modules', label: t('nav_modules') },
+              { href: '#activites', label: t('nav_solutions') },
+              { href: '#pricing', label: t('nav_pricing') },
+              { href: '#faq', label: t('nav_faq') },
+              { href: '#contact', label: t('nav_contact') },
+            ].map(item => (
+              <a key={item.href} href={item.href} className="lp-mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>
+                {item.label}
+              </a>
+            ))}
+            <div className="lp-mobile-menu-ctas">
+              <Link href="/login" className="lp-btn-ghost" onClick={() => setMobileMenuOpen(false)}>{t('nav_login')}</Link>
+              <a href="#contact" className="lp-btn-cta" onClick={() => setMobileMenuOpen(false)}>{t('nav_demo')}</a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ HERO ══ */}
       <section className="lp-hero" style={{ paddingTop: 144 }}>
