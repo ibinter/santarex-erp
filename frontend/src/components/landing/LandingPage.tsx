@@ -739,6 +739,21 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [annual, setAnnual] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+  const openMobileMenu = () => setMobileMenuOpen(true);
+
+  // Body scroll lock + Escape key when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('lp-menu-open');
+      const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMobileMenu(); };
+      document.addEventListener('keydown', onKey);
+      return () => { document.body.classList.remove('lp-menu-open'); document.removeEventListener('keydown', onKey); };
+    } else {
+      document.body.classList.remove('lp-menu-open');
+    }
+  }, [mobileMenuOpen]);
   const t = (k: keyof typeof T.fr) => T[lang][k];
 
   useEffect(() => {
@@ -799,20 +814,27 @@ export default function LandingPage() {
           {/* Mobile hamburger */}
           <button
             className="lp-nav-hamburger"
-            onClick={() => setMobileMenuOpen(v => !v)}
-            aria-label="Menu"
+            onClick={openMobileMenu}
+            aria-label="Ouvrir le menu"
+            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen
-              ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            }
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
       </nav>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile menu — plein écran, z-index 200 */}
       {mobileMenuOpen && (
-        <div className="lp-mobile-menu">
+        <div className="lp-mobile-menu" role="dialog" aria-modal="true" aria-label="Menu principal">
+          {/* Header du menu mobile */}
+          <div className="lp-mobile-menu-header">
+            <NavLogo />
+            <button className="lp-mobile-menu-close" onClick={closeMobileMenu} aria-label="Fermer le menu">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          {/* Liens de navigation */}
           <div className="lp-mobile-menu-inner">
             {[
               { href: '#modules', label: t('nav_modules') },
@@ -821,13 +843,31 @@ export default function LandingPage() {
               { href: '#faq', label: t('nav_faq') },
               { href: '#contact', label: t('nav_contact') },
             ].map(item => (
-              <a key={item.href} href={item.href} className="lp-mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>
+              <a key={item.href} href={item.href} className="lp-mobile-menu-link" onClick={closeMobileMenu}>
                 {item.label}
               </a>
             ))}
+
+            <div className="lp-mobile-menu-divider" />
+
+            {/* Sélecteur de langue */}
+            <div className="lp-mobile-menu-lang">
+              <GlobeIcon />
+              <span>{lang === 'fr' ? 'Langue' : 'Language'} :</span>
+              <button
+                style={{ background: 'none', border: '1px solid rgba(255,255,255,.15)', borderRadius: 4, color: '#CBD5E1', padding: '4px 10px', cursor: 'pointer', fontSize: '.8125rem', fontWeight: 600 }}
+                onClick={() => setLang(l => l === 'fr' ? 'en' : 'fr')}
+              >
+                {lang === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR'}
+              </button>
+            </div>
+
+            <div className="lp-mobile-menu-divider" />
+
+            {/* CTA */}
             <div className="lp-mobile-menu-ctas">
-              <Link href="/login" className="lp-btn-ghost" onClick={() => setMobileMenuOpen(false)}>{t('nav_login')}</Link>
-              <a href="#contact" className="lp-btn-cta" onClick={() => setMobileMenuOpen(false)}>{t('nav_demo')}</a>
+              <Link href="/login" className="lp-btn-ghost" onClick={closeMobileMenu}>{t('nav_login')}</Link>
+              <a href="#contact" className="lp-btn-cta" onClick={closeMobileMenu}>{t('nav_demo')}</a>
             </div>
           </div>
         </div>
