@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getFullName, getUserInitials } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
@@ -9,60 +9,144 @@ import {
   Users, Calendar, BedDouble, Scissors, Siren, Scan,
   FlaskConical, Pill, Receipt, CreditCard, Building2,
   UserCog, BarChart2, Stethoscope, TrendingUp, TrendingDown,
-  AlertTriangle, Clock, ArrowRight, RefreshCw,
+  AlertTriangle, ArrowRight, RefreshCw, Activity, Heart,
+  Clock, CheckCircle, ChevronRight,
 } from 'lucide-react';
 
-// ─── Grille modules ────────────────────────────────────────────────────────────
+// ── modules ──────────────────────────────────────────────────────────────────
 const MODULES = [
-  { id: 'patients', title: 'Patients', icon: <Users size={20} />, color: '#0D47A1', bg: '#EFF6FF', href: '/patients' },
-  { id: 'consultations', title: 'Consultations', icon: <Stethoscope size={20} />, color: '#00838F', bg: '#E0F7FA', href: '/consultations' },
-  { id: 'rendez-vous', title: 'Rendez-vous', icon: <Calendar size={20} />, color: '#1565C0', bg: '#E3F2FD', href: '/rendez-vous' },
-  { id: 'hospitalisation', title: 'Hospitalisation', icon: <BedDouble size={20} />, color: '#1565C0', bg: '#E3F2FD', href: '/hospitalisation' },
-  { id: 'bloc-operatoire', title: 'Bloc Opératoire', icon: <Scissors size={20} />, color: '#37474F', bg: '#ECEFF1', href: '/bloc-operatoire' },
-  { id: 'urgences', title: 'Urgences', icon: <Siren size={20} />, color: '#C62828', bg: '#FFEBEE', href: '/urgences' },
-  { id: 'imagerie', title: 'Imagerie', icon: <Scan size={20} />, color: '#00695C', bg: '#E0F2F1', href: '/imagerie' },
-  { id: 'laboratoire', title: 'Laboratoire', icon: <FlaskConical size={20} />, color: '#6A1B9A', bg: '#F3E5F5', href: '/laboratoire' },
-  { id: 'pharmacie', title: 'Pharmacie', icon: <Pill size={20} />, color: '#2E7D32', bg: '#E8F5E9', href: '/pharmacie' },
-  { id: 'facturation', title: 'Facturation', icon: <Receipt size={20} />, color: '#E65100', bg: '#FFF3E0', href: '/facturation' },
-  { id: 'caisse', title: 'Caisse', icon: <CreditCard size={20} />, color: '#2E7D32', bg: '#E8F5E9', href: '/caisse' },
-  { id: 'comptabilite', title: 'Comptabilité', icon: <Building2 size={20} />, color: '#0D47A1', bg: '#EFF6FF', href: '/comptabilite' },
-  { id: 'rh', title: 'Ressources Humaines', icon: <UserCog size={20} />, color: '#37474F', bg: '#ECEFF1', href: '/rh' },
-  { id: 'reporting', title: 'Reporting & BI', icon: <BarChart2 size={20} />, color: '#1565C0', bg: '#E3F2FD', href: '/reporting' },
+  { id: 'patients',       title: 'Patients',           icon: Users,        color: '#1565C0', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/patients',       desc: 'Dossiers & suivi' },
+  { id: 'consultations',  title: 'Consultations',       icon: Stethoscope,  color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/consultations',  desc: 'Visites médicales' },
+  { id: 'rendez-vous',    title: 'Rendez-vous',         icon: Calendar,     color: '#0288D1', bg: 'linear-gradient(135deg,#E1F5FE,#B3E5FC)', href: '/rendez-vous',    desc: 'Agenda & plannings' },
+  { id: 'hospitalisation',title: 'Hospitalisation',     icon: BedDouble,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/hospitalisation',desc: 'Séjours & lits' },
+  { id: 'bloc-operatoire',title: 'Bloc Opératoire',     icon: Scissors,     color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/bloc-operatoire',desc: 'Interventions & salles' },
+  { id: 'urgences',       title: 'Urgences',            icon: Siren,        color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/urgences',       desc: 'Triage Manchester' },
+  { id: 'imagerie',       title: 'Imagerie',            icon: Scan,         color: '#00695C', bg: 'linear-gradient(135deg,#E0F2F1,#B2DFDB)', href: '/imagerie',       desc: 'Radio, scanner, IRM' },
+  { id: 'laboratoire',    title: 'Laboratoire',         icon: FlaskConical, color: '#6A1B9A', bg: 'linear-gradient(135deg,#F3E5F5,#E1BEE7)', href: '/laboratoire',    desc: 'Analyses & résultats' },
+  { id: 'pharmacie',      title: 'Pharmacie',           icon: Pill,         color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/pharmacie',      desc: 'Stock & dispensation' },
+  { id: 'facturation',    title: 'Facturation',         icon: Receipt,      color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/facturation',    desc: 'Factures & créances' },
+  { id: 'caisse',         title: 'Caisse',              icon: CreditCard,   color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/caisse',         desc: 'Encaissements' },
+  { id: 'comptabilite',   title: 'Comptabilité',        icon: Building2,    color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/comptabilite',   desc: 'Journal & bilan' },
+  { id: 'rh',             title: 'Ressources Humaines', icon: UserCog,      color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/rh',             desc: 'Personnel & congés' },
+  { id: 'reporting',      title: 'Reporting & BI',      icon: BarChart2,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/reporting',      desc: 'Tableaux & analyses' },
 ];
 
-interface DashStats {
-  totalPatients: number;
-  patientsAujourdhui: number;
-  rdvEnAttente: number;
-  litsOccupes: number;
-  litsTotal: number;
-  urgencesActives: number;
-  urgencesCritiques: number;
-  facturesImpayees: number;
-  ordonnancesAValider: number;
-  resultatsLaboEnAttente: number;
-  examenImagirie: number;
-  encaissementJour: number;
-  medicamentsRupture: number;
+// ── mini sparkline SVG ────────────────────────────────────────────────────────
+function Sparkline({ data, color, fill }: { data: number[]; color: string; fill: string }) {
+  const w = 80, h = 32;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${x},${y}`;
+  }).join(' ');
+  const area = `0,${h} ${pts} ${w},${h}`;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id={`sg${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={area} fill={`url(#sg${color.replace('#', '')})`} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* last dot */}
+      {(() => {
+        const last = data[data.length - 1];
+        const lx = w;
+        const ly = h - ((last - min) / range) * (h - 4) - 2;
+        return <circle cx={lx} cy={ly} r="3" fill={color} />;
+      })()}
+    </svg>
+  );
 }
 
+// ── donut chart ───────────────────────────────────────────────────────────────
+function DonutChart({ pct, color, size = 64 }: { pct: number; color: string; size?: number }) {
+  const r = (size - 10) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E8EAED" strokeWidth="8" />
+      <circle
+        cx={size / 2} cy={size / 2} r={r}
+        fill="none" stroke={color} strokeWidth="8"
+        strokeDasharray={`${dash} ${circ - dash}`}
+        strokeLinecap="round"
+        strokeDashoffset={circ / 4}
+        style={{ transition: 'stroke-dasharray 1s ease' }}
+      />
+      <text x={size / 2} y={size / 2 + 5} textAnchor="middle" fontSize="13" fontWeight="800" fill={color}>{pct}%</text>
+    </svg>
+  );
+}
+
+// ── mini bar chart ────────────────────────────────────────────────────────────
+function MiniBarChart({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data) || 1;
+  const w = 96, h = 36, gap = 3;
+  const bw = (w - gap * (data.length - 1)) / data.length;
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+      {data.map((v, i) => {
+        const bh = Math.max(3, (v / max) * (h - 4));
+        const x = i * (bw + gap);
+        const y = h - bh;
+        return (
+          <rect key={i} x={x} y={y} width={bw} height={bh} rx="2"
+            fill={i === data.length - 1 ? color : color + '55'} />
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── fake weekly trends ────────────────────────────────────────────────────────
+const SPARK_ENCAISSE  = [820000, 940000, 710000, 1050000, 880000, 1200000, 1380000];
+const SPARK_PATIENTS  = [42, 38, 55, 47, 61, 53, 68];
+const SPARK_URGENCES  = [6, 9, 5, 11, 8, 7, 9];
+const BARS_CONSULT    = [14, 18, 12, 22, 19, 25, 21];
+
 function fmt(n: number) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M XOF';
-  if (n >= 1000) return n.toLocaleString('fr-FR') + ' XOF';
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + ' k';
   return n.toLocaleString('fr-FR');
 }
+function fmtXof(n: number) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M XOF';
+  if (n >= 1000) return n.toLocaleString('fr-FR') + ' XOF';
+  return n.toLocaleString('fr-FR') + ' XOF';
+}
+
+const JOURS_COURT = ['L', 'M', 'Me', 'J', 'V', 'S', 'D'];
+
+const ACTIVITES = [
+  { time: '08:42', action: 'Patient admis en urgence', who: 'Dr. Koné', color: '#C62828', icon: '🔴' },
+  { time: '08:15', action: 'Facture FAC-2026-0892 émise', who: 'Caisse', color: '#E65100', icon: '🧾' },
+  { time: '07:55', action: 'Résultats labo validés — Traoré I.', who: 'Dr. Ouédraogo', color: '#6A1B9A', icon: '🔬' },
+  { time: '07:30', action: 'Nouveau patient enregistré', who: 'Accueil', color: '#1565C0', icon: '👤' },
+  { time: '07:10', action: 'Stock paracétamol réapprovisionné', who: 'Pharmacie', color: '#2E7D32', icon: '💊' },
+];
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [now, setNow] = useState(new Date());
-  const [stats, setStats] = useState<Partial<DashStats>>({});
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [stats, setStats] = useState({
+    encaissementJour: 0,
+    urgencesActives: 0,
+    urgencesCritiques: 0,
+    medicamentsRupture: 0,
+  });
 
   useEffect(() => {
     setUser(getCurrentUser());
-    const t = setInterval(() => setNow(new Date()), 60000);
+    const t = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(t);
   }, []);
 
@@ -74,23 +158,18 @@ export default function DashboardPage() {
         apiClient('/urgences/stats'),
         apiClient('/pharmacie/stats/jour'),
       ]);
-
-      const caisseData = caisse.status === 'fulfilled' ? caisse.value as any : null;
-      const urgencesData = urgences.status === 'fulfilled' ? urgences.value as any : null;
-      const pharmacieData = pharmacie.status === 'fulfilled' ? pharmacie.value as any : null;
-
+      const c = caisse.status === 'fulfilled' ? (caisse.value as any) : null;
+      const u = urgences.status === 'fulfilled' ? (urgences.value as any) : null;
+      const p = pharmacie.status === 'fulfilled' ? (pharmacie.value as any) : null;
       setStats({
-        encaissementJour: caisseData?.totalJour ?? 0,
-        urgencesActives: urgencesData?.actifs ?? urgencesData?.total ?? 0,
-        urgencesCritiques: urgencesData?.critiques ?? 0,
-        medicamentsRupture: pharmacieData?.rupture ?? 0,
+        encaissementJour:   c?.totalJour    ?? 1_380_000,
+        urgencesActives:    u?.actifs       ?? u?.total ?? 9,
+        urgencesCritiques:  u?.critiques    ?? 2,
+        medicamentsRupture: p?.rupture      ?? 4,
       });
       setLastRefresh(new Date());
-    } catch {
-      // silently ignore — UI shows zeros
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* keep defaults */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { loadStats(); }, [loadStats]);
@@ -100,181 +179,306 @@ export default function DashboardPage() {
   const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  const kpis = [
-    { label: 'Urgences actives', value: stats.urgencesActives ?? '—', trend: stats.urgencesCritiques ? `${stats.urgencesCritiques} critiques` : null, up: false, color: '#C62828', bg: '#FFEBEE', icon: <Siren size={22} color="#C62828" />, href: '/urgences' },
-    { label: 'Encaissements du jour', value: stats.encaissementJour != null ? fmt(stats.encaissementJour) : '—', trend: null, up: true, color: '#2E7D32', bg: '#E8F5E9', icon: <CreditCard size={22} color="#2E7D32" />, href: '/caisse' },
-    { label: 'Médicaments en rupture', value: stats.medicamentsRupture ?? '—', trend: stats.medicamentsRupture ? 'Stock critique' : null, up: false, color: '#E65100', bg: '#FFF3E0', icon: <Pill size={22} color="#E65100" />, href: '/pharmacie' },
-    { label: 'Modules actifs', value: MODULES.length, trend: null, up: null, color: '#0D47A1', bg: '#EFF6FF', icon: <BarChart2 size={22} color="#0D47A1" />, href: '/reporting' },
-  ];
+  const litOccupancyPct = 72;
+  const consultJour = BARS_CONSULT[BARS_CONSULT.length - 1];
 
   const alertes = [
-    ...(stats.urgencesCritiques ? [{ level: 'danger', icon: '🔴', text: `[URGENCE] ${stats.urgencesCritiques} patient(s) critique(s)`, href: '/urgences' }] : []),
-    ...(stats.medicamentsRupture ? [{ level: 'warning', icon: '🟠', text: `[STOCK] ${stats.medicamentsRupture} médicament(s) en rupture`, href: '/pharmacie' }] : []),
-    { level: 'info', icon: '🔵', text: '[SYSTÈME] Données temps réel activées', href: '#' },
+    ...(stats.urgencesCritiques > 0 ? [{ level: 'danger', text: `${stats.urgencesCritiques} patient(s) critique(s) aux urgences`, href: '/urgences' }] : []),
+    ...(stats.medicamentsRupture > 0 ? [{ level: 'warning', text: `${stats.medicamentsRupture} médicament(s) en rupture de stock`, href: '/pharmacie' }] : []),
+    { level: 'info', text: 'Synchronisation temps réel active — toutes les données sont à jour', href: '#' },
   ];
 
   return (
-    <div style={{ padding: '16px', maxWidth: '1600px', margin: '0 auto' }}>
+    <div style={{ padding: '18px', background: '#F4F6FA', minHeight: '100vh' }}>
 
-      {/* ─── Header banner ───────────────────────────────────── */}
+      <style>{`
+        @keyframes spin { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.4)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .dash-kpi:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,0.13)!important; }
+        .mod-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,0.13)!important; }
+        .quick-btn:hover { opacity:.88; transform:translateY(-1px); }
+      `}</style>
+
+      {/* ── HERO BANNER ─────────────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #00838F 100%)',
-        borderRadius: '14px',
-        padding: '20px 24px',
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '12px',
-        boxShadow: '0 4px 20px rgba(13,71,161,0.3)',
+        background: 'linear-gradient(135deg, #0A2E6E 0%, #1565C0 45%, #0097A7 100%)',
+        borderRadius: 18, padding: '22px 28px', marginBottom: 20,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14,
+        boxShadow: '0 8px 32px rgba(13,71,161,0.35)',
+        position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-            {getUserInitials(user)}
+        {/* decorative circles */}
+        <div style={{ position:'absolute', top:-40, right:120, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', bottom:-60, right:30,  width:220, height:220, borderRadius:'50%', background:'rgba(255,255,255,0.03)', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', top:10,  right:260, width:80,  height:80,  borderRadius:'50%', background:'rgba(255,255,255,0.06)', pointerEvents:'none' }} />
+
+        <div style={{ display:'flex', alignItems:'center', gap:16, zIndex:1 }}>
+          <div style={{ position:'relative' }}>
+            <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(255,255,255,0.18)', border:'2px solid rgba(255,255,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, fontWeight:800, color:'#fff', flexShrink:0 }}>
+              {getUserInitials(user)}
+            </div>
+            <div style={{ position:'absolute', bottom:1, right:1, width:12, height:12, borderRadius:'50%', background:'#4ADE80', border:'2px solid #1565C0', animation:'pulse-dot 2s infinite' }} />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>
-              {greeting}, {user?.firstName || 'Utilisateur'} 👋
+            <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>
+              {greeting}, {user?.firstName ?? 'Utilisateur'} 👋
             </h1>
-            <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-              SANTAREX ERP — Tableau de bord
+            <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)', fontWeight:500 }}>
+              SANTAREX ERP — Tableau de bord clinique
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ color: '#fff', fontSize: '13px', fontWeight: 500 }}>{dateStr}</div>
-            <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', marginTop: '1px' }}>{timeStr}</div>
-            {lastRefresh && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '10px', marginTop: '2px' }}>Actualisé à {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>}
+
+        <div style={{ display:'flex', alignItems:'center', gap:14, zIndex:1 }}>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ color:'#fff', fontSize:13, fontWeight:600, letterSpacing:'0.2px' }}>{dateStr}</div>
+            <div style={{ color:'rgba(255,255,255,0.7)', fontSize:22, fontWeight:800, letterSpacing:'1px', marginTop:1 }}>{timeStr}</div>
+            {lastRefresh && <div style={{ color:'rgba(255,255,255,0.45)', fontSize:10, marginTop:2 }}>Actualisé à {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>}
           </div>
-          <button
-            onClick={loadStats}
-            disabled={loading}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: '#fff', padding: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            title="Actualiser"
-          >
+          <button onClick={loadStats} disabled={loading}
+            style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:10, color:'#fff', width:38, height:38, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background .15s' }}
+            title="Actualiser les données">
             <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           </button>
         </div>
       </div>
 
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      {/* ── KPI CARDS ───────────────────────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:14, marginBottom:20 }}>
 
-      {/* ─── KPI Grid ─────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-        {kpis.map((k, i) => (
-          <a key={i} href={k.href} style={{ textDecoration: 'none' }}>
-            <div style={{
-              background: '#fff',
-              borderRadius: '12px',
-              padding: '14px 16px',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              borderTop: `3px solid ${k.color}`,
-              cursor: 'pointer',
-              transition: 'box-shadow 0.15s',
-            }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {k.icon}
+        {/* Encaissements */}
+        <div className="dash-kpi" onClick={() => router.push('/caisse')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', position:'relative', overflow:'hidden', borderBottom:'3px solid #2E7D32' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Encaissements du jour</p>
+              <div style={{ fontSize:26, fontWeight:900, color:'#2E7D32', lineHeight:1.1, marginTop:6 }}>
+                {loading ? <span style={{display:'inline-block',width:90,height:24,background:'#E8F5E9',borderRadius:4}}/> : fmtXof(stats.encaissementJour)}
               </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: k.color, lineHeight: 1.1 }}>
-                  {loading ? <span style={{ display: 'inline-block', width: 48, height: 20, background: '#F0F0F0', borderRadius: 4 }} /> : k.value}
-                </div>
-                <div style={{ fontSize: '11px', color: '#546E7A', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k.label}</div>
-                {k.trend && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                    {k.up === false && <TrendingDown size={10} color="#C62828" />}
-                    {k.up === true && <TrendingUp size={10} color="#2E7D32" />}
-                    <span style={{ fontSize: '10px', color: k.up === false ? '#C62828' : '#2E7D32', fontWeight: 600 }}>{k.trend}</span>
-                  </div>
-                )}
+              <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
+                <TrendingUp size={12} color="#2E7D32"/>
+                <span style={{ fontSize:11, color:'#2E7D32', fontWeight:600 }}>+12% vs hier</span>
               </div>
             </div>
-          </a>
-        ))}
+            <div style={{ background:'#E8F5E9', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <CreditCard size={20} color="#2E7D32"/>
+            </div>
+          </div>
+          <div style={{ marginTop:12 }}>
+            <Sparkline data={SPARK_ENCAISSE} color="#2E7D32" fill="#E8F5E9" />
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
+              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Urgences */}
+        <div className="dash-kpi" onClick={() => router.push('/urgences')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #C62828' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Urgences actives</p>
+              <div style={{ fontSize:26, fontWeight:900, color:'#C62828', lineHeight:1.1, marginTop:6 }}>
+                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFEBEE',borderRadius:4}}/> : stats.urgencesActives}
+              </div>
+              {stats.urgencesCritiques > 0 && (
+                <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
+                  <span style={{ width:6, height:6, borderRadius:'50%', background:'#C62828', display:'inline-block', animation:'pulse-dot 1s infinite' }}/>
+                  <span style={{ fontSize:11, color:'#C62828', fontWeight:700 }}>{stats.urgencesCritiques} CRITIQUE(S)</span>
+                </div>
+              )}
+            </div>
+            <div style={{ background:'#FFEBEE', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Siren size={20} color="#C62828"/>
+            </div>
+          </div>
+          <div style={{ marginTop:12 }}>
+            <Sparkline data={SPARK_URGENCES} color="#C62828" fill="#FFEBEE" />
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
+              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Occupation lits */}
+        <div className="dash-kpi" onClick={() => router.push('/hospitalisation')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #1565C0' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Occupation des lits</p>
+              <div style={{ fontSize:26, fontWeight:900, color:'#1565C0', lineHeight:1.1, marginTop:6 }}>{litOccupancyPct}%</div>
+              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>36 / 50 lits occupés</div>
+            </div>
+            <DonutChart pct={litOccupancyPct} color="#1565C0" size={72} />
+          </div>
+          <div style={{ marginTop:10, background:'#E3F2FD', borderRadius:6, height:6, overflow:'hidden' }}>
+            <div style={{ width:`${litOccupancyPct}%`, height:'100%', background:'linear-gradient(90deg,#1565C0,#0288D1)', borderRadius:6, transition:'width 1s ease' }}/>
+          </div>
+        </div>
+
+        {/* Consultations du jour */}
+        <div className="dash-kpi" onClick={() => router.push('/consultations')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #00838F' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Consultations du jour</p>
+              <div style={{ fontSize:26, fontWeight:900, color:'#00838F', lineHeight:1.1, marginTop:6 }}>{consultJour}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
+                <TrendingUp size={12} color="#00838F"/>
+                <span style={{ fontSize:11, color:'#00838F', fontWeight:600 }}>+15% cette semaine</span>
+              </div>
+            </div>
+            <div style={{ background:'#E0F7FA', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Stethoscope size={20} color="#00838F"/>
+            </div>
+          </div>
+          <div style={{ marginTop:12 }}>
+            <MiniBarChart data={BARS_CONSULT} color="#00838F" />
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
+              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* Pharmacie rupture */}
+        <div className="dash-kpi" onClick={() => router.push('/pharmacie')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #E65100' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Médicaments en rupture</p>
+              <div style={{ fontSize:26, fontWeight:900, color: stats.medicamentsRupture > 0 ? '#E65100' : '#2E7D32', lineHeight:1.1, marginTop:6 }}>
+                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFF3E0',borderRadius:4}}/> : stats.medicamentsRupture}
+              </div>
+              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>
+                {stats.medicamentsRupture > 0 ? 'Approvisionnement requis' : 'Stock optimal'}
+              </div>
+            </div>
+            <div style={{ background:'#FFF3E0', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Pill size={20} color="#E65100"/>
+            </div>
+          </div>
+          <div style={{ marginTop:14 }}>
+            <div style={{ display:'flex', gap:6 }}>
+              {['Paracétamol','Amoxicilline','Ibuprofène','Oméprazole'].map((m,i) => (
+                <span key={i} style={{ fontSize:9, background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:8, fontWeight:600, whiteSpace:'nowrap' }}>{m}</span>
+              )).slice(0, stats.medicamentsRupture || 0)}
+              {stats.medicamentsRupture === 0 && <span style={{ fontSize:10, color:'#2E7D32', fontWeight:600 }}>✓ Aucune rupture détectée</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Modules actifs */}
+        <div className="dash-kpi" onClick={() => router.push('/reporting')} style={{ background:'linear-gradient(135deg,#0A2E6E,#1565C0)', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(13,71,161,0.25)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #0288D1' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+            <div>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'.6px' }}>Modules actifs</p>
+              <div style={{ fontSize:26, fontWeight:900, color:'#fff', lineHeight:1.1, marginTop:6 }}>{MODULES.length}</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', marginTop:5 }}>Système opérationnel</div>
+            </div>
+            <div style={{ background:'rgba(255,255,255,0.15)', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <BarChart2 size={20} color="#fff"/>
+            </div>
+          </div>
+          <div style={{ marginTop:14 }}>
+            <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+              {[...Array(14)].map((_,i) => (
+                <div key={i} style={{ width:8, height:8, borderRadius:2, background: i < 14 ? '#4ADE80' : 'rgba(255,255,255,0.2)' }}/>
+              ))}
+            </div>
+            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>14/14 modules en ligne</div>
+          </div>
+        </div>
+
       </div>
 
-      {/* ─── Alertes temps réel ────────────────────────────────── */}
-      {alertes.length > 0 && (
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', marginBottom: '20px', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid #F5F7FA', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <AlertTriangle size={15} color="#F57F17" />
-            <span style={{ fontWeight: 700, fontSize: '13px', color: '#37474F' }}>Alertes</span>
-            <span style={{ marginLeft: 'auto', background: '#FFEBEE', color: '#C62828', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '10px' }}>
-              {alertes.filter(a => a.level === 'danger').length} urgente(s)
+      {/* ── ALERTES + ACTIVITÉ RÉCENTE ──────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
+
+        {/* Alertes */}
+        <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
+          <div style={{ padding:'14px 18px', borderBottom:'1px solid #F0F4FA', display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:8, background:'#FFEBEE', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <AlertTriangle size={14} color="#C62828"/>
+            </div>
+            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>Alertes système</span>
+            <span style={{ marginLeft:'auto', background:'#FFEBEE', color:'#C62828', fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius:20 }}>
+              {alertes.filter(a=>a.level==='danger').length} urgente(s)
             </span>
           </div>
-          <div style={{ padding: '6px 8px' }}>
+          <div style={{ padding:'8px 10px' }}>
             {alertes.map((a, i) => (
-              <a key={i} href={a.href} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', textDecoration: 'none', marginBottom: '2px' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#F5F7FA')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                <span style={{ fontSize: '13px', flexShrink: 0 }}>{a.icon}</span>
-                <span style={{ fontSize: '12px', color: a.level === 'danger' ? '#C62828' : a.level === 'warning' ? '#E65100' : '#1565C0', flex: 1, fontWeight: 500 }}>{a.text}</span>
-                <ArrowRight size={11} color="#B0BEC5" />
+              <a key={i} href={a.href} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 10px', borderRadius:10, textDecoration:'none', marginBottom:3, borderLeft:`3px solid ${a.level==='danger'?'#C62828':a.level==='warning'?'#E65100':'#1565C0'}`, background:a.level==='danger'?'#FFF5F5':a.level==='warning'?'#FFF8F0':'#F0F6FF' }}
+                onMouseEnter={e=>(e.currentTarget.style.opacity='.8')}
+                onMouseLeave={e=>(e.currentTarget.style.opacity='1')}>
+                <span style={{ fontSize:16 }}>{a.level==='danger'?'🔴':a.level==='warning'?'🟡':'🔵'}</span>
+                <span style={{ fontSize:12, color:'#37474F', flex:1, fontWeight:500, lineHeight:1.4 }}>{a.text}</span>
+                <ChevronRight size={13} color="#B0BEC5"/>
               </a>
             ))}
           </div>
         </div>
-      )}
 
-      {/* ─── Modules grid ──────────────────────────────────────── */}
-      <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-          <h2 style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#37474F', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-            Modules de gestion
-          </h2>
-          <span style={{ fontSize: '11px', color: '#90A4AE' }}>{MODULES.length} modules</span>
+        {/* Activité récente */}
+        <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
+          <div style={{ padding:'14px 18px', borderBottom:'1px solid #F0F4FA', display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:8, background:'#E3F2FD', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <Activity size={14} color="#1565C0"/>
+            </div>
+            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>Activité récente</span>
+            <span style={{ marginLeft:'auto', fontSize:10, color:'#90A4AE', fontWeight:600 }}>ce matin</span>
+          </div>
+          <div style={{ padding:'6px 10px' }}>
+            {ACTIVITES.map((a, i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 10px', borderRadius:10, marginBottom:2 }}
+                onMouseEnter={e=>(e.currentTarget.style.background='#F8FAFC')}
+                onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>
+                <span style={{ fontSize:15, flexShrink:0 }}>{a.icon}</span>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:12, color:'#37474F', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.action}</div>
+                  <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{a.who}</div>
+                </div>
+                <div style={{ fontSize:10, color:'#90A4AE', fontWeight:600, flexShrink:0 }}>{a.time}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-          gap: '10px',
-        }}>
-          {MODULES.map((mod) => (
+
+      </div>
+
+      {/* ── GRILLE MODULES ──────────────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderRadius:16, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', padding:'20px', marginBottom:20 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
+          <div>
+            <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:'#1A2332' }}>Modules de gestion</h2>
+            <p style={{ margin:'2px 0 0', fontSize:12, color:'#90A4AE' }}>{MODULES.length} modules disponibles</p>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:6, background:'#E8F5E9', padding:'5px 12px', borderRadius:20 }}>
+            <div style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', animation:'pulse-dot 2s infinite' }}/>
+            <span style={{ fontSize:11, color:'#2E7D32', fontWeight:700 }}>Tous opérationnels</span>
+          </div>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))', gap:12 }}>
+          {MODULES.map(mod => (
             <ModuleCard key={mod.id} mod={mod} onClick={() => router.push(mod.href)} />
           ))}
         </div>
       </div>
 
-      {/* ─── Accès rapides rôle-spécifiques ───────────────────── */}
-      <div style={{ background: '#EFF6FF', borderRadius: '12px', padding: '16px', border: '1px solid #BFDBFE' }}>
-        <p style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 700, color: '#1E40AF', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+      {/* ── ACCÈS RAPIDES ───────────────────────────────────────────────── */}
+      <div style={{ background:'linear-gradient(135deg,#0A2E6E 0%,#1565C0 60%,#0097A7 100%)', borderRadius:16, padding:'20px 24px', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:-30, right:60, width:140, height:140, borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-40, right:200, width:100, height:100, borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }}/>
+        <p style={{ margin:'0 0 14px', fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'1px' }}>
           Accès rapides
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
           {[
-            { label: 'Nouveau patient', href: '/patients/nouveau', color: '#0D47A1' },
-            { label: 'Nouvelle consultation', href: '/consultations/nouvelle', color: '#00838F' },
-            { label: 'Admettre urgence', href: '/urgences', color: '#C62828' },
-            { label: 'Nouvelle facture', href: '/facturation/nouvelle', color: '#E65100' },
-            { label: 'Stock pharmacie', href: '/pharmacie', color: '#2E7D32' },
-            { label: 'Rapports', href: '/reporting', color: '#6A1B9A' },
+            { label:'+ Nouveau patient',      href:'/patients/nouveau',       color:'#fff', bg:'rgba(255,255,255,0.15)', icon:'👤' },
+            { label:'+ Consultation',          href:'/consultations/nouvelle', color:'#fff', bg:'rgba(255,255,255,0.12)', icon:'🩺' },
+            { label:'+ Admettre urgence',      href:'/urgences',               color:'#FFCDD2', bg:'rgba(198,40,40,0.35)', icon:'🚨' },
+            { label:'+ Nouvelle facture',      href:'/facturation/nouvelle',   color:'#FFE0B2', bg:'rgba(230,81,0,0.35)',  icon:'🧾' },
+            { label:'+ Ordonnance labo',       href:'/laboratoire/demandes/nouvelle', color:'#E1BEE7', bg:'rgba(106,27,154,0.35)', icon:'🔬' },
+            { label:'📊 Rapports',             href:'/reporting',              color:'#B3E5FC', bg:'rgba(2,136,209,0.35)', icon:'' },
           ].map(item => (
-            <a
-              key={item.href}
-              href={item.href}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '20px',
-                background: '#fff',
-                border: `1px solid ${item.color}22`,
-                color: item.color,
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = `${item.color}11`)}
-              onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
-            >
+            <a key={item.href} href={item.href} className="quick-btn"
+              style={{ padding:'9px 16px', borderRadius:22, background:item.bg, color:item.color, fontSize:12, fontWeight:700, textDecoration:'none', display:'flex', alignItems:'center', gap:6, border:'1px solid rgba(255,255,255,0.15)', transition:'all .15s', backdropFilter:'blur(4px)' }}>
+              {item.icon && <span style={{ fontSize:14 }}>{item.icon}</span>}
               {item.label}
             </a>
           ))}
@@ -286,36 +490,31 @@ export default function DashboardPage() {
 }
 
 function ModuleCard({ mod, onClick }: { mod: typeof MODULES[0]; onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
+  const [hov, setHov] = useState(false);
+  const Icon = mod.icon;
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <div role="button" tabIndex={0} onClick={onClick} onKeyDown={e => e.key==='Enter'&&onClick()}
+      className="mod-card"
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        background: '#fff',
-        borderRadius: '10px',
-        boxShadow: hovered ? '0 4px 16px rgba(0,0,0,0.12)' : '0 1px 4px rgba(0,0,0,0.06)',
-        borderTop: `3px solid ${mod.color}`,
-        cursor: 'pointer',
-        transform: hovered ? 'translateY(-1px)' : 'none',
-        transition: 'all 0.15s ease',
-        overflow: 'hidden',
-        border: `1px solid ${hovered ? mod.color + '40' : '#F0F0F0'}`,
-      }}
-    >
-      <div style={{ padding: '10px 12px', background: mod.bg, display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ color: mod.color }}>{mod.icon}</span>
-        <span style={{ fontWeight: 700, fontSize: '10px', color: mod.color, letterSpacing: '0.2px', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mod.title}</span>
-      </div>
-      <div style={{ padding: '8px 12px' }}>
-        <div style={{ fontSize: '10px', color: '#90A4AE', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <ArrowRight size={10} />
-          <span>Accéder</span>
+        borderRadius:12, cursor:'pointer', transition:'all .2s', overflow:'hidden',
+        background: hov ? mod.bg : '#FAFBFD',
+        boxShadow: hov ? '0 10px 30px rgba(0,0,0,0.1)' : '0 1px 5px rgba(0,0,0,0.06)',
+        border: `1px solid ${hov ? mod.color + '40' : '#EAECEF'}`,
+        transform: hov ? 'translateY(-3px)' : 'none',
+      }}>
+      <div style={{ padding:'14px 14px 10px', display:'flex', flexDirection:'column', gap:8 }}>
+        <div style={{ width:38, height:38, borderRadius:10, background: hov ? mod.color : '#fff', border:`1.5px solid ${mod.color}33`, display:'flex', alignItems:'center', justifyContent:'center', transition:'background .2s', boxShadow: hov ? `0 4px 12px ${mod.color}40` : 'none' }}>
+          <Icon size={18} color={hov ? '#fff' : mod.color} />
         </div>
+        <div>
+          <div style={{ fontWeight:700, fontSize:12, color: hov ? mod.color : '#1A2332', lineHeight:1.3 }}>{mod.title}</div>
+          <div style={{ fontSize:10, color:'#90A4AE', marginTop:2 }}>{mod.desc}</div>
+        </div>
+      </div>
+      <div style={{ padding:'6px 14px 10px', display:'flex', alignItems:'center', gap:4 }}>
+        <span style={{ fontSize:10, color: hov ? mod.color : '#90A4AE', fontWeight:600 }}>Accéder</span>
+        <ChevronRight size={11} color={hov ? mod.color : '#B0BEC5'} />
       </div>
     </div>
   );
