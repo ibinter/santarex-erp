@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, ChevronLeft, ChevronRight, Plus, RefreshCw, Clock } from 'lucide-react';
+import {
+  Calendar, ChevronLeft, ChevronRight, Plus, RefreshCw,
+  Clock, User, CheckCircle, XCircle, AlertCircle, LayoutGrid, List,
+} from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
 type StatutRdv = 'planifie' | 'confirme' | 'annule' | 'absent' | 'honore';
@@ -14,33 +17,36 @@ type Rdv = {
   dateHeure: string; duree?: number; motif?: string; statut: StatutRdv;
 };
 
-const STATUT_CONFIG: Record<StatutRdv, { label: string; bg: string; color: string; border: string }> = {
-  planifie: { label: 'Planifié',  bg: '#EFF6FF', color: '#1565C0', border: '#1565C0' },
-  confirme: { label: 'Confirmé',  bg: '#1565C0', color: '#fff',    border: '#0D47A1' },
-  annule:   { label: 'Annulé',   bg: '#F5F5F5', color: '#9E9E9E', border: '#BDBDBD' },
-  absent:   { label: 'Absent',   bg: '#FFEBEE', color: '#C62828', border: '#C62828' },
-  honore:   { label: 'Honoré',   bg: '#E8F5E9', color: '#2E7D32', border: '#2E7D32' },
+const STATUT_CFG: Record<StatutRdv, { label: string; bg: string; color: string; border: string; dot: string }> = {
+  planifie: { label:'Planifié',  bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', dot:'#3B82F6' },
+  confirme: { label:'Confirmé',  bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', dot:'#4ADE80' },
+  annule:   { label:'Annulé',    bg:'#F5F5F5', color:'#9E9E9E', border:'#E0E0E0', dot:'#BDBDBD' },
+  absent:   { label:'Absent',    bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2', dot:'#C62828' },
+  honore:   { label:'Honoré',    bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', dot:'#A855F7' },
 };
 
-const JOURS_COURT = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const JOURS_C = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-  d.setHours(0, 0, 0, 0);
-  return d;
+function getWeekStart(d: Date) {
+  const r = new Date(d);
+  const day = r.getDay();
+  r.setDate(r.getDate() - (day === 0 ? 6 : day - 1));
+  r.setHours(0,0,0,0);
+  return r;
 }
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function fmtHeure(iso: string) {
-  try { return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function fmtH(iso: string) {
+  try { return new Date(iso).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
   catch { return '—'; }
+}
+
+const AVATAR_COLORS = [
+  ['#6A1B9A','#F3E5F5'],['#1565C0','#E3F2FD'],['#00838F','#E0F7FA'],
+  ['#2E7D32','#E8F5E9'],['#E65100','#FFF3E0'],['#C62828','#FFEBEE'],
+];
+function avColor(n: string): [string,string] {
+  return AVATAR_COLORS[(n.charCodeAt(0)+(n.charCodeAt(1)||0))%AVATAR_COLORS.length] as [string,string];
 }
 
 export default function RendezVousPage() {
@@ -48,118 +54,154 @@ export default function RendezVousPage() {
   const [rdvs, setRdvs] = useState<Rdv[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
-  const [view, setView] = useState<'semaine' | 'liste'>('semaine');
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [view, setView] = useState<'semaine'|'liste'>('semaine');
+  const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const dateDebut = weekStart.toISOString().split('T')[0];
-      const dateFin = addDays(weekStart, 6).toISOString().split('T')[0];
-      const data = await apiClient<any>(`/rendez-vous?dateDebut=${dateDebut}&dateFin=${dateFin}&limit=200`);
-      const list = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
-      setRdvs(list);
+      const deb = weekStart.toISOString().split('T')[0];
+      const fin = addDays(weekStart,6).toISOString().split('T')[0];
+      const data = await apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=200`);
+      setRdvs(Array.isArray(data)?data:data?.items??data?.data??[]);
       setLastRefresh(new Date());
-    } finally {
-      setLoading(false);
-    }
+    } catch { setRdvs([]); }
+    finally { setLoading(false); }
   }, [weekStart]);
 
   useEffect(() => { load(); }, [load]);
 
-  const semaineDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days = Array.from({length:7},(_,i)=>addDays(weekStart,i));
   const todayStr = new Date().toDateString();
-
-  const getRdvsForDay = (day: Date) => {
-    const dayStr = day.toISOString().split('T')[0];
-    return rdvs.filter(r => r.dateHeure.startsWith(dayStr)).sort((a, b) => a.dateHeure.localeCompare(b.dateHeure));
+  const getRdvsDay = (d: Date) => rdvs.filter(r=>r.dateHeure.startsWith(d.toISOString().split('T')[0])).sort((a,b)=>a.dateHeure.localeCompare(b.dateHeure));
+  const counts = {
+    total:    rdvs.length,
+    confirme: rdvs.filter(r=>r.statut==='confirme').length,
+    planifie: rdvs.filter(r=>r.statut==='planifie').length,
+    honore:   rdvs.filter(r=>r.statut==='honore').length,
+    annule:   rdvs.filter(r=>r.statut==='annule'||r.statut==='absent').length,
   };
-
-  const patientName = (r: Rdv) => r.patient ? `${r.patient.prenom} ${r.patient.nom}` : '—';
+  const pName = (r: Rdv) => r.patient?`${r.patient.prenom} ${r.patient.nom}`:'—';
 
   return (
-    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
-      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
+    <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+        .rdv-card{transition:all .15s;cursor:pointer;}
+        .rdv-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)!important;opacity:.9;}
+        .rdv-row:hover{background:#F5F0FF!important;}
+        .view-btn{transition:all .15s;}
+      `}</style>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EDE7F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Calendar size={20} color="#6A1B9A" />
-            </div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Rendez-vous</h1>
+      {/* ── HERO ─────────────────────────────────────────────────── */}
+      <div style={{ background:'linear-gradient(135deg,#4A148C 0%,#6A1B9A 55%,#8E24AA 100%)', borderRadius:18, padding:'22px 28px', marginBottom:20, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14, boxShadow:'0 8px 28px rgba(106,27,154,0.35)', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:-50, right:80,  width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-40, right:260, width:120, height:120, borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }}/>
+        <div style={{ display:'flex', alignItems:'center', gap:16, zIndex:1 }}>
+          <div style={{ width:52, height:52, borderRadius:14, background:'rgba(255,255,255,0.18)', border:'2px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Calendar size={26} color="#fff"/>
           </div>
-          <p style={{ margin: '4px 0 0 48px', fontSize: 12, color: '#546E7A' }}>
-            {loading ? '…' : `${rdvs.length} RDV cette semaine`}
-            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
-          </p>
+          <div>
+            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Rendez-vous</h1>
+            <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)' }}>
+              {loading?'…':`${counts.total} RDV cette semaine`}
+              {lastRefresh&&<span style={{ marginLeft:10, opacity:.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
+            </p>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {/* View toggle */}
-          <div style={{ display: 'flex', borderRadius: 8, border: '1px solid #E0E0E0', overflow: 'hidden' }}>
-            {(['semaine', 'liste'] as const).map(v => (
-              <button key={v} onClick={() => setView(v)}
-                style={{ padding: '7px 14px', border: 'none', background: view === v ? '#6A1B9A' : '#fff', color: view === v ? '#fff' : '#546E7A', fontSize: 12, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }}>
-                {v === 'semaine' ? 'Semaine' : 'Liste'}
+        <div style={{ display:'flex', gap:10, zIndex:1 }}>
+          {/* Vue toggle */}
+          <div style={{ display:'flex', background:'rgba(255,255,255,0.15)', borderRadius:10, padding:3, border:'1px solid rgba(255,255,255,0.25)' }}>
+            {(['semaine','liste'] as const).map(v=>(
+              <button key={v} onClick={()=>setView(v)} className="view-btn"
+                style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRadius:8, border:'none', background:view===v?'#fff':'transparent', color:view===v?'#6A1B9A':'rgba(255,255,255,0.8)', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                {v==='semaine'?<LayoutGrid size={13}/>:<List size={13}/>}
+                {v==='semaine'?'Semaine':'Liste'}
               </button>
             ))}
           </div>
-          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          <button onClick={load} disabled={loading}
+            style={{ width:38, height:38, borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <RefreshCw size={16} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
           </button>
-          <button onClick={() => router.push('/rendez-vous/nouveau')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#6A1B9A', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
-            <Plus size={14} /> Nouveau RDV
+          <button onClick={()=>router.push('/rendez-vous/nouveau')}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', borderRadius:10, background:'#fff', border:'none', color:'#6A1B9A', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 10px rgba(0,0,0,0.15)' }}>
+            <Plus size={15}/> Nouveau RDV
           </button>
         </div>
       </div>
 
-      {/* Navigation semaine */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <button onClick={() => setWeekStart(d => addDays(d, -7))}
-          style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ChevronLeft size={16} color="#546E7A" />
+      {/* ── KPI ──────────────────────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:12, marginBottom:18 }}>
+        {[
+          { label:'Total semaine', value:counts.total,    icon:<Calendar size={18} color="#6A1B9A"/>,  bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7' },
+          { label:'Confirmés',     value:counts.confirme, icon:<CheckCircle size={18} color="#2E7D32"/>,bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9' },
+          { label:'Planifiés',     value:counts.planifie, icon:<Clock size={18} color="#1565C0"/>,     bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB' },
+          { label:'Honorés',       value:counts.honore,   icon:<User size={18} color="#8E24AA"/>,      bg:'#F3E5F5', color:'#8E24AA', border:'#CE93D8' },
+          { label:'Annulés/Abs.',  value:counts.annule,   icon:<XCircle size={18} color="#C62828"/>,   bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2' },
+        ].map((k,i)=>(
+          <div key={i} style={{ background:'#fff', borderRadius:12, padding:'13px 15px', boxShadow:'0 1px 6px rgba(0,0,0,0.07)', display:'flex', alignItems:'center', gap:10, border:`1px solid ${k.border}`, borderLeft:`4px solid ${k.color}` }}>
+            <div style={{ width:36, height:36, borderRadius:10, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
+            <div>
+              <div style={{ fontSize:22, fontWeight:900, color:k.color, lineHeight:1 }}>{loading?<span style={{display:'inline-block',width:24,height:18,background:k.bg,borderRadius:4}}/>:k.value}</div>
+              <div style={{ fontSize:10, color:'#546E7A', fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px', marginTop:2 }}>{k.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── NAV SEMAINE ──────────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderRadius:12, padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', gap:12, boxShadow:'0 1px 6px rgba(0,0,0,0.06)', flexWrap:'wrap' }}>
+        <button onClick={()=>setWeekStart(d=>addDays(d,-7))}
+          style={{ width:34, height:34, borderRadius:9, border:'1.5px solid #E0E0E0', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6A1B9A' }}>
+          <ChevronLeft size={17}/>
         </button>
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#37474F' }}>
-          {weekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })} — {addDays(weekStart, 6).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-        </span>
-        <button onClick={() => setWeekStart(d => addDays(d, 7))}
-          style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ChevronRight size={16} color="#546E7A" />
+        <div style={{ flex:1, textAlign:'center' }}>
+          <span style={{ fontSize:15, fontWeight:800, color:'#1A2332' }}>
+            {weekStart.toLocaleDateString('fr-FR',{day:'2-digit',month:'long'})} — {addDays(weekStart,6).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}
+          </span>
+        </div>
+        <button onClick={()=>setWeekStart(d=>addDays(d,7))}
+          style={{ width:34, height:34, borderRadius:9, border:'1.5px solid #E0E0E0', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6A1B9A' }}>
+          <ChevronRight size={17}/>
         </button>
-        <button onClick={() => setWeekStart(getWeekStart(new Date()))}
-          style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>
+        <button onClick={()=>setWeekStart(getWeekStart(new Date()))}
+          style={{ padding:'6px 14px', borderRadius:9, border:'1.5px solid #6A1B9A', background:'#F3E5F5', color:'#6A1B9A', fontSize:12, fontWeight:700, cursor:'pointer' }}>
           Aujourd'hui
         </button>
       </div>
 
-      {view === 'semaine' ? (
-        /* Vue semaine */
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
-          {semaineDays.map((day, i) => {
-            const dayRdvs = getRdvsForDay(day);
-            const isToday = day.toDateString() === todayStr;
+      {/* ── VUE SEMAINE ──────────────────────────────────────────── */}
+      {view==='semaine' && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:10 }}>
+          {days.map((day,i)=>{
+            const dayRdvs = getRdvsDay(day);
+            const isToday = day.toDateString()===todayStr;
             return (
-              <div key={i} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden', border: isToday ? '2px solid #6A1B9A' : '1px solid #E0E0E0' }}>
-                <div style={{ padding: '8px 10px', background: isToday ? '#6A1B9A' : '#F8FAFC', borderBottom: '1px solid #E0E0E0' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: isToday ? 'rgba(255,255,255,0.8)' : '#90A4AE', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{JOURS_COURT[i]}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: isToday ? '#fff' : '#1A2332', lineHeight: 1.2 }}>{day.getDate()}</div>
+              <div key={i} style={{ background:'#fff', borderRadius:14, overflow:'hidden', border:`2px solid ${isToday?'#6A1B9A':'#EEF0F5'}`, boxShadow:isToday?'0 4px 16px rgba(106,27,154,0.2)':'0 1px 6px rgba(0,0,0,0.06)' }}>
+                {/* Entête jour */}
+                <div style={{ padding:'10px 12px', background:isToday?'linear-gradient(135deg,#6A1B9A,#8E24AA)':'#F8FAFC', borderBottom:`1px solid ${isToday?'transparent':'#EEF0F5'}` }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:isToday?'rgba(255,255,255,0.8)':'#90A4AE', textTransform:'uppercase', letterSpacing:'.6px' }}>{JOURS_C[i]}</div>
+                  <div style={{ fontSize:20, fontWeight:900, color:isToday?'#fff':'#1A2332', lineHeight:1.1 }}>{day.getDate()}</div>
+                  {dayRdvs.length>0&&<div style={{ fontSize:9, fontWeight:700, color:isToday?'rgba(255,255,255,0.7)':'#90A4AE', marginTop:2 }}>{dayRdvs.length} RDV</div>}
                 </div>
-                <div style={{ padding: '6px', minHeight: 80 }}>
-                  {loading ? (
-                    <div style={{ height: 40, background: '#F0F0F0', borderRadius: 6, margin: '4px 0' }} />
-                  ) : dayRdvs.length === 0 ? (
-                    <p style={{ fontSize: 10, color: '#CFD8DC', textAlign: 'center', marginTop: 16 }}>Libre</p>
-                  ) : dayRdvs.map(r => {
-                    const cfg = STATUT_CONFIG[r.statut] ?? STATUT_CONFIG.planifie;
+                {/* RDVs du jour */}
+                <div style={{ padding:'6px', minHeight:100 }}>
+                  {loading?(
+                    <div style={{ height:44, background:'#F3E5F5', borderRadius:8, margin:'4px 2px', opacity:.5 }}/>
+                  ):dayRdvs.length===0?(
+                    <p style={{ fontSize:10, color:'#CFD8DC', textAlign:'center', marginTop:20, fontStyle:'italic' }}>Libre</p>
+                  ):dayRdvs.map(r=>{
+                    const cfg=STATUT_CFG[r.statut]??STATUT_CFG.planifie;
+                    const [ac,ab]=avColor(pName(r));
                     return (
-                      <div key={r.id} onClick={() => router.push(`/rendez-vous/${r.id}`)}
-                        style={{ padding: '5px 7px', borderRadius: 6, background: cfg.bg, borderLeft: `3px solid ${cfg.border}`, marginBottom: 4, cursor: 'pointer', transition: 'opacity 0.15s' }}
-                        onMouseEnter={e => ((e.currentTarget as HTMLDivElement).style.opacity = '0.8')}
-                        onMouseLeave={e => ((e.currentTarget as HTMLDivElement).style.opacity = '1')}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: cfg.color }}>{fmtHeure(r.dateHeure)}</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: '#37474F', marginTop: 1, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{patientName(r)}</div>
-                        {r.motif && <div style={{ fontSize: 10, color: '#90A4AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.motif}</div>}
+                      <div key={r.id} className="rdv-card" onClick={()=>router.push(`/rendez-vous/${r.id}`)}
+                        style={{ padding:'6px 8px', borderRadius:8, background:cfg.bg, borderLeft:`3px solid ${cfg.color}`, marginBottom:5, boxShadow:'0 1px 3px rgba(0,0,0,0.08)' }}>
+                        <div style={{ fontSize:10, fontWeight:800, color:cfg.color, marginBottom:2 }}>{fmtH(r.dateHeure)}</div>
+                        <div style={{ fontSize:11, fontWeight:700, color:'#1A2332', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{pName(r)}</div>
+                        {r.motif&&<div style={{ fontSize:9, color:'#90A4AE', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:1 }}>{r.motif}</div>}
+                        {r.duree&&<div style={{ fontSize:9, color:cfg.color, marginTop:2, fontWeight:600 }}>⏱ {r.duree} min</div>}
                       </div>
                     );
                   })}
@@ -168,49 +210,67 @@ export default function RendezVousPage() {
             );
           })}
         </div>
-      ) : (
-        /* Vue liste */
-        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
-              <thead style={{ background: '#F8FAFC' }}>
-                <tr>
-                  {['Date & Heure', 'Patient', 'Médecin', 'Motif', 'Durée', 'Statut'].map(h => (
-                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+      )}
+
+      {/* ── VUE LISTE ────────────────────────────────────────────── */}
+      {view==='liste'&&(
+        <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', minWidth:640 }}>
+              <thead>
+                <tr style={{ background:'linear-gradient(90deg,#F8FAFC,#F5F0FF)' }}>
+                  {['Date & Heure','Patient','Médecin','Motif','Durée','Statut'].map(h=>(
+                    <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.7px', whiteSpace:'nowrap', borderBottom:'2px solid #E1BEE7' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {loading ? Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
-                    {Array.from({ length: 6 }).map((_, j) => (
-                      <td key={j} style={{ padding: '12px 14px' }}><div style={{ height: 14, background: '#F0F0F0', borderRadius: 4, width: j === 1 ? 120 : 80 }} /></td>
+                {loading?Array.from({length:5}).map((_,i)=>(
+                  <tr key={i} style={{ borderTop:'1px solid #F5F7FA' }}>
+                    {[100,130,100,140,60,80].map((w,j)=>(
+                      <td key={j} style={{ padding:'14px 16px' }}><div style={{ height:12, background:'#F0F4FA', borderRadius:4, width:w }}/></td>
                     ))}
                   </tr>
-                )) : rdvs.length === 0 ? (
-                  <tr><td colSpan={6} style={{ textAlign: 'center', padding: 40, color: '#90A4AE' }}>
-                    <Calendar size={32} style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
-                    Aucun rendez-vous cette semaine
+                )):rdvs.length===0?(
+                  <tr><td colSpan={6} style={{ padding:'50px 20px', textAlign:'center' }}>
+                    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+                      <div style={{ width:56, height:56, borderRadius:'50%', background:'#F3E5F5', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <Calendar size={28} color="#E1BEE7"/>
+                      </div>
+                      <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#546E7A' }}>Aucun rendez-vous cette semaine</p>
+                    </div>
                   </td></tr>
-                ) : rdvs.map(r => {
-                  const cfg = STATUT_CONFIG[r.statut] ?? STATUT_CONFIG.planifie;
+                ):rdvs.map(r=>{
+                  const cfg=STATUT_CFG[r.statut]??STATUT_CFG.planifie;
+                  const [ac,ab]=avColor(pName(r));
+                  const initials=r.patient?`${r.patient.prenom?.charAt(0)??''}${r.patient.nom?.charAt(0)??''}`:' ';
+                  const d=new Date(r.dateHeure);
                   return (
-                    <tr key={r.id} style={{ borderTop: '1px solid #F5F7FA', cursor: 'pointer' }}
-                      onClick={() => router.push(`/rendez-vous/${r.id}`)}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFC')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F', whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <Clock size={12} color="#90A4AE" />
-                          {new Date(r.dateHeure).toLocaleString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                    <tr key={r.id} className="rdv-row" onClick={()=>router.push(`/rendez-vous/${r.id}`)}
+                      style={{ borderTop:'1px solid #F0F4FA', cursor:'pointer', transition:'background .1s', background:'transparent' }}>
+                      <td style={{ padding:'13px 16px', whiteSpace:'nowrap' }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:'#1A2332' }}>{d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short'})}</div>
+                        <div style={{ fontSize:11, color:'#6A1B9A', fontWeight:600, marginTop:1, display:'flex', alignItems:'center', gap:3 }}>
+                          <Clock size={10}/> {fmtH(r.dateHeure)}
                         </div>
                       </td>
-                      <td style={{ padding: '10px 14px', fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{patientName(r)}</td>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{r.medecin ? `Dr. ${r.medecin.prenom} ${r.medecin.nom}` : '—'}</td>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F', maxWidth: 160 }}>{r.motif || '—'}</td>
-                      <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{r.duree ? `${r.duree} min` : '—'}</td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
+                      <td style={{ padding:'13px 16px' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+                          <div style={{ width:34, height:34, borderRadius:10, background:`linear-gradient(135deg,${ab},${ac}22)`, border:`1.5px solid ${ac}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, color:ac, flexShrink:0 }}>{initials}</div>
+                          <div>
+                            <div style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{pName(r)}</div>
+                            {r.patient?.ipp&&<div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{r.patient.ipp}</div>}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding:'13px 16px', fontSize:12, color:'#546E7A' }}>{r.medecin?`Dr. ${r.medecin.prenom} ${r.medecin.nom}`:'—'}</td>
+                      <td style={{ padding:'13px 16px', fontSize:12, color:'#37474F', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{r.motif||'—'}</td>
+                      <td style={{ padding:'13px 16px', fontSize:12, color:'#546E7A', whiteSpace:'nowrap' }}>{r.duree?`${r.duree} min`:'—'}</td>
+                      <td style={{ padding:'13px 16px' }}>
+                        <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
+                          <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
+                          {cfg.label}
+                        </span>
                       </td>
                     </tr>
                   );
