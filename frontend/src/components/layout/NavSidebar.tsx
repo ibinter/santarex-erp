@@ -177,7 +177,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
         {/* Logo */}
         <div
           style={{
-            padding: collapsed ? '16px 12px' : '16px 20px',
+            padding: collapsed ? '10px 8px' : '16px 20px',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
             alignItems: 'center',
@@ -198,7 +198,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
             <img
               src="/logo-icon-tr.png"
               alt="S"
-              style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }}
+              style={{ width: 44, height: 44, objectFit: 'contain', display: 'block' }}
             />
           )}
 
