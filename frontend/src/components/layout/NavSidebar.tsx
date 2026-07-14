@@ -188,32 +188,18 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
           }}
         >
           {!collapsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-              {/* S badge */}
-              <div style={{
-                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                background: 'linear-gradient(135deg, #00BCD4 0%, #0D47A1 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,188,212,0.4)',
-              }}>
-                <span style={{ color: '#fff', fontWeight: 900, fontSize: 17, letterSpacing: '-1px', lineHeight: 1 }}>S</span>
-              </div>
-              {/* Wordmark */}
-              <div style={{ lineHeight: 1.1, overflow: 'hidden' }}>
-                <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>SANTAREX</div>
-                <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>ERP · Santé</div>
-              </div>
-            </div>
+            <img
+              src="/logo-horizontal-tr.png"
+              alt="SANTAREX ERP"
+              style={{ height: 42, width: 'auto', objectFit: 'contain', display: 'block' }}
+            />
           )}
           {collapsed && (
-            <div style={{
-              width: 34, height: 34, borderRadius: 9,
-              background: 'linear-gradient(135deg, #00BCD4 0%, #0D47A1 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0,188,212,0.35)',
-            }}>
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 17, letterSpacing: '-1px', lineHeight: 1 }}>S</span>
-            </div>
+            <img
+              src="/logo-icon-tr.png"
+              alt="S"
+              style={{ width: 36, height: 36, objectFit: 'contain', display: 'block' }}
+            />
           )}
 
           {/* Desktop collapse toggle */}
