@@ -291,7 +291,7 @@ export default function PatientsPage() {
               ) : patients.map((p, idx) => {
                 const sc = SANG_CFG[p.groupeSanguin || ''];
                 const stCfg = STATUT_CFG[p.statut || 'actif'] ?? STATUT_CFG.actif;
-                const [avatarColor, avatarBg] = avatarColor(`${p.prenom}${p.nom}`);
+                const [aColor, aBg] = avatarColor(`${p.prenom}${p.nom}`);
                 const initials = `${p.prenom?.charAt(0)??''}${p.nom?.charAt(0)??''}`;
                 return (
                   <tr key={p.id} className="pat-row" onClick={() => router.push(`/patients/${p.id}`)}
@@ -301,7 +301,7 @@ export default function PatientsPage() {
                     </td>
                     <td style={{ padding:'13px 16px' }}>
                       <div style={{ display:'flex', alignItems:'center', gap:11 }}>
-                        <div style={{ width:40, height:40, borderRadius:12, background:`linear-gradient(135deg,${avatarBg},${avatarColor}22)`, border:`1.5px solid ${avatarColor}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:avatarColor, flexShrink:0, letterSpacing:'.5px' }}>
+                        <div style={{ width:40, height:40, borderRadius:12, background:`linear-gradient(135deg,${aBg},${aColor}22)`, border:`1.5px solid ${aColor}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:aColor, flexShrink:0, letterSpacing:'.5px' }}>
                           {initials}
                         </div>
                         <div>
