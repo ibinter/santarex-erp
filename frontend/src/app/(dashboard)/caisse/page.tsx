@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign, Receipt, Banknote, Smartphone, CreditCard,
-  Shield, RefreshCw, Download, TrendingUp, Hash,
+  Shield, RefreshCw, Download, TrendingUp, Hash, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
