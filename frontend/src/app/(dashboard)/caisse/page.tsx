@@ -6,6 +6,7 @@ import {
   Shield, RefreshCw, Download, TrendingUp, Hash,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 const TODAY_STR = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -40,6 +41,41 @@ export default function CaissePage() {
   const [loading, setLoading] = useState(true);
   const [modeFilter, setModeFilter] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const handleExportXLSX = () => exportXLSX(
+    paiements.map(p => ({
+      'Référence': p.reference ?? p.id.slice(0,8),
+      'Patient': p.patient?.nomComplet ?? (p.patient ? `${p.patient.prenom ?? ''} ${p.patient.nom ?? ''}`.trim() : '—'),
+      'Facture': p.facture?.reference ?? '—',
+      'Mode paiement': p.modePaiement ?? '—',
+      'Montant (XOF)': p.montant ?? 0,
+      'Statut': p.statut ?? '—',
+      'Date': p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—',
+    })),
+    `caisse_${new Date().toISOString().slice(0,10)}`,
+    'Paiements',
+  );
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'Référence', dataKey: 'ref', width: 30 },
+      { header: 'Patient', dataKey: 'patient', width: 42 },
+      { header: 'Mode', dataKey: 'mode', width: 28 },
+      { header: 'Montant XOF', dataKey: 'montant', width: 32 },
+      { header: 'Statut', dataKey: 'statut', width: 22 },
+      { header: 'Date', dataKey: 'date', width: 24 },
+    ],
+    paiements.map(p => ({
+      ref: p.reference ?? p.id.slice(0,8),
+      patient: p.patient?.nomComplet ?? (p.patient ? `${p.patient.prenom ?? ''} ${p.patient.nom ?? ''}`.trim() : '—'),
+      mode: p.modePaiement ?? '—',
+      montant: (p.montant ?? 0).toLocaleString('fr-FR'),
+      statut: p.statut ?? '—',
+      date: p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—',
+    })),
+    'Caisse — Paiements',
+    `caisse_${new Date().toISOString().slice(0,10)}`,
+    `${paiements.length} paiement(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,8 +146,11 @@ export default function CaissePage() {
               <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
               </button>
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#065F46', fontWeight: 800 }}>
-                <Download size={14}/> Exporter
+              <button onClick={handleExportPDF} disabled={loading || paiements.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
+                <Download size={13}/> PDF
+              </button>
+              <button onClick={handleExportXLSX} disabled={loading || paiements.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#065F46', fontWeight: 800 }}>
+                <FileSpreadsheet size={13}/> XLSX
               </button>
             </div>
           </div>

@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import {
   FlaskConical, Plus, Search, RefreshCw, ChevronRight,
   Clock, CheckCircle, AlertTriangle, Zap, Calendar, Stethoscope,
+  Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 type StatutDemande = 'attente_prelevement'|'preleve'|'en_analyse'|'termine'|'valide';
 type DemandeAnalyse = {
@@ -53,6 +55,45 @@ export default function LaboratoirePage() {
   const [filtre, setFiltre]       = useState<StatutDemande|''>('');
   const [urgOnly, setUrgOnly]     = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
+
+  const handleExportXLSX = () => exportXLSX(
+    demandes.map(d => ({
+      'N° Demande': d.numero ?? d.id.slice(0,8),
+      'Patient': d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
+      'IPP': d.patient?.ipp ?? '—',
+      'Médecin': d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
+      'Analyses': d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
+      'Urgence': d.urgence ? 'OUI' : 'Non',
+      'Statut': d.statut ?? '—',
+      'Date demande': d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
+      'Date prélèvement': d.datePrelevement ? new Date(d.datePrelevement).toLocaleDateString('fr-FR') : '—',
+    })),
+    `laboratoire_${new Date().toISOString().slice(0,10)}`,
+    'Demandes Analyses',
+  );
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'N° Demande', dataKey: 'numero', width: 28 },
+      { header: 'Patient', dataKey: 'patient', width: 38 },
+      { header: 'Médecin', dataKey: 'medecin', width: 34 },
+      { header: 'Analyses', dataKey: 'analyses', width: 48 },
+      { header: 'Urgence', dataKey: 'urgence', width: 18 },
+      { header: 'Statut', dataKey: 'statut', width: 24 },
+      { header: 'Date', dataKey: 'date', width: 22 },
+    ],
+    demandes.map(d => ({
+      numero: d.numero ?? d.id.slice(0,8),
+      patient: d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
+      medecin: d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
+      analyses: d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
+      urgence: d.urgence ? '🔴 OUI' : 'Non',
+      statut: d.statut ?? '—',
+      date: d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
+    })),
+    'Demandes d\'Analyses — Laboratoire',
+    `laboratoire_${new Date().toISOString().slice(0,10)}`,
+    `${demandes.length} demande(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -114,10 +155,18 @@ export default function LaboratoirePage() {
             </div>
           </div>
 
-          <div style={{ display:'flex', gap:8 }}>
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
             <button onClick={load} disabled={loading}
-              style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600, backdropFilter:'blur(8px)' }}>
+              style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600 }}>
               <RefreshCw size={14} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
+            </button>
+            <button onClick={handleExportPDF} disabled={loading || demandes.length === 0}
+              style={{ padding:'10px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.25)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
+              <Download size={13}/> PDF
+            </button>
+            <button onClick={handleExportXLSX} disabled={loading || demandes.length === 0}
+              style={{ padding:'10px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(34,197,94,0.25)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
+              <FileSpreadsheet size={13}/> XLSX
             </button>
             <button onClick={()=>router.push('/laboratoire/demandes/nouvelle')}
               style={{ padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', color:'#3730A3', display:'flex', alignItems:'center', gap:8, fontSize:13, fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>

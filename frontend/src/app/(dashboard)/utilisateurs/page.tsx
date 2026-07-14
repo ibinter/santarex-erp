@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Users, Plus, Search, UserCheck, UserX, Key,
   Pencil, X, Check, Eye, EyeOff, RefreshCw,
-  ShieldCheck, ChevronDown,
+  ShieldCheck, ChevronDown, Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 const ROLES = [
   { value: 'admin',       label: 'Administrateur',    color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD' },
@@ -74,6 +75,39 @@ export default function UtilisateursPage() {
   const [newPwd, setNewPwd] = useState('');
   const [showNewPwd, setShowNewPwd] = useState(false);
   const [focusField, setFocusField] = useState('');
+
+  const handleExportXLSX = () => exportXLSX(
+    users.map(u => ({
+      'Prénom': u.firstName,
+      'Nom': u.lastName,
+      'Email': u.email,
+      'Rôle': u.role,
+      'Statut': u.isActive ? 'Actif' : 'Inactif',
+      'Créé le': u.createdAt ? new Date(u.createdAt).toLocaleDateString('fr-FR') : '—',
+    })),
+    `utilisateurs_${new Date().toISOString().slice(0, 10)}`,
+    'Utilisateurs',
+  );
+
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'Prénom', dataKey: 'prenom', width: 34 },
+      { header: 'Nom', dataKey: 'nom', width: 34 },
+      { header: 'Email', dataKey: 'email', width: 60 },
+      { header: 'Rôle', dataKey: 'role', width: 28 },
+      { header: 'Statut', dataKey: 'statut', width: 20 },
+    ],
+    users.map(u => ({
+      prenom: u.firstName,
+      nom: u.lastName,
+      email: u.email,
+      role: u.role,
+      statut: u.isActive ? 'Actif' : 'Inactif',
+    })),
+    'Liste des Utilisateurs',
+    `utilisateurs_${new Date().toISOString().slice(0, 10)}`,
+    `${users.length} utilisateur(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -174,6 +208,14 @@ export default function UtilisateursPage() {
               <button onClick={load} disabled={loading}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
                 <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/>
+              </button>
+              <button onClick={handleExportPDF} disabled={users.length === 0}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+                <Download size={13}/> PDF
+              </button>
+              <button onClick={handleExportXLSX} disabled={users.length === 0}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(34,197,94,0.25)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
+                <FileSpreadsheet size={13}/> XLSX
               </button>
               <button onClick={openCreate}
                 style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#3730A3', fontWeight: 800 }}>

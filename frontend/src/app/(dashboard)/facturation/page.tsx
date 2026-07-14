@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import {
   Receipt, Plus, Search, RefreshCw, Eye,
   TrendingUp, AlertCircle, CheckCircle, FileText,
-  ChevronRight, Shield,
+  ChevronRight, Shield, Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 type StatutFacture = 'brouillon' | 'emise' | 'partiellement_payee' | 'payee' | 'annulee';
 
@@ -57,6 +58,45 @@ export default function FacturationPage() {
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const handleExportXLSX = () => exportXLSX(
+    factures.map(f => ({
+      'N° Facture': f.numero ?? f.id.slice(0,8),
+      'Patient': f.patient ? `${f.patient.prenom} ${f.patient.nom}` : '—',
+      'IPP': f.patient?.ipp ?? '—',
+      'Date émission': f.dateEmission ? new Date(f.dateEmission).toLocaleDateString('fr-FR') : '—',
+      'Total (XOF)': f.total ?? 0,
+      'Payé (XOF)': f.montantPaye ?? 0,
+      'Reste dû (XOF)': f.resteAPayer ?? 0,
+      'Assurance': f.assuranceNom ?? '—',
+      'Statut': f.statut ?? '—',
+    })),
+    `factures_${new Date().toISOString().slice(0,10)}`,
+    'Factures',
+  );
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'N° Facture', dataKey: 'numero', width: 28 },
+      { header: 'Patient', dataKey: 'patient', width: 40 },
+      { header: 'Date', dataKey: 'date', width: 24 },
+      { header: 'Total XOF', dataKey: 'total', width: 28 },
+      { header: 'Payé XOF', dataKey: 'paye', width: 28 },
+      { header: 'Reste XOF', dataKey: 'reste', width: 28 },
+      { header: 'Statut', dataKey: 'statut', width: 24 },
+    ],
+    factures.map(f => ({
+      numero: f.numero ?? f.id.slice(0,8),
+      patient: f.patient ? `${f.patient.prenom} ${f.patient.nom}` : '—',
+      date: f.dateEmission ? new Date(f.dateEmission).toLocaleDateString('fr-FR') : '—',
+      total: (f.total ?? 0).toLocaleString('fr-FR'),
+      paye: (f.montantPaye ?? 0).toLocaleString('fr-FR'),
+      reste: (f.resteAPayer ?? 0).toLocaleString('fr-FR'),
+      statut: f.statut ?? '—',
+    })),
+    'Liste des Factures',
+    `factures_${new Date().toISOString().slice(0,10)}`,
+    `${factures.length} facture(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -117,9 +157,15 @@ export default function FacturationPage() {
                 </p>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
+              </button>
+              <button onClick={handleExportPDF} disabled={loading || factures.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
+                <Download size={13}/> PDF
+              </button>
+              <button onClick={handleExportXLSX} disabled={loading || factures.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(34,197,94,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
+                <FileSpreadsheet size={13}/> XLSX
               </button>
               <button onClick={() => router.push('/facturation/nouvelle')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 800 }}>
                 <Plus size={14}/> Nouvelle facture

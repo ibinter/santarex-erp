@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import {
   UserCog, Plus, Search, Users, Calendar, Clock,
-  TrendingUp, CheckCircle, XCircle, Download, Banknote,
+  TrendingUp, CheckCircle, XCircle, Download, Banknote, FileSpreadsheet,
 } from 'lucide-react';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 const EMPLOYES = [
   { id:'EMP-001', nom:'Dr. Koné Mamadou',       poste:'Chirurgien',          service:'Chirurgie',      type:'CDI', statut:'ACTIF',  conge:false, salaire:650_000, dateEntree:'2019-03-15', contact:'+225 07 12 34 56' },
@@ -62,6 +63,30 @@ export default function RHPage() {
   const [tab, setTab] = useState<'personnel'|'conges'|'paie'>('personnel');
   const [search, setSearch] = useState('');
 
+  const handleExportXLSX = () => exportXLSX(
+    EMPLOYES.map(e => ({
+      'ID': e.id, 'Nom': e.nom, 'Poste': e.poste, 'Service': e.service,
+      'Type contrat': e.type, 'Statut': e.statut,
+      'Salaire (XOF)': e.salaire, "Date d'entrée": e.dateEntree, 'Contact': e.contact,
+    })),
+    `rh_personnel_${new Date().toISOString().slice(0,10)}`, 'Personnel',
+  );
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'ID', dataKey: 'id', width: 20 },
+      { header: 'Nom', dataKey: 'nom', width: 50 },
+      { header: 'Poste', dataKey: 'poste', width: 40 },
+      { header: 'Service', dataKey: 'service', width: 34 },
+      { header: 'Contrat', dataKey: 'type', width: 18 },
+      { header: 'Statut', dataKey: 'statut', width: 18 },
+      { header: 'Salaire XOF', dataKey: 'salaire', width: 28 },
+    ],
+    EMPLOYES.map(e => ({ ...e, salaire: e.salaire.toLocaleString('fr-FR') })),
+    'Liste du Personnel — RH',
+    `rh_personnel_${new Date().toISOString().slice(0,10)}`,
+    `${EMPLOYES.length} employé(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
+
   const filtered = EMPLOYES.filter(e =>
     e.nom.toLowerCase().includes(search.toLowerCase()) ||
     e.service.toLowerCase().includes(search.toLowerCase()) ||
@@ -96,8 +121,11 @@ export default function RHPage() {
               </div>
             </div>
             <div style={{ display:'flex', gap:8 }}>
-              <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.25)', background:'rgba(255,255,255,0.1)', cursor:'pointer', color:'#fff', fontSize:12, fontWeight:700 }}>
-                <Download size={13}/> Exporter
+              <button onClick={handleExportPDF} style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.25)', background:'rgba(239,68,68,0.25)', cursor:'pointer', color:'#fff', fontSize:12, fontWeight:700 }}>
+                <Download size={13}/> PDF
+              </button>
+              <button onClick={handleExportXLSX} style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.25)', background:'rgba(34,197,94,0.25)', cursor:'pointer', color:'#fff', fontSize:12, fontWeight:700 }}>
+                <FileSpreadsheet size={13}/> XLSX
               </button>
               <button style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', fontSize:13, color:'#1C1917', fontWeight:800 }}>
                 <Plus size={14}/> Nouvel employé

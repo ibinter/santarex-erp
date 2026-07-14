@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import {
   Stethoscope, Plus, Search, RefreshCw, Eye,
   Clock, CheckCircle, Receipt, ChevronRight, Calendar,
-  TrendingUp, Activity, User,
+  TrendingUp, Activity, User, Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 type Consultation = {
   id: string; numero?: string;
@@ -65,6 +66,42 @@ export default function ConsultationsPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const handleExportXLSX = () => exportXLSX(
+    consultations.map(c => ({
+      'N° Consultation': c.numero ?? c.id.slice(0,8),
+      'Patient': c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—',
+      'IPP': c.patient?.ipp ?? '—',
+      'Médecin': c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
+      'Date & Heure': c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
+      'Motif': c.motif ?? '—',
+      'Diagnostic': c.diagnostic ?? '—',
+      'Statut': c.statut ?? '—',
+    })),
+    `consultations_${new Date().toISOString().slice(0,10)}`,
+    'Consultations',
+  );
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'N°', dataKey: 'numero', width: 24 },
+      { header: 'Patient', dataKey: 'patient', width: 38 },
+      { header: 'Médecin', dataKey: 'medecin', width: 34 },
+      { header: 'Date & Heure', dataKey: 'date', width: 30 },
+      { header: 'Motif', dataKey: 'motif', width: 44 },
+      { header: 'Statut', dataKey: 'statut', width: 22 },
+    ],
+    consultations.map(c => ({
+      numero: c.numero ?? c.id.slice(0,8),
+      patient: c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—',
+      medecin: c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
+      date: c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
+      motif: c.motif ?? '—',
+      statut: c.statut ?? '—',
+    })),
+    'Liste des Consultations',
+    `consultations_${new Date().toISOString().slice(0,10)}`,
+    `${consultations.length} consultation(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -127,10 +164,18 @@ export default function ConsultationsPage() {
             </p>
           </div>
         </div>
-        <div style={{ display:'flex', gap:10, zIndex:1 }}>
+        <div style={{ display:'flex', gap:8, zIndex:1, flexWrap:'wrap' }}>
           <button onClick={load} disabled={loading}
             style={{ width:38, height:38, borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <RefreshCw size={16} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
+          </button>
+          <button onClick={handleExportPDF} disabled={loading || consultations.length === 0}
+            style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
+            <Download size={13}/> PDF
+          </button>
+          <button onClick={handleExportXLSX} disabled={loading || consultations.length === 0}
+            style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(34,197,94,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
+            <FileSpreadsheet size={13}/> XLSX
           </button>
           <button onClick={() => router.push('/consultations/nouvelle')}
             style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', borderRadius:10, background:'#fff', border:'none', color:'#00838F', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 10px rgba(0,0,0,0.15)' }}>
