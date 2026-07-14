@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Scissors, Clock, User, CheckCircle, AlertCircle, Plus, Calendar, Construction } from 'lucide-react';
+import { Scissors, Clock, User, CheckCircle, Plus, Calendar } from 'lucide-react';
 
 const SALLES = [
   { id: 'S1', nom: 'Salle 1 — Chirurgie générale', statut: 'EN_COURS', intervention: 'Appendicectomie', medecin: 'Dr. Koné Mamadou', debut: '08:30', duree: '90 min', patient: 'Traoré Ibrahima' },
@@ -29,11 +29,6 @@ export default function BlocOperatoirePage() {
 
   return (
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Bandeau demo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#FFF8E1', border: '1px solid #FFE082', borderRadius: 10, marginBottom: 20, fontSize: 13, color: '#E65100' }}>
-        <Construction size={16} />
-        <span><strong>Module en intégration</strong> — Les données affichées sont indicatives. La connexion API est en cours de déploiement.</span>
-      </div>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>

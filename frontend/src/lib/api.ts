@@ -3,7 +3,41 @@ import type { LoginCredentials, LoginResponse, ApiResponse, PaginatedResponse, P
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://santarex.ibigsoft.com/api/v1';
 const API_BASE = API_URL;
 
-async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+let isRefreshing = false;
+let refreshQueue: Array<(token: string | null) => void> = [];
+
+function notifyRefreshQueue(token: string | null) {
+  refreshQueue.forEach(cb => cb(token));
+  refreshQueue = [];
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  const refreshToken = localStorage.getItem('refresh_token');
+  if (!refreshToken) return null;
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) throw new Error('refresh failed');
+    const json = await res.json();
+    const newToken = json?.data?.access_token || json?.access_token;
+    if (!newToken) throw new Error('no token in refresh response');
+    localStorage.setItem('access_token', newToken);
+    if (json?.data?.refresh_token) localStorage.setItem('refresh_token', json.data.refresh_token);
+    return newToken;
+  } catch {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('santarex_user');
+    if (typeof window !== 'undefined') window.location.href = '/login';
+    return null;
+  }
+}
+
+async function fetchApi<T>(endpoint: string, options?: RequestInit, retry = true): Promise<T> {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 
@@ -15,6 +49,26 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     ...options,
   });
 
+  // Token expired — attempt silent refresh
+  if (res.status === 401 && retry) {
+    if (isRefreshing) {
+      // Wait for the in-progress refresh
+      const newToken = await new Promise<string | null>(resolve => {
+        refreshQueue.push(resolve);
+      });
+      if (!newToken) throw new Error('Session expirée, veuillez vous reconnecter.');
+      return fetchApi<T>(endpoint, options, false);
+    }
+
+    isRefreshing = true;
+    const newToken = await refreshAccessToken();
+    isRefreshing = false;
+    notifyRefreshQueue(newToken);
+
+    if (!newToken) throw new Error('Session expirée, veuillez vous reconnecter.');
+    return fetchApi<T>(endpoint, options, false);
+  }
+
   const json = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -22,7 +76,6 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     throw new Error(msg);
   }
 
-  // Unwrap backend envelope { success, data }
   return (json?.data !== undefined ? json.data : json) as T;
 }
 
@@ -91,7 +144,7 @@ export const api = {
   createRdv: (data: any) =>
     fetchApi('/rendez-vous', { method: 'POST', body: JSON.stringify(data) }),
   updateRdv: (id: string, data: any) =>
-    fetchApi(`/rendez-vous/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    fetchApi(`/rendez-vous/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   getCreneauxDisponibles: (medecinId: string, date: string) =>
     fetchApi(`/rendez-vous/disponibilites?medecinId=${medecinId}&date=${date}`),
 
@@ -153,22 +206,18 @@ export const api = {
   },
   getSejour: (id: string) => fetchApi(`/hospitalisation/sejours/${id}`),
   admettreHospitalisation: (data: any) =>
-    fetchApi('/hospitalisation/admettre', { method: 'POST', body: JSON.stringify(data) }),
+    fetchApi('/hospitalisation/sejours', { method: 'POST', body: JSON.stringify(data) }),
   ajouterNoteMedicale: (sejourId: string, data: any) =>
     fetchApi(`/hospitalisation/sejours/${sejourId}/notes`, { method: 'POST', body: JSON.stringify(data) }),
   ajouterPrescription: (sejourId: string, data: any) =>
     fetchApi(`/hospitalisation/sejours/${sejourId}/prescriptions`, { method: 'POST', body: JSON.stringify(data) }),
-  updateSoinInfirmier: (sejourId: string, soinId: string, data: any) =>
-    fetchApi(`/hospitalisation/sejours/${sejourId}/soins/${soinId}`, { method: 'PATCH', body: JSON.stringify(data) }),
   sortirPatientHospitalise: (sejourId: string, data: any) =>
     fetchApi(`/hospitalisation/sejours/${sejourId}/sortir`, { method: 'PATCH', body: JSON.stringify(data) }),
   getStatsHospitalisation: () => fetchApi('/hospitalisation/stats'),
 
-  // ── SuperAdmin ──────────────────────────────────────────
+  // SuperAdmin
   superadmin: {
     getDashboard: () => fetchApi<any>('/superadmin/dashboard'),
-
-    // Tenants
     getTenants: (params?: { page?: number; limit?: number }) => {
       const qs = params ? new URLSearchParams(params as any).toString() : '';
       return fetchApi<any>(`/superadmin/tenants${qs ? '?' + qs : ''}`);
@@ -183,8 +232,6 @@ export const api = {
     activerTenant: (id: string) =>
       fetchApi<any>(`/superadmin/tenants/${id}/activer`, { method: 'PATCH' }),
     getTenantStats: () => fetchApi<any>('/superadmin/tenants/stats'),
-
-    // Licences
     getLicences: (params?: { page?: number; limit?: number }) => {
       const qs = params ? new URLSearchParams(params as any).toString() : '';
       return fetchApi<any>(`/superadmin/licences${qs ? '?' + qs : ''}`);
@@ -197,15 +244,11 @@ export const api = {
       fetchApi<any>(`/superadmin/licences/${id}/suspendre`, { method: 'PATCH' }),
     renouvelerLicence: (id: string, mois = 1) =>
       fetchApi<any>(`/superadmin/licences/${id}/renouveler?mois=${mois}`, { method: 'PATCH' }),
-
-    // Offres SaaS
     getOffres: () => fetchApi<any>('/offres-saas'),
     createOffre: (data: any) =>
       fetchApi<any>('/offres-saas', { method: 'POST', body: JSON.stringify(data) }),
     updateOffre: (id: string, data: any) =>
       fetchApi<any>(`/offres-saas/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-
-    // Audit logs
     getAuditLogs: (params?: { page?: number; limit?: number; tenantId?: string; action?: string }) => {
       const qs = params ? new URLSearchParams(params as any).toString() : '';
       return fetchApi<any>(`/audit-logs${qs ? '?' + qs : ''}`);
