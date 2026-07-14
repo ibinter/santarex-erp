@@ -1,46 +1,64 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Building, Shield, Bell, Users, Globe, Palette, Database, Save } from 'lucide-react';
+import {
+  Settings, Building, Shield, Bell, Users,
+  Globe, Palette, Database, Save, CheckCircle,
+  Lock, Clock, Pill, Calendar, FlaskConical, Receipt,
+  Info,
+} from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
-const SECTIONS = [
-  { id: 'etablissement', label: 'Établissement', icon: <Building size={16} /> },
-  { id: 'securite', label: 'Sécurité & Accès', icon: <Shield size={16} /> },
-  { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
-  { id: 'utilisateurs', label: 'Utilisateurs & Rôles', icon: <Users size={16} /> },
-  { id: 'langue', label: 'Langue & Région', icon: <Globe size={16} /> },
-  { id: 'apparence', label: 'Apparence', icon: <Palette size={16} /> },
-  { id: 'sauvegarde', label: 'Sauvegardes', icon: <Database size={16} /> },
+const NAV_SECTIONS = [
+  { id: 'etablissement', label: 'Établissement',    icon: <Building size={15}/>,  color: '#1E40AF' },
+  { id: 'securite',      label: 'Sécurité & Accès', icon: <Shield size={15}/>,    color: '#991B1B' },
+  { id: 'notifications', label: 'Notifications',     icon: <Bell size={15}/>,      color: '#92400E' },
+  { id: 'utilisateurs',  label: 'Utilisateurs & Rôles', icon: <Users size={15}/>, color: '#5B21B6' },
+  { id: 'langue',        label: 'Langue & Région',   icon: <Globe size={15}/>,     color: '#065F46' },
+  { id: 'apparence',     label: 'Apparence',         icon: <Palette size={15}/>,   color: '#0369A1' },
+  { id: 'sauvegarde',    label: 'Sauvegardes',       icon: <Database size={15}/>,  color: '#374151' },
 ];
 
 const ROLES = [
-  { nom: 'Super Administrateur', permissions: ['Tout accès', 'Gestion système'], count: 1, color: '#C62828' },
-  { nom: 'Administrateur', permissions: ['Gestion utilisateurs', 'Rapports', 'Paramètres'], count: 2, color: '#0D47A1' },
-  { nom: 'Médecin', permissions: ['DME', 'Consultations', 'Ordonnances', 'Labo'], count: 18, color: '#00838F' },
-  { nom: 'Infirmier(e)', permissions: ['Soins', 'Hospitalisation', 'Urgences'], count: 42, color: '#2E7D32' },
-  { nom: 'Pharmacien', permissions: ['Pharmacie', 'Stocks', 'Dispensation'], count: 5, color: '#E65100' },
-  { nom: 'Biologiste', permissions: ['Laboratoire', 'Résultats', 'Validation'], count: 4, color: '#6A1B9A' },
-  { nom: 'Caissier(e)', permissions: ['Facturation', 'Paiements', 'Caisse'], count: 8, color: '#37474F' },
-  { nom: 'Technicien Imagerie', permissions: ['Imagerie', 'Examens', 'Comptes-rendus'], count: 3, color: '#00695C' },
+  { nom: 'Super Administrateur', permissions: ['Tout accès', 'Gestion système'],                    count: 1,  color: '#991B1B', bg: '#FEE2E2' },
+  { nom: 'Administrateur',       permissions: ['Gestion utilisateurs', 'Rapports', 'Paramètres'],   count: 2,  color: '#1E40AF', bg: '#DBEAFE' },
+  { nom: 'Médecin',              permissions: ['DME', 'Consultations', 'Ordonnances', 'Labo'],      count: 18, color: '#0F766E', bg: '#CCFBF1' },
+  { nom: 'Infirmier(e)',         permissions: ['Soins', 'Hospitalisation', 'Urgences'],             count: 42, color: '#065F46', bg: '#D1FAE5' },
+  { nom: 'Pharmacien',           permissions: ['Pharmacie', 'Stocks', 'Dispensation'],             count: 5,  color: '#92400E', bg: '#FEF3C7' },
+  { nom: 'Biologiste',           permissions: ['Laboratoire', 'Résultats', 'Validation'],          count: 4,  color: '#5B21B6', bg: '#EDE9FE' },
+  { nom: 'Caissier(e)',          permissions: ['Facturation', 'Paiements', 'Caisse'],              count: 8,  color: '#374151', bg: '#F3F4F6' },
+  { nom: 'Technicien Imagerie',  permissions: ['Imagerie', 'Examens', 'Comptes-rendus'],           count: 3,  color: '#0369A1', bg: '#E0F2FE' },
 ];
 
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ value, onChange, color = '#1E40AF' }: { value: boolean; onChange: (v: boolean) => void; color?: string }) {
   return (
-    <button onClick={() => onChange(!value)} style={{ width: '44px', height: '24px', borderRadius: '12px', background: value ? '#0D47A1' : '#B0BEC5', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
-      <span style={{ position: 'absolute', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', top: '3px', left: value ? '23px' : '3px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+    <button onClick={() => onChange(!value)}
+      style={{ width: 46, height: 26, borderRadius: 13, background: value ? color : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
+      <span style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: '#fff', top: 3, left: value ? 23 : 3, transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}/>
     </button>
+  );
+}
+
+function FieldInput({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  const [focus, setFocus] = useState(false);
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+        onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+        style={{ width: '100%', padding: '10px 13px', border: `1.5px solid ${focus ? '#1E40AF' : '#E0E8F0'}`, borderRadius: 10, fontSize: 13, color: '#1A2332', outline: 'none', background: focus ? '#fff' : '#F8FAFC', boxSizing: 'border-box', transition: 'border-color .15s, background .15s' }}/>
+    </div>
   );
 }
 
 export default function ParametresPage() {
   const [section, setSection] = useState('etablissement');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Paramètres état
   const [nomEtab, setNomEtab] = useState('Clinique Saint-Joseph');
   const [ville, setVille] = useState('Abidjan');
-  const [pays, setPays] = useState('Côte d\'Ivoire');
+  const [pays, setPays] = useState("Côte d'Ivoire");
   const [tel, setTel] = useState('+225 27 20 32 45 67');
   const [email, setEmail] = useState('contact@clinique-saintjoseph.ci');
   const [notifStock, setNotifStock] = useState(true);
@@ -51,177 +69,218 @@ export default function ParametresPage() {
   const [sessionTimeout, setSessionTimeout] = useState('60');
 
   const handleSave = async () => {
+    setSaving(true);
     try {
       await apiClient('/settings', {
         method: 'PATCH',
-        body: {
-          nomEtablissement: nomEtab, ville, pays, telephone: tel, email,
-          twoFaEnabled: twoFa, sessionTimeoutMinutes: parseInt(sessionTimeout, 10),
-          notifStock, notifRdv, notifLabo, notifFacture,
-        },
+        body: { nomEtablissement: nomEtab, ville, pays, telephone: tel, email, twoFaEnabled: twoFa, sessionTimeoutMinutes: parseInt(sessionTimeout, 10), notifStock, notifRdv, notifLabo, notifFacture },
       });
-    } catch { /* Ignore si endpoint pas encore disponible */ }
-    setSaved(true);
+    } catch { /* endpoint may not exist yet */ }
+    setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
+  const activeSec = NAV_SECTIONS.find(s => s.id === section)!;
+
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#F5F7FA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Settings size={22} color="#546E7A" />
+    <div style={{ padding: '18px', background: '#F4F6FA', minHeight: '100vh' }}>
+      <style>{`
+        @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        .param-nav:hover { background: #EEF2F8 !important; }
+      `}</style>
+
+      {/* ── HERO ──────────────────────────────────────────── */}
+      <div style={{ background: 'linear-gradient(135deg,#1E293B 0%,#334155 55%,#475569 100%)', borderRadius: 18, padding: '22px 26px 18px', marginBottom: 18, position: 'relative', overflow: 'hidden', boxShadow: '0 8px 24px rgba(30,41,59,0.35)' }}>
+        <div style={{ position: 'absolute', top: -60, right: 40, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }}/>
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.14)', border: '1.5px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Settings size={24} color="#fff"/>
             </div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1A2332' }}>Paramètres</h1>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.2px' }}>Paramètres</h1>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>Configuration de l'établissement et préférences système</p>
+            </div>
           </div>
-          <p style={{ margin: 0, fontSize: '13px', color: '#546E7A' }}>Configuration de l'établissement et préférences système</p>
+          <button onClick={handleSave} disabled={saving}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', borderRadius: 10, border: 'none', background: saved ? '#10B981' : '#fff', cursor: 'pointer', fontSize: 13, color: saved ? '#fff' : '#1E293B', fontWeight: 800, transition: 'all .25s', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+            {saved ? <CheckCircle size={15}/> : <Save size={15}/>}
+            {saved ? 'Enregistré !' : saving ? 'Sauvegarde…' : 'Enregistrer'}
+          </button>
         </div>
-        <button onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', background: saved ? '#2E7D32' : '#0D47A1', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'background 0.3s' }}>
-          <Save size={15} /> {saved ? '✓ Enregistré !' : 'Enregistrer'}
-        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '20px' }}>
-        {/* Menu latéral */}
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '8px', height: 'fit-content' }}>
-          {SECTIONS.map(s => (
-            <button key={s.id} onClick={() => setSection(s.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: section === s.id ? 600 : 400, background: section === s.id ? '#EFF6FF' : 'transparent', color: section === s.id ? '#0D47A1' : '#546E7A', textAlign: 'left', marginBottom: '2px', transition: 'all 0.15s' }}
-              onMouseEnter={(e) => { if (section !== s.id) (e.currentTarget as HTMLButtonElement).style.background = '#F5F7FA'; }}
-              onMouseLeave={(e) => { if (section !== s.id) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
-              <span style={{ color: section === s.id ? '#0D47A1' : '#90A4AE' }}>{s.icon}</span>
-              {s.label}
-            </button>
-          ))}
+      {/* ── LAYOUT ────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
+
+        {/* Sidebar */}
+        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: 8, height: 'fit-content' }}>
+          {NAV_SECTIONS.map(s => {
+            const isActive = section === s.id;
+            return (
+              <button key={s.id} onClick={() => setSection(s.id)} className="param-nav"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 2, background: isActive ? '#F0F4FF' : 'transparent', borderLeft: `3px solid ${isActive ? s.color : 'transparent'}`, transition: 'all .12s' }}>
+                <span style={{ color: isActive ? s.color : '#90A4AE', transition: 'color .12s' }}>{s.icon}</span>
+                <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? s.color : '#546E7A' }}>{s.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Contenu */}
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '24px' }}>
-          {section === 'etablissement' && (
-            <div>
-              <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#1A2332' }}>Informations de l'établissement</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                {[
-                  { label: 'Nom de l\'établissement', value: nomEtab, onChange: setNomEtab },
-                  { label: 'Ville', value: ville, onChange: setVille },
-                  { label: 'Pays', value: pays, onChange: setPays },
-                  { label: 'Téléphone', value: tel, onChange: setTel },
-                  { label: 'Email', value: email, onChange: setEmail },
-                ].map(f => (
-                  <div key={f.label}>
-                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>{f.label}</label>
-                    <input value={f.value} onChange={e => f.onChange(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8EAED', borderRadius: '8px', fontSize: '13px', color: '#37474F', outline: 'none', background: '#FAFBFC', boxSizing: 'border-box' }}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = '#1976D2'; e.currentTarget.style.background = '#fff'; }}
-                      onBlur={(e) => { e.currentTarget.style.borderColor = '#E8EAED'; e.currentTarget.style.background = '#FAFBFC'; }} />
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '20px', padding: '16px', background: '#EFF6FF', borderRadius: '10px', borderLeft: '4px solid #0D47A1' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', color: '#0D47A1', marginBottom: '4px' }}>Identifiant Tenant</div>
-                <div style={{ fontSize: '13px', color: '#37474F', fontFamily: 'monospace' }}>clinique-saint-joseph</div>
-                <div style={{ fontSize: '11px', color: '#546E7A', marginTop: '4px' }}>Identifiant unique de votre établissement — non modifiable</div>
-              </div>
-            </div>
-          )}
+        {/* Content panel */}
+        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden', animation: 'fadeUp .2s ease' }}>
+          {/* Panel header */}
+          <div style={{ padding: '16px 24px', borderBottom: '1.5px solid #EEF2F8', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ color: activeSec.color }}>{activeSec.icon}</span>
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1A2332' }}>{activeSec.label}</h2>
+          </div>
 
-          {section === 'securite' && (
-            <div>
-              <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#1A2332' }}>Sécurité & Contrôle d'accès</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
-                  { label: 'Authentification à 2 facteurs (2FA)', desc: 'Exige un code TOTP en plus du mot de passe', value: twoFa, onChange: setTwoFa },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: '#F5F7FA', borderRadius: '10px' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>{item.label}</div>
-                      <div style={{ fontSize: '12px', color: '#90A4AE', marginTop: '3px' }}>{item.desc}</div>
-                    </div>
-                    <Toggle value={item.value} onChange={item.onChange} />
+          <div style={{ padding: '24px' }}>
+
+            {/* ── ÉTABLISSEMENT ─────────────────────────── */}
+            {section === 'etablissement' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+                  <FieldInput label="Nom de l'établissement" value={nomEtab} onChange={setNomEtab}/>
+                  <FieldInput label="Ville" value={ville} onChange={setVille}/>
+                  <FieldInput label="Pays" value={pays} onChange={setPays}/>
+                  <FieldInput label="Téléphone" value={tel} onChange={setTel}/>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <FieldInput label="Email de contact" value={email} onChange={setEmail} type="email"/>
                   </div>
-                ))}
-                <div style={{ padding: '16px', background: '#F5F7FA', borderRadius: '10px' }}>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#37474F', marginBottom: '8px' }}>Expiration de session (minutes)</label>
-                  <input type="number" value={sessionTimeout} onChange={e => setSessionTimeout(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #E8EAED', borderRadius: '8px', fontSize: '13px', width: '120px', outline: 'none' }} />
+                </div>
+                <div style={{ background: '#EFF6FF', borderRadius: 12, padding: '14px 18px', border: '1.5px solid #BFDBFE', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <Info size={16} color="#1E40AF" style={{ flexShrink: 0, marginTop: 1 }}/>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#1E40AF', marginBottom: 3 }}>Identifiant Tenant</div>
+                    <div style={{ fontSize: 13, color: '#1A2332', fontFamily: 'monospace', background: '#fff', display: 'inline-block', padding: '2px 10px', borderRadius: 6 }}>clinique-saint-joseph</div>
+                    <div style={{ fontSize: 11, color: '#546E7A', marginTop: 4 }}>Identifiant unique de votre établissement — non modifiable</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {section === 'notifications' && (
-            <div>
-              <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#1A2332' }}>Préférences de notifications</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { label: 'Alertes de stock critique', desc: 'Notifier quand un médicament passe sous le seuil', value: notifStock, onChange: setNotifStock },
-                  { label: 'Rappels de rendez-vous', desc: 'Rappel 1h avant chaque rendez-vous', value: notifRdv, onChange: setNotifRdv },
-                  { label: 'Résultats de laboratoire', desc: 'Notifier quand les résultats sont disponibles', value: notifLabo, onChange: setNotifLabo },
-                  { label: 'Factures impayées', desc: 'Alerte quotidienne sur les impayés > 7 jours', value: notifFacture, onChange: setNotifFacture },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#F5F7FA', borderRadius: '10px' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>{item.label}</div>
-                      <div style={{ fontSize: '11px', color: '#90A4AE', marginTop: '2px' }}>{item.desc}</div>
+            {/* ── SÉCURITÉ ──────────────────────────────── */}
+            {section === 'securite' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', background: '#FEF2F2', borderRadius: 12, border: '1.5px solid #FECACA' }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Lock size={17} color="#991B1B"/>
                     </div>
-                    <Toggle value={item.value} onChange={item.onChange} />
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Authentification à 2 facteurs (2FA)</div>
+                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>Exige un code TOTP en plus du mot de passe pour tous les comptes</div>
+                    </div>
+                  </div>
+                  <Toggle value={twoFa} onChange={setTwoFa} color="#991B1B"/>
+                </div>
+
+                <div style={{ padding: '16px 18px', background: '#F8FAFC', borderRadius: 12, border: '1.5px solid #E0E8F0' }}>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 14 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock size={17} color="#1E40AF"/>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Expiration de session</div>
+                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>Déconnexion automatique après inactivité</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {['15', '30', '60', '120', '240', '480'].map(v => (
+                      <button key={v} onClick={() => setSessionTimeout(v)}
+                        style={{ padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${sessionTimeout === v ? '#1E40AF' : '#E0E8F0'}`, background: sessionTimeout === v ? '#1E40AF' : '#fff', color: sessionTimeout === v ? '#fff' : '#546E7A', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                        {v} min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── NOTIFICATIONS ─────────────────────────── */}
+            {section === 'notifications' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { label: 'Alertes de stock critique',  desc: 'Notifier quand un médicament passe sous le seuil',  value: notifStock,   onChange: setNotifStock,   icon: <Pill size={16}/>,        color: '#047857', bg: '#D1FAE5' },
+                  { label: 'Rappels de rendez-vous',     desc: 'Rappel 1h avant chaque rendez-vous',               value: notifRdv,     onChange: setNotifRdv,     icon: <Calendar size={16}/>,    color: '#6D28D9', bg: '#EDE9FE' },
+                  { label: 'Résultats de laboratoire',   desc: 'Notifier quand les résultats sont disponibles',     value: notifLabo,    onChange: setNotifLabo,    icon: <FlaskConical size={16}/>, color: '#5B21B6', bg: '#EDE9FE' },
+                  { label: 'Factures impayées',          desc: 'Alerte quotidienne sur les impayés > 7 jours',      value: notifFacture, onChange: setNotifFacture, icon: <Receipt size={16}/>,     color: '#1E40AF', bg: '#DBEAFE' },
+                ].map(item => (
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: item.value ? item.bg.replace(')', '44)').replace('rgb', 'rgba') : '#F8FAFC', borderRadius: 12, border: `1.5px solid ${item.value ? item.color + '44' : '#E0E8F0'}`, transition: 'all .2s' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 10, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color }}>
+                        {item.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{item.label}</div>
+                        <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>{item.desc}</div>
+                      </div>
+                    </div>
+                    <Toggle value={item.value} onChange={item.onChange} color={item.color}/>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {section === 'utilisateurs' && (
-            <div>
-              <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#1A2332' }}>Rôles & Permissions</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {/* ── UTILISATEURS / RÔLES ──────────────────── */}
+            {section === 'utilisateurs' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {ROLES.map(r => (
-                  <div key={r.nom} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: '#F5F7FA', borderRadius: '10px', borderLeft: `4px solid ${r.color}` }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: r.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Users size={16} color={r.color} />
+                  <div key={r.nom} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', background: '#F8FAFC', borderRadius: 12, border: '1.5px solid #E0E8F0', borderLeft: `4px solid ${r.color}` }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 10, background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Users size={16} color={r.color}/>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: '13px', color: '#1A2332' }}>{r.nom}</div>
-                      <div style={{ fontSize: '11px', color: '#90A4AE', marginTop: '2px' }}>{r.permissions.join(' · ')}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#1A2332' }}>{r.nom}</div>
+                      <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{r.permissions.join(' · ')}</div>
                     </div>
-                    <span style={{ background: r.color + '22', color: r.color, fontSize: '12px', fontWeight: 700, padding: '2px 10px', borderRadius: '20px', flexShrink: 0 }}>
+                    <span style={{ background: r.bg, color: r.color, fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, flexShrink: 0, border: `1px solid ${r.color}33` }}>
                       {r.count} utilisateur{r.count > 1 ? 's' : ''}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {section === 'langue' && (
-            <div>
-              <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#1A2332' }}>Langue & Région</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {/* ── LANGUE & RÉGION ───────────────────────── */}
+            {section === 'langue' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 {[
-                  { label: 'Langue de l\'interface', options: ['Français', 'English'], selected: 'Français' },
+                  { label: "Langue de l'interface", options: ['Français', 'English'], selected: 'Français' },
                   { label: 'Devise', options: ['XOF (Franc CFA)', 'EUR (Euro)', 'USD (Dollar)'], selected: 'XOF (Franc CFA)' },
                   { label: 'Format de date', options: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'], selected: 'DD/MM/YYYY' },
                   { label: 'Fuseau horaire', options: ['Africa/Abidjan (UTC+0)', 'Africa/Dakar (UTC+0)', 'Africa/Lagos (UTC+1)'], selected: 'Africa/Abidjan (UTC+0)' },
                 ].map(f => (
                   <div key={f.label}>
-                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>{f.label}</label>
-                    <select defaultValue={f.selected} style={{ width: '100%', padding: '10px 12px', border: '1px solid #E8EAED', borderRadius: '8px', fontSize: '13px', color: '#37474F', outline: 'none', background: '#FAFBFC' }}>
+                    <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{f.label}</label>
+                    <select defaultValue={f.selected}
+                      style={{ width: '100%', padding: '10px 13px', border: '1.5px solid #E0E8F0', borderRadius: 10, fontSize: 13, color: '#1A2332', outline: 'none', background: '#F8FAFC', cursor: 'pointer' }}>
                       {f.options.map(o => <option key={o}>{o}</option>)}
                     </select>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {(section === 'apparence' || section === 'sauvegarde') && (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: '#90A4AE' }}>
-              <Settings size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-              <p style={{ fontSize: '14px', fontWeight: 600, color: '#546E7A', margin: '0 0 8px' }}>
-                {section === 'apparence' ? 'Personnalisation de l\'interface' : 'Gestion des sauvegardes'}
-              </p>
-              <p style={{ fontSize: '13px', margin: 0 }}>Cette section sera disponible prochainement.</p>
-            </div>
-          )}
+            {/* ── COMING SOON ───────────────────────────── */}
+            {(section === 'apparence' || section === 'sauvegarde') && (
+              <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#F0F4FA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  {section === 'apparence' ? <Palette size={26} color="#90A4AE"/> : <Database size={26} color="#90A4AE"/>}
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#37474F', marginBottom: 6 }}>
+                  {section === 'apparence' ? 'Personnalisation de l\'interface' : 'Gestion des sauvegardes'}
+                </div>
+                <div style={{ fontSize: 13, color: '#90A4AE', maxWidth: 300, margin: '0 auto' }}>
+                  Cette section sera disponible dans une prochaine mise à jour.
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 18, padding: '8px 18px', borderRadius: 20, background: '#F0F4FA', fontSize: 12, color: '#78909C', fontWeight: 700 }}>
+                  🚀 Bientôt disponible
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

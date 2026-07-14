@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Users, Calendar, FlaskConical, Pill, Receipt, Bed, Activity, Settings, ChevronRight, Search } from 'lucide-react';
+import {
+  BookOpen, Users, Calendar, FlaskConical, Pill, Receipt,
+  Bed, Activity, Settings, ChevronRight, Search, Globe,
+} from 'lucide-react';
 
 type Lang = 'fr' | 'en';
 
 const SECTIONS = [
   {
-    id: 'demarrage', icon: <Activity size={18} />, color: '#1565C0', bg: '#EFF6FF',
+    id: 'demarrage', icon: <Activity size={16}/>, color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD',
     fr: { titre: 'Démarrage rapide', desc: 'Premiers pas avec SANTAREX ERP' },
-    en: { titre: 'Quick Start', desc: 'Getting started with SANTAREX ERP' },
+    en: { titre: 'Quick Start',      desc: 'Getting started with SANTAREX ERP' },
     fr_content: [
       { titre: 'Connexion', texte: "Accédez à l'ERP via votre navigateur. Saisissez votre identifiant (email) et votre mot de passe fournis par l'administrateur. En cas d'oubli, contactez votre administrateur système." },
       { titre: 'Tableau de bord', texte: "Après connexion, le tableau de bord affiche les indicateurs clés : patients du jour, consultations en attente, alertes stock pharmacie, et recettes. Toutes les données se rechargent automatiquement toutes les 5 minutes." },
@@ -22,9 +25,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'patients', icon: <Users size={18} />, color: '#0D47A1', bg: '#E3F2FD',
+    id: 'patients', icon: <Users size={16}/>, color: '#0F766E', bg: '#CCFBF1', border: '#5EEAD4',
     fr: { titre: 'Gestion des patients', desc: 'Enregistrement et dossiers patients' },
-    en: { titre: 'Patient Management', desc: 'Registration and patient records' },
+    en: { titre: 'Patient Management',  desc: 'Registration and patient records' },
     fr_content: [
       { titre: 'Créer un patient', texte: "Allez dans Patients → Nouveau patient. Remplissez le nom, prénom, date de naissance et sexe (obligatoires). Ajoutez le téléphone, l'adresse, le groupe sanguin, les allergies et l'assurance selon les informations disponibles. Cliquez sur Enregistrer." },
       { titre: 'Rechercher un patient', texte: "Sur la page Patients, utilisez la barre de recherche pour trouver un patient par nom, prénom ou IPP. La liste se met à jour en temps réel." },
@@ -39,9 +42,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'consultations', icon: <Activity size={18} />, color: '#00695C', bg: '#E0F2F1',
+    id: 'consultations', icon: <Activity size={16}/>, color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7',
     fr: { titre: 'Consultations', desc: 'Gestion des consultations médicales' },
-    en: { titre: 'Consultations', desc: 'Medical consultation management' },
+    en: { titre: 'Consultations',  desc: 'Medical consultation management' },
     fr_content: [
       { titre: 'Nouvelle consultation', texte: "Allez dans Consultations → Nouvelle consultation. Suivez le wizard en 5 étapes : (1) Sélection du patient, (2) Sélection du médecin, (3) Motif et anamnèse, (4) Examen clinique et diagnostic, (5) Récapitulatif. La consultation est créée au clic sur Valider." },
       { titre: 'Constantes vitales', texte: "À l'étape 3, saisissez les constantes : tension artérielle (systolique/diastolique), fréquence cardiaque, température, poids, taille, saturation O₂. Ces valeurs sont visibles dans le DME du patient." },
@@ -54,9 +57,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'rdv', icon: <Calendar size={18} />, color: '#6A1B9A', bg: '#F3E5F5',
+    id: 'rdv', icon: <Calendar size={16}/>, color: '#6D28D9', bg: '#EDE9FE', border: '#C4B5FD',
     fr: { titre: 'Rendez-vous', desc: 'Planification des rendez-vous' },
-    en: { titre: 'Appointments', desc: 'Appointment scheduling' },
+    en: { titre: 'Appointments',  desc: 'Appointment scheduling' },
     fr_content: [
       { titre: 'Vue calendrier', texte: "La page Rendez-vous affiche un calendrier hebdomadaire. Naviguez entre les semaines avec les boutons < >. Cliquez sur un créneau pour voir le détail du rendez-vous." },
       { titre: 'Créer un rendez-vous', texte: "Cliquez sur + Nouveau RDV. Sélectionnez le patient, le médecin, la date, l'heure et le motif. Le système vérifie automatiquement la disponibilité du médecin." },
@@ -69,9 +72,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'labo', icon: <FlaskConical size={18} />, color: '#4527A0', bg: '#EDE7F6',
+    id: 'labo', icon: <FlaskConical size={16}/>, color: '#5B21B6', bg: '#EDE9FE', border: '#A78BFA',
     fr: { titre: 'Laboratoire', desc: "Demandes et résultats d'analyses" },
-    en: { titre: 'Laboratory', desc: 'Lab requests and results' },
+    en: { titre: 'Laboratory',  desc: 'Lab requests and results' },
     fr_content: [
       { titre: 'Nouvelle demande', texte: "Allez dans Laboratoire → Nouvelle demande. Sélectionnez le patient et cochez les analyses souhaitées dans le catalogue (hématologie, biochimie, sérologie, bactériologie). Activez le mode Urgente si nécessaire." },
       { titre: 'Saisir les résultats', texte: "Depuis la liste des demandes, cliquez sur une demande pour ouvrir sa fiche. Les résultats s'affichent avec un code couleur : normal (vert), élevé (orange), bas (bleu), critique (rouge)." },
@@ -84,9 +87,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'pharmacie', icon: <Pill size={18} />, color: '#00695C', bg: '#E0F2F1',
+    id: 'pharmacie', icon: <Pill size={16}/>, color: '#047857', bg: '#D1FAE5', border: '#6EE7B7',
     fr: { titre: 'Pharmacie', desc: 'Stock et dispensation des médicaments' },
-    en: { titre: 'Pharmacy', desc: 'Drug stock and dispensing' },
+    en: { titre: 'Pharmacy',  desc: 'Drug stock and dispensing' },
     fr_content: [
       { titre: 'Gestion du stock', texte: "La page Pharmacie affiche l'inventaire complet. Les médicaments en rupture ou sous le seuil minimum apparaissent en rouge/orange. Utilisez le bouton XLSX pour exporter l'inventaire." },
       { titre: 'Ajouter un médicament', texte: "Cliquez sur + Nouveau médicament. Renseignez le nom commercial, DCI, forme, dosage, catégorie, prix de vente, stock actuel et minimum. Activez «Ordonnance requise» pour les médicaments sous prescription." },
@@ -99,9 +102,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'facturation', icon: <Receipt size={18} />, color: '#0D47A1', bg: '#EFF6FF',
+    id: 'facturation', icon: <Receipt size={16}/>, color: '#1D4ED8', bg: '#DBEAFE', border: '#93C5FD',
     fr: { titre: 'Facturation & Caisse', desc: 'Facturation des actes et encaissements' },
-    en: { titre: 'Billing & Cashier', desc: 'Act billing and collections' },
+    en: { titre: 'Billing & Cashier',    desc: 'Act billing and collections' },
     fr_content: [
       { titre: 'Créer une facture', texte: "Allez dans Facturation → Nouvelle facture. Sélectionnez le patient et ajoutez les lignes de prestation : type (consultation, médicament, analyse…), libellé, quantité et prix unitaire. Le total se calcule en temps réel." },
       { titre: 'Enregistrer un paiement', texte: "Depuis le détail d'une facture, cliquez sur «Enregistrer un paiement». Choisissez le mode (espèces, mobile money, carte, assurance, virement) et le montant. Un paiement partiel est possible." },
@@ -114,7 +117,7 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'hospit', icon: <Bed size={18} />, color: '#1565C0', bg: '#E3F2FD',
+    id: 'hospit', icon: <Bed size={16}/>, color: '#0369A1', bg: '#E0F2FE', border: '#7DD3FC',
     fr: { titre: 'Hospitalisation', desc: 'Gestion des séjours et lits' },
     en: { titre: 'Hospitalization', desc: 'Stay and bed management' },
     fr_content: [
@@ -127,9 +130,9 @@ const SECTIONS = [
     ],
   },
   {
-    id: 'parametres', icon: <Settings size={18} />, color: '#37474F', bg: '#ECEFF1',
+    id: 'parametres', icon: <Settings size={16}/>, color: '#374151', bg: '#F3F4F6', border: '#D1D5DB',
     fr: { titre: 'Paramètres', desc: 'Configuration de la clinique' },
-    en: { titre: 'Settings', desc: 'Clinic configuration' },
+    en: { titre: 'Settings',   desc: 'Clinic configuration' },
     fr_content: [
       { titre: 'Informations établissement', texte: "Dans Paramètres, renseignez le nom de la clinique, la ville, le pays, le téléphone et l'email. Ces informations apparaissent sur les documents générés (factures, ordonnances)." },
       { titre: 'Sécurité', texte: "Activez la double authentification (2FA) pour renforcer la sécurité. Définissez le délai d'expiration de session (15-480 minutes). Ces paramètres s'appliquent à tous les utilisateurs de la clinique." },
@@ -150,6 +153,7 @@ export default function GuidePage() {
 
   const section = SECTIONS.find(s => s.id === activeSection)!;
   const content = lang === 'fr' ? section.fr_content : section.en_content;
+  const sIdx = SECTIONS.findIndex(s => s.id === activeSection);
 
   const filteredSections = search
     ? SECTIONS.filter(s => {
@@ -161,91 +165,146 @@ export default function GuidePage() {
     : SECTIONS;
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid #E0E0E0', display: 'flex', flexDirection: 'column', background: '#FAFAFA', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 14px', borderBottom: '1px solid #E0E0E0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <BookOpen size={16} color="#1565C0" />
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>
-              {lang === 'fr' ? 'Guide utilisateur' : 'User Guide'}
-            </span>
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-              {(['fr', 'en'] as Lang[]).map(l => (
-                <button key={l} onClick={() => setLang(l)}
-                  style={{ padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: lang === l ? '#1565C0' : '#E0E0E0', color: lang === l ? '#fff' : '#546E7A' }}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 60px)', overflow: 'hidden', background: '#F4F6FA' }}>
+      <style>{`
+        @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        .guide-nav-btn:hover { background: #E8EEF8 !important; }
+      `}</style>
+
+      {/* ── HERO STRIP ────────────────────────────────────── */}
+      <div style={{ background: 'linear-gradient(135deg,#0A2E6E 0%,#1565C0 55%,#0891B2 100%)', padding: '14px 22px', display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0, boxShadow: '0 2px 12px rgba(10,46,110,0.3)' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <BookOpen size={20} color="#fff"/>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', letterSpacing: '-0.2px' }}>
+            {lang === 'fr' ? 'Guide utilisateur SANTAREX ERP' : 'SANTAREX ERP User Guide'}
           </div>
-          <div style={{ position: 'relative' }}>
-            <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder={lang === 'fr' ? 'Rechercher…' : 'Search…'}
-              style={{ width: '100%', padding: '7px 8px 7px 26px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: 12, outline: 'none', background: '#fff', color: '#37474F', boxSizing: 'border-box' }} />
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>
+            {lang === 'fr' ? `${SECTIONS.length} chapitres · Section ${sIdx + 1}/${SECTIONS.length}` : `${SECTIONS.length} chapters · Section ${sIdx + 1}/${SECTIONS.length}`}
           </div>
         </div>
-        <div style={{ overflowY: 'auto', flex: 1, padding: '8px 6px' }}>
-          {filteredSections.map(s => {
-            const t = lang === 'fr' ? s.fr : s.en;
-            const active = s.id === activeSection;
-            return (
-              <button key={s.id} onClick={() => { setActiveSection(s.id); setSearch(''); }}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 9, border: 'none', cursor: 'pointer', textAlign: 'left', background: active ? s.bg : 'transparent', marginBottom: 2, transition: 'background 0.1s' }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#F0F4F8'; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: active ? s.bg : '#F0F4F8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color, flexShrink: 0, border: active ? `1.5px solid ${s.color}44` : 'none' }}>
-                  {s.icon}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: active ? 700 : 600, color: active ? s.color : '#37474F' }}>{t.titre}</div>
-                  <div style={{ fontSize: 10, color: '#90A4AE', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.desc}</div>
-                </div>
-                {active && <ChevronRight size={12} color={s.color} />}
-              </button>
-            );
-          })}
+        {/* Lang toggle */}
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: 3, gap: 2 }}>
+          {(['fr', 'en'] as Lang[]).map(l => (
+            <button key={l} onClick={() => setLang(l)}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#1565C0' : 'rgba(255,255,255,0.8)', transition: 'all .15s' }}>
+              <Globe size={11}/> {l.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px', maxWidth: 800 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: section.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: section.color, border: `2px solid ${section.color}33` }}>
-            {section.icon}
-          </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#1A2332' }}>
-              {lang === 'fr' ? section.fr.titre : section.en.titre}
-            </h1>
-            <p style={{ margin: 0, fontSize: 13, color: '#546E7A' }}>
-              {lang === 'fr' ? section.fr.desc : section.en.desc}
-            </p>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {content.map((item, i) => (
-            <div key={i} style={{ padding: '20px 24px', borderRadius: 12, background: '#fff', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderLeft: `4px solid ${section.color}` }}>
-              <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 700, color: section.color }}>{item.titre}</h3>
-              <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.7 }}>{item.texte}</p>
+      {/* ── BODY ──────────────────────────────────────────── */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+        {/* Sidebar */}
+        <div style={{ width: 256, flexShrink: 0, background: '#fff', borderRight: '1px solid #E8EEF8', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Search */}
+          <div style={{ padding: '12px 12px 10px', borderBottom: '1px solid #EEF2F8' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }}/>
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder={lang === 'fr' ? 'Rechercher…' : 'Search…'}
+                style={{ width: '100%', padding: '8px 10px 8px 28px', border: '1.5px solid #E0E8F0', borderRadius: 9, fontSize: 12, outline: 'none', background: '#F8FAFC', color: '#37474F', boxSizing: 'border-box' }}/>
             </div>
-          ))}
+          </div>
+
+          {/* Nav items */}
+          <div style={{ overflowY: 'auto', flex: 1, padding: '8px 8px' }}>
+            {filteredSections.map((s, i) => {
+              const t = lang === 'fr' ? s.fr : s.en;
+              const isActive = s.id === activeSection;
+              return (
+                <button key={s.id} onClick={() => { setActiveSection(s.id); setSearch(''); }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 2, background: isActive ? s.bg : 'transparent', borderLeft: isActive ? `3px solid ${s.color}` : '3px solid transparent', transition: 'all .12s' }}
+                  className="guide-nav-btn">
+                  <div style={{ width: 30, height: 30, borderRadius: 8, background: isActive ? 'rgba(255,255,255,0.7)' : '#F0F4FA', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? s.color : '#90A4AE', flexShrink: 0 }}>
+                    {s.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: isActive ? 800 : 600, color: isActive ? s.color : '#37474F', lineHeight: 1.2 }}>{t.titre}</div>
+                    <div style={{ fontSize: 10, color: '#90A4AE', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.desc}</div>
+                  </div>
+                  {isActive && <ChevronRight size={12} color={s.color} style={{ flexShrink: 0 }}/>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Progress bar */}
+          <div style={{ padding: '10px 14px', borderTop: '1px solid #EEF2F8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#90A4AE', fontWeight: 600, marginBottom: 5 }}>
+              <span>{lang === 'fr' ? 'Progression' : 'Progress'}</span>
+              <span>{sIdx + 1}/{SECTIONS.length}</span>
+            </div>
+            <div style={{ height: 4, background: '#EEF2F8', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${((sIdx + 1) / SECTIONS.length) * 100}%`, background: `linear-gradient(90deg,#1565C0,#0891B2)`, borderRadius: 2, transition: 'width .3s ease' }}/>
+            </div>
+          </div>
         </div>
-        {/* Navigation buttons */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32, paddingTop: 20, borderTop: '1px solid #F0F4F8' }}>
-          {SECTIONS.findIndex(s => s.id === activeSection) > 0 ? (
-            <button onClick={() => setActiveSection(SECTIONS[SECTIONS.findIndex(s => s.id === activeSection) - 1].id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-              ← {lang === 'fr' ? 'Précédent' : 'Previous'}
-            </button>
-          ) : <div />}
-          {SECTIONS.findIndex(s => s.id === activeSection) < SECTIONS.length - 1 ? (
-            <button onClick={() => setActiveSection(SECTIONS[SECTIONS.findIndex(s => s.id === activeSection) + 1].id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 8, background: section.color, border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
-              {lang === 'fr' ? 'Suivant' : 'Next'} →
-            </button>
-          ) : <div />}
+
+        {/* Content area */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px 40px', background: '#F4F6FA' }}>
+          <div style={{ maxWidth: 760, margin: '0 auto' }}>
+
+            {/* Section header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24, animation: 'fadeUp .2s ease' }}>
+              <div style={{ width: 50, height: 50, borderRadius: 14, background: section.bg, border: `2px solid ${section.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: section.color, flexShrink: 0 }}>
+                {section.icon}
+              </div>
+              <div>
+                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#1A2332', letterSpacing: '-0.3px' }}>
+                  {lang === 'fr' ? section.fr.titre : section.en.titre}
+                </h1>
+                <p style={{ margin: '3px 0 0', fontSize: 13, color: '#546E7A' }}>
+                  {lang === 'fr' ? section.fr.desc : section.en.desc}
+                </p>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: section.color, background: section.bg, border: `1.5px solid ${section.border}`, padding: '3px 12px', borderRadius: 20, flexShrink: 0 }}>
+                {sIdx + 1} / {SECTIONS.length}
+              </span>
+            </div>
+
+            {/* Cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, animation: 'fadeUp .25s ease' }}>
+              {content.map((item, i) => (
+                <div key={i} style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
+                  {/* Card header */}
+                  <div style={{ background: section.bg, padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1.5px solid ${section.border}` }}>
+                    <span style={{ width: 24, height: 24, borderRadius: 8, background: section.color, color: '#fff', fontSize: 12, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {i + 1}
+                    </span>
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: section.color }}>{item.titre}</h3>
+                  </div>
+                  {/* Card body */}
+                  <div style={{ padding: '16px 20px' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.8 }}>{item.texte}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Navigation */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32, paddingTop: 20, borderTop: '1.5px solid #EEF2F8' }}>
+              {sIdx > 0 ? (
+                <button onClick={() => setActiveSection(SECTIONS[sIdx - 1].id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 700, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                  ← {lang === 'fr' ? 'Précédent' : 'Previous'}
+                </button>
+              ) : <div/>}
+              {sIdx < SECTIONS.length - 1 ? (
+                <button onClick={() => setActiveSection(SECTIONS[sIdx + 1].id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10, border: 'none', background: section.color, cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, boxShadow: `0 4px 14px ${section.color}40` }}>
+                  {lang === 'fr' ? 'Suivant' : 'Next'} →
+                </button>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10, background: '#D1FAE5', border: '1.5px solid #6EE7B7', fontSize: 13, color: '#065F46', fontWeight: 700 }}>
+                  ✓ {lang === 'fr' ? 'Guide terminé !' : 'Guide complete!'}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
