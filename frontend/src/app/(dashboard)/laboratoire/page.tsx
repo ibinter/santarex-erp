@@ -2,190 +2,254 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FlaskConical, Plus, Search, RefreshCw, Eye, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import {
+  FlaskConical, Plus, Search, RefreshCw, ChevronRight,
+  Clock, CheckCircle, AlertTriangle, Zap, Calendar, Stethoscope,
+} from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
-type StatutDemande = 'attente_prelevement' | 'preleve' | 'en_analyse' | 'termine' | 'valide';
-
+type StatutDemande = 'attente_prelevement'|'preleve'|'en_analyse'|'termine'|'valide';
 type DemandeAnalyse = {
   id: string; numero?: string;
   patient?: { id: string; nom: string; prenom: string; ipp?: string };
-  medecin?: { id: string; nom: string; prenom: string };
+  medecin?:  { id: string; nom: string; prenom: string };
   urgence: boolean; statut: StatutDemande;
   typesAnalyse?: { id: string; code: string; nom: string; prix?: number }[];
   createdAt: string; datePrelevement?: string;
 };
 
-type StatsLabo = { demandesJour?: number; terminees?: number; enCours?: number; urgentes?: number };
-
-const STATUT_CONFIG: Record<StatutDemande, { label: string; bg: string; color: string; icon: React.ReactNode }> = {
-  attente_prelevement: { label: 'Attente prélèvement', bg: '#FFF3E0', color: '#E65100', icon: <Clock size={12} /> },
-  preleve:             { label: 'Prélevé',              bg: '#EFF6FF', color: '#1565C0', icon: <Clock size={12} /> },
-  en_analyse:          { label: 'En analyse',           bg: '#E8EAF6', color: '#3949AB', icon: <FlaskConical size={12} /> },
-  termine:             { label: 'Terminé',              bg: '#E8F5E9', color: '#2E7D32', icon: <CheckCircle size={12} /> },
-  valide:              { label: 'Validé',               bg: '#E8F5E9', color: '#1B5E20', icon: <CheckCircle size={12} /> },
+const STATUT_CFG: Record<StatutDemande,{ label:string; bg:string; color:string; border:string; dot:string; icon:React.ReactNode }> = {
+  attente_prelevement: { label:'Attente prélèvement', bg:'#FFF7ED', color:'#C2410C', border:'#FED7AA', dot:'#F97316', icon:<Clock size={11}/> },
+  preleve:             { label:'Prélevé',              bg:'#EFF6FF', color:'#1D4ED8', border:'#BFDBFE', dot:'#3B82F6', icon:<FlaskConical size={11}/> },
+  en_analyse:          { label:'En analyse',           bg:'#EDE9FE', color:'#6D28D9', border:'#DDD6FE', dot:'#8B5CF6', icon:<FlaskConical size={11}/> },
+  termine:             { label:'Terminé',              bg:'#CCFBF1', color:'#0F766E', border:'#99F6E4', dot:'#14B8A6', icon:<CheckCircle size={11}/> },
+  valide:              { label:'Validé',               bg:'#DCFCE7', color:'#15803D', border:'#86EFAC', dot:'#22C55E', icon:<CheckCircle size={11}/> },
 };
 
+const ANALYSE_COLORS = ['#EDE9FE','#DBEAFE','#CCFBF1','#FEF3C7','#FCE7F3','#E0E7FF'];
+const ANALYSE_TEXT   = ['#6D28D9','#1D4ED8','#0F766E','#B45309','#9D174D','#3730A3'];
+
+const AVATAR_COLORS: [string,string][] = [
+  ['#1D4ED8','#DBEAFE'],['#7C3AED','#EDE9FE'],['#0F766E','#CCFBF1'],
+  ['#B45309','#FEF3C7'],['#9D174D','#FCE7F3'],['#1E40AF','#DBEAFE'],
+];
+function aColor(name: string): [string,string] {
+  let h=0; for(let i=0;i<name.length;i++) h=((h<<5)-h+name.charCodeAt(i))|0;
+  return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];
+}
+function inits(p?: {nom:string;prenom:string}) {
+  if (!p) return '?'; return `${p.prenom.charAt(0)}${p.nom.charAt(0)}`.toUpperCase();
+}
 function fmtDate(iso: string) {
-  try { return new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+  try { return new Date(iso).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}); }
   catch { return '—'; }
 }
 
 export default function LaboratoirePage() {
   const router = useRouter();
-  const [demandes, setDemandes] = useState<DemandeAnalyse[]>([]);
-  const [stats, setStats] = useState<StatsLabo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [demandes, setDemandes]   = useState<DemandeAnalyse[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [search, setSearch]       = useState('');
+  const [filtre, setFiltre]       = useState<StatutDemande|''>('');
+  const [urgOnly, setUrgOnly]     = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [demandesRes, statsRes] = await Promise.allSettled([
-        apiClient<any>('/laboratoire/demandes?limit=100'),
-        apiClient<StatsLabo>('/laboratoire/stats/jour'),
-      ]);
-      if (demandesRes.status === 'fulfilled') {
-        const d = demandesRes.value;
-        setDemandes(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
-      }
-      if (statsRes.status === 'fulfilled') setStats(statsRes.value);
+      const d = await apiClient<any>('/laboratoire/demandes?limit=100');
+      setDemandes(Array.isArray(d)?d:d?.items??d?.data??[]);
       setLastRefresh(new Date());
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(()=>{ load(); },[load]);
 
   const displayed = demandes.filter(d => {
     const q = search.toLowerCase();
-    const nomPatient = d.patient ? `${d.patient.prenom} ${d.patient.nom}`.toLowerCase() : '';
-    const matchSearch = !search || nomPatient.includes(q) || (d.numero || '').toLowerCase().includes(q) || (d.patient?.ipp || '').toLowerCase().includes(q);
-    const matchStatut = !statutFilter || d.statut === statutFilter;
-    return matchSearch && matchStatut;
+    const nom = d.patient?`${d.patient.prenom} ${d.patient.nom}`.toLowerCase():'';
+    const matchQ = !search || nom.includes(q)||(d.numero??'').toLowerCase().includes(q)||(d.patient?.ipp??'').toLowerCase().includes(q);
+    const matchS = !filtre || d.statut===filtre;
+    const matchU = !urgOnly || d.urgence;
+    return matchQ&&matchS&&matchU;
   });
 
-  const enCours = demandes.filter(d => !['termine', 'valide'].includes(d.statut)).length;
-  const urgentes = demandes.filter(d => d.urgence && !['termine', 'valide'].includes(d.statut)).length;
-  const terminees = demandes.filter(d => ['termine', 'valide'].includes(d.statut)).length;
+  const total    = demandes.length;
+  const enCours  = demandes.filter(d=>!['termine','valide'].includes(d.statut)).length;
+  const urgentes = demandes.filter(d=>d.urgence&&!['termine','valide'].includes(d.statut)).length;
+  const termines = demandes.filter(d=>['termine','valide'].includes(d.statut)).length;
 
   return (
-    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
-      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
+    <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
+      <style>{`
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        .dem-row:hover{background:#F5F0FF!important;}
+        .kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.12)!important;}
+      `}</style>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: '#E8EAF6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FlaskConical size={20} color="#3949AB" />
+      {/* ── HERO ────────────────────────────────────────────────── */}
+      <div style={{ background:'linear-gradient(135deg,#1E1B4B 0%,#3730A3 50%,#4F46E5 100%)', borderRadius:18, padding:'24px 28px 20px', marginBottom:18, position:'relative', overflow:'hidden', boxShadow:'0 8px 28px rgba(55,48,163,0.4)' }}>
+        <div style={{ position:'absolute', top:-50, right:80,  width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.05)' }}/>
+        <div style={{ position:'absolute', bottom:-70, right:200, width:150, height:150, borderRadius:'50%', background:'rgba(255,255,255,0.04)' }}/>
+        <div style={{ position:'absolute', top:20, right:320, width:70, height:70, borderRadius:'50%', background:'rgba(255,255,255,0.06)' }}/>
+
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:16, position:'relative', zIndex:1 }}>
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:10 }}>
+              <div style={{ width:46, height:46, borderRadius:14, background:'rgba(255,255,255,0.18)', border:'1.5px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <FlaskConical size={24} color="#fff"/>
+              </div>
+              <div>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Laboratoire d'Analyses</h1>
+                <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
+                  <span style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', display:'inline-block', animation:'pulse 2s infinite' }}/>
+                  <span style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontWeight:600 }}>
+                    {loading?'Chargement…':`${total} demande${total>1?'s':''} • ${enCours} en cours`}
+                  </span>
+                  {lastRefresh&&<span style={{ fontSize:10, color:'rgba(255,255,255,0.45)', marginLeft:4 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
+                </div>
+              </div>
             </div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Laboratoire</h1>
           </div>
-          <p style={{ margin: '4px 0 0 48px', fontSize: 12, color: '#546E7A' }}>
-            {loading ? '…' : `${demandes.length} demande(s) d'analyse`}
-            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
-          </p>
+
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={load} disabled={loading}
+              style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600, backdropFilter:'blur(8px)' }}>
+              <RefreshCw size={14} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
+            </button>
+            <button onClick={()=>router.push('/laboratoire/demandes/nouvelle')}
+              style={{ padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', color:'#3730A3', display:'flex', alignItems:'center', gap:8, fontSize:13, fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
+              <Plus size={14}/> Nouvelle demande
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-            Actualiser
-          </button>
-          <button onClick={() => router.push('/laboratoire/demandes/nouvelle')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#3949AB', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
-            <Plus size={14} /> Nouvelle demande
-          </button>
+
+        {/* KPI inline */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:16, position:'relative', zIndex:1 }}>
+          {[
+            { label:'Total',      val:total,    dot:'rgba(255,255,255,0.7)', valColor:'#fff' },
+            { label:'En cours',   val:enCours,  dot:'#FCD34D',              valColor:'#FCD34D' },
+            { label:'Urgentes',   val:urgentes, dot:'#FCA5A5',              valColor:'#FCA5A5' },
+            { label:'Terminées',  val:termines, dot:'#BBF7D0',              valColor:'#BBF7D0' },
+          ].map((k,i)=>(
+            <div key={i} style={{ background:'rgba(255,255,255,0.1)', borderRadius:12, padding:'10px 14px', border:'1px solid rgba(255,255,255,0.15)' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
+                <span style={{ width:7, height:7, borderRadius:'50%', background:k.dot, display:'inline-block' }}/>
+                <span style={{ fontSize:9, color:'rgba(255,255,255,0.6)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px' }}>{k.label}</span>
+              </div>
+              <div style={{ fontSize:26, fontWeight:900, color:k.valColor, lineHeight:1 }}>{loading?'…':k.val}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
-        {[
-          { label: 'Total demandes', value: loading ? '…' : demandes.length, color: '#3949AB', bg: '#E8EAF6', icon: <FlaskConical size={18} color="#3949AB" /> },
-          { label: 'En cours', value: loading ? '…' : enCours, color: '#E65100', bg: '#FFF3E0', icon: <Clock size={18} color="#E65100" /> },
-          { label: 'Urgentes actives', value: loading ? '…' : urgentes, color: '#C62828', bg: '#FFEBEE', icon: <AlertTriangle size={18} color="#C62828" /> },
-          { label: 'Terminées', value: loading ? '…' : terminees, color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={18} color="#2E7D32" /> },
-        ].map((k, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', borderTop: `3px solid ${k.color}` }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>{k.icon}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: k.color }}>{k.value}</div>
-            <div style={{ fontSize: 11, color: '#546E7A', marginTop: 2 }}>{k.label}</div>
-          </div>
-        ))}
+      {/* ── SEARCH + FILTRES ─────────────────────────────────────── */}
+      <div style={{ display:'flex', gap:10, marginBottom:14, flexWrap:'wrap', alignItems:'center' }}>
+        <div style={{ position:'relative', flex:1, minWidth:220 }}>
+          <Search size={13} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher patient, N° demande, IPP…"
+            style={{ width:'100%', padding:'9px 12px 9px 34px', borderRadius:10, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
+        </div>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          <button onClick={()=>setUrgOnly(!urgOnly)}
+            style={{ padding:'7px 14px', borderRadius:20, border:`1.5px solid ${urgOnly?'#DC2626':'#E0E8F0'}`, background:urgOnly?'#FEE2E2':'#fff', color:urgOnly?'#DC2626':'#546E7A', fontSize:11, fontWeight:urgOnly?800:500, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
+            <Zap size={11} style={{ fill:urgOnly?'#DC2626':'none' }}/> Urgentes
+          </button>
+          <button onClick={()=>setFiltre('')}
+            style={{ padding:'7px 14px', borderRadius:20, border:`1.5px solid ${filtre===''?'#3730A3':'#E0E8F0'}`, background:filtre===''?'#3730A3':'#fff', color:filtre===''?'#fff':'#546E7A', fontSize:11, fontWeight:filtre===''?800:500, cursor:'pointer' }}>
+            Tous
+          </button>
+          {(Object.keys(STATUT_CFG) as StatutDemande[]).map(s=>{
+            const cfg=STATUT_CFG[s];
+            return (
+              <button key={s} onClick={()=>setFiltre(filtre===s?'':s)}
+                style={{ padding:'7px 12px', borderRadius:20, border:`1.5px solid ${filtre===s?cfg.border:'#E0E8F0'}`, background:filtre===s?cfg.bg:'#fff', color:filtre===s?cfg.color:'#546E7A', fontSize:11, fontWeight:filtre===s?800:500, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
+                <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Table */}
-      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #F5F7FA', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 200px' }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher patient, N° demande…"
-              style={{ width: '100%', padding: '7px 10px 7px 32px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-          <select value={statutFilter} onChange={e => setStatutFilter(e.target.value)}
-            style={{ padding: '7px 12px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, color: '#37474F', outline: 'none', background: '#fff' }}>
-            <option value="">Tous les statuts</option>
-            {Object.entries(STATUT_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
-        </div>
+      {/* Résumé filtres */}
+      {!loading&&<div style={{ fontSize:11, color:'#90A4AE', fontWeight:600, marginBottom:10 }}>{displayed.length} demande{displayed.length>1?'s':''} affichée{displayed.length>1?'s':''}</div>}
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
-            <thead style={{ background: '#F8FAFC' }}>
-              <tr>
-                {['N° Demande', 'Patient', 'Médecin', 'Date', 'Analyses', 'Urgence', 'Statut', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+      {/* ── TABLE ────────────────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 6px rgba(0,0,0,0.07)', overflow:'hidden', animation:'fadeUp .25s ease' }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', minWidth:700 }}>
+            <thead>
+              <tr style={{ background:'linear-gradient(135deg,#F0EEFF,#EDE9FE)' }}>
+                {['N° Demande','Patient','Médecin','Date','Analyses','Urgence','Statut',''].map(h=>(
+                  <th key={h} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#4C1D95', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {loading ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
-                  {Array.from({ length: 8 }).map((_, j) => (
-                    <td key={j} style={{ padding: '12px 14px' }}><div style={{ height: 14, background: '#F0F0F0', borderRadius: 4, width: j === 1 ? 120 : 70 }} /></td>
+              {loading ? Array.from({length:6}).map((_,i)=>(
+                <tr key={i} style={{ borderTop:'1px solid #F5F0FF' }}>
+                  {Array.from({length:8}).map((_,j)=>(
+                    <td key={j} style={{ padding:'13px 14px' }}><div style={{ height:13, background:'#EDE9FE', borderRadius:4, width:j===1?130:70, animation:'pulse 1.5s ease infinite' }}/></td>
                   ))}
                 </tr>
-              )) : displayed.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#90A4AE', fontSize: 13 }}>
-                  <FlaskConical size={32} style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
-                  Aucune demande trouvée
+              )) : displayed.length===0 ? (
+                <tr><td colSpan={8} style={{ textAlign:'center', padding:'60px 20px', color:'#90A4AE' }}>
+                  <FlaskConical size={38} style={{ display:'block', margin:'0 auto 12px', color:'#DDD6FE' }}/>
+                  <p style={{ margin:0, fontSize:13, fontWeight:600 }}>Aucune demande trouvée</p>
                 </td></tr>
-              ) : displayed.map(d => {
-                const cfg = STATUT_CONFIG[d.statut] ?? STATUT_CONFIG.attente_prelevement;
+              ) : displayed.map(d=>{
+                const cfg=STATUT_CFG[d.statut]??STATUT_CFG.attente_prelevement;
+                const nom=d.patient?`${d.patient.prenom} ${d.patient.nom}`:'—';
+                const [ac,ab]=aColor(nom);
+                const ii=inits(d.patient);
                 return (
-                  <tr key={d.id} style={{ borderTop: '1px solid #F5F7FA' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFC')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, color: '#546E7A', fontFamily: 'monospace' }}>{d.numero || d.id.slice(0, 8)}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—'}</div>
-                      {d.patient?.ipp && <div style={{ fontSize: 11, color: '#90A4AE' }}>{d.patient.ipp}</div>}
-                    </td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{d.medecin ? `Dr. ${d.medecin.prenom} ${d.medecin.nom}` : '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A', whiteSpace: 'nowrap' }}>{fmtDate(d.createdAt)}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      {(d.typesAnalyse || []).slice(0, 2).map(t => (
-                        <span key={t.id} style={{ display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 10, background: '#E8EAF6', color: '#3949AB', marginRight: 4, marginBottom: 2 }}>{t.code}</span>
-                      ))}
-                      {(d.typesAnalyse || []).length > 2 && <span style={{ fontSize: 10, color: '#90A4AE' }}>+{(d.typesAnalyse || []).length - 2}</span>}
-                    </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      {d.urgence ? <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: '#FFEBEE', color: '#C62828' }}>URGENT</span>
-                        : <span style={{ fontSize: 12, color: '#90A4AE' }}>—</span>}
-                    </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>
-                        {cfg.icon} {cfg.label}
+                  <tr key={d.id} className="dem-row" onClick={()=>router.push(`/laboratoire/demandes/${d.id}`)}
+                    style={{ borderTop:'1px solid #F5F0FF', cursor:'pointer', transition:'background .1s' }}>
+                    <td style={{ padding:'12px 14px' }}>
+                      <span style={{ fontFamily:'monospace', fontSize:10, fontWeight:800, color:'#4F46E5', background:'#EDE9FE', padding:'2px 8px', borderRadius:6 }}>
+                        {d.numero||d.id.slice(0,8).toUpperCase()}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <button onClick={() => router.push(`/laboratoire/demandes/${d.id}`)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', color: '#546E7A', fontWeight: 600 }}>
-                        <Eye size={12} /> Voir
-                      </button>
+                    <td style={{ padding:'12px 14px' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+                        <div style={{ width:34, height:34, borderRadius:10, background:ab, border:`1.5px solid ${ac}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, color:ac, flexShrink:0 }}>{ii}</div>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{nom}</div>
+                          {d.patient?.ipp&&<div style={{ fontSize:10, color:'#90A4AE', fontFamily:'monospace' }}>IPP: {d.patient.ipp}</div>}
+                        </div>
+                      </div>
                     </td>
+                    <td style={{ padding:'12px 14px', fontSize:12, color:'#546E7A', whiteSpace:'nowrap' }}>
+                      {d.medecin?<><span style={{ fontWeight:700 }}>Dr.</span> {d.medecin.prenom} {d.medecin.nom}</>:'—'}
+                    </td>
+                    <td style={{ padding:'12px 14px', fontSize:11, color:'#546E7A', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:4 }}>
+                      <Calendar size={10} color="#B0BEC5"/> {fmtDate(d.createdAt)}
+                    </td>
+                    <td style={{ padding:'12px 14px' }}>
+                      <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
+                        {(d.typesAnalyse||[]).slice(0,3).map((t,idx)=>(
+                          <span key={t.id} style={{ fontSize:9, fontWeight:800, padding:'2px 8px', borderRadius:8, background:ANALYSE_COLORS[idx%ANALYSE_COLORS.length], color:ANALYSE_TEXT[idx%ANALYSE_TEXT.length] }}>{t.code}</span>
+                        ))}
+                        {(d.typesAnalyse||[]).length>3&&<span style={{ fontSize:9, fontWeight:700, color:'#9CA3AF', padding:'2px 6px', background:'#F1F5F9', borderRadius:8 }}>+{(d.typesAnalyse||[]).length-3}</span>}
+                      </div>
+                    </td>
+                    <td style={{ padding:'12px 14px' }}>
+                      {d.urgence?(
+                        <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:'#FEE2E2', color:'#DC2626' }}>
+                          <Zap size={10} style={{ fill:'#DC2626' }}/> URGENT
+                        </span>
+                      ):(<span style={{ fontSize:12, color:'#D1D5DB' }}>—</span>)}
+                    </td>
+                    <td style={{ padding:'12px 14px' }}>
+                      <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
+                        <span style={{ width:5, height:5, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
+                        {cfg.label}
+                      </span>
+                    </td>
+                    <td style={{ padding:'12px 14px' }}><ChevronRight size={14} color="#B0BEC5"/></td>
                   </tr>
                 );
               })}
