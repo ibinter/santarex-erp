@@ -1,179 +1,333 @@
 'use client';
 
 import { useState } from 'react';
-import { UserCog, Plus, Search, Users, Calendar, Clock, TrendingUp } from 'lucide-react';
+import {
+  UserCog, Plus, Search, Users, Calendar, Clock,
+  TrendingUp, CheckCircle, XCircle, Download, Banknote,
+} from 'lucide-react';
 
 const EMPLOYES = [
-  { id: 'EMP-001', nom: 'Dr. Koné Mamadou', poste: 'Chirurgien', service: 'Chirurgie', type: 'CDI', statut: 'ACTIF', conge: false, salaire: '650 000', dateEntree: '2019-03-15', contact: '+225 07 12 34 56' },
-  { id: 'EMP-002', nom: 'Dr. Bah Fatoumata', poste: 'Gynécologue', service: 'Gynécologie', type: 'CDI', statut: 'ACTIF', conge: false, salaire: '620 000', dateEntree: '2020-06-01', contact: '+225 07 23 45 67' },
-  { id: 'EMP-003', nom: 'Infirmière Sanogo Awa', poste: 'Infirmière chef', service: 'Soins intensifs', type: 'CDI', statut: 'CONGE', conge: true, salaire: '280 000', dateEntree: '2018-09-10', contact: '+225 07 34 56 78' },
-  { id: 'EMP-004', nom: 'Traoré Célestine', poste: 'Caissière', service: 'Finance', type: 'CDD', statut: 'ACTIF', conge: false, salaire: '180 000', dateEntree: '2022-01-20', contact: '+225 07 45 67 89' },
-  { id: 'EMP-005', nom: 'Dr. Ouédraogo Moussa', poste: 'Biologiste', service: 'Laboratoire', type: 'CDI', statut: 'ACTIF', conge: false, salaire: '580 000', dateEntree: '2017-11-05', contact: '+225 07 56 78 90' },
-  { id: 'EMP-006', nom: 'Coulibaly Ahmed', poste: 'Pharmacien', service: 'Pharmacie', type: 'CDI', statut: 'ACTIF', conge: false, salaire: '420 000', dateEntree: '2021-04-12', contact: '+225 07 67 89 01' },
-  { id: 'EMP-007', nom: 'Diallo Nathalie', poste: 'Secrétaire médicale', service: 'Accueil', type: 'CDD', statut: 'ACTIF', conge: false, salaire: '160 000', dateEntree: '2023-07-01', contact: '+225 07 78 90 12' },
-  { id: 'EMP-008', nom: 'Yao Emmanuel', poste: 'Technicien imagerie', service: 'Imagerie', type: 'CDI', statut: 'ACTIF', conge: false, salaire: '320 000', dateEntree: '2020-02-28', contact: '+225 07 89 01 23' },
+  { id:'EMP-001', nom:'Dr. Koné Mamadou',       poste:'Chirurgien',          service:'Chirurgie',      type:'CDI', statut:'ACTIF',  conge:false, salaire:650_000, dateEntree:'2019-03-15', contact:'+225 07 12 34 56' },
+  { id:'EMP-002', nom:'Dr. Bah Fatoumata',       poste:'Gynécologue',         service:'Gynécologie',    type:'CDI', statut:'ACTIF',  conge:false, salaire:620_000, dateEntree:'2020-06-01', contact:'+225 07 23 45 67' },
+  { id:'EMP-003', nom:'Sanogo Awa',              poste:'Infirmière chef',     service:'Soins intensifs',type:'CDI', statut:'CONGE',  conge:true,  salaire:280_000, dateEntree:'2018-09-10', contact:'+225 07 34 56 78' },
+  { id:'EMP-004', nom:'Traoré Célestine',        poste:'Caissière',           service:'Finance',        type:'CDD', statut:'ACTIF',  conge:false, salaire:180_000, dateEntree:'2022-01-20', contact:'+225 07 45 67 89' },
+  { id:'EMP-005', nom:'Dr. Ouédraogo Moussa',    poste:'Biologiste',          service:'Laboratoire',    type:'CDI', statut:'ACTIF',  conge:false, salaire:580_000, dateEntree:'2017-11-05', contact:'+225 07 56 78 90' },
+  { id:'EMP-006', nom:'Coulibaly Ahmed',         poste:'Pharmacien',          service:'Pharmacie',      type:'CDI', statut:'ACTIF',  conge:false, salaire:420_000, dateEntree:'2021-04-12', contact:'+225 07 67 89 01' },
+  { id:'EMP-007', nom:'Diallo Nathalie',         poste:'Secrétaire médicale', service:'Accueil',        type:'CDD', statut:'ACTIF',  conge:false, salaire:160_000, dateEntree:'2023-07-01', contact:'+225 07 78 90 12' },
+  { id:'EMP-008', nom:'Yao Emmanuel',            poste:'Technicien imagerie', service:'Imagerie',       type:'CDI', statut:'ACTIF',  conge:false, salaire:320_000, dateEntree:'2020-02-28', contact:'+225 07 89 01 23' },
 ];
 
 const CONGES = [
-  { employe: 'Infirmière Sanogo Awa', type: 'Congé annuel', debut: '2026-07-10', fin: '2026-07-24', statut: 'APPROUVE', jours: 15 },
-  { employe: 'Dr. Koné Mamadou', type: 'Formation médicale', debut: '2026-07-20', fin: '2026-07-22', statut: 'EN_ATTENTE', jours: 3 },
-  { employe: 'Traoré Célestine', type: 'Congé maladie', debut: '2026-07-08', fin: '2026-07-12', statut: 'APPROUVE', jours: 5 },
+  { employe:'Sanogo Awa',           type:'Congé annuel',     debut:'2026-07-10', fin:'2026-07-24', statut:'APPROUVE',  jours:15 },
+  { employe:'Dr. Koné Mamadou',     type:'Formation médicale',debut:'2026-07-20', fin:'2026-07-22', statut:'EN_ATTENTE', jours:3 },
+  { employe:'Traoré Célestine',     type:'Congé maladie',    debut:'2026-07-08', fin:'2026-07-12', statut:'APPROUVE',  jours:5 },
 ];
 
+const SERVICE_COLORS: Record<string,[string,string]> = {
+  'Chirurgie':      ['#1E40AF','#DBEAFE'],
+  'Gynécologie':    ['#9D174D','#FCE7F3'],
+  'Soins intensifs':['#991B1B','#FEE2E2'],
+  'Finance':        ['#065F46','#D1FAE5'],
+  'Laboratoire':    ['#5B21B6','#EDE9FE'],
+  'Pharmacie':      ['#92400E','#FEF3C7'],
+  'Accueil':        ['#374151','#F3F4F6'],
+  'Imagerie':       ['#0F766E','#CCFBF1'],
+};
+
+const AVATAR_COLORS: [string,string][] = [
+  ['#1D4ED8','#DBEAFE'],['#7C3AED','#EDE9FE'],['#0F766E','#CCFBF1'],
+  ['#B45309','#FEF3C7'],['#9D174D','#FCE7F3'],['#065F46','#D1FAE5'],
+  ['#7C2D12','#FEE2E2'],['#1E40AF','#DBEAFE'],
+];
+function avatarColor(name: string): [string,string] {
+  let h=0; for(let i=0;i<name.length;i++) h=((h<<5)-h+name.charCodeAt(i))|0;
+  return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];
+}
+function initials(nom: string) {
+  return nom.replace(/^Dr\.\s*/,'').split(' ').filter(Boolean).map(w => w[0]).slice(0,2).join('').toUpperCase();
+}
+function fmtXOF(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
+function anciennete(d: string) {
+  const yrs = Math.floor((Date.now() - new Date(d).getTime()) / (365.25*24*3600000));
+  return yrs < 1 ? '< 1 an' : `${yrs} an${yrs>1?'s':''}`;
+}
+
+const TABS = [
+  { key:'personnel', label:'Personnel',        icon:'👥' },
+  { key:'conges',    label:'Congés & Absences',icon:'🌴' },
+  { key:'paie',      label:'Paie',             icon:'💳' },
+] as const;
+
 export default function RHPage() {
-  const [tab, setTab] = useState<'personnel' | 'conges' | 'paie'>('personnel');
+  const [tab, setTab] = useState<'personnel'|'conges'|'paie'>('personnel');
   const [search, setSearch] = useState('');
 
   const filtered = EMPLOYES.filter(e =>
     e.nom.toLowerCase().includes(search.toLowerCase()) ||
-    e.service.toLowerCase().includes(search.toLowerCase())
+    e.service.toLowerCase().includes(search.toLowerCase()) ||
+    e.poste.toLowerCase().includes(search.toLowerCase())
   );
 
+  const masseSalariale = EMPLOYES.reduce((s,e) => s + e.salaire, 0);
+  const nbConge = EMPLOYES.filter(e => e.conge).length;
+
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#ECEFF1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <UserCog size={22} color="#37474F" />
+    <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
+      <style>{`
+        @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .emp-row:hover { background:#F5F7FF !important; }
+      `}</style>
+
+      {/* ── HERO ──────────────────────────────────────────── */}
+      <div style={{ background:'linear-gradient(135deg,#1C1917 0%,#292524 50%,#44403C 100%)', borderRadius:18, padding:'22px 26px 18px', marginBottom:18, position:'relative', overflow:'hidden', boxShadow:'0 8px 24px rgba(28,25,23,0.45)' }}>
+        <div style={{ position:'absolute', top:-60, right:50,  width:200, height:200, borderRadius:'50%', background:'rgba(255,255,255,0.04)' }}/>
+        <div style={{ position:'absolute', bottom:-50, right:260, width:130, height:130, borderRadius:'50%', background:'rgba(255,255,255,0.03)' }}/>
+
+        <div style={{ position:'relative', zIndex:1 }}>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:14, flexWrap:'wrap' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+              <div style={{ width:50, height:50, borderRadius:14, background:'rgba(255,255,255,0.14)', border:'1.5px solid rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <UserCog size={26} color="#fff"/>
+              </div>
+              <div>
+                <h1 style={{ margin:0, fontSize:21, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Ressources Humaines</h1>
+                <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.65)', fontWeight:600 }}>Gestion du personnel, congés et paie</p>
+              </div>
             </div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#1A2332' }}>Ressources Humaines</h1>
+            <div style={{ display:'flex', gap:8 }}>
+              <button style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.25)', background:'rgba(255,255,255,0.1)', cursor:'pointer', color:'#fff', fontSize:12, fontWeight:700 }}>
+                <Download size={13}/> Exporter
+              </button>
+              <button style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 18px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', fontSize:13, color:'#1C1917', fontWeight:800 }}>
+                <Plus size={14}/> Nouvel employé
+              </button>
+            </div>
           </div>
-          <p style={{ margin: 0, fontSize: '13px', color: '#546E7A' }}>Gestion du personnel, congés et paie</p>
+
+          {/* KPI pills */}
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:16 }}>
+            {[
+              { label:'Total employés',    val:142,              icon:<Users size={11}/> },
+              { label:'En congé',          val:nbConge,          icon:<Calendar size={11}/> },
+              { label:'Heures sup. (mois)',val:'124h',           icon:<Clock size={11}/> },
+              { label:'Masse salariale',   val:fmtXOF(masseSalariale), icon:<Banknote size={11}/> },
+            ].map((s,i)=>(
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.18)', borderRadius:8, padding:'5px 12px' }}>
+                <span style={{ color:'rgba(255,255,255,0.65)' }}>{s.icon}</span>
+                <span style={{ fontSize:13, fontWeight:800, color:'#fff' }}>{s.val}</span>
+                <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '8px', background: '#37474F', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-          <Plus size={16} /> Nouvel employé
-        </button>
       </div>
 
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      {/* ── KPI CARDS ─────────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:12, marginBottom:18 }}>
         {[
-          { label: 'Total employés', value: '142', sub: '8 services', color: '#37474F', bg: '#ECEFF1', icon: <Users size={20} color="#37474F" /> },
-          { label: 'En congé', value: '3', sub: 'Ce mois', color: '#E65100', bg: '#FFF3E0', icon: <Calendar size={20} color="#E65100" /> },
-          { label: 'Heures sup. mois', value: '124h', sub: '18 employés concernés', color: '#1565C0', bg: '#E3F2FD', icon: <Clock size={20} color="#1565C0" /> },
-          { label: 'Masse salariale', value: '42,3M XOF', sub: 'Ce mois', color: '#2E7D32', bg: '#E8F5E9', icon: <TrendingUp size={20} color="#2E7D32" /> },
-        ].map((k, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: '12px', padding: '16px 18px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', gap: '12px', borderLeft: `4px solid ${k.color}` }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{k.icon}</div>
+          { label:'Total employés',    value:142,                    sub:'8 services',          color:'#374151', bg:'#F3F4F6', border:'#D1D5DB', icon:<Users size={20} color="#374151"/> },
+          { label:'En congé ce mois',  value:nbConge,                sub:`${nbConge} absence(s)`,color:'#92400E', bg:'#FEF3C7', border:'#FDE68A', icon:<Calendar size={20} color="#92400E"/> },
+          { label:'Heures sup. mois',  value:'124h',                 sub:'18 employés',         color:'#1E40AF', bg:'#DBEAFE', border:'#93C5FD', icon:<Clock size={20} color="#1E40AF"/> },
+          { label:'Masse salariale',   value:fmtXOF(masseSalariale), sub:'Juillet 2026',        color:'#065F46', bg:'#D1FAE5', border:'#6EE7B7', icon:<TrendingUp size={20} color="#065F46"/> },
+        ].map((k,i)=>(
+          <div key={i} style={{ background:'#fff', borderRadius:14, padding:'16px 18px', boxShadow:'0 1px 8px rgba(0,0,0,0.08)', border:`1.5px solid ${k.border}`, display:'flex', alignItems:'center', gap:14 }}>
+            <div style={{ width:44, height:44, borderRadius:12, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
             <div>
-              <div style={{ fontSize: '22px', fontWeight: 800, color: k.color }}>{k.value}</div>
-              <div style={{ fontSize: '11px', color: '#546E7A' }}>{k.label}</div>
-              <div style={{ fontSize: '10px', color: '#90A4AE', marginTop: '1px' }}>{k.sub}</div>
+              <div style={{ fontSize:18, fontWeight:900, color:k.color, lineHeight:1.1, fontVariantNumeric:'tabular-nums' }}>{k.value}</div>
+              <div style={{ fontSize:11, color:'#546E7A', marginTop:2, fontWeight:600 }}>{k.label}</div>
+              <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{k.sub}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', background: '#F5F7FA', padding: '4px', borderRadius: '10px', width: 'fit-content', marginBottom: '20px' }}>
-        {(['personnel', 'conges', 'paie'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, background: tab === t ? '#fff' : 'transparent', color: tab === t ? '#37474F' : '#90A4AE', boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>
-            {t === 'personnel' ? 'Personnel' : t === 'conges' ? 'Congés & Absences' : 'Paie'}
+      {/* ── TABS ──────────────────────────────────────────── */}
+      <div style={{ display:'flex', gap:4, background:'#E8EEF8', padding:4, borderRadius:12, width:'fit-content', marginBottom:16 }}>
+        {TABS.map(t=>(
+          <button key={t.key} onClick={()=>setTab(t.key)}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 18px', borderRadius:9, border:'none', cursor:'pointer', fontSize:13, fontWeight:700, background:tab===t.key?'#fff':'transparent', color:tab===t.key?'#1C1917':'#78909C', boxShadow:tab===t.key?'0 1px 6px rgba(0,0,0,0.12)':'none', transition:'all .15s' }}>
+            {t.icon} {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 'personnel' && (
-        <>
-          <div style={{ position: 'relative', marginBottom: '16px', maxWidth: '360px' }}>
-            <Search size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un employé…" style={{ width: '100%', padding: '9px 12px 9px 36px', border: '1px solid #E8EAED', borderRadius: '8px', fontSize: '13px', outline: 'none', background: '#F5F7FA' }} />
+      {/* ── PERSONNEL ─────────────────────────────────────── */}
+      {tab==='personnel'&&(
+        <div style={{ animation:'fadeUp .25s ease' }}>
+          <div style={{ display:'flex', gap:10, marginBottom:14, alignItems:'center' }}>
+            <div style={{ position:'relative', flex:1, maxWidth:340 }}>
+              <Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom, service, poste…"
+                style={{ width:'100%', padding:'10px 14px 10px 36px', borderRadius:11, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
+            </div>
+            <span style={{ fontSize:12, color:'#90A4AE', fontWeight:600 }}>{filtered.length} employé{filtered.length>1?'s':''}</span>
           </div>
-          <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#F5F7FA' }}>
-                  {['Employé', 'Poste', 'Service', 'Contrat', 'Statut', 'Salaire (XOF)', 'Entrée'].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((e, i) => (
-                  <tr key={e.id} style={{ borderTop: '1px solid #F5F7FA' }}
-                    onMouseEnter={(el) => { (el.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
-                    onMouseLeave={(el) => { (el.currentTarget as HTMLTableRowElement).style.background = 'transparent'; }}>
-                    <td style={{ padding: '13px 16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #0D47A1, #00838F)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, flexShrink: 0 }}>
-                          {e.nom.split(' ').filter(w => !['Dr.', 'Infirmière'].includes(w)).map(w => w[0]).slice(0, 2).join('')}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: '13px', color: '#1A2332' }}>{e.nom}</div>
-                          <div style={{ fontSize: '11px', color: '#90A4AE' }}>{e.id}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '13px 16px', fontSize: '13px', color: '#37474F' }}>{e.poste}</td>
-                    <td style={{ padding: '13px 16px', fontSize: '13px', color: '#546E7A' }}>{e.service}</td>
-                    <td style={{ padding: '13px 16px' }}>
-                      <span style={{ background: e.type === 'CDI' ? '#E8F5E9' : '#FFF3E0', color: e.type === 'CDI' ? '#2E7D32' : '#E65100', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '10px' }}>{e.type}</span>
-                    </td>
-                    <td style={{ padding: '13px 16px' }}>
-                      <span style={{ background: e.conge ? '#FFF3E0' : '#E8F5E9', color: e.conge ? '#E65100' : '#2E7D32', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '10px' }}>
-                        {e.conge ? '🌴 En congé' : '✓ Actif'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '13px 16px', fontSize: '13px', fontWeight: 600, color: '#37474F' }}>{e.salaire}</td>
-                    <td style={{ padding: '13px 16px', fontSize: '12px', color: '#90A4AE' }}>{e.dateEntree}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
 
-      {tab === 'conges' && (
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: '#F5F7FA' }}>
-                {['Employé', 'Type', 'Du', 'Au', 'Jours', 'Statut', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {CONGES.map((c, i) => (
-                <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
-                  <td style={{ padding: '13px 16px', fontWeight: 600, fontSize: '13px', color: '#1A2332' }}>{c.employe}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '13px', color: '#546E7A' }}>{c.type}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '13px', color: '#37474F' }}>{c.debut}</td>
-                  <td style={{ padding: '13px 16px', fontSize: '13px', color: '#37474F' }}>{c.fin}</td>
-                  <td style={{ padding: '13px 16px', fontWeight: 700, fontSize: '13px', color: '#37474F' }}>{c.jours} j</td>
-                  <td style={{ padding: '13px 16px' }}>
-                    <span style={{ background: c.statut === 'APPROUVE' ? '#E8F5E9' : '#FFF3E0', color: c.statut === 'APPROUVE' ? '#2E7D32' : '#E65100', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '20px' }}>
-                      {c.statut === 'APPROUVE' ? '✓ Approuvé' : '⏳ En attente'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '13px 16px' }}>
-                    {c.statut === 'EN_ATTENTE' && (
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#E8F5E9', color: '#2E7D32', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>Approuver</button>
-                        <button style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#FFEBEE', color: '#C62828', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>Refuser</button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 8px rgba(0,0,0,0.08)', overflow:'hidden' }}>
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:680 }}>
+                <thead>
+                  <tr style={{ background:'#F8FAFC' }}>
+                    {['Employé','Poste','Service','Contrat','Statut','Salaire (XOF)','Ancienneté'].map(h=>(
+                      <th key={h} style={{ padding:'11px 16px', textAlign:'left', fontSize:10, fontWeight:700, color:'#78909C', textTransform:'uppercase', letterSpacing:'0.6px', whiteSpace:'nowrap', borderBottom:'1.5px solid #EEF2F8' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(e=>{
+                    const [ac,ab]=avatarColor(e.nom);
+                    const [sc,sb]=SERVICE_COLORS[e.service]??['#374151','#F3F4F6'];
+                    return (
+                      <tr key={e.id} className="emp-row" style={{ borderTop:'1px solid #F0F4FA', transition:'background .12s' }}>
+                        <td style={{ padding:'12px 16px' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:11 }}>
+                            <div style={{ width:38, height:38, borderRadius:11, background:`linear-gradient(135deg,${ab},${ac}22)`, border:`1.5px solid ${ac}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:900, color:ac, flexShrink:0 }}>
+                              {initials(e.nom)}
+                            </div>
+                            <div>
+                              <div style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{e.nom}</div>
+                              <div style={{ fontSize:10, color:'#90A4AE', fontFamily:'monospace' }}>{e.id}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:13, color:'#37474F', fontWeight:600 }}>{e.poste}</td>
+                        <td style={{ padding:'12px 16px' }}>
+                          <span style={{ fontSize:11, fontWeight:700, padding:'3px 9px', borderRadius:20, background:sb, color:sc, border:`1px solid ${sc}33` }}>{e.service}</span>
+                        </td>
+                        <td style={{ padding:'12px 16px' }}>
+                          <span style={{ fontSize:11, fontWeight:800, padding:'3px 9px', borderRadius:20, background:e.type==='CDI'?'#D1FAE5':'#FEF3C7', color:e.type==='CDI'?'#065F46':'#92400E', border:`1px solid ${e.type==='CDI'?'#6EE7B7':'#FDE68A'}` }}>
+                            {e.type}
+                          </span>
+                        </td>
+                        <td style={{ padding:'12px 16px' }}>
+                          <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'3px 9px', borderRadius:20, background:e.conge?'#FEF3C7':'#D1FAE5', color:e.conge?'#92400E':'#065F46', border:`1px solid ${e.conge?'#FDE68A':'#6EE7B7'}` }}>
+                            <span style={{ width:6, height:6, borderRadius:'50%', background:e.conge?'#F59E0B':'#10B981', display:'inline-block' }}/>
+                            {e.conge?'En congé':'Actif'}
+                          </span>
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:13, fontWeight:800, color:'#1A2332', whiteSpace:'nowrap', fontVariantNumeric:'tabular-nums' }}>
+                          {fmtXOF(e.salaire)}
+                        </td>
+                        <td style={{ padding:'12px 16px', fontSize:12, color:'#78909C' }}>{anciennete(e.dateEntree)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
-      {tab === 'paie' && (
-        <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '24px' }}>
-          <div style={{ textAlign: 'center', padding: '40px', color: '#90A4AE' }}>
-            <TrendingUp size={48} style={{ margin: '0 auto 16px', opacity: 0.4 }} />
-            <p style={{ fontSize: '15px', fontWeight: 600, color: '#37474F', margin: '0 0 8px' }}>Module de paie — Juillet 2026</p>
-            <p style={{ fontSize: '13px', margin: 0 }}>Masse salariale : <strong style={{ color: '#2E7D32' }}>42 380 000 XOF</strong></p>
-            <p style={{ fontSize: '12px', marginTop: '6px' }}>142 bulletins à générer pour ce mois</p>
-            <button style={{ marginTop: '20px', padding: '10px 24px', borderRadius: '8px', background: '#37474F', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-              Générer les bulletins de paie
-            </button>
+      {/* ── CONGÉS ────────────────────────────────────────── */}
+      {tab==='conges'&&(
+        <div style={{ animation:'fadeUp .25s ease' }}>
+          <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 8px rgba(0,0,0,0.08)', overflow:'hidden' }}>
+            <div style={{ padding:'14px 20px', borderBottom:'1.5px solid #EEF2F8', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{CONGES.length} demande{CONGES.length>1?'s':''} ce mois</span>
+              <span style={{ fontSize:11, fontWeight:700, color:'#92400E', background:'#FEF3C7', padding:'3px 12px', borderRadius:20, border:'1px solid #FDE68A' }}>
+                {CONGES.filter(c=>c.statut==='EN_ATTENTE').length} en attente
+              </span>
+            </div>
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:600 }}>
+                <thead>
+                  <tr style={{ background:'#F8FAFC' }}>
+                    {['Employé','Type','Du','Au','Jours','Statut','Actions'].map(h=>(
+                      <th key={h} style={{ padding:'11px 16px', textAlign:'left', fontSize:10, fontWeight:700, color:'#78909C', textTransform:'uppercase', letterSpacing:'0.6px', borderBottom:'1.5px solid #EEF2F8' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {CONGES.map((c,i)=>{
+                    const approuve = c.statut==='APPROUVE';
+                    return (
+                      <tr key={i} style={{ borderTop:'1px solid #F0F4FA', borderLeft:`3px solid ${approuve?'#6EE7B7':'#FDE68A'}` }}>
+                        <td style={{ padding:'13px 16px', fontWeight:700, fontSize:13, color:'#1A2332' }}>{c.employe}</td>
+                        <td style={{ padding:'13px 16px', fontSize:13, color:'#546E7A' }}>{c.type}</td>
+                        <td style={{ padding:'13px 16px', fontSize:12, color:'#37474F', whiteSpace:'nowrap' }}>{new Date(c.debut).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</td>
+                        <td style={{ padding:'13px 16px', fontSize:12, color:'#37474F', whiteSpace:'nowrap' }}>{new Date(c.fin).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})}</td>
+                        <td style={{ padding:'13px 16px', fontWeight:800, fontSize:13, color:'#1A2332' }}>{c.jours}j</td>
+                        <td style={{ padding:'13px 16px' }}>
+                          <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'3px 10px', borderRadius:20, background:approuve?'#D1FAE5':'#FEF3C7', color:approuve?'#065F46':'#92400E', border:`1px solid ${approuve?'#6EE7B7':'#FDE68A'}` }}>
+                            <span style={{ width:6, height:6, borderRadius:'50%', background:approuve?'#10B981':'#F59E0B', display:'inline-block' }}/>
+                            {approuve?'Approuvé':'En attente'}
+                          </span>
+                        </td>
+                        <td style={{ padding:'13px 16px' }}>
+                          {!approuve&&(
+                            <div style={{ display:'flex', gap:6 }}>
+                              <button style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 12px', borderRadius:8, border:'none', background:'#D1FAE5', color:'#065F46', fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                                <CheckCircle size={11}/> Approuver
+                              </button>
+                              <button style={{ display:'flex', alignItems:'center', gap:4, padding:'5px 12px', borderRadius:8, border:'none', background:'#FEE2E2', color:'#991B1B', fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                                <XCircle size={11}/> Refuser
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PAIE ──────────────────────────────────────────── */}
+      {tab==='paie'&&(
+        <div style={{ animation:'fadeUp .25s ease' }}>
+          <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 8px rgba(0,0,0,0.08)', overflow:'hidden' }}>
+            <div style={{ background:'linear-gradient(135deg,#064E3B,#065F46)', padding:'20px 24px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14 }}>
+              <div>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.6px' }}>Module de paie</div>
+                <div style={{ fontSize:22, fontWeight:900, color:'#fff', marginTop:4 }}>Juillet 2026</div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', fontWeight:700 }}>Masse salariale</div>
+                <div style={{ fontSize:20, fontWeight:900, color:'#fff', fontVariantNumeric:'tabular-nums' }}>{fmtXOF(masseSalariale)}</div>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.6)', marginTop:2 }}>142 bulletins à générer</div>
+              </div>
+            </div>
+
+            {/* Breakdown par service */}
+            <div style={{ padding:'20px 24px' }}>
+              <div style={{ fontSize:12, fontWeight:700, color:'#78909C', textTransform:'uppercase', letterSpacing:'0.6px', marginBottom:14 }}>Répartition par service (aperçu)</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                {[
+                  { service:'Médecins',   montant:1_870_000, count:3 },
+                  { service:'Infirmiers', montant:280_000,   count:1 },
+                  { service:'Pharmacie',  montant:420_000,   count:1 },
+                  { service:'Laboratoire',montant:580_000,   count:1 },
+                  { service:'Autres',     montant:500_000,   count:3 },
+                ].map(s=>{
+                  const pct = Math.round((s.montant / masseSalariale) * 100);
+                  return (
+                    <div key={s.service}>
+                      <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:5 }}>
+                        <span style={{ fontWeight:700, color:'#37474F' }}>{s.service} <span style={{ fontWeight:400, color:'#90A4AE' }}>({s.count})</span></span>
+                        <span style={{ fontWeight:800, color:'#065F46', fontVariantNumeric:'tabular-nums' }}>{fmtXOF(s.montant)}</span>
+                      </div>
+                      <div style={{ height:7, background:'#F0F4FA', borderRadius:4, overflow:'hidden' }}>
+                        <div style={{ height:'100%', width:`${pct}%`, background:'linear-gradient(90deg,#065F46,#10B981)', borderRadius:4 }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop:24, display:'flex', gap:10 }}>
+                <button style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 22px', borderRadius:11, background:'linear-gradient(135deg,#064E3B,#065F46)', border:'none', color:'#fff', fontSize:13, fontWeight:800, cursor:'pointer', boxShadow:'0 4px 14px rgba(6,78,59,0.3)' }}>
+                  <Banknote size={16}/> Générer les bulletins de paie
+                </button>
+                <button style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 18px', borderRadius:11, background:'#fff', border:'1.5px solid #E0E8F0', color:'#374151', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                  <Download size={14}/> Exporter XLSX
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
