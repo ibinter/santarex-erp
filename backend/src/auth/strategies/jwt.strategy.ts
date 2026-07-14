@@ -30,6 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('Utilisateur introuvable ou inactif');
     }
     return {
+      id: payload.sub,
       userId: payload.sub,
       email: payload.email,
       role: payload.role,
