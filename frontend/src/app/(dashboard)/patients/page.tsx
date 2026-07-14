@@ -5,17 +5,10 @@ import { useRouter } from 'next/navigation';
 import {
   Users, UserPlus, Search, RefreshCw, Eye, Edit,
   Download, ChevronLeft, ChevronRight, Filter, X,
-  TrendingUp, UserCheck, Heart, Activity,
+  TrendingUp, UserCheck, Heart, Activity, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-
-function exportPatients() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://santarex.ibigsoft.com/api/v1';
-  const a = document.createElement('a');
-  a.href = `${base}/exports/patients/xlsx` + (token ? `?token=${encodeURIComponent(token)}` : '');
-  a.download = 'patients.xlsx'; a.click();
-}
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 type Patient = {
   id: string; ipp?: string; nom: string; prenom: string;
@@ -119,6 +112,46 @@ export default function PatientsPage() {
 
   const clearFilters = () => { setSearch(''); setSearchInput(''); setFiltreStatut(''); setFiltreSexe(''); setPage(1); };
 
+  const handleExportXLSX = () => exportXLSX(
+    patients.map(p => ({
+      'IPP': p.ipp ?? '—',
+      'Nom': p.nom,
+      'Prénom': p.prenom,
+      'Date naissance': p.dateNaissance ? new Date(p.dateNaissance).toLocaleDateString('fr-FR') : '—',
+      'Sexe': p.sexe === 'M' ? 'Homme' : p.sexe === 'F' ? 'Femme' : '—',
+      'Téléphone': p.telephone ?? '—',
+      'Groupe sanguin': p.groupeSanguin ?? '—',
+      'Statut': p.statut ?? 'actif',
+    })),
+    `patients_${new Date().toISOString().slice(0, 10)}`, 'Patients',
+  );
+
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'IPP', dataKey: 'ipp', width: 28 },
+      { header: 'Nom', dataKey: 'nom', width: 36 },
+      { header: 'Prénom', dataKey: 'prenom', width: 36 },
+      { header: 'Naissance', dataKey: 'naissance', width: 28 },
+      { header: 'Sexe', dataKey: 'sexe', width: 18 },
+      { header: 'Téléphone', dataKey: 'tel', width: 30 },
+      { header: 'Groupe', dataKey: 'groupe', width: 18 },
+      { header: 'Statut', dataKey: 'statut', width: 18 },
+    ],
+    patients.map(p => ({
+      ipp: p.ipp ?? '—',
+      nom: p.nom,
+      prenom: p.prenom,
+      naissance: p.dateNaissance ? new Date(p.dateNaissance).toLocaleDateString('fr-FR') : '—',
+      sexe: p.sexe === 'M' ? 'H' : p.sexe === 'F' ? 'F' : '—',
+      tel: p.telephone ?? '—',
+      groupe: p.groupeSanguin ?? '—',
+      statut: p.statut ?? 'actif',
+    })),
+    'Liste des Patients',
+    `patients_${new Date().toISOString().slice(0, 10)}`,
+    `${total} patient(s) — page ${page} — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
+
   return (
     <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
       <style>{`
@@ -154,9 +187,13 @@ export default function PatientsPage() {
             style={{ width:38, height:38, borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <RefreshCw size={16} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
           </button>
-          <button onClick={exportPatients}
-            style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 16px', borderRadius:10, background:'rgba(46,125,50,0.85)', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
-            <Download size={14}/> Export XLSX
+          <button onClick={handleExportPDF} disabled={patients.length === 0}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:10, background:'rgba(239,68,68,0.35)', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
+            <Download size={14}/> PDF
+          </button>
+          <button onClick={handleExportXLSX} disabled={patients.length === 0}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:10, background:'rgba(46,125,50,0.85)', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
+            <FileSpreadsheet size={14}/> XLSX
           </button>
           <button onClick={() => router.push('/patients/nouveau')}
             style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 18px', borderRadius:10, background:'#fff', border:'none', color:'#1565C0', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>

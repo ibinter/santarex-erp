@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Printer, CreditCard, RefreshCw, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type LigneFacture = { id: string; libelle?: string; type?: string; quantite?: number; prixUnitaire?: number; remise?: number; total?: number };
 type Paiement = { id: string; reference?: string; dateCreation?: string; modePaiement?: string; montant?: number; statut?: string; notes?: string };
@@ -120,13 +121,25 @@ export default function FactureDetailPage() {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
                   {scfg.icon} {scfg.label}
                 </span>
-                <button onClick={() => {
-                  const token = localStorage.getItem('access_token');
-                  const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://santarex.ibigsoft.com/api/v1';
-                  const a = document.createElement('a');
-                  a.href = `${base}/exports/factures/${facture.id}/pdf` + (token ? `?token=${encodeURIComponent(token)}` : '');
-                  a.download = `facture-${facture.reference ?? facture.id}.pdf`; a.click();
-                }} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
+                <button onClick={() => exportFichePDF(
+                  `Facture ${facture.numero ?? facture.reference ?? facture.id.slice(0,8)}`,
+                  [
+                    { label: 'Informations', fields: [
+                      { key: 'N° Facture', value: facture.numero ?? facture.reference ?? '—' },
+                      { key: 'Date émission', value: facture.dateEmission ? new Date(facture.dateEmission).toLocaleDateString('fr-FR') : '—' },
+                      { key: 'Statut', value: facture.statut ?? '—' },
+                      { key: 'Patient', value: facture.patient ? `${facture.patient.prenom} ${facture.patient.nom}` : '—' },
+                      { key: 'IPP', value: facture.patient?.ipp ?? '—' },
+                    ]},
+                    { label: 'Montants', fields: [
+                      { key: 'Sous-total', value: `${(facture.sousTotal ?? 0).toLocaleString('fr-FR')} XOF` },
+                      { key: 'Total', value: `${(facture.total ?? facture.montantTotal ?? 0).toLocaleString('fr-FR')} XOF` },
+                      { key: 'Montant payé', value: `${(facture.montantPaye ?? 0).toLocaleString('fr-FR')} XOF` },
+                      { key: 'Reste dû', value: `${(facture.resteAPayer ?? 0).toLocaleString('fr-FR')} XOF` },
+                    ]},
+                  ],
+                  `facture-${facture.numero ?? facture.id.slice(0,8)}`,
+                )} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
                   <Download size={13} /> PDF
                 </button>
                 <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>

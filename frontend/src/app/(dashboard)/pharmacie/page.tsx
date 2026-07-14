@@ -4,25 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Package, AlertTriangle, TrendingUp, Plus, Search,
-  RefreshCw, Download, ChevronRight, Pill, BarChart3, ShieldAlert,
+  RefreshCw, Download, ChevronRight, Pill, BarChart3, ShieldAlert, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportXLSX, exportPDF } from '@/lib/export';
 
 type Medicament = {
   id: string; code: string; nom: string; nomCommercial?: string; dci?: string;
   forme?: string; dosage?: string; categorie?: string;
   stockActuel: number; stockMinimum: number;
-  prixUnitaireAchat: number; prixVente: number;
+  prixUnitaire: string; prixVente: string;
   actif: boolean; createdAt: string;
 };
-
-function exportStock() {
-  const token = typeof window!=='undefined'?localStorage.getItem('access_token'):null;
-  const base  = process.env.NEXT_PUBLIC_API_URL??'https://santarex.ibigsoft.com/api/v1';
-  const a = document.createElement('a');
-  a.href = `${base}/exports/pharmacie/stock/xlsx`+(token?`?token=${encodeURIComponent(token)}`:'');
-  a.download='stock-pharmacie.xlsx'; a.click();
-}
 
 function fmtXOF(v: number) {
   return new Intl.NumberFormat('fr-FR').format(v)+' F';
@@ -84,7 +77,48 @@ export default function PharmaciePage() {
   const ruptures     = medicaments.filter(m=>m.stockActuel<=0).length;
   const alertes      = medicaments.filter(m=>m.stockActuel>0&&m.stockActuel<=m.stockMinimum).length;
   const enStock      = medicaments.filter(m=>m.stockActuel>m.stockMinimum).length;
-  const valeurTotale = medicaments.reduce((acc,m)=>acc+m.stockActuel*m.prixUnitaireAchat,0);
+  const valeurTotale = medicaments.reduce((acc,m)=>acc+m.stockActuel*(parseFloat(m.prixVente)||0),0);
+
+  const handleExportXLSX = () => exportXLSX(
+    medicaments.map(m => ({
+      'Code': m.code,
+      'Médicament': m.nom,
+      'Forme': m.forme ?? '—',
+      'Dosage': m.dosage ?? '—',
+      'Catégorie': m.categorie ?? '—',
+      'Stock actuel': m.stockActuel,
+      'Stock minimum': m.stockMinimum,
+      'Prix vente (XOF)': parseFloat(m.prixVente) || 0,
+      'Statut': m.stockActuel <= 0 ? 'Rupture' : m.stockActuel <= m.stockMinimum ? 'Alerte' : 'En stock',
+    })),
+    `pharmacie_stock_${new Date().toISOString().slice(0, 10)}`, 'Stock Pharmacie',
+  );
+
+  const handleExportPDF = () => exportPDF(
+    [
+      { header: 'Code', dataKey: 'code', width: 24 },
+      { header: 'Médicament', dataKey: 'nom', width: 44 },
+      { header: 'Forme', dataKey: 'forme', width: 24 },
+      { header: 'Catégorie', dataKey: 'categorie', width: 30 },
+      { header: 'Stock', dataKey: 'stock', width: 18 },
+      { header: 'Min.', dataKey: 'min', width: 14 },
+      { header: 'Prix vente', dataKey: 'prix', width: 26 },
+      { header: 'Statut', dataKey: 'statut', width: 22 },
+    ],
+    medicaments.map(m => ({
+      code: m.code,
+      nom: m.nom,
+      forme: m.forme ?? '—',
+      categorie: m.categorie ?? '—',
+      stock: m.stockActuel,
+      min: m.stockMinimum,
+      prix: `${(parseFloat(m.prixVente) || 0).toLocaleString('fr-FR')} F`,
+      statut: m.stockActuel <= 0 ? 'Rupture' : m.stockActuel <= m.stockMinimum ? 'Alerte' : 'En stock',
+    })),
+    'Stock Pharmacie',
+    `pharmacie_stock_${new Date().toISOString().slice(0, 10)}`,
+    `${medicaments.length} médicament(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+  );
 
   const displayed = medicaments.filter(m => {
     const q = search.toLowerCase();
@@ -159,9 +193,13 @@ export default function PharmaciePage() {
               style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600 }}>
               <RefreshCw size={14} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
             </button>
-            <button onClick={exportStock}
+            <button onClick={handleExportPDF} disabled={medicaments.length === 0}
+              style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.3)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
+              <Download size={13}/> PDF
+            </button>
+            <button onClick={handleExportXLSX} disabled={medicaments.length === 0}
               style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
-              <Download size={13}/> XLSX
+              <FileSpreadsheet size={13}/> XLSX
             </button>
             <button onClick={()=>router.push('/pharmacie/medicaments/nouveau')}
               style={{ padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', color:'#065F46', display:'flex', alignItems:'center', gap:8, fontSize:13, fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
@@ -269,7 +307,7 @@ export default function PharmaciePage() {
                     </td>
                     <td style={{ padding:'11px 14px', fontSize:12, color:'#6B7280', fontWeight:600 }}>{m.stockMinimum}</td>
                     <td style={{ padding:'11px 14px', fontSize:12, fontWeight:700, color:'#1A2332', whiteSpace:'nowrap', fontVariantNumeric:'tabular-nums' }}>
-                      {fmtXOF(m.prixVente)}
+                      {fmtXOF(parseFloat(m.prixVente)||0)}
                     </td>
                     <td style={{ padding:'11px 14px' }}>
                       <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
