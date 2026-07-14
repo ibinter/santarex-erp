@@ -47,7 +47,7 @@ export default function LoginPage() {
         {/* Logo & titre */}
         <div className="text-center mb-8">
           <img
-            src="/logo.png"
+            src="/logo-tr.png"
             alt="SANTAREX ERP"
             className="h-28 w-auto mx-auto mb-2 object-contain"
           />

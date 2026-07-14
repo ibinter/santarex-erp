@@ -102,6 +102,8 @@ export default function RHPage() {
         @keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
         @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
         .emp-row:hover { background:#F5F7FF !important; }
+        .rh-kpi { cursor:pointer; transition:all .15s; }
+        .rh-kpi:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.12)!important; }
       `}</style>
 
       {/* ── HERO ──────────────────────────────────────────── */}
@@ -154,12 +156,13 @@ export default function RHPage() {
       {/* ── KPI CARDS ─────────────────────────────────────── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:12, marginBottom:18 }}>
         {[
-          { label:'Total employés',    value:142,                    sub:'8 services',          color:'#374151', bg:'#F3F4F6', border:'#D1D5DB', icon:<Users size={20} color="#374151"/> },
-          { label:'En congé ce mois',  value:nbConge,                sub:`${nbConge} absence(s)`,color:'#92400E', bg:'#FEF3C7', border:'#FDE68A', icon:<Calendar size={20} color="#92400E"/> },
-          { label:'Heures sup. mois',  value:'124h',                 sub:'18 employés',         color:'#1E40AF', bg:'#DBEAFE', border:'#93C5FD', icon:<Clock size={20} color="#1E40AF"/> },
-          { label:'Masse salariale',   value:fmtXOF(masseSalariale), sub:'Juillet 2026',        color:'#065F46', bg:'#D1FAE5', border:'#6EE7B7', icon:<TrendingUp size={20} color="#065F46"/> },
+          { label:'Total employés',    value:142,                    sub:'8 services',          color:'#374151', bg:'#F3F4F6', border:'#D1D5DB', icon:<Users size={20} color="#374151"/>, tab:'personnel' as const },
+          { label:'En congé ce mois',  value:nbConge,                sub:`${nbConge} absence(s)`,color:'#92400E', bg:'#FEF3C7', border:'#FDE68A', icon:<Calendar size={20} color="#92400E"/>, tab:'conges' as const },
+          { label:'Heures sup. mois',  value:'124h',                 sub:'18 employés',         color:'#1E40AF', bg:'#DBEAFE', border:'#93C5FD', icon:<Clock size={20} color="#1E40AF"/>, tab:'paie' as const },
+          { label:'Masse salariale',   value:fmtXOF(masseSalariale), sub:'Juillet 2026',        color:'#065F46', bg:'#D1FAE5', border:'#6EE7B7', icon:<TrendingUp size={20} color="#065F46"/>, tab:'paie' as const },
         ].map((k,i)=>(
-          <div key={i} style={{ background:'#fff', borderRadius:14, padding:'16px 18px', boxShadow:'0 1px 8px rgba(0,0,0,0.08)', border:`1.5px solid ${k.border}`, display:'flex', alignItems:'center', gap:14 }}>
+          <div key={i} className="rh-kpi" title={`Voir : ${k.label}`} onClick={()=>setTab(k.tab)}
+            style={{ background:'#fff', borderRadius:14, padding:'16px 18px', boxShadow:'0 1px 8px rgba(0,0,0,0.08)', border:`1.5px solid ${k.border}`, display:'flex', alignItems:'center', gap:14 }}>
             <div style={{ width:44, height:44, borderRadius:12, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
             <div>
               <div style={{ fontSize:18, fontWeight:900, color:k.color, lineHeight:1.1, fontVariantNumeric:'tabular-nums' }}>{k.value}</div>

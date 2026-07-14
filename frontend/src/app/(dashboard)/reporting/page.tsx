@@ -7,6 +7,7 @@ import {
   ShieldCheck, Package, Heart,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportPDF, exportXLSX } from '@/lib/export';
 
 type FactureStats = {
   totalHT?: number; totalTTC?: number; totalPaye?: number;
@@ -112,6 +113,56 @@ export default function ReportingPage() {
       icon: <Activity size={20} color="#5B21B6"/>,
     },
   ];
+
+  // ── Données de synthèse (indicateurs réellement affichés) ──────────
+  const xof = (v?: number) => (v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—');
+  const buildRows = () => {
+    const rows: { indicateur: string; valeur: string }[] = [
+      { indicateur: 'Total patients enregistrés', valeur: nbPatients != null ? nbPatients.toLocaleString('fr-FR') : '—' },
+      { indicateur: 'Nombre de factures', valeur: factureStats?.nbFactures != null ? factureStats.nbFactures.toLocaleString('fr-FR') : '—' },
+      { indicateur: 'Recettes (TTC)', valeur: xof(factureStats?.totalTTC ?? factureStats?.totalHT) },
+      { indicateur: 'Total encaissé', valeur: xof(factureStats?.totalPaye) },
+      { indicateur: 'Taux de recouvrement', valeur: pct(factureStats?.tauxRecouvrement) },
+    ];
+    statuts.forEach(([s, n]) => {
+      rows.push({ indicateur: `Factures — ${STATUT_CFG[s]?.label ?? s}`, valeur: String(n) });
+    });
+    rows.push(
+      { indicateur: 'Séjours actifs', valeur: hospStats?.sejoursActifs != null ? String(hospStats.sejoursActifs) : '—' },
+      { indicateur: 'Total séjours', valeur: hospStats?.totalSejours != null ? String(hospStats.totalSejours) : '—' },
+      { indicateur: 'Lits occupés', valeur: hospStats?.litsOccupes != null ? String(hospStats.litsOccupes) : '—' },
+      { indicateur: 'Total lits', valeur: hospStats?.totalLits != null ? String(hospStats.totalLits) : '—' },
+      { indicateur: "Taux d'occupation", valeur: pct(hospStats?.tauxOccupation) },
+      { indicateur: 'Analyses du jour — total', valeur: laboStats?.totalDemandes != null ? String(laboStats.totalDemandes) : '—' },
+      { indicateur: 'Analyses du jour — urgentes', valeur: laboStats?.demandesUrgentes != null ? String(laboStats.demandesUrgentes) : '—' },
+      { indicateur: 'Analyses du jour — traitées', valeur: laboStats?.demandesTraitees != null ? String(laboStats.demandesTraitees) : '—' },
+    );
+    return rows;
+  };
+
+  const handleExportPDF = () => {
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    exportPDF(
+      [
+        { header: 'Indicateur', dataKey: 'indicateur' },
+        { header: 'Valeur', dataKey: 'valeur' },
+      ],
+      buildRows(),
+      'Reporting & Indicateurs',
+      `reporting-${new Date().toISOString().slice(0, 10)}`,
+      `Tableau de bord transversal — ${dateStr}`,
+      [
+        { label: 'Patients', value: nbPatients != null ? nbPatients.toLocaleString('fr-FR') : '—', color: [29, 78, 216] },
+        { label: 'Recouvrement', value: pct(factureStats?.tauxRecouvrement), color: [6, 95, 70] },
+        { label: 'Occupation', value: pct(hospStats?.tauxOccupation), color: [30, 64, 175] },
+        { label: 'Analyses/jour', value: laboStats?.totalDemandes != null ? String(laboStats.totalDemandes) : '—', color: [91, 33, 182] },
+      ],
+    );
+  };
+
+  const handleExportXLSX = () => {
+    exportXLSX(buildRows(), `reporting-${new Date().toISOString().slice(0, 10)}`, 'Indicateurs');
+  };
 
   const Skeleton = ({ w = 80, h = 16 }: { w?: number; h?: number }) => (
     <div style={{ width: w, height: h, borderRadius: 6, background: 'linear-gradient(90deg,#F0F4FA,#E8EEF6)', animation: 'pulse 1.5s ease infinite', display: 'inline-block' }}/>
@@ -361,7 +412,16 @@ export default function ReportingPage() {
       <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 8px rgba(0,0,0,0.08)', overflow:'hidden' }}>
         <div style={{ padding:'14px 20px', borderBottom:'1.5px solid #EEF2F8', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <span style={{ fontSize:12, fontWeight:700, color:'#1A2332', textTransform:'uppercase', letterSpacing:'0.5px' }}>Exports disponibles</span>
-          <span style={{ fontSize:11, color:'#90A4AE', fontWeight:600 }}>{RAPPORT_ITEMS.length} rapports</span>
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <button onClick={handleExportPDF} disabled={loading} className="dl-btn"
+              style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 14px', borderRadius:8, background:'#0A0F1E', color:'#fff', border:'none', cursor: loading ? 'default' : 'pointer', fontSize:11, fontWeight:700, opacity: loading ? 0.6 : 1 }}>
+              <Download size={12}/> Synthèse PDF
+            </button>
+            <button onClick={handleExportXLSX} disabled={loading} className="dl-btn"
+              style={{ display:'flex', alignItems:'center', gap:5, padding:'7px 14px', borderRadius:8, background:'#065F46', color:'#fff', border:'none', cursor: loading ? 'default' : 'pointer', fontSize:11, fontWeight:700, opacity: loading ? 0.6 : 1 }}>
+              <FileText size={12}/> Synthèse XLSX
+            </button>
+          </div>
         </div>
         <div style={{ padding:'18px 20px' }}>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))', gap:12 }}>
@@ -379,9 +439,14 @@ export default function ReportingPage() {
                   <div style={{ fontWeight:800, fontSize:13, color:'#1A2332', lineHeight:1.3 }}>{r.titre}</div>
                 </div>
                 <div style={{ fontSize:12, color:'#546E7A', marginBottom:12, lineHeight:1.5 }}>{r.desc}</div>
-                <button className="dl-btn" style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', borderRadius:8, background:r.color, color:'#fff', border:'none', cursor:'pointer', fontSize:11, fontWeight:700, transition:'opacity .15s' }}>
-                  <Download size={11}/> Générer PDF
-                </button>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={handleExportPDF} className="dl-btn" style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', borderRadius:8, background:r.color, color:'#fff', border:'none', cursor:'pointer', fontSize:11, fontWeight:700, transition:'opacity .15s' }}>
+                    <Download size={11}/> Générer PDF
+                  </button>
+                  <button onClick={handleExportXLSX} className="dl-btn" style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', borderRadius:8, background:'#fff', color:r.color, border:`1.5px solid ${r.border}`, cursor:'pointer', fontSize:11, fontWeight:700, transition:'opacity .15s' }}>
+                    <FileText size={11}/> XLSX
+                  </button>
+                </div>
               </div>
             ))}
           </div>

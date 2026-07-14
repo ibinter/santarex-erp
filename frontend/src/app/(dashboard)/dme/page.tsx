@@ -75,6 +75,8 @@ export default function DMEIndexPage() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         .pat-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.12)!important;transform:translateY(-2px);}
+        .dme-stat{cursor:pointer;transition:all .15s;}
+        .dme-stat:hover{transform:translateY(-2px);background:rgba(255,255,255,0.2)!important;}
       `}</style>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
@@ -98,11 +100,14 @@ export default function DMEIndexPage() {
           {/* Stats pills */}
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:6 }}>
             {[
-              { label:'Patients actifs', val:loading?'…':patients.length, icon:<User size={11}/> },
-              { label:'Consultations', val:'DME complet', icon:<Stethoscope size={11}/> },
-              { label:'Ordonnances', val:'& Analyses', icon:<Pill size={11}/> },
+              { label:'Patients actifs', val:loading?'…':patients.length, icon:<User size={11}/>, reset:true },
+              { label:'Consultations', val:'DME complet', icon:<Stethoscope size={11}/>, reset:false },
+              { label:'Ordonnances', val:'& Analyses', icon:<Pill size={11}/>, reset:false },
             ].map((s,i)=>(
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'5px 12px' }}>
+              <div key={i} className={s.reset?'dme-stat':undefined}
+                title={s.reset?'Afficher tous les patients actifs':undefined}
+                onClick={s.reset?()=>{ setSearch(''); setSexeFilter(''); load(); }:undefined}
+                style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'5px 12px' }}>
                 <span style={{ color:'rgba(255,255,255,0.7)' }}>{s.icon}</span>
                 <span style={{ fontSize:13, fontWeight:800, color:'#fff' }}>{s.val}</span>
                 <span style={{ fontSize:11, color:'rgba(255,255,255,0.6)' }}>{s.label}</span>

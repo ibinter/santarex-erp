@@ -71,6 +71,8 @@ export default function ComptabilitePage() {
         @keyframes pulse  { 0%,100%{opacity:1}50%{opacity:.4} }
         .ec-row:hover { background: #F8FAFF !important; }
         .gl-row:hover { background: #F8F8FF !important; }
+        .compta-kpi { cursor:pointer; transition:all .15s; }
+        .compta-kpi:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.12)!important; }
       `}</style>
 
       {/* ── HERO ──────────────────────────────────────────────── */}
@@ -119,12 +121,13 @@ export default function ComptabilitePage() {
       {/* ── KPI CARDS ─────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Produits (Juillet)', value: fmt(produits), color: '#065F46', bg: '#D1FAE5', border: '#A7F3D0', icon: <TrendingUp size={20} color="#065F46"/> },
-          { label: 'Charges (Juillet)',  value: fmt(charges),  color: '#991B1B', bg: '#FEE2E2', border: '#FECACA', icon: <TrendingDown size={20} color="#991B1B"/> },
-          { label: 'Résultat net',       value: fmt(resultat), color: resultat > 0 ? '#065F46' : '#991B1B', bg: resultat > 0 ? '#D1FAE5' : '#FEE2E2', border: resultat > 0 ? '#A7F3D0' : '#FECACA', icon: <DollarSign size={20} color={resultat > 0 ? '#065F46' : '#991B1B'}/> },
-          { label: 'Écritures en attente', value: nbAttente,  color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: <FileText size={20} color="#92400E"/> },
+          { label: 'Produits (Juillet)', value: fmt(produits), color: '#065F46', bg: '#D1FAE5', border: '#A7F3D0', icon: <TrendingUp size={20} color="#065F46"/>, tab: 'bilan' as const },
+          { label: 'Charges (Juillet)',  value: fmt(charges),  color: '#991B1B', bg: '#FEE2E2', border: '#FECACA', icon: <TrendingDown size={20} color="#991B1B"/>, tab: 'bilan' as const },
+          { label: 'Résultat net',       value: fmt(resultat), color: resultat > 0 ? '#065F46' : '#991B1B', bg: resultat > 0 ? '#D1FAE5' : '#FEE2E2', border: resultat > 0 ? '#A7F3D0' : '#FECACA', icon: <DollarSign size={20} color={resultat > 0 ? '#065F46' : '#991B1B'}/>, tab: 'bilan' as const },
+          { label: 'Écritures en attente', value: nbAttente,  color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: <FileText size={20} color="#92400E"/>, tab: 'journal' as const },
         ].map((k, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 8px rgba(0,0,0,0.08)', border: `1.5px solid ${k.border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div key={i} className="compta-kpi" title={`Voir : ${k.label}`} onClick={() => setTab(k.tab)}
+            style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 8px rgba(0,0,0,0.08)', border: `1.5px solid ${k.border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{k.icon}</div>
             <div>
               <div style={{ fontSize: 16, fontWeight: 900, color: k.color, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>{k.value}</div>

@@ -168,6 +168,7 @@ export default function UrgencesPage() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes tickBlink{0%,100%{opacity:1}49%{opacity:1}50%{opacity:.3}99%{opacity:.3}}
+        .urg-stat:hover{filter:brightness(1.25);}
       `}</style>
 
       {/* ── HERO URGENCES ────────────────────────────────────────── */}
@@ -218,7 +219,7 @@ export default function UrgencesPage() {
             { label:'Non urg.',  value:stats.vert,   color:'#BBF7D0', dot:'#22C55E', man:'VERT'   as CategorieManchester },
             { label:'Total',     value:stats.total,  color:'rgba(255,255,255,0.9)', dot:'#fff', man:'TOUS' as any },
           ].map((s,i)=>(
-            <button key={i} onClick={()=>setFiltreMan(filtreMan===s.man?'TOUS':s.man)}
+            <button key={i} className="urg-stat" title={`Filtrer : ${s.label}`} onClick={()=>setFiltreMan(filtreMan===s.man?'TOUS':s.man)}
               style={{ flex:1, padding:'10px 12px', display:'flex', alignItems:'center', gap:8, borderRight:i<4?'1px solid rgba(255,255,255,0.1)':'none', background:filtreMan===s.man?'rgba(255,255,255,0.15)':'transparent', border:'none', cursor:'pointer', transition:'background .15s' }}>
               <span style={{ width:10, height:10, borderRadius:'50%', background:s.dot, flexShrink:0, boxShadow:`0 0 6px ${s.dot}` }}/>
               <div style={{ textAlign:'left' }}>

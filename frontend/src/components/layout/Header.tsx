@@ -29,7 +29,7 @@ export default function Header() {
       {/* Logo */}
       <div className="flex items-center gap-2 min-w-[220px]">
         <img
-          src="/logo.png"
+          src="/logo-horizontal-tr.png"
           alt="SANTAREX ERP"
           className="h-9 w-auto object-contain flex-shrink-0"
         />

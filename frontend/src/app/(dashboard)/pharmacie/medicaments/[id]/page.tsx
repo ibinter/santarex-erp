@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Pill, RefreshCw, AlertTriangle, Edit, Package, TrendingDown, Calendar, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Pill, RefreshCw, AlertTriangle, Edit, Package, TrendingDown, Calendar, ClipboardList, FileText } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type Medicament = {
   id: string; nom: string; dci?: string; forme?: string; dosage?: string;
@@ -79,6 +80,33 @@ export default function MedicamentDetailPage() {
   const expired = isExpired(med.dateExpiration);
   const soon = expiresSoon(med.dateExpiration);
 
+  const handleFichePDF = () => {
+    exportFichePDF(
+      `Fiche médicament — ${med.nom}`,
+      [
+        { label: 'Identification', fields: [
+          { key: 'Nom', value: med.nom || '—' },
+          { key: 'DCI', value: med.dci ?? '—' },
+          { key: 'Forme', value: FORME_LABELS[med.forme ?? ''] ?? med.forme ?? '—' },
+          { key: 'Dosage', value: med.dosage ?? '—' },
+          { key: 'Catégorie', value: CAT_LABELS[med.categorie ?? ''] ?? med.categorie ?? '—' },
+          { key: 'Fabricant', value: med.fabricant ?? '—' },
+          { key: 'Ordonnance', value: med.ordonnanceRequise ? 'Requise' : 'Non requise' },
+          { key: 'Statut', value: med.actif === false ? 'Inactif' : 'Actif' },
+        ]},
+        { label: 'Stock & Prix', fields: [
+          { key: 'Stock actuel', value: med.stockActuel != null ? `${med.stockActuel} unités` : '—' },
+          { key: 'Stock minimum', value: med.stockMinimum != null ? `${med.stockMinimum} unités` : '—' },
+          { key: 'Prix de vente', value: fmtXOF(med.prixVente) },
+          { key: "Prix d'achat", value: fmtXOF(med.prixAchat) },
+          { key: 'Expiration', value: fmtDate(med.dateExpiration) },
+        ]},
+        ...(med.description ? [{ label: 'Description', fields: [{ key: 'Notes', value: med.description }] }] : []),
+      ],
+      `medicament-${med.id.slice(0, 8)}`,
+    );
+  };
+
   return (
     <div style={{ padding: 16, maxWidth: 820, margin: '0 auto' }}>
       <button onClick={() => router.push('/pharmacie')}
@@ -105,10 +133,16 @@ export default function MedicamentDetailPage() {
               </div>
             </div>
           </div>
-          <button onClick={() => router.push(`/pharmacie/medicaments/${med.id}/modifier`)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
-            <Edit size={12} /> Modifier
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button onClick={handleFichePDF}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              <FileText size={12} /> Fiche PDF
+            </button>
+            <button onClick={() => router.push(`/pharmacie/medicaments/${med.id}/modifier`)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              <Edit size={12} /> Modifier
+            </button>
+          </div>
         </div>
       </div>
 

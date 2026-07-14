@@ -84,10 +84,10 @@ export default function ImagériePage() {
   );
 
   const kpis = [
-    { label:'Total du jour', val:stats.total??examens.length, color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD' },
-    { label:'En attente',    val:stats.enAttente??examens.filter(e=>e.statut==='EN_ATTENTE').length, color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA' },
-    { label:'En cours',      val:stats.enCours??examens.filter(e=>e.statut==='EN_COURS').length, color:'#1D4ED8', bg:'#EFF6FF', border:'#BFDBFE' },
-    { label:'Terminés',      val:stats.termines??examens.filter(e=>['TERMINE','VALIDE'].includes(e.statut)).length, color:'#15803D', bg:'#DCFCE7', border:'#86EFAC' },
+    { label:'Total du jour', val:stats.total??examens.length, color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', filtre:'TOUS' },
+    { label:'En attente',    val:stats.enAttente??examens.filter(e=>e.statut==='EN_ATTENTE').length, color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', filtre:'EN_ATTENTE' },
+    { label:'En cours',      val:stats.enCours??examens.filter(e=>e.statut==='EN_COURS').length, color:'#1D4ED8', bg:'#EFF6FF', border:'#BFDBFE', filtre:'EN_COURS' },
+    { label:'Terminés',      val:stats.termines??examens.filter(e=>['TERMINE','VALIDE'].includes(e.statut)).length, color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', filtre:'TERMINE' },
   ];
 
   return (
@@ -99,6 +99,8 @@ export default function ImagériePage() {
         @keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
         .exam-row:hover{background:#EFF6FF!important;}
         .exam-row.selected{background:#DBEAFE!important;}
+        .img-kpi{cursor:pointer;transition:all .15s;}
+        .img-kpi:hover{transform:translateY(-2px);background:rgba(255,255,255,0.2)!important;}
       `}</style>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
@@ -126,12 +128,17 @@ export default function ImagériePage() {
 
             {/* KPI pills */}
             <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-              {kpis.map(k=>(
-                <div key={k.label} style={{ background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:10, padding:'6px 14px', display:'flex', alignItems:'center', gap:8 }}>
+              {kpis.map(k=>{
+                const active = filtre===k.filtre;
+                return (
+                <div key={k.label} className="img-kpi" title={`Filtrer : ${k.label}`}
+                  onClick={()=>setFiltre(k.filtre)}
+                  style={{ background:active?'rgba(255,255,255,0.24)':'rgba(255,255,255,0.12)', border:`1px solid ${active?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.2)'}`, borderRadius:10, padding:'6px 14px', display:'flex', alignItems:'center', gap:8 }}>
                   <span style={{ fontSize:18, fontWeight:900, color:'#fff' }}>{loading?'…':k.val}</span>
                   <span style={{ fontSize:10, color:'rgba(255,255,255,0.65)', fontWeight:600 }}>{k.label}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

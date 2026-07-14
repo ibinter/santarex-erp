@@ -43,7 +43,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="SANTAREX" className="h-8 w-auto object-contain" />
+          <img src="/logo-icon-tr.png" alt="SANTAREX" className="h-8 w-auto object-contain" />
           <div>
             <div className="text-white font-bold text-sm leading-tight">SANTAREX ERP</div>
             <div className="text-blue-200 text-xs">Console SuperAdmin</div>
@@ -130,7 +130,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
           <button onClick={() => setSidebarOpen(true)}>
             <Menu size={20} className="text-gray-600" />
           </button>
-          <img src="/logo.png" alt="SANTAREX" className="h-7 w-auto object-contain" />
+          <img src="/logo-horizontal-tr.png" alt="SANTAREX" className="h-7 w-auto object-contain" />
           <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">SuperAdmin</span>
         </div>
 

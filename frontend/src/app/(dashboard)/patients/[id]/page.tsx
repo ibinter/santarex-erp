@@ -7,6 +7,7 @@ import {
   Pill, Calendar, Stethoscope, RefreshCw, Edit, ExternalLink
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type Patient = {
   id: string; ipp?: string; nom: string; prenom: string; sexe?: string;
@@ -77,6 +78,41 @@ export default function PatientDetailPage() {
     { key: 'factures', label: 'Factures', count: factures.length },
   ] as const;
 
+  const handleFichePDF = () => {
+    if (!patient) return;
+    exportFichePDF(
+      `Fiche patient — ${patient.prenom} ${patient.nom}`,
+      [
+        { label: 'Identité', fields: [
+          { key: 'Nom', value: patient.nom || '—' },
+          { key: 'Prénom', value: patient.prenom || '—' },
+          { key: 'IPP', value: patient.ipp ?? '—' },
+          { key: 'Sexe', value: SEXE_LABEL[patient.sexe ?? ''] ?? '—' },
+          { key: 'Naissance', value: fmtDate(patient.dateNaissance) },
+          { key: 'Âge', value: age(patient.dateNaissance) },
+        ]},
+        { label: 'Coordonnées', fields: [
+          { key: 'Téléphone', value: patient.telephone ?? '—' },
+          { key: 'Urgence', value: patient.telephoneUrgence ?? '—' },
+          { key: 'Adresse', value: patient.adresse ?? '—' },
+          { key: 'Ville', value: patient.ville ?? '—' },
+          { key: 'Pays', value: patient.pays ?? '—' },
+        ]},
+        { label: 'Dossier médical', fields: [
+          { key: 'Groupe sanguin', value: patient.groupeSanguin ?? '—' },
+          { key: 'Allergies', value: patient.allergies ?? '—' },
+          { key: 'Antécédents', value: patient.antecedents ?? '—' },
+        ]},
+        { label: 'Assurance', fields: [
+          { key: 'Assurance', value: patient.assuranceNom ?? '—' },
+          { key: 'N° police', value: patient.assuranceNumero ?? '—' },
+          { key: 'Tiers payant', value: patient.assuranceTiersPayant ? 'Oui' : 'Non' },
+        ]},
+      ],
+      `patient-${patient.ipp ?? patient.id.slice(0, 8)}`,
+    );
+  };
+
   const statusColor = (s?: string) => {
     const m: Record<string, [string, string]> = {
       payee: ['#E8F5E9', '#2E7D32'], partielle: ['#FFF8E1', '#E65100'],
@@ -127,6 +163,10 @@ export default function PatientDetailPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button onClick={handleFichePDF}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              <FileText size={12} /> Fiche PDF
+            </button>
             <button onClick={() => router.push(`/dme/${patient.id}`)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
               <ExternalLink size={12} /> DME complet

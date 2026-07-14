@@ -55,6 +55,7 @@ export default function HospitalisationPage() {
   const [sejours, setSejours] = useState<Sejour[]>([]);
   const [loading, setLoading] = useState(true);
   const [serviceFilter, setServiceFilter] = useState('');
+  const [statutFilter, setStatutFilter] = useState<StatutLit|''>('');
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<'lits'|'sejours'>('lits');
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
@@ -86,6 +87,7 @@ export default function HospitalisationPage() {
 
   const litsAffiches = lits.filter(l =>
     (!serviceFilter || l.service===serviceFilter) &&
+    (!statutFilter || l.statut===statutFilter) &&
     (!search || l.numero.toLowerCase().includes(search.toLowerCase()) ||
       (l.patientNom??'').toLowerCase().includes(search.toLowerCase()) ||
       (l.patient ? `${l.patient.prenom} ${l.patient.nom}`.toLowerCase().includes(search.toLowerCase()) : false))
@@ -106,6 +108,8 @@ export default function HospitalisationPage() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         .lit-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.14)!important;transform:translateY(-2px);}
         .sej-row:hover{background:#EFF6FF!important;}
+        .hero-stat{cursor:pointer;transition:all .15s;}
+        .hero-stat:hover{transform:translateY(-2px);background:rgba(255,255,255,0.2)!important;}
       `}</style>
 
       {/* ── HERO BANNER ─────────────────────────────────────────── */}
@@ -135,16 +139,21 @@ export default function HospitalisationPage() {
             {/* Mini stats inline */}
             <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
               {[
-                { label:'Libres', val:libres,  dot:'#4ADE80' },
-                { label:'Occupés', val:occupes, dot:'#3B82F6' },
-                { label:'Réservés', val:reserve, dot:'#F59E0B' },
-              ].map(s=>(
-                <div key={s.label} style={{ display:'flex', alignItems:'center', gap:5, background:'rgba(255,255,255,0.1)', borderRadius:8, padding:'5px 12px', border:'1px solid rgba(255,255,255,0.15)' }}>
+                { label:'Libres', val:libres,  dot:'#4ADE80', statut:'libre' as StatutLit },
+                { label:'Occupés', val:occupes, dot:'#3B82F6', statut:'occupe' as StatutLit },
+                { label:'Réservés', val:reserve, dot:'#F59E0B', statut:'reserve' as StatutLit },
+              ].map(s=>{
+                const active = statutFilter===s.statut;
+                return (
+                <div key={s.label} className="hero-stat" title={`Filtrer : ${s.label}`}
+                  onClick={()=>{ setTab('lits'); setStatutFilter(active?'':s.statut); }}
+                  style={{ display:'flex', alignItems:'center', gap:5, background:active?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.1)', borderRadius:8, padding:'5px 12px', border:`1px solid ${active?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.15)'}` }}>
                   <span style={{ width:6, height:6, borderRadius:'50%', background:s.dot, display:'inline-block' }}/>
                   <span style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:700 }}>{loading?'…':s.val}</span>
                   <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{s.label}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

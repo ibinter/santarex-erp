@@ -62,6 +62,8 @@ export default function BlocOperatoirePage() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
         .salle-card:hover{box-shadow:0 10px 28px rgba(0,0,0,0.14)!important;transform:translateY(-2px);}
         .prog-row:hover{background:#F0F4FF!important;}
+        .bloc-kpi{cursor:pointer;transition:all .15s;}
+        .bloc-kpi:hover{transform:translateY(-2px);background:rgba(255,255,255,0.2)!important;}
       `}</style>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
@@ -104,12 +106,13 @@ export default function BlocOperatoirePage() {
         {/* KPIs inline */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:18, position:'relative', zIndex:1 }}>
           {[
-            { label:'Salles disponibles', val:`${disponibles}/4`, icon:<CheckCircle size={16}/>, color:'#BBF7D0' },
-            { label:'En cours',           val:`${enCours}`,       icon:<Scissors size={16}/>,    color:'#BAE6FD' },
-            { label:'Programmées',        val:`${programmees}`,   icon:<Calendar size={16}/>,    color:'#FED7AA' },
-            { label:'Durée moyenne',      val:`${moyDuree}min`,   icon:<Clock size={16}/>,       color:'#E9D5FF' },
+            { label:'Salles disponibles', val:`${disponibles}/4`, icon:<CheckCircle size={16}/>, color:'#BBF7D0', tab:'salles' as const },
+            { label:'En cours',           val:`${enCours}`,       icon:<Scissors size={16}/>,    color:'#BAE6FD', tab:'salles' as const },
+            { label:'Programmées',        val:`${programmees}`,   icon:<Calendar size={16}/>,    color:'#FED7AA', tab:'programme' as const },
+            { label:'Durée moyenne',      val:`${moyDuree}min`,   icon:<Clock size={16}/>,       color:'#E9D5FF', tab:'programme' as const },
           ].map((k,i)=>(
-            <div key={i} style={{ background:'rgba(255,255,255,0.12)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(255,255,255,0.18)', backdropFilter:'blur(8px)' }}>
+            <div key={i} className="bloc-kpi" title={`Voir : ${k.label}`} onClick={()=>setTab(k.tab)}
+              style={{ background:'rgba(255,255,255,0.12)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(255,255,255,0.18)', backdropFilter:'blur(8px)' }}>
               <div style={{ color:k.color, marginBottom:6 }}>{k.icon}</div>
               <div style={{ fontSize:22, fontWeight:900, color:'#fff', lineHeight:1 }}>{k.val}</div>
               <div style={{ fontSize:10, color:'rgba(255,255,255,0.6)', marginTop:4, fontWeight:600 }}>{k.label}</div>

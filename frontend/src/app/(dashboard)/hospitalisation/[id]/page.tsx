@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, BedDouble, RefreshCw, User, Activity, Thermometer, Heart, Wind, FileText, Pill, Stethoscope, Calendar } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type Constantes = { tensionArterielle?: string; frequenceCardiaque?: number; temperature?: number; spo2?: number; poids?: number };
 type NoteMedicale = { id: string; contenu?: string; constantes?: Constantes; createdAt?: string; medecin?: { nom: string; prenom: string } };
@@ -69,6 +70,38 @@ export default function SejourDetailPage() {
 
   const scfg = STATUT_CONFIG[sejour?.statut ?? 'actif'] ?? STATUT_CONFIG.actif;
 
+  const handleFichePDF = () => {
+    if (!sejour) return;
+    exportFichePDF(
+      `Séjour ${sejour.numero ?? sejour.id.slice(0, 8).toUpperCase()}`,
+      [
+        { label: 'Séjour', fields: [
+          { key: 'N° Séjour', value: sejour.numero ?? sejour.id.slice(0, 8).toUpperCase() },
+          { key: 'Statut', value: scfg.label },
+          { key: 'Type', value: sejour.typeHospitalisation ?? '—' },
+          { key: 'Service', value: sejour.service ?? sejour.lit?.service ?? '—' },
+          { key: 'Lit', value: sejour.litNumero ?? sejour.lit?.numero ?? '—' },
+          { key: 'Admission', value: fmtDate(sejour.dateAdmission) },
+          { key: 'Sortie', value: fmtDate(sejour.dateSortie) },
+          { key: 'Durée', value: joursDepuis(sejour.dateAdmission) || '—' },
+        ]},
+        { label: 'Patient', fields: [
+          { key: 'Nom', value: sejour.patient ? `${sejour.patient.prenom} ${sejour.patient.nom}` : '—' },
+          { key: 'IPP', value: sejour.patient?.ipp ?? '—' },
+          { key: 'Sexe', value: sejour.patient?.sexe === 'M' ? 'Homme' : sejour.patient?.sexe === 'F' ? 'Femme' : '—' },
+          { key: 'Assurance', value: sejour.patient?.assuranceTiersPayant ? (sejour.patient.assuranceNom ?? 'Tiers payant') : '—' },
+        ]},
+        { label: 'Prise en charge', fields: [
+          { key: 'Médecin', value: sejour.medecin ? `Dr. ${sejour.medecin.prenom} ${sejour.medecin.nom}` : '—' },
+          { key: 'Spécialité', value: sejour.medecin?.specialite ?? '—' },
+          { key: 'Diagnostic entrée', value: sejour.diagnosticEntree ?? '—' },
+          { key: 'Diagnostic sortie', value: sejour.diagnosticSortie ?? '—' },
+        ]},
+      ],
+      `sejour-${sejour.numero ?? sejour.id.slice(0, 8)}`,
+    );
+  };
+
   return (
     <div style={{ padding: 16, maxWidth: 1000, margin: '0 auto' }}>
       <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
@@ -104,10 +137,16 @@ export default function SejourDetailPage() {
                   {sejour.typeHospitalisation && ` • ${sejour.typeHospitalisation}`}
                 </p>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: '#90A4AE' }}>Admission</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{fmtDate(sejour.dateAdmission)}</div>
-                <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>{joursDepuis(sejour.dateAdmission)}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                <button onClick={handleFichePDF}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#E0F2F1', border: '1px solid #80CBC4', cursor: 'pointer', fontSize: 12, color: '#00695C', fontWeight: 600 }}>
+                  <FileText size={13} /> Fiche PDF
+                </button>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>Admission</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{fmtDate(sejour.dateAdmission)}</div>
+                  <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>{joursDepuis(sejour.dateAdmission)}</div>
+                </div>
               </div>
             </div>
             {sejour.diagnosticEntree && (

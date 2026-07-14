@@ -55,6 +55,7 @@ export default function RendezVousPage() {
   const [loading, setLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [view, setView] = useState<'semaine'|'liste'>('semaine');
+  const [statutFilter, setStatutFilter] = useState<'all'|'confirme'|'planifie'|'honore'|'annuleabs'>('all');
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
 
   const load = useCallback(async () => {
@@ -82,6 +83,11 @@ export default function RendezVousPage() {
     annule:   rdvs.filter(r=>r.statut==='annule'||r.statut==='absent').length,
   };
   const pName = (r: Rdv) => r.patient?`${r.patient.prenom} ${r.patient.nom}`:'—';
+  const rdvsListe = rdvs.filter(r => {
+    if (statutFilter==='all') return true;
+    if (statutFilter==='annuleabs') return r.statut==='annule'||r.statut==='absent';
+    return r.statut===statutFilter;
+  });
 
   return (
     <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
@@ -92,6 +98,8 @@ export default function RendezVousPage() {
         .rdv-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.15)!important;opacity:.9;}
         .rdv-row:hover{background:#F5F0FF!important;}
         .view-btn{transition:all .15s;}
+        .rdv-kpi{cursor:pointer;transition:all .15s;}
+        .rdv-kpi:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,0.12)!important;}
       `}</style>
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
@@ -135,20 +143,25 @@ export default function RendezVousPage() {
       {/* ── KPI ──────────────────────────────────────────────────── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:12, marginBottom:18 }}>
         {[
-          { label:'Total semaine', value:counts.total,    icon:<Calendar size={18} color="#6A1B9A"/>,  bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7' },
-          { label:'Confirmés',     value:counts.confirme, icon:<CheckCircle size={18} color="#2E7D32"/>,bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9' },
-          { label:'Planifiés',     value:counts.planifie, icon:<Clock size={18} color="#1565C0"/>,     bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB' },
-          { label:'Honorés',       value:counts.honore,   icon:<User size={18} color="#8E24AA"/>,      bg:'#F3E5F5', color:'#8E24AA', border:'#CE93D8' },
-          { label:'Annulés/Abs.',  value:counts.annule,   icon:<XCircle size={18} color="#C62828"/>,   bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2' },
-        ].map((k,i)=>(
-          <div key={i} style={{ background:'#fff', borderRadius:12, padding:'13px 15px', boxShadow:'0 1px 6px rgba(0,0,0,0.07)', display:'flex', alignItems:'center', gap:10, border:`1px solid ${k.border}`, borderLeft:`4px solid ${k.color}` }}>
+          { label:'Total semaine', value:counts.total,    icon:<Calendar size={18} color="#6A1B9A"/>,  bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', filtre:'all' as const },
+          { label:'Confirmés',     value:counts.confirme, icon:<CheckCircle size={18} color="#2E7D32"/>,bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', filtre:'confirme' as const },
+          { label:'Planifiés',     value:counts.planifie, icon:<Clock size={18} color="#1565C0"/>,     bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', filtre:'planifie' as const },
+          { label:'Honorés',       value:counts.honore,   icon:<User size={18} color="#8E24AA"/>,      bg:'#F3E5F5', color:'#8E24AA', border:'#CE93D8', filtre:'honore' as const },
+          { label:'Annulés/Abs.',  value:counts.annule,   icon:<XCircle size={18} color="#C62828"/>,   bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2', filtre:'annuleabs' as const },
+        ].map((k,i)=>{
+          const active = statutFilter===k.filtre && view==='liste';
+          return (
+          <div key={i} className="rdv-kpi" title={`Voir la liste : ${k.label}`}
+            onClick={()=>{ setView('liste'); setStatutFilter(k.filtre); }}
+            style={{ background:'#fff', borderRadius:12, padding:'13px 15px', boxShadow:active?`0 4px 14px ${k.color}44`:'0 1px 6px rgba(0,0,0,0.07)', display:'flex', alignItems:'center', gap:10, border:`1px solid ${active?k.color:k.border}`, borderLeft:`4px solid ${k.color}` }}>
             <div style={{ width:36, height:36, borderRadius:10, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
             <div>
               <div style={{ fontSize:22, fontWeight:900, color:k.color, lineHeight:1 }}>{loading?<span style={{display:'inline-block',width:24,height:18,background:k.bg,borderRadius:4}}/>:k.value}</div>
               <div style={{ fontSize:10, color:'#546E7A', fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px', marginTop:2 }}>{k.label}</div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ── NAV SEMAINE ──────────────────────────────────────────── */}
@@ -213,6 +226,15 @@ export default function RendezVousPage() {
       )}
 
       {/* ── VUE LISTE ────────────────────────────────────────────── */}
+      {view==='liste'&&statutFilter!=='all'&&(
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+          <span style={{ fontSize:12, color:'#546E7A', fontWeight:600 }}>Filtre actif :</span>
+          <span style={{ fontSize:11, fontWeight:800, padding:'3px 12px', borderRadius:20, background:'#F3E5F5', color:'#6A1B9A' }}>
+            {statutFilter==='annuleabs'?'Annulés / Absents':STATUT_CFG[statutFilter as StatutRdv]?.label??statutFilter}
+          </span>
+          <button onClick={()=>setStatutFilter('all')} style={{ fontSize:11, color:'#9CA3AF', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Tout voir</button>
+        </div>
+      )}
       {view==='liste'&&(
         <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
           <div style={{ overflowX:'auto' }}>
@@ -231,7 +253,7 @@ export default function RendezVousPage() {
                       <td key={j} style={{ padding:'14px 16px' }}><div style={{ height:12, background:'#F0F4FA', borderRadius:4, width:w }}/></td>
                     ))}
                   </tr>
-                )):rdvs.length===0?(
+                )):rdvsListe.length===0?(
                   <tr><td colSpan={6} style={{ padding:'50px 20px', textAlign:'center' }}>
                     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
                       <div style={{ width:56, height:56, borderRadius:'50%', background:'#F3E5F5', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -240,7 +262,7 @@ export default function RendezVousPage() {
                       <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#546E7A' }}>Aucun rendez-vous cette semaine</p>
                     </div>
                   </td></tr>
-                ):rdvs.map(r=>{
+                ):rdvsListe.map(r=>{
                   const cfg=STATUT_CFG[r.statut]??STATUT_CFG.planifie;
                   const [ac,ab]=avColor(pName(r));
                   const initials=r.patient?`${r.patient.prenom?.charAt(0)??''}${r.patient.nom?.charAt(0)??''}`:' ';

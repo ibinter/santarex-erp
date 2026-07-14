@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, FlaskConical, RefreshCw, CheckCircle, Clock, Zap, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, FlaskConical, RefreshCw, CheckCircle, Clock, Zap, AlertTriangle, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type Parametre = { id: string; nom: string; unite?: string; valeurNormaleMin?: number; valeurNormaleMax?: number };
 type TypeAnalyse = { id: string; code?: string; nom: string; categorie?: string; parametres?: Parametre[] };
@@ -66,6 +67,47 @@ export default function DemandeLaboPage() {
 
   const scfg = STATUT_CONFIG[demande?.statut ?? 'en_attente'] ?? STATUT_CONFIG.en_attente;
 
+  const handleFichePDF = () => {
+    if (!demande) return;
+    const resultatsFields = (demande.typesAnalyse ?? []).flatMap(ta =>
+      (ta.parametres ?? []).map(p => {
+        const res = demande.resultats?.find(r => r.parametreId === p.id);
+        const normes = p.valeurNormaleMin != null && p.valeurNormaleMax != null
+          ? ` (norme ${p.valeurNormaleMin}–${p.valeurNormaleMax}${p.unite ? ' ' + p.unite : ''})`
+          : '';
+        const val = res?.valeur ? `${res.valeur}${p.unite ? ' ' + p.unite : ''}${res.interpretation ? ` — ${res.interpretation}` : ''}${normes}` : '—';
+        return { key: p.nom, value: val };
+      }),
+    );
+    exportFichePDF(
+      `Demande d'analyses ${demande.numero ?? demande.id.slice(0, 8).toUpperCase()}`,
+      [
+        { label: 'Demande', fields: [
+          { key: 'N° Demande', value: demande.numero ?? demande.id.slice(0, 8).toUpperCase() },
+          { key: 'Statut', value: scfg.label },
+          { key: 'Urgence', value: demande.urgence ? 'Oui' : 'Non' },
+          { key: 'Date demande', value: fmtDate(demande.dateCreation) },
+          { key: 'Prélèvement', value: fmtDate(demande.datePrelevement) },
+        ]},
+        { label: 'Patient', fields: [
+          { key: 'Nom', value: demande.patient ? `${demande.patient.prenom} ${demande.patient.nom}` : '—' },
+          { key: 'IPP', value: demande.patient?.ipp ?? '—' },
+          { key: 'Sexe', value: demande.patient?.sexe === 'M' ? 'Homme' : demande.patient?.sexe === 'F' ? 'Femme' : '—' },
+        ]},
+        { label: 'Prescripteur', fields: [
+          { key: 'Médecin', value: demande.medecin ? `Dr. ${demande.medecin.prenom} ${demande.medecin.nom}` : '—' },
+          { key: 'Spécialité', value: demande.medecin?.specialite ?? '—' },
+        ]},
+        { label: 'Analyses demandées', fields: (demande.typesAnalyse ?? []).length > 0
+          ? (demande.typesAnalyse ?? []).map(ta => ({ key: ta.nom, value: [ta.code, ta.categorie].filter(Boolean).join(' • ') || '—' }))
+          : [{ key: 'Analyses', value: '—' }] },
+        ...(resultatsFields.length > 0 ? [{ label: 'Résultats', fields: resultatsFields }] : []),
+        ...(demande.commentaire ? [{ label: 'Commentaire biologiste', fields: [{ key: 'Note', value: demande.commentaire }] }] : []),
+      ],
+      `demande-labo-${demande.numero ?? demande.id.slice(0, 8)}`,
+    );
+  };
+
   return (
     <div style={{ padding: 16, maxWidth: 900, margin: '0 auto' }}>
       <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
@@ -101,9 +143,15 @@ export default function DemandeLaboPage() {
                   {demande.datePrelevement && ` • Prélevé le ${fmtDate(demande.datePrelevement)}`}
                 </p>
               </div>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
-                {scfg.icon} {scfg.label}
-              </span>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
+                  {scfg.icon} {scfg.label}
+                </span>
+                <button onClick={handleFichePDF}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
+                  <FileText size={13} /> Fiche PDF
+                </button>
+              </div>
             </div>
           </div>
 

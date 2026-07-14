@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, User, Activity, Thermometer, Heart, Weight, Ruler, Wind, Pill, FlaskConical, FileText, RefreshCw } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { exportFichePDF } from '@/lib/export';
 
 type Consultation = {
   id: string; numero?: string; statut?: string;
@@ -50,6 +51,46 @@ export default function ConsultationDetailPage() {
   }, [params.id]);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleFichePDF = () => {
+    if (!consultation) return;
+    const cv = consultation.constantesVitales ?? {};
+    exportFichePDF(
+      `Consultation ${consultation.numero ?? consultation.id.slice(0, 8).toUpperCase()}`,
+      [
+        { label: 'Consultation', fields: [
+          { key: 'N° Consultation', value: consultation.numero ?? consultation.id.slice(0, 8).toUpperCase() },
+          { key: 'Date', value: consultation.dateHeure ? new Date(consultation.dateHeure).toLocaleString('fr-FR') : '—' },
+          { key: 'Statut', value: STATUT_CONFIG[consultation.statut ?? '']?.label ?? consultation.statut ?? '—' },
+          { key: 'Médecin', value: consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—' },
+          { key: 'Spécialité', value: consultation.medecin?.specialite ?? '—' },
+        ]},
+        { label: 'Patient', fields: [
+          { key: 'Nom', value: consultation.patient ? `${consultation.patient.prenom} ${consultation.patient.nom}` : '—' },
+          { key: 'IPP', value: consultation.patient?.ipp ?? '—' },
+          { key: 'Groupe sanguin', value: consultation.patient?.groupeSanguin ?? '—' },
+          { key: 'Allergies', value: consultation.patient?.allergies ?? '—' },
+        ]},
+        { label: 'Constantes vitales', fields: [
+          { key: 'Tension', value: cv.ta ? `${cv.ta} mmHg` : '—' },
+          { key: 'Fréq. cardiaque', value: cv.fc != null ? `${cv.fc} bpm` : '—' },
+          { key: 'Température', value: cv.temperature != null ? `${cv.temperature} °C` : '—' },
+          { key: 'Poids', value: cv.poids != null ? `${cv.poids} kg` : '—' },
+          { key: 'Taille', value: cv.taille != null ? `${cv.taille} cm` : '—' },
+          { key: 'SpO2', value: cv.spo2 != null ? `${cv.spo2} %` : '—' },
+        ]},
+        { label: 'Observations', fields: [
+          { key: 'Motif', value: consultation.motif ?? '—' },
+          { key: 'Anamnèse', value: consultation.anamnese ?? '—' },
+          { key: 'Examen clinique', value: consultation.examenClinique ?? '—' },
+          { key: 'Diagnostic', value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : '—' },
+          { key: 'Conclusion', value: consultation.conclusion ?? '—' },
+          { key: 'Plan de soins', value: consultation.planSoins ?? '—' },
+        ]},
+      ],
+      `consultation-${consultation.numero ?? consultation.id.slice(0, 8)}`,
+    );
+  };
 
   const VITAUX = [
     { key: 'ta',          label: 'Tension artérielle', unit: 'mmHg', icon: <Activity size={16} />,    color: '#C62828', bg: '#FFEBEE' },
@@ -100,6 +141,10 @@ export default function ConsultationDetailPage() {
                   {STATUT_CONFIG[consultation.statut]?.label ?? consultation.statut}
                 </span>
               )}
+              <button onClick={handleFichePDF}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
+                <FileText size={13} /> Fiche PDF
+              </button>
             </div>
           </div>
 
