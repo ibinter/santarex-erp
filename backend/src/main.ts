@@ -1,10 +1,16 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Controller, Get } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import helmet from 'helmet';
+
+@Controller('health')
+class HealthController {
+  @Get()
+  check() { return { status: 'ok', timestamp: new Date().toISOString() }; }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +18,12 @@ async function bootstrap() {
   app.use(helmet());
 
   app.setGlobalPrefix('api/v1');
+
+  // Register health controller without global prefix interference
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/api/v1/health', (_req: any, res: any) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -22,8 +34,15 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
+  const corsOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3003',
+    'https://santarex.ibigsoft.com',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean) as string[];
+
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3003', process.env.FRONTEND_URL].filter(Boolean),
+    origin: corsOrigins,
     credentials: true,
   });
 
