@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Stethoscope, Plus, Search, RefreshCw, Eye } from 'lucide-react';
+import {
+  Stethoscope, Plus, Search, RefreshCw, Eye,
+  Clock, CheckCircle, Receipt, ChevronRight, Calendar,
+  TrendingUp, Activity, User,
+} from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
 type Consultation = {
@@ -13,23 +17,53 @@ type Consultation = {
   statut: 'en_cours' | 'terminee' | 'facturee';
 };
 
-const STATUT_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
-  en_cours: { label: 'En cours',  bg: '#EFF6FF', color: '#1565C0' },
-  terminee: { label: 'Terminée',  bg: '#E8F5E9', color: '#2E7D32' },
-  facturee: { label: 'Facturée',  bg: '#F5F5F5', color: '#546E7A' },
+const STATUT_CFG: Record<string, { label: string; bg: string; color: string; dot: string; border: string }> = {
+  en_cours: { label:'En cours',  bg:'#EFF6FF', color:'#1565C0', dot:'#3B82F6', border:'#BBDEFB' },
+  terminee: { label:'Terminée',  bg:'#E8F5E9', color:'#2E7D32', dot:'#4ADE80', border:'#C8E6C9' },
+  facturee: { label:'Facturée',  bg:'#F3E5F5', color:'#6A1B9A', dot:'#A855F7', border:'#E1BEE7' },
 };
 
-function fmtDate(iso: string) {
-  try { return new Date(iso).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-  catch { return '—'; }
+const AVATAR_COLORS = [
+  ['#00838F','#E0F7FA'], ['#1565C0','#E3F2FD'], ['#6A1B9A','#F3E5F5'],
+  ['#2E7D32','#E8F5E9'], ['#C62828','#FFEBEE'], ['#E65100','#FFF3E0'],
+  ['#0288D1','#E1F5FE'], ['#37474F','#ECEFF1'],
+];
+
+function avatarColor(name: string): [string, string] {
+  const idx = (name.charCodeAt(0) + (name.charCodeAt(1) || 0)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[idx] as [string, string];
 }
+
+function fmtDate(iso: string) {
+  try {
+    const d = new Date(iso);
+    return {
+      date: d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }),
+      time: d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }),
+    };
+  } catch { return { date:'—', time:'' }; }
+}
+
+function timeSince(iso: string) {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diff < 60) return `il y a ${diff} min`;
+  if (diff < 1440) return `il y a ${Math.floor(diff/60)}h`;
+  return `il y a ${Math.floor(diff/1440)}j`;
+}
+
+const TABS = [
+  { key: '', label: 'Toutes', icon: Activity },
+  { key: 'en_cours', label: 'En cours', icon: Clock },
+  { key: 'terminee', label: 'Terminées', icon: CheckCircle },
+  { key: 'facturee', label: 'Facturées', icon: Receipt },
+];
 
 export default function ConsultationsPage() {
   const router = useRouter();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statutFilter, setStatutFilter] = useState('');
+  const [activeTab, setActiveTab] = useState('');
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const load = useCallback(async () => {
@@ -39,113 +73,227 @@ export default function ConsultationsPage() {
       const list = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
       setConsultations(list);
       setLastRefresh(new Date());
-    } finally {
-      setLoading(false);
-    }
+    } catch { setConsultations([]); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const displayed = consultations.filter(c => {
     const q = search.toLowerCase();
-    const nomPatient = c.patient ? `${c.patient.prenom} ${c.patient.nom}`.toLowerCase() : '';
-    const matchSearch = !search || nomPatient.includes(q) || (c.patient?.ipp || '').toLowerCase().includes(q) || (c.numero || '').toLowerCase().includes(q);
-    const matchStatut = !statutFilter || c.statut === statutFilter;
-    return matchSearch && matchStatut;
+    const nom = c.patient ? `${c.patient.prenom} ${c.patient.nom}`.toLowerCase() : '';
+    const matchQ = !search || nom.includes(q) || (c.patient?.ipp||'').toLowerCase().includes(q) || (c.numero||'').toLowerCase().includes(q) || (c.motif||'').toLowerCase().includes(q);
+    const matchTab = !activeTab || c.statut === activeTab;
+    return matchQ && matchTab;
   });
 
-  const patientName = (c: Consultation) => c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—';
-  const medecinName = (c: Consultation) => c.medecin ? `Dr. ${c.medecin.prenom} ${c.medecin.nom}` : '—';
+  const counts = {
+    total:    consultations.length,
+    en_cours: consultations.filter(c=>c.statut==='en_cours').length,
+    terminee: consultations.filter(c=>c.statut==='terminee').length,
+    facturee: consultations.filter(c=>c.statut==='facturee').length,
+  };
+
+  const patName = (c: Consultation) => c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—';
+  const drName  = (c: Consultation) => c.medecin ? `Dr. ${c.medecin.prenom} ${c.medecin.nom}` : '—';
 
   return (
-    <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
-      <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
+    <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
+      <style>{`
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.5)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .cons-row { cursor:pointer; transition:background .12s; }
+        .cons-row:hover { background:#F0FBF9!important; }
+        .cons-row:hover .cons-eye { opacity:1!important; transform:translateX(0)!important; }
+        .cons-eye { opacity:0; transform:translateX(-4px); transition:all .15s; }
+        .tab-btn { transition:all .2s; }
+        .tab-btn:hover { background:#E0F7FA!important; }
+      `}</style>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Stethoscope size={20} color="#1565C0" />
-            </div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Consultations</h1>
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <div style={{ background:'linear-gradient(135deg,#00695C 0%,#00838F 50%,#0097A7 100%)', borderRadius:18, padding:'22px 28px', marginBottom:20, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:14, boxShadow:'0 8px 28px rgba(0,131,143,0.35)', position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:-50, right:80, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }}/>
+        <div style={{ position:'absolute', bottom:-40, right:260, width:120, height:120, borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }}/>
+        <div style={{ display:'flex', alignItems:'center', gap:16, zIndex:1 }}>
+          <div style={{ width:52, height:52, borderRadius:14, background:'rgba(255,255,255,0.18)', border:'2px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <Stethoscope size={26} color="#fff"/>
           </div>
-          <p style={{ margin: '4px 0 0 48px', fontSize: 12, color: '#546E7A' }}>
-            {loading ? '…' : `${consultations.length} consultation(s)`}
-            {lastRefresh && <span style={{ marginLeft: 8, color: '#90A4AE' }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
-          </p>
+          <div>
+            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Consultations</h1>
+            <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)', fontWeight:500 }}>
+              {loading ? '…' : `${counts.total} consultation(s) au total`}
+              {lastRefresh && <span style={{ marginLeft:10, opacity:.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
+            </p>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#F5F7FA', border: '1px solid #E0E0E0', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-            <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-            Actualiser
+        <div style={{ display:'flex', gap:10, zIndex:1 }}>
+          <button onClick={load} disabled={loading}
+            style={{ width:38, height:38, borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <RefreshCw size={16} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
           </button>
-          <button onClick={() => router.push('/consultations/nouvelle')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600 }}>
-            <Plus size={14} /> Nouvelle consultation
+          <button onClick={() => router.push('/consultations/nouvelle')}
+            style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', borderRadius:10, background:'#fff', border:'none', color:'#00838F', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 10px rgba(0,0,0,0.15)' }}>
+            <Plus size={15}/> Nouvelle consultation
           </button>
         </div>
       </div>
 
-      {/* Filtres */}
-      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #F5F7FA', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 200 }}>
-            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher patient, N° consultation…"
-              style={{ width: '100%', padding: '7px 10px 7px 32px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+      {/* ── KPI CARDS ─────────────────────────────────────────────────── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12, marginBottom:18 }}>
+        {[
+          { label:'Total', value:counts.total, icon:<Activity size={18} color="#00838F"/>, bg:'#E0F7FA', color:'#00838F', border:'#B2EBF2', sub:'consultations' },
+          { label:'En cours', value:counts.en_cours, icon:<Clock size={18} color="#1565C0"/>, bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', sub:'en attente' },
+          { label:'Terminées', value:counts.terminee, icon:<CheckCircle size={18} color="#2E7D32"/>, bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', sub:'aujourd\'hui' },
+          { label:'Facturées', value:counts.facturee, icon:<Receipt size={18} color="#6A1B9A"/>, bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', sub:'réglées' },
+        ].map((k,i) => (
+          <div key={i} onClick={()=>setActiveTab(i===0?'':['','en_cours','terminee','facturee'][i])}
+            style={{ background:'#fff', borderRadius:12, padding:'14px 16px', boxShadow:'0 1px 6px rgba(0,0,0,0.07)', cursor:'pointer', display:'flex', alignItems:'center', gap:12, borderLeft:`4px solid ${k.color}`, border:`1px solid ${k.border}`, borderLeftWidth:4, transition:'transform .15s,box-shadow .15s' }}
+            onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-2px)';(e.currentTarget as HTMLElement).style.boxShadow='0 6px 20px rgba(0,0,0,0.1)';}}
+            onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='0 1px 6px rgba(0,0,0,0.07)';}}>
+            <div style={{ width:38, height:38, borderRadius:10, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
+            <div>
+              <div style={{ fontSize:24, fontWeight:900, color:k.color, lineHeight:1 }}>{loading?<span style={{display:'inline-block',width:28,height:20,background:k.bg,borderRadius:4}}/>:k.value}</div>
+              <div style={{ fontSize:10, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.5px', marginTop:2 }}>{k.label}</div>
+              <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{k.sub}</div>
+            </div>
           </div>
-          <select value={statutFilter} onChange={e => setStatutFilter(e.target.value)}
-            style={{ padding: '7px 12px', border: '1px solid #E0E0E0', borderRadius: 8, fontSize: 13, color: '#37474F', outline: 'none', background: '#fff' }}>
-            <option value="">Tous les statuts</option>
-            <option value="en_cours">En cours</option>
-            <option value="terminee">Terminée</option>
-            <option value="facturee">Facturée</option>
-          </select>
-        </div>
+        ))}
+      </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
-            <thead style={{ background: '#F8FAFC' }}>
-              <tr>
-                {['N° Consultation', 'Patient', 'Médecin', 'Date & Heure', 'Motif', 'Diagnostic', 'Statut', ''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{h}</th>
+      {/* ── SEARCH + TABS ─────────────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderRadius:14, padding:'14px 16px', marginBottom:16, boxShadow:'0 1px 6px rgba(0,0,0,0.06)' }}>
+        <div style={{ display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' }}>
+          <div style={{ position:'relative', flex:'1 1 260px' }}>
+            <Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE', pointerEvents:'none' }}/>
+            <input value={search} onChange={e=>setSearch(e.target.value)}
+              placeholder="Rechercher patient, motif, N° consultation…"
+              style={{ width:'100%', padding:'10px 10px 10px 36px', border:'1.5px solid #E0E8F0', borderRadius:10, fontSize:13, outline:'none', background:'#F8FAFC', boxSizing:'border-box', color:'#1A2332' }}
+              onFocus={e=>(e.currentTarget.style.borderColor='#00838F')}
+              onBlur={e=>(e.currentTarget.style.borderColor='#E0E8F0')}/>
+          </div>
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+            {TABS.map(t => {
+              const Icon = t.icon;
+              const active = activeTab === t.key;
+              return (
+                <button key={t.key} onClick={()=>setActiveTab(t.key)} className="tab-btn"
+                  style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:20, border:`1.5px solid ${active?'#00838F':'#E0E8F0'}`, background:active?'#00838F':'#fff', color:active?'#fff':'#546E7A', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                  <Icon size={13}/> {t.label}
+                  {t.key && <span style={{ background:active?'rgba(255,255,255,0.25)':'#F0F4FA', color:active?'#fff':'#546E7A', fontSize:10, fontWeight:800, padding:'1px 6px', borderRadius:10, minWidth:18, textAlign:'center' }}>
+                    {counts[t.key as keyof typeof counts] ?? 0}
+                  </span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── TABLE ─────────────────────────────────────────────────────── */}
+      <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', minWidth:720 }}>
+            <thead>
+              <tr style={{ background:'linear-gradient(90deg,#F8FAFC,#F0FBF9)' }}>
+                {['N° Consultation','Patient','Médecin','Date & Heure','Motif','Diagnostic','Statut',''].map(h=>(
+                  <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.7px', whiteSpace:'nowrap', borderBottom:'2px solid #E0F7FA' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {loading ? Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} style={{ borderTop: '1px solid #F5F7FA' }}>
-                  {Array.from({ length: 8 }).map((_, j) => (
-                    <td key={j} style={{ padding: '12px 14px' }}><div style={{ height: 14, background: '#F0F0F0', borderRadius: 4, width: j === 1 ? 120 : 80 }} /></td>
+              {loading ? Array.from({length:6}).map((_,i)=>(
+                <tr key={i} style={{ borderTop:'1px solid #F5F7FA' }}>
+                  <td style={{ padding:'14px 16px' }}><div style={{ height:12, background:'#F0F4FA', borderRadius:4, width:80 }}/></td>
+                  <td style={{ padding:'14px 16px' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <div style={{ width:38, height:38, borderRadius:10, background:'#E0F7FA', flexShrink:0 }}/>
+                      <div><div style={{ height:13, background:'#F0F4FA', borderRadius:4, width:120, marginBottom:5 }}/><div style={{ height:10, background:'#F5F7FA', borderRadius:4, width:70 }}/></div>
+                    </div>
+                  </td>
+                  {[90,100,80,120,100,60,28].map((w,j)=>(
+                    <td key={j} style={{ padding:'14px 16px' }}><div style={{ height:12, background:'#F0F4FA', borderRadius:4, width:w }}/></td>
                   ))}
                 </tr>
               )) : displayed.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#90A4AE', fontSize: 13 }}>
-                  <Stethoscope size={32} style={{ display: 'block', margin: '0 auto 8px', opacity: 0.3 }} />
-                  Aucune consultation trouvée
+                <tr><td colSpan={8} style={{ padding:'60px 20px', textAlign:'center' }}>
+                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+                    <div style={{ width:64, height:64, borderRadius:'50%', background:'#E0F7FA', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <Stethoscope size={30} color="#B2EBF2"/>
+                    </div>
+                    <div>
+                      <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#37474F' }}>Aucune consultation trouvée</p>
+                      <p style={{ margin:'4px 0 0', fontSize:12, color:'#90A4AE' }}>
+                        {search ? 'Essayez d\'autres termes de recherche' : 'Créez la première consultation'}
+                      </p>
+                    </div>
+                    {!search && (
+                      <button onClick={()=>router.push('/consultations/nouvelle')}
+                        style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 20px', borderRadius:10, background:'#00838F', color:'#fff', border:'none', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                        <Plus size={14}/> Nouvelle consultation
+                      </button>
+                    )}
+                  </div>
                 </td></tr>
               ) : displayed.map(c => {
-                const cfg = STATUT_CONFIG[c.statut] ?? STATUT_CONFIG.terminee;
+                const cfg = STATUT_CFG[c.statut] ?? STATUT_CFG.terminee;
+                const pName = patName(c);
+                const [avColor, avBg] = avatarColor(pName);
+                const initials = c.patient ? `${c.patient.prenom?.charAt(0)??''}${c.patient.nom?.charAt(0)??''}` : '??';
+                const { date, time } = fmtDate(c.dateHeure);
                 return (
-                  <tr key={c.id} style={{ borderTop: '1px solid #F5F7FA' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFC')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, color: '#546E7A', fontFamily: 'monospace' }}>{c.numero || c.id.slice(0, 8)}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{patientName(c)}</div>
-                      {c.patient?.ipp && <div style={{ fontSize: 11, color: '#90A4AE' }}>{c.patient.ipp}</div>}
+                  <tr key={c.id} className="cons-row" onClick={()=>router.push(`/consultations/${c.id}`)}
+                    style={{ borderTop:'1px solid #F0F4FA', background:'transparent' }}>
+                    <td style={{ padding:'13px 16px' }}>
+                      <span style={{ fontFamily:'monospace', fontSize:11, fontWeight:700, color:'#00838F', background:'#E0F7FA', padding:'2px 8px', borderRadius:6, border:'1px solid #B2EBF2', whiteSpace:'nowrap' }}>
+                        {c.numero || `#${c.id.slice(0,7).toUpperCase()}`}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#546E7A' }}>{medecinName(c)}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F', whiteSpace: 'nowrap' }}>{fmtDate(c.dateHeure)}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: '#37474F', maxWidth: 180 }}>{c.motif || '—'}</td>
-                    <td style={{ padding: '10px 14px', fontSize: 12, color: c.diagnostic ? '#1A2332' : '#90A4AE', maxWidth: 160 }}>{c.diagnostic || (c.statut === 'en_cours' ? 'En cours…' : '—')}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
+                    <td style={{ padding:'13px 16px' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <div style={{ width:38, height:38, borderRadius:10, background:`linear-gradient(135deg,${avBg},${avColor}22)`, border:`1.5px solid ${avColor}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:avColor, flexShrink:0 }}>
+                          {initials}
+                        </div>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{pName}</div>
+                          {c.patient?.ipp && <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{c.patient.ipp}</div>}
+                        </div>
+                      </div>
                     </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <button onClick={() => router.push(`/consultations/${c.id}`)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', color: '#546E7A', fontWeight: 600 }}>
-                        <Eye size={12} /> Voir
-                      </button>
+                    <td style={{ padding:'13px 16px' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+                        <div style={{ width:28, height:28, borderRadius:8, background:'#E0F7FA', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                          <User size={13} color="#00838F"/>
+                        </div>
+                        <span style={{ fontSize:12, color:'#37474F', fontWeight:500 }}>{drName(c)}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding:'13px 16px', whiteSpace:'nowrap' }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:'#1A2332' }}>{date}</div>
+                      <div style={{ fontSize:11, color:'#90A4AE', marginTop:1, display:'flex', alignItems:'center', gap:3 }}>
+                        <Clock size={10}/> {time}
+                      </div>
+                    </td>
+                    <td style={{ padding:'13px 16px', maxWidth:160 }}>
+                      <div style={{ fontSize:12, color:'#37474F', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={c.motif||''}>
+                        {c.motif || <span style={{color:'#B0BEC5'}}>—</span>}
+                      </div>
+                    </td>
+                    <td style={{ padding:'13px 16px', maxWidth:160 }}>
+                      <div style={{ fontSize:12, color: c.diagnostic?'#1A2332':'#B0BEC5', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontStyle:c.diagnostic?'normal':'italic' }} title={c.diagnostic||''}>
+                        {c.diagnostic || (c.statut==='en_cours' ? 'En cours…' : '—')}
+                      </div>
+                    </td>
+                    <td style={{ padding:'13px 16px' }}>
+                      <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
+                        <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block', animation:c.statut==='en_cours'?'pulse 2s infinite':undefined }}/>
+                        {cfg.label}
+                      </span>
+                    </td>
+                    <td style={{ padding:'13px 16px' }}>
+                      <div className="cons-eye" style={{ width:30, height:30, borderRadius:8, background:'#E0F7FA', border:'1px solid #B2EBF2', display:'flex', alignItems:'center', justifyContent:'center', color:'#00838F' }}>
+                        <ChevronRight size={14}/>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -153,6 +301,17 @@ export default function ConsultationsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Footer info */}
+        {displayed.length > 0 && (
+          <div style={{ padding:'12px 20px', borderTop:'1px solid #F0F4FA', background:'#FAFBFC', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span style={{ fontSize:12, color:'#546E7A' }}>
+              <strong style={{ color:'#1A2332' }}>{displayed.length}</strong> résultat{displayed.length>1?'s':''} affiché{displayed.length>1?'s':''}
+              {activeTab && <span style={{ marginLeft:6, color:'#90A4AE' }}>— filtre : {STATUT_CFG[activeTab]?.label}</span>}
+            </span>
+            <span style={{ fontSize:11, color:'#90A4AE' }}>Cliquer sur une ligne pour voir le détail</span>
+          </div>
+        )}
       </div>
     </div>
   );
