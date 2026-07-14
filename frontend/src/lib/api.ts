@@ -206,7 +206,7 @@ export const api = {
   },
   getSejour: (id: string) => fetchApi(`/hospitalisation/sejours/${id}`),
   admettreHospitalisation: (data: any) =>
-    fetchApi('/hospitalisation/sejours', { method: 'POST', body: JSON.stringify(data) }),
+    fetchApi('/hospitalisation/sejours/admettre', { method: 'POST', body: JSON.stringify(data) }),
   ajouterNoteMedicale: (sejourId: string, data: any) =>
     fetchApi(`/hospitalisation/sejours/${sejourId}/notes`, { method: 'POST', body: JSON.stringify(data) }),
   ajouterPrescription: (sejourId: string, data: any) =>

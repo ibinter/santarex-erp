@@ -70,9 +70,9 @@ export default function FactureDetailPage() {
     if (!payMontant || isNaN(Number(payMontant))) return;
     setPaying(true);
     try {
-      await apiClient(`/facturation/${params.id}/paiements`, {
+      await apiClient(`/paiements`, {
         method: 'POST',
-        body: { montant: Number(payMontant), modePaiement: payMode },
+        body: { factureId: params.id, montant: Number(payMontant), modePaiement: payMode },
       });
       setPayModal(false); setPayMontant('');
       await load();

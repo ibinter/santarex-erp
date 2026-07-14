@@ -71,7 +71,7 @@ export default function NouvelleDemandeLaboratoirePage() {
   useEffect(() => {
     searchPatients('');
     // Essai de charger le catalogue depuis l'API
-    apiClient<any>('/laboratoire/types-analyses').then(data => {
+    apiClient<any>('/laboratoire/types-analyse').then(data => {
       if (Array.isArray(data) && data.length > 0) setCatalogue(data);
     }).catch(() => { /* utilise le catalogue local */ });
   }, []);

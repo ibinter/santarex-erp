@@ -52,7 +52,7 @@ export default function AdmettreHospitalisationPage() {
     if (!selectedLit) { setError('Sélectionnez un lit.'); return; }
     setLoading(true); setError(null);
     try {
-      const created = await apiClient<any>('/hospitalisation/sejours', {
+      const created = await apiClient<any>('/hospitalisation/sejours/admettre', {
         method: 'POST',
         body: {
           patientId: selectedPatient.id,
