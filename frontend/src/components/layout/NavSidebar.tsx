@@ -198,7 +198,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
             <img
               src="/logo-icon-tr.png"
               alt="S"
-              style={{ width: 36, height: 36, objectFit: 'contain', display: 'block' }}
+              style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }}
             />
           )}
 
