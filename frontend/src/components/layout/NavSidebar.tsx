@@ -188,12 +188,32 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
           }}
         >
           {!collapsed && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img src="/logo.png" alt="SANTAREX" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+              {/* S badge */}
+              <div style={{
+                width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                background: 'linear-gradient(135deg, #00BCD4 0%, #0D47A1 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,188,212,0.4)',
+              }}>
+                <span style={{ color: '#fff', fontWeight: 900, fontSize: 17, letterSpacing: '-1px', lineHeight: 1 }}>S</span>
+              </div>
+              {/* Wordmark */}
+              <div style={{ lineHeight: 1.1, overflow: 'hidden' }}>
+                <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>SANTAREX</div>
+                <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>ERP · Santé</div>
+              </div>
             </div>
           )}
           {collapsed && (
-            <img src="/favicon-32x32.png" alt="S" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+            <div style={{
+              width: 34, height: 34, borderRadius: 9,
+              background: 'linear-gradient(135deg, #00BCD4 0%, #0D47A1 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,188,212,0.35)',
+            }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 17, letterSpacing: '-1px', lineHeight: 1 }}>S</span>
+            </div>
           )}
 
           {/* Desktop collapse toggle */}
