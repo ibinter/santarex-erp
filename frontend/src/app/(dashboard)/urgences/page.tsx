@@ -36,8 +36,8 @@ function getInits(m?: PatientUrgence['medecin']) {
   return `${m.prenom.charAt(0)}${m.nom.charAt(0)}`.toUpperCase();
 }
 
-function PatientCard({ patient, onTriage, onPriseEnCharge }: {
-  patient: PatientUrgence; onTriage:()=>void; onPriseEnCharge:()=>void;
+function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge }: {
+  patient: PatientUrgence; onTriage:()=>void; onDossier?:()=>void; onPriseEnCharge:()=>void|Promise<void>;
 }) {
   const cfg = MAN_CFG[patient.categorieManchester];
   const stt = STATUT_CFG[patient.statut]??{ label:patient.statut, color:'#546E7A', bg:'#ECEFF1' };
