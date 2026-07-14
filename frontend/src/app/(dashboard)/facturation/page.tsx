@@ -161,10 +161,10 @@ export default function FacturationPage() {
               <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
               </button>
-              <button onClick={handleExportPDF} disabled={loading || factures.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
+              <button onClick={handleExportPDF} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <Download size={13}/> PDF
               </button>
-              <button onClick={handleExportXLSX} disabled={loading || factures.length === 0} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(34,197,94,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
+              <button onClick={handleExportXLSX} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(34,197,94,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <FileSpreadsheet size={13}/> XLSX
               </button>
               <button onClick={() => router.push('/facturation/nouvelle')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 800 }}>

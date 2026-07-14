@@ -169,11 +169,11 @@ export default function ConsultationsPage() {
             style={{ width:38, height:38, borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <RefreshCw size={16} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
           </button>
-          <button onClick={handleExportPDF} disabled={loading || consultations.length === 0}
+          <button onClick={handleExportPDF} disabled={loading}
             style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
             <Download size={13}/> PDF
           </button>
-          <button onClick={handleExportXLSX} disabled={loading || consultations.length === 0}
+          <button onClick={handleExportXLSX} disabled={loading}
             style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(34,197,94,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
             <FileSpreadsheet size={13}/> XLSX
           </button>

@@ -193,11 +193,11 @@ export default function PharmaciePage() {
               style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:600 }}>
               <RefreshCw size={14} style={{ animation:loading?'spin 1s linear infinite':'none' }}/>
             </button>
-            <button onClick={handleExportPDF} disabled={medicaments.length === 0}
+            <button onClick={handleExportPDF} disabled={loading}
               style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.3)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
               <Download size={13}/> PDF
             </button>
-            <button onClick={handleExportXLSX} disabled={medicaments.length === 0}
+            <button onClick={handleExportXLSX} disabled={loading}
               style={{ padding:'10px 14px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700 }}>
               <FileSpreadsheet size={13}/> XLSX
             </button>

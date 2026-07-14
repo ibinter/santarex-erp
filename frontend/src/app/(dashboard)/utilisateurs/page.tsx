@@ -209,11 +209,11 @@ export default function UtilisateursPage() {
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
                 <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/>
               </button>
-              <button onClick={handleExportPDF} disabled={users.length === 0}
+              <button onClick={handleExportPDF} disabled={loading}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
                 <Download size={13}/> PDF
               </button>
-              <button onClick={handleExportXLSX} disabled={users.length === 0}
+              <button onClick={handleExportXLSX} disabled={loading}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(34,197,94,0.25)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
                 <FileSpreadsheet size={13}/> XLSX
               </button>
