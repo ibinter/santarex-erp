@@ -49,7 +49,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://185.98.139.38/api/v1
+        NEXT_PUBLIC_API_URL: https://santarex.ibigsoft.com/api/v1
     container_name: santarex_frontend
     restart: always
     env_file: .env.prod
