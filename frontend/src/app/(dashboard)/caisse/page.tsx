@@ -84,7 +84,7 @@ export default function CaissePage() {
       const [statsData, paiementsData, patData] = await Promise.allSettled([
         apiClient('/paiements/stats-caisse'),
         apiClient('/paiements?limit=50'),
-        apiClient('/patients?limit=1000'),
+        apiClient('/patients?limit=100'),
       ]);
       if (statsData.status === 'fulfilled') setStats(statsData.value as StatsCaisse);
       const pMap: Record<string, any> = patData.status === 'fulfilled'

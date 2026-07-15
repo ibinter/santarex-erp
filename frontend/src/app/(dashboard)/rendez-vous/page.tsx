@@ -66,7 +66,7 @@ export default function RendezVousPage() {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
       const [rdvRes, patRes, usrRes] = await Promise.all([
         apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=200`),
-        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/users'),
       ]);
       const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));

@@ -109,7 +109,7 @@ export default function ConsultationsPage() {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
       const [conRes, patRes, usrRes] = await Promise.all([
         apiClient<any>('/consultations?limit=100'),
-        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/users'),
       ]);
       const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));

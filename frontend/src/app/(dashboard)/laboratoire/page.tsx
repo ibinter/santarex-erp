@@ -101,7 +101,7 @@ export default function LaboratoirePage() {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
       const [demRes, patRes, usrRes, typRes] = await Promise.all([
         apiClient<any>('/laboratoire/demandes?limit=100'),
-        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/users'),
         apiClient<any>('/laboratoire/types-analyse'),
       ]);

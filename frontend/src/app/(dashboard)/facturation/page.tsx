@@ -105,7 +105,7 @@ export default function FacturationPage() {
       const [factRes, statsRes, patRes] = await Promise.allSettled([
         apiClient<any>('/facturation?limit=100'),
         apiClient<StatsFacturation>('/facturation/stats'),
-        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/patients?limit=100'),
       ]);
       const pMap: Record<string, any> = patRes.status === 'fulfilled'
         ? Object.fromEntries(unwrap(patRes.value).map((p: any) => [p.id, p])) : {};
