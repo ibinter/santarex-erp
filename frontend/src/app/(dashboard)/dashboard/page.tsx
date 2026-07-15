@@ -354,7 +354,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div style={{ marginTop:14 }}>
-            <div style={{ display:'flex', gap:6 }}>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
               {['Paracétamol','Amoxicilline','Ibuprofène','Oméprazole'].map((m,i) => (
                 <span key={i} style={{ fontSize:9, background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:8, fontWeight:600, whiteSpace:'nowrap' }}>{m}</span>
               )).slice(0, stats.medicamentsRupture || 0)}
