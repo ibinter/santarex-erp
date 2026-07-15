@@ -109,7 +109,7 @@ export default function HospitalisationPage() {
         .lit-card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.14)!important;transform:translateY(-2px);}
         .sej-row:hover{background:#EFF6FF!important;}
         .hero-stat{cursor:pointer;transition:all .15s;}
-        .hero-stat:hover{transform:translateY(-2px);background:rgba(255,255,255,0.2)!important;}
+        .hero-stat:hover{transform:translateY(-2px);background:rgba(255,255,255,0.28)!important;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
       `}</style>
 
       {/* ── HERO BANNER ─────────────────────────────────────────── */}
@@ -145,12 +145,15 @@ export default function HospitalisationPage() {
               ].map(s=>{
                 const active = statutFilter===s.statut;
                 return (
-                <div key={s.label} className="hero-stat" title={`Filtrer : ${s.label}`}
+                <div key={s.label} className="hero-stat" title={active?`Filtre actif : ${s.label} — cliquer pour tout afficher`:`Cliquer pour filtrer : ${s.label}`}
                   onClick={()=>{ setTab('lits'); setStatutFilter(active?'':s.statut); }}
-                  style={{ display:'flex', alignItems:'center', gap:5, background:active?'rgba(255,255,255,0.22)':'rgba(255,255,255,0.1)', borderRadius:8, padding:'5px 12px', border:`1px solid ${active?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.15)'}` }}>
-                  <span style={{ width:6, height:6, borderRadius:'50%', background:s.dot, display:'inline-block' }}/>
-                  <span style={{ fontSize:12, color:'rgba(255,255,255,0.85)', fontWeight:700 }}>{loading?'…':s.val}</span>
-                  <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{s.label}</span>
+                  style={{ display:'flex', alignItems:'center', gap:7, background:active?'#fff':'rgba(255,255,255,0.12)', borderRadius:10, padding:'8px 14px', border:`1.5px solid ${active?'#fff':'rgba(255,255,255,0.22)'}`, boxShadow:active?'0 4px 14px rgba(0,0,0,0.25)':'none' }}>
+                  <span style={{ width:9, height:9, borderRadius:'50%', background:s.dot, display:'inline-block', flexShrink:0 }}/>
+                  <span style={{ fontSize:15, color:active?'#0D47A1':'#fff', fontWeight:800, lineHeight:1 }}>{loading?'…':s.val}</span>
+                  <span style={{ fontSize:11, color:active?'#546E7A':'rgba(255,255,255,0.7)', fontWeight:600 }}>{s.label}</span>
+                  {active
+                    ? <span style={{ fontSize:11, color:'#C62828', fontWeight:800, marginLeft:2 }}>✕</span>
+                    : <span style={{ fontSize:9, color:'rgba(255,255,255,0.5)', fontWeight:700, marginLeft:1 }}>▸</span>}
                 </div>
                 );
               })}
