@@ -135,6 +135,30 @@ function drawFooter(doc: any, pageNum: number, pageCount: number) {
   );
 }
 
+// Choisit automatiquement l'orientation : paysage si le tableau ne tient
+// pas dans la largeur utile d'une page A4 portrait (~184mm).
+function pickOrientation(
+  columns: PdfColumn[],
+  rows: Record<string, unknown>[],
+): 'portrait' | 'landscape' {
+  const USABLE_PORTRAIT = 210 - 26; // A4 largeur - marges (13+13)
+  const CHAR_MM = 1.6;              // largeur approx. d'un caractère à 8.5pt
+  const PAD_MM = 10;               // padding cellule (gauche+droite)
+  const WRAP_CAP = 26;            // au-delà, autoTable renvoie le texte à la ligne
+
+  let needed = 0;
+  for (const c of columns) {
+    if (c.width) { needed += c.width; continue; }
+    let maxLen = c.header.length;
+    for (const r of rows) {
+      const v = String(r[c.dataKey] ?? '');
+      if (v.length > maxLen) maxLen = v.length;
+    }
+    needed += Math.min(maxLen, WRAP_CAP) * CHAR_MM + PAD_MM;
+  }
+  return needed > USABLE_PORTRAIT ? 'landscape' : 'portrait';
+}
+
 // ─── PDF TABLE (liste) ───────────────────────────────────────────────────────
 export async function exportPDF(
   columns: PdfColumn[],
@@ -147,7 +171,8 @@ export async function exportPDF(
   const { jsPDF } = await import('jspdf');
   const autoTable = (await import('jspdf-autotable')).default;
 
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const orientation = pickOrientation(columns, rows);
+  const doc = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
 
   drawHeader(doc, title, subtitle);
 
