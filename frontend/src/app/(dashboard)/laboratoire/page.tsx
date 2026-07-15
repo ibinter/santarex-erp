@@ -64,7 +64,7 @@ export default function LaboratoirePage() {
       'Médecin': d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
       'Analyses': d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
       'Urgence': d.urgence ? 'OUI' : 'Non',
-      'Statut': d.statut ?? '—',
+      'Statut': STATUT_CFG[d.statut]?.label ?? d.statut ?? '—',
       'Date demande': d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
       'Date prélèvement': d.datePrelevement ? new Date(d.datePrelevement).toLocaleDateString('fr-FR') : '—',
     })),
@@ -86,8 +86,8 @@ export default function LaboratoirePage() {
       patient: d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
       medecin: d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
       analyses: d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
-      urgence: d.urgence ? '🔴 OUI' : 'Non',
-      statut: d.statut ?? '—',
+      urgence: d.urgence ? 'OUI' : 'Non',
+      statut: STATUT_CFG[d.statut]?.label ?? d.statut ?? '—',
       date: d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
     })),
     'Demandes d\'Analyses — Laboratoire',
@@ -98,8 +98,35 @@ export default function LaboratoirePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient<any>('/laboratoire/demandes?limit=100');
-      setDemandes(Array.isArray(d)?d:d?.items??d?.data??[]);
+      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+      const [demRes, patRes, usrRes, typRes] = await Promise.all([
+        apiClient<any>('/laboratoire/demandes?limit=100'),
+        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/users'),
+        apiClient<any>('/laboratoire/types-analyse'),
+      ]);
+      const rawDem = unwrap(demRes);
+      const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));
+      const uMap: Record<string, any> = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
+      const tMap: Record<string, any> = Object.fromEntries(unwrap(typRes).map((t: any) => [t.id, t]));
+      // L'API liste ne renvoie que les IDs : on résout patient / médecin / analyses.
+      const enriched = rawDem.map((d: any) => {
+        const p = pMap[d.patientId];
+        const u = uMap[d.medecinId];
+        return {
+          ...d,
+          patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : undefined,
+          medecin: u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined,
+          typesAnalyse: (d.analyses || [])
+            .map((id: string) => tMap[id])
+            .filter(Boolean)
+            .map((t: any) => ({ id: t.id, code: t.code, nom: t.nom, prix: t.prixUnitaire })),
+          statut: d.statutPrelevement ?? d.statut,
+          createdAt: d.dateHeureDemande ?? d.createdAt,
+          datePrelevement: d.dateHeurePrelevement ?? d.datePrelevement,
+        };
+      });
+      setDemandes(enriched);
       setLastRefresh(new Date());
     } finally { setLoading(false); }
   }, []);

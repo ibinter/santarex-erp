@@ -80,14 +80,22 @@ export default function CaissePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsData, paiementsData] = await Promise.allSettled([
+      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+      const [statsData, paiementsData, patData] = await Promise.allSettled([
         apiClient('/paiements/stats-caisse'),
         apiClient('/paiements?limit=50'),
+        apiClient('/patients?limit=1000'),
       ]);
       if (statsData.status === 'fulfilled') setStats(statsData.value as StatsCaisse);
+      const pMap: Record<string, any> = patData.status === 'fulfilled'
+        ? Object.fromEntries(unwrap(patData.value).map((p: any) => [p.id, p])) : {};
       if (paiementsData.status === 'fulfilled') {
-        const d = paiementsData.value as any;
-        setPaiements(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
+        const list = unwrap(paiementsData.value).map((p: any) => {
+          if (p.patient) return p;
+          const pt = pMap[p.patientId];
+          return pt ? { ...p, patient: { id: pt.id, nom: pt.nom, prenom: pt.prenom, ipp: pt.ipp } } : p;
+        });
+        setPaiements(list);
       }
       setLastRefresh(new Date());
     } finally { setLoading(false); }

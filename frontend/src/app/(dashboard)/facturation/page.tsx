@@ -101,13 +101,21 @@ export default function FacturationPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [factRes, statsRes] = await Promise.allSettled([
+      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+      const [factRes, statsRes, patRes] = await Promise.allSettled([
         apiClient<any>('/facturation?limit=100'),
         apiClient<StatsFacturation>('/facturation/stats'),
+        apiClient<any>('/patients?limit=1000'),
       ]);
+      const pMap: Record<string, any> = patRes.status === 'fulfilled'
+        ? Object.fromEntries(unwrap(patRes.value).map((p: any) => [p.id, p])) : {};
       if (factRes.status === 'fulfilled') {
-        const d = factRes.value;
-        setFactures(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
+        const list = unwrap(factRes.value).map((f: any) => {
+          if (f.patient) return f;
+          const p = pMap[f.patientId];
+          return p ? { ...f, patient: { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } } : f;
+        });
+        setFactures(list);
       }
       if (statsRes.status === 'fulfilled') setStats(statsRes.value);
       setLastRefresh(new Date());

@@ -76,7 +76,7 @@ export default function ConsultationsPage() {
       'Date & Heure': c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
       'Motif': c.motif ?? '—',
       'Diagnostic': c.diagnostic ?? '—',
-      'Statut': c.statut ?? '—',
+      'Statut': STATUT_CFG[c.statut]?.label ?? c.statut ?? '—',
     })),
     `consultations_${new Date().toISOString().slice(0,10)}`,
     'Consultations',
@@ -96,7 +96,7 @@ export default function ConsultationsPage() {
       medecin: c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
       date: c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
       motif: c.motif ?? '—',
-      statut: c.statut ?? '—',
+      statut: STATUT_CFG[c.statut]?.label ?? c.statut ?? '—',
     })),
     'Liste des Consultations',
     `consultations_${new Date().toISOString().slice(0,10)}`,
@@ -106,8 +106,24 @@ export default function ConsultationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiClient<any>('/consultations?limit=100');
-      const list = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
+      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+      const [conRes, patRes, usrRes] = await Promise.all([
+        apiClient<any>('/consultations?limit=100'),
+        apiClient<any>('/patients?limit=1000'),
+        apiClient<any>('/users'),
+      ]);
+      const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));
+      const uMap: Record<string, any> = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
+      // L'API liste ne renvoie que patientId / medecinId : on résout les noms.
+      const list = unwrap(conRes).map((c: any) => {
+        const p = pMap[c.patientId];
+        const u = uMap[c.medecinId];
+        return {
+          ...c,
+          patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : undefined,
+          medecin: u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined,
+        };
+      });
       setConsultations(list);
       setLastRefresh(new Date());
     } catch { setConsultations([]); }
