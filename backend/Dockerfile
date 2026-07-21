@@ -12,6 +12,9 @@ RUN apk add --no-cache postgresql-client
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
+# Templates email .hbs : le glob nest-cli ne copie pas les fichiers à plat →
+# on les copie explicitement dans dist pour que le mailer les trouve.
+COPY --from=builder /app/src/mail/templates ./dist/mail/templates
 # Scripts utilitaires (seed, etc.) disponibles dans l'image de production.
 COPY --from=builder /app/scripts ./scripts
 EXPOSE 3001
