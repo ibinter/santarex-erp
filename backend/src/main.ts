@@ -13,7 +13,9 @@ class HealthController {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true — nécessaire à la vérification de signature HMAC des webhooks
+  // de paiement (le corps brut doit être disponible via req.rawBody).
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.use(helmet());
 

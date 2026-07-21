@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { OffresSaasModule } from './offres-saas/offres-saas.module';
 import { LicencesModule } from './licences/licences.module';
+import { PaymentsModule } from './payments/payments.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -56,6 +57,7 @@ import { SeedModule } from './database/seed.module';
     ExportsModule,
     SearchModule,
     PaiementsSaasModule,
+    PaymentsModule,
     AiAssistantModule,
     NotificationsModule,
     SupportTicketsModule,
