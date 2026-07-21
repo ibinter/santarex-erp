@@ -15,10 +15,23 @@ import { FacturationService } from './facturation.service';
 import { CreateFactureDto, CreateLigneFactureDto } from './dto/create-facture.dto';
 import { UpdateFactureDto, AnnulerFactureDto } from './dto/update-facture.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { StatutFacture } from './entities/facture.entity';
 
 @Controller('facturation')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+// Lecture large (facturation visible par le soignant et la caisse) ;
+// mutations réservées à la caisse et à la direction.
+@Roles(
+  UserRole.MEDECIN,
+  UserRole.CAISSIER,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+)
 export class FacturationController {
   constructor(private readonly facturationService: FacturationService) {}
 
@@ -50,16 +63,19 @@ export class FacturationController {
   }
 
   @Post()
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   create(@Body() dto: CreateFactureDto, @Request() req) {
     return this.facturationService.createFacture(dto, req.user.tenantId, req.user.id);
   }
 
   @Put(':id')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   update(@Param('id') id: string, @Body() dto: UpdateFactureDto, @Request() req) {
     return this.facturationService.update(id, dto, req.user.tenantId);
   }
 
   @Post(':id/lignes')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   addLigne(
     @Param('id') id: string,
     @Body() dto: CreateLigneFactureDto,
@@ -69,6 +85,7 @@ export class FacturationController {
   }
 
   @Delete(':id/lignes/:ligneId')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   removeLigne(
     @Param('id') id: string,
     @Param('ligneId') ligneId: string,
@@ -78,11 +95,13 @@ export class FacturationController {
   }
 
   @Patch(':id/emettre')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   emettre(@Param('id') id: string, @Request() req) {
     return this.facturationService.emettre(id, req.user.tenantId);
   }
 
   @Patch(':id/annuler')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   annuler(@Param('id') id: string, @Body() dto: AnnulerFactureDto, @Request() req) {
     return this.facturationService.annuler(id, dto.motif, req.user.tenantId);
   }

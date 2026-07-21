@@ -55,7 +55,11 @@ export class PaiementsSaasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findOne(@Param('id') id: string, @Req() req: Request) {
+    // Un ADMIN ne voit QUE les paiements de son propre tenant ; le SUPERADMIN
+    // garde l'accès global. Corrige la fuite inter-société (audit isolation).
+    const user = (req as any).user;
+    const scope = user?.role === UserRole.SUPERADMIN ? undefined : user?.tenantId;
+    return this.service.findOne(id, scope);
   }
 }

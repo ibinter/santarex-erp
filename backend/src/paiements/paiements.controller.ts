@@ -12,9 +12,22 @@
 import { PaiementsService } from './paiements.service';
 import { CreatePaiementDto, RemboursePaiementDto } from './dto/create-paiement.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @Controller('paiements')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+// Lecture caisse ouverte au soignant ; encaissements et remboursements
+// réservés à la caisse et à la direction.
+@Roles(
+  UserRole.MEDECIN,
+  UserRole.CAISSIER,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+)
 export class PaiementsController {
   constructor(private readonly paiementsService: PaiementsService) {}
 
@@ -47,16 +60,19 @@ export class PaiementsController {
   }
 
   @Post()
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   create(@Body() dto: CreatePaiementDto, @Request() req) {
     return this.paiementsService.createPaiement(dto, req.user.tenantId, req.user.id);
   }
 
   @Patch(':id/valider')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   valider(@Param('id') id: string, @Request() req) {
     return this.paiementsService.valider(id, req.user.tenantId, req.user.id);
   }
 
   @Patch(':id/rembourser')
+  @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   rembourser(
     @Param('id') id: string,
     @Body() dto: RemboursePaiementDto,

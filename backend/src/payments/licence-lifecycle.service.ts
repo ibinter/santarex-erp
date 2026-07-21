@@ -361,6 +361,113 @@ export class LicenceLifecycleService {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  //  ENTITLEMENT — décision d'accès serveur (consommée par LicenceGuard /
+  //  ModuleGuard). Méthode PURE : ne modifie rien, ne lève jamais pour un motif
+  //  métier (elle RETOURNE la décision). PRODUCTION-SAFE / biais fail-open.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Décision d'accès pour un tenant, à partir de son état de licence.
+   *
+   * Règles (production-safe — en cas de doute, on AUTORISE) :
+   *  - AUCUNE licence trouvée → allowed:true, reason:'no-licence-fail-open'.
+   *    (Un tenant live sans licence ne doit JAMAIS être bloqué par ce moteur.)
+   *  - Licence trouvée : on lit le cycle de vie étendu (notes `<<<LLC…LLC>>>`,
+   *    sinon inféré du statut Postgres).
+   *      • allowed:true  pour ACTIVE / TRIAL / GRACE / PROVISIONAL / AWAITING_PAYMENT
+   *      • allowed:false UNIQUEMENT pour SUSPENDED / REVOKED / EXPIRED
+   *        (expiré au-delà de la période de grâce).
+   *  - Plusieurs licences : on privilégie une licence QUI ACCORDE l'accès ; on ne
+   *    bloque que si TOUTES les licences du tenant sont bloquantes.
+   *  - `modules` = `modulesActivesJson` parsé (tableau de codes) de la licence
+   *    retenue si présent, sinon `null` (= tous les modules autorisés).
+   *
+   * Ne lève jamais pour un motif métier. Peut lever sur défaillance interne
+   * (DB indisponible…) : c'est aux gardes de gérer ce cas en fail-open.
+   */
+  async getTenantAccess(tenantSlug: string): Promise<{
+    allowed: boolean;
+    reason: string;
+    lifecycle: string;
+    modules: string[] | null;
+  }> {
+    if (!tenantSlug) {
+      // Pas de tenant identifiable → on n'a rien à faire respecter ici.
+      return { allowed: true, reason: 'no-tenant-fail-open', lifecycle: 'none', modules: null };
+    }
+
+    const licences = await this.licenceRepo.find({
+      where: { tenantSlug },
+      order: { dateExpiration: 'DESC', createdAt: 'DESC' },
+    });
+
+    if (!licences.length) {
+      return { allowed: true, reason: 'no-licence-fail-open', lifecycle: 'none', modules: null };
+    }
+
+    // On évalue chaque licence ; on retient la PREMIÈRE qui accorde l'accès
+    // (ordre : expiration la plus lointaine d'abord). Sinon on renvoie la
+    // décision bloquante la plus récente.
+    let blocking: { reason: string; lifecycle: string } | null = null;
+
+    for (const licence of licences) {
+      const lc = this.readState(licence).lc;
+      const granting =
+        lc === LicenceLifecycle.ACTIVE ||
+        lc === LicenceLifecycle.TRIAL ||
+        lc === LicenceLifecycle.GRACE ||
+        lc === LicenceLifecycle.PROVISIONAL ||
+        lc === LicenceLifecycle.AWAITING_PAYMENT;
+
+      if (granting) {
+        return {
+          allowed: true,
+          reason: lc,
+          lifecycle: lc,
+          modules: this.parseModules(licence.modulesActivesJson),
+        };
+      }
+      if (!blocking) blocking = { reason: `${lc}`, lifecycle: lc };
+    }
+
+    // Aucune licence accordante → bloqué (SUSPENDED / REVOKED / EXPIRED).
+    return {
+      allowed: false,
+      reason: blocking?.reason ?? 'suspended',
+      lifecycle: blocking?.lifecycle ?? LicenceLifecycle.SUSPENDED,
+      modules: null,
+    };
+  }
+
+  /**
+   * Parse `modulesActivesJson` en tableau de codes de modules.
+   * Retourne `null` (= tous autorisés) si vide / absent / illisible — jamais
+   * `[]` pour ne pas verrouiller par erreur un tenant dont la donnée est cassée.
+   */
+  private parseModules(raw: string | null | undefined): string[] | null {
+    if (!raw) return null;
+    const trimmed = String(raw).trim();
+    if (!trimmed) return null;
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        const codes = parsed
+          .map((m) => String(m).trim().toLowerCase())
+          .filter((m) => m.length > 0);
+        return codes.length ? codes : null;
+      }
+    } catch {
+      // Repli : liste séparée par virgules.
+      const codes = trimmed
+        .split(',')
+        .map((m) => m.trim().toLowerCase())
+        .filter((m) => m.length > 0);
+      return codes.length ? codes : null;
+    }
+    return null;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   //  CŒUR : octroi / renouvellement mutualisé
   // ══════════════════════════════════════════════════════════════════════════
 

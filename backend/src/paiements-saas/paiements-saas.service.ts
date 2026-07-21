@@ -216,8 +216,11 @@ export class PaiementsSaasService {
     return this.paiementRepo.find({ where, order: { createdAt: 'DESC' }, take: 100 });
   }
 
-  async findOne(id: string): Promise<PaiementSaas> {
-    const p = await this.paiementRepo.findOne({ where: { id } });
+  async findOne(id: string, tenantId?: string): Promise<PaiementSaas> {
+    // tenantId fourni (non-superadmin) → scope obligatoire pour éviter toute
+    // fuite inter-société ; absent (superadmin) → accès global assumé.
+    const where = tenantId ? { id, tenantId } : { id };
+    const p = await this.paiementRepo.findOne({ where });
     if (!p) throw new NotFoundException('Paiement introuvable');
     return p;
   }

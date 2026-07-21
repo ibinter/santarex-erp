@@ -9,6 +9,7 @@ import { TenantsModule } from './tenants/tenants.module';
 import { OffresSaasModule } from './offres-saas/offres-saas.module';
 import { LicencesModule } from './licences/licences.module';
 import { PaymentsModule } from './payments/payments.module';
+import { EntitlementModule } from './common/entitlement.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -58,6 +59,7 @@ import { SeedModule } from './database/seed.module';
     SearchModule,
     PaiementsSaasModule,
     PaymentsModule,
+    EntitlementModule,
     AiAssistantModule,
     NotificationsModule,
     SupportTicketsModule,
@@ -80,6 +82,22 @@ import { SeedModule } from './database/seed.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // ────────────────────────────────────────────────────────────────────────
+    //  APPLICATION DE LICENCE / ENTITLEMENT MODULE — décision de câblage
+    //  ────────────────────────────────────────────────────────────────────────
+    //  `LicenceGuard` et `ModuleGuard` (src/common/guards) ne sont VOLONTAIREMENT
+    //  PAS enregistrés en APP_GUARD ici. Motif : cette application n'a PAS de
+    //  JwtAuthGuard GLOBAL — le JWT est appliqué par contrôleur via
+    //  `@UseGuards(JwtAuthGuard)`. Or les gardes globaux (APP_GUARD) s'exécutent
+    //  AVANT les gardes de contrôleur : `req.user` ne serait pas encore posé et
+    //  les gardes de licence ne verraient jamais le tenant (donc aucun effet).
+    //
+    //  Ils sont donc EXPOSÉS (providers/exports de PaymentsModule) pour être
+    //  appliqués PAR CONTRÔLEUR, APRÈS l'auth :
+    //      @UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+    //
+    //  Détails et procédure : src/common/guards/README-licence-enforcement.md
+    // ────────────────────────────────────────────────────────────────────────
   ],
 })
 export class AppModule {}

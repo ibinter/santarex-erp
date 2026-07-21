@@ -16,13 +16,19 @@ import { AdmissionHospitalisationDto } from './dto/admission-hospitalisation.dto
 import { CreateNoteEvolutionDto } from './dto/create-note-evolution.dto';
 import { SortiePatientDto } from './dto/sortie-patient.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { ServiceHospitalisation, StatutLit } from './entities/lit.entity';
 import { StatutSejour } from './entities/sejour.entity';
 
 @ApiTags('Hospitalisation')
 @ApiBearerAuth()
 @Controller('hospitalisation')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+@Roles(UserRole.MEDECIN, UserRole.INFIRMIER, UserRole.ADMIN, UserRole.DIRECTEUR)
 export class HospitalisationController {
   constructor(private readonly hospitalisationService: HospitalisationService) {}
 

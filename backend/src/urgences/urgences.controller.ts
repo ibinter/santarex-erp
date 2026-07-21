@@ -13,10 +13,16 @@ import { UrgencesService } from './urgences.service';
 import { AdmissionUrgenceDto } from './dto/admission-urgence.dto';
 import { UpdateTriageDto, SortirPatientDto } from './dto/update-triage.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { StatutUrgence, CategorieUrgence, DispositionUrgence } from './entities/patient-urgence.entity';
 
 @Controller('urgences')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+@Roles(UserRole.MEDECIN, UserRole.INFIRMIER, UserRole.ADMIN, UserRole.DIRECTEUR)
 export class UrgencesController {
   constructor(private readonly urgencesService: UrgencesService) {}
 

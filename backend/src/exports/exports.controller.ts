@@ -3,6 +3,9 @@ import { Response } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ExportsService } from './exports.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,7 +14,18 @@ import { Medicament } from '../pharmacie/entities/medicament.entity';
 
 @ApiTags('Exports')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+// Exports/reporting : direction et admin, plus les métiers dont un flux
+// existant dépend d'un export (facture PDF côté caisse/médecin, stock côté
+// pharmacie).
+@Roles(
+  UserRole.SUPERADMIN,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+  UserRole.MEDECIN,
+  UserRole.CAISSIER,
+  UserRole.PHARMACIEN,
+)
 @Controller('exports')
 export class ExportsController {
   constructor(

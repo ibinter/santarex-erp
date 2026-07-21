@@ -14,13 +14,27 @@ import { LaboratoireService } from './laboratoire.service';
 import { CreateDemandeAnalyseDto } from './dto/create-demande-analyse.dto';
 import { SaisirTousResultatsDto } from './dto/saisir-resultats.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { CategorieAnalyse } from './entities/type-analyse.entity';
 import { StatutPrelevement } from './entities/demande-analyse.entity';
 import { TypeAnalyse } from './entities/type-analyse.entity';
 
 @ApiTags('Laboratoire')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+// Lecture ouverte au personnel soignant ; mutations réservées au laboratoire
+// et aux prescripteurs (l'infirmier consulte mais ne saisit pas).
+@Roles(
+  UserRole.LABORANTIN,
+  UserRole.MEDECIN,
+  UserRole.INFIRMIER,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+)
 @Controller('laboratoire')
 export class LaboratoireController {
   constructor(private readonly laboService: LaboratoireService) {}
@@ -40,6 +54,7 @@ export class LaboratoireController {
   }
 
   @Post('types-analyse')
+  @Roles(UserRole.LABORANTIN, UserRole.MEDECIN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'CrÃ©er un type d\'analyse dans le catalogue' })
   createType(@Body() dto: Partial<TypeAnalyse>, @Request() req) {
     return this.laboService.createTypeAnalyse(dto, req.user.tenantId);
@@ -77,6 +92,7 @@ export class LaboratoireController {
   }
 
   @Post('demandes')
+  @Roles(UserRole.LABORANTIN, UserRole.MEDECIN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'CrÃ©er une demande d\'analyse' })
   creerDemande(@Body() dto: CreateDemandeAnalyseDto, @Request() req) {
     return this.laboService.creerDemande(dto, req.user.tenantId, req.user.id);
@@ -89,12 +105,14 @@ export class LaboratoireController {
   }
 
   @Patch('demandes/:id/prelever')
+  @Roles(UserRole.LABORANTIN, UserRole.MEDECIN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Marquer une demande comme prÃ©levÃ©e' })
   marquerPreleve(@Param('id') id: string, @Request() req) {
     return this.laboService.marquerPreleve(id, req.user.tenantId, req.user.id);
   }
 
   @Post('demandes/:id/resultats')
+  @Roles(UserRole.LABORANTIN, UserRole.MEDECIN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Saisir les rÃ©sultats d\'une demande d\'analyse' })
   saisirResultats(
     @Param('id') id: string,
@@ -105,6 +123,7 @@ export class LaboratoireController {
   }
 
   @Patch('demandes/:id/valider')
+  @Roles(UserRole.LABORANTIN, UserRole.MEDECIN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Valider et clÃ´turer les rÃ©sultats d\'une demande' })
   validerResultats(@Param('id') id: string, @Request() req) {
     return this.laboService.validerResultats(id, req.user.tenantId, req.user.id);

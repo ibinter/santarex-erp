@@ -14,9 +14,21 @@ import { RendezVousService } from './rendez-vous.service';
 import { CreateRdvDto } from './dto/create-rdv.dto';
 import { UpdateRdvDto } from './dto/update-rdv.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { StatutRendezVous } from './entities/rendez-vous.entity';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+@Roles(
+  UserRole.MEDECIN,
+  UserRole.INFIRMIER,
+  UserRole.CAISSIER,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+)
 @Controller('rendez-vous')
 export class RendezVousController {
   constructor(private readonly rendezVousService: RendezVousService) {}

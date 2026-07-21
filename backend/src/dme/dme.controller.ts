@@ -13,8 +13,14 @@ import { DmeService } from './dme.service';
 import { CreateAntecedentDto } from './dto/create-antecedent.dto';
 import { CreateAllergieDto } from './dto/create-allergie.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+@Roles(UserRole.MEDECIN, UserRole.INFIRMIER, UserRole.ADMIN, UserRole.DIRECTEUR)
 @Controller('dme')
 export class DmeController {
   constructor(private readonly dmeService: DmeService) {}

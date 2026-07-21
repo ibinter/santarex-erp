@@ -16,11 +16,25 @@ import { CreateMedicamentDto } from './dto/create-medicament.dto';
 import { EntreeStockDto, SortieStockDto } from './dto/mouvement-stock.dto';
 import { DispenserOrdonnanceDto } from './dto/dispenser-ordonnance.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { MedicamentCategorie } from './entities/medicament.entity';
 
 @ApiTags('Pharmacie')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
+// Consultation du catalogue/stock ouverte aux soignants ; toute mutation du
+// stock ou dispensation réservée à la pharmacie et à la direction.
+@Roles(
+  UserRole.PHARMACIEN,
+  UserRole.MEDECIN,
+  UserRole.INFIRMIER,
+  UserRole.ADMIN,
+  UserRole.DIRECTEUR,
+)
 @Controller('pharmacie')
 export class PharmacieController {
   constructor(private readonly pharmService: PharmacieService) {}
@@ -75,12 +89,14 @@ export class PharmacieController {
   }
 
   @Post('medicaments')
+  @Roles(UserRole.PHARMACIEN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'CrÃ©er un mÃ©dicament' })
   create(@Body() dto: CreateMedicamentDto, @Request() req) {
     return this.pharmService.createMedicament(dto, req.user.tenantId);
   }
 
   @Put('medicaments/:id')
+  @Roles(UserRole.PHARMACIEN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Mettre Ã  jour un mÃ©dicament' })
   update(@Param('id') id: string, @Body() dto: Partial<CreateMedicamentDto>, @Request() req) {
     return this.pharmService.updateMedicament(id, dto, req.user.tenantId);
@@ -89,6 +105,7 @@ export class PharmacieController {
   // â”€â”€ Mouvements de stock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @Post('medicaments/:id/entree-stock')
+  @Roles(UserRole.PHARMACIEN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'EntrÃ©e de stock (ajout d\'un lot)' })
   entreeStock(
     @Param('id') id: string,
@@ -99,6 +116,7 @@ export class PharmacieController {
   }
 
   @Post('medicaments/:id/sortie-stock')
+  @Roles(UserRole.PHARMACIEN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Sortie de stock manuelle' })
   sortieStock(
     @Param('id') id: string,
@@ -136,6 +154,7 @@ export class PharmacieController {
   // â”€â”€ Ordonnances â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @Post('ordonnances/:ordonnanceId/dispenser')
+  @Roles(UserRole.PHARMACIEN, UserRole.ADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Dispenser tous les mÃ©dicaments d\'une ordonnance' })
   dispenserOrdonnance(
     @Param('ordonnanceId') ordonnanceId: string,
