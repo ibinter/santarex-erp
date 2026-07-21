@@ -1,0 +1,31 @@
+{
+  "academie": {
+    "title": "Académie SANTAREX",
+    "subtitle": "Parcours de formation, ressources et suivi de progression.",
+    "statCompleted": "Ressources terminées",
+    "statStarted": "Ressources commencées",
+    "statAvailable": "Contenus disponibles",
+    "globalProgress": "Progression globale",
+    "loading": "Chargement de l'Académie…",
+    "loadError": "Erreur de chargement",
+    "retry": "Réessayer",
+    "emptyTitle": "Aucun parcours publié pour le moment.",
+    "emptySubtitle": "De nouveaux contenus de formation seront ajoutés prochainement.",
+    "completed": "{count, plural, one {terminé} other {terminés}}",
+    "soon": "Bientôt disponible",
+    "done": "Terminé",
+    "open": "Ouvrir",
+    "finish": "Terminer",
+    "minUnit": "min",
+    "niveau": {
+      "debutant": "Débutant",
+      "intermediaire": "Intermédiaire",
+      "avance": "Avancé"
+    },
+    "type": {
+      "video": "Vidéo",
+      "document": "Document",
+      "quiz": "Quiz"
+    }
+  }
+}

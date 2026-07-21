@@ -1,0 +1,24 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "totalCount": "{n} notification(s) in total",
+    "unread": "{n} unread",
+    "markAllRead": "Mark all as read",
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "emptyTitle": "No notifications",
+    "emptyReadAll": "All your notifications have been read.",
+    "emptyNone": "You don't have any notifications yet.",
+    "markReadTitle": "Mark as read",
+    "markRead": "Mark read",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {page} / {total}",
+    "timeAgo": {
+      "now": "Just now",
+      "minutes": "{n} min ago",
+      "hours": "{n}h ago",
+      "days": "{n}d ago"
+    }
+  }
+}

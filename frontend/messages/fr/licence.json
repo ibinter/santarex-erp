@@ -1,0 +1,59 @@
+{
+  "licence": {
+    "title": "Licence & Abonnement",
+    "verifying": "Vérification en cours…",
+    "activeSubtitle": "Votre abonnement SANTAREX ERP est actif",
+    "expiredSubtitle": "Votre abonnement a expiré",
+    "noLicenseSubtitle": "Aucune licence active pour cet établissement",
+    "verify": "Vérifier",
+    "daysRemaining": "jours restants",
+    "since": "Depuis le",
+    "expiresOn": "Expire le",
+    "contactActivate": "Contactez IBIGSOFT pour activer votre licence",
+    "renewalRequired": "Renouvellement requis dans {n} jour(s)",
+    "renewalWarning": "Contactez IBIGSOFT dès maintenant pour éviter toute interruption de service.",
+    "renew": "Renouveler",
+    "verifyError": "Erreur de vérification",
+    "verifyErrorFallback": "Impossible de vérifier la licence",
+    "retry": "Réessayer",
+    "subStart": "Début d'abonnement",
+    "expiration": "Expiration",
+    "maxUsers": "Utilisateurs autorisés",
+    "maxPatients": "Patients autorisés",
+    "accounts": "{n} comptes",
+    "patientsCount": "{n} patients",
+    "unlimited": "Illimité",
+    "modulesIncluded": "Modules inclus",
+    "plansAvailable": "Plans disponibles",
+    "current": "ACTUEL",
+    "upgradeTitle": "Mettre à niveau votre abonnement ?",
+    "activateTitle": "Activer votre licence SANTAREX ERP",
+    "upgradeDesc": "Contactez IBIGSOFT pour passer à un plan supérieur.",
+    "activateDesc": "Contactez IBIGSOFT pour obtenir une licence et accéder à tous les modules.",
+    "contactSupport": "Contacter le support",
+    "module": {
+      "patients": "Patients",
+      "consultations": "Consultations",
+      "facturation": "Facturation",
+      "pharmacie": "Pharmacie",
+      "laboratoire": "Laboratoire",
+      "hospitalisation": "Hospitalisation",
+      "urgences": "Urgences",
+      "imagerie": "Imagerie",
+      "rh": "Ressources Humaines",
+      "reporting": "Reporting & BI",
+      "ia": "Assistant IA (SARA)"
+    },
+    "plans": {
+      "starter": {
+        "features": ["Jusqu'à 5 utilisateurs", "500 patients", "Consultations + Facturation", "Support email"]
+      },
+      "professional": {
+        "features": ["Jusqu'à 20 utilisateurs", "5 000 patients", "Tous les modules cliniques", "Pharmacie & Laboratoire", "Support prioritaire"]
+      },
+      "enterprise": {
+        "features": ["Utilisateurs illimités", "Patients illimités", "Tous les modules", "Assistant IA SARA", "Reporting avancé", "SLA dédié 24/7"]
+      }
+    }
+  }
+}

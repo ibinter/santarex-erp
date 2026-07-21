@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, User, Activity, Thermometer, Heart, Weight, Ruler, Wind, Pill, FlaskConical, FileText, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportFichePDF } from '@/lib/export';
 
@@ -36,6 +37,12 @@ function calcAge(dateNaissance?: string) {
 export default function ConsultationDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations('consultations');
+  const statutLabel = (s?: string) => (({
+    en_cours: t('detail.statutEnCours'),
+    terminee: t('detail.statutTerminee'),
+    facturee: t('detail.statutFacturee'),
+  }) as Record<string, string>)[s ?? ''] ?? s;
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +53,7 @@ export default function ConsultationDetailPage() {
       const data = await apiClient<Consultation>(`/consultations/${params.id}`);
       setConsultation(data);
     } catch (e: any) {
-      setError(e?.message ?? 'Impossible de charger la consultation');
+      setError(e?.message ?? t('detail.errLoad'));
     } finally { setLoading(false); }
   }, [params.id]);
 
@@ -56,36 +63,36 @@ export default function ConsultationDetailPage() {
     if (!consultation) return;
     const cv = consultation.constantesVitales ?? {};
     exportFichePDF(
-      `Consultation ${consultation.numero ?? consultation.id.slice(0, 8).toUpperCase()}`,
+      t('detail.pdfTitle', { numero: consultation.numero ?? consultation.id.slice(0, 8).toUpperCase() }),
       [
-        { label: 'Consultation', fields: [
-          { key: 'N° Consultation', value: consultation.numero ?? consultation.id.slice(0, 8).toUpperCase() },
-          { key: 'Date', value: consultation.dateHeure ? new Date(consultation.dateHeure).toLocaleString('fr-FR') : '—' },
-          { key: 'Statut', value: STATUT_CONFIG[consultation.statut ?? '']?.label ?? consultation.statut ?? '—' },
-          { key: 'Médecin', value: consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—' },
-          { key: 'Spécialité', value: consultation.medecin?.specialite ?? '—' },
+        { label: t('detail.pdfSectionConsultation'), fields: [
+          { key: t('detail.pdfNumero'), value: consultation.numero ?? consultation.id.slice(0, 8).toUpperCase() },
+          { key: t('detail.pdfDate'), value: consultation.dateHeure ? new Date(consultation.dateHeure).toLocaleString('fr-FR') : '—' },
+          { key: t('detail.pdfStatut'), value: statutLabel(consultation.statut) ?? '—' },
+          { key: t('detail.pdfMedecin'), value: consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—' },
+          { key: t('detail.pdfSpecialite'), value: consultation.medecin?.specialite ?? '—' },
         ]},
-        { label: 'Patient', fields: [
-          { key: 'Nom', value: consultation.patient ? `${consultation.patient.prenom} ${consultation.patient.nom}` : '—' },
-          { key: 'IPP', value: consultation.patient?.ipp ?? '—' },
-          { key: 'Groupe sanguin', value: consultation.patient?.groupeSanguin ?? '—' },
-          { key: 'Allergies', value: consultation.patient?.allergies ?? '—' },
+        { label: t('detail.pdfSectionPatient'), fields: [
+          { key: t('detail.pdfNom'), value: consultation.patient ? `${consultation.patient.prenom} ${consultation.patient.nom}` : '—' },
+          { key: t('detail.pdfIpp'), value: consultation.patient?.ipp ?? '—' },
+          { key: t('detail.pdfGroupeSanguin'), value: consultation.patient?.groupeSanguin ?? '—' },
+          { key: t('detail.pdfAllergies'), value: consultation.patient?.allergies ?? '—' },
         ]},
-        { label: 'Constantes vitales', fields: [
-          { key: 'Tension', value: cv.ta ? `${cv.ta} mmHg` : '—' },
-          { key: 'Fréq. cardiaque', value: cv.fc != null ? `${cv.fc} bpm` : '—' },
-          { key: 'Température', value: cv.temperature != null ? `${cv.temperature} °C` : '—' },
-          { key: 'Poids', value: cv.poids != null ? `${cv.poids} kg` : '—' },
-          { key: 'Taille', value: cv.taille != null ? `${cv.taille} cm` : '—' },
-          { key: 'SpO2', value: cv.spo2 != null ? `${cv.spo2} %` : '—' },
+        { label: t('detail.pdfSectionVitals'), fields: [
+          { key: t('detail.pdfTension'), value: cv.ta ? `${cv.ta} mmHg` : '—' },
+          { key: t('detail.pdfFc'), value: cv.fc != null ? `${cv.fc} bpm` : '—' },
+          { key: t('detail.pdfTemp'), value: cv.temperature != null ? `${cv.temperature} °C` : '—' },
+          { key: t('detail.pdfPoids'), value: cv.poids != null ? `${cv.poids} kg` : '—' },
+          { key: t('detail.pdfTaille'), value: cv.taille != null ? `${cv.taille} cm` : '—' },
+          { key: t('detail.pdfSpo2'), value: cv.spo2 != null ? `${cv.spo2} %` : '—' },
         ]},
-        { label: 'Observations', fields: [
-          { key: 'Motif', value: consultation.motif ?? '—' },
-          { key: 'Anamnèse', value: consultation.anamnese ?? '—' },
-          { key: 'Examen clinique', value: consultation.examenClinique ?? '—' },
-          { key: 'Diagnostic', value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : '—' },
-          { key: 'Conclusion', value: consultation.conclusion ?? '—' },
-          { key: 'Plan de soins', value: consultation.planSoins ?? '—' },
+        { label: t('detail.pdfSectionObservations'), fields: [
+          { key: t('detail.pdfMotif'), value: consultation.motif ?? '—' },
+          { key: t('detail.pdfAnamnese'), value: consultation.anamnese ?? '—' },
+          { key: t('detail.pdfExamen'), value: consultation.examenClinique ?? '—' },
+          { key: t('detail.pdfDiagnostic'), value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : '—' },
+          { key: t('detail.pdfConclusion'), value: consultation.conclusion ?? '—' },
+          { key: t('detail.pdfPlanSoins'), value: consultation.planSoins ?? '—' },
         ]},
       ],
       `consultation-${consultation.numero ?? consultation.id.slice(0, 8)}`,
@@ -93,12 +100,12 @@ export default function ConsultationDetailPage() {
   };
 
   const VITAUX = [
-    { key: 'ta',          label: 'Tension artérielle', unit: 'mmHg', icon: <Activity size={16} />,    color: '#C62828', bg: '#FFEBEE' },
-    { key: 'fc',          label: 'Fréquence cardiaque', unit: 'bpm', icon: <Heart size={16} />,       color: '#AD1457', bg: '#FCE4EC' },
-    { key: 'temperature', label: 'Température',         unit: '°C',  icon: <Thermometer size={16} />, color: '#E65100', bg: '#FFF3E0' },
-    { key: 'poids',       label: 'Poids',               unit: 'kg',  icon: <Weight size={16} />,      color: '#0D47A1', bg: '#EFF6FF' },
-    { key: 'taille',      label: 'Taille',              unit: 'cm',  icon: <Ruler size={16} />,       color: '#6A1B9A', bg: '#F3E5F5' },
-    { key: 'spo2',        label: 'SpO₂',                unit: '%',   icon: <Wind size={16} />,        color: '#00695C', bg: '#E0F2F1' },
+    { key: 'ta',          label: t('detail.vitalTension'),   unit: 'mmHg', icon: <Activity size={16} />,    color: '#C62828', bg: '#FFEBEE' },
+    { key: 'fc',          label: t('detail.vitalFcLabel'),   unit: 'bpm', icon: <Heart size={16} />,       color: '#AD1457', bg: '#FCE4EC' },
+    { key: 'temperature', label: t('detail.vitalTempLabel'), unit: '°C',  icon: <Thermometer size={16} />, color: '#E65100', bg: '#FFF3E0' },
+    { key: 'poids',       label: t('detail.vitalPoidsLabel'), unit: 'kg',  icon: <Weight size={16} />,      color: '#0D47A1', bg: '#EFF6FF' },
+    { key: 'taille',      label: t('detail.vitalTailleLabel'), unit: 'cm',  icon: <Ruler size={16} />,       color: '#6A1B9A', bg: '#F3E5F5' },
+    { key: 'spo2',        label: t('detail.vitalSpo2Label'), unit: '%',   icon: <Wind size={16} />,        color: '#00695C', bg: '#E0F2F1' },
   ];
 
   return (
@@ -106,19 +113,19 @@ export default function ConsultationDetailPage() {
       {/* Back nav */}
       <button onClick={() => router.push('/consultations')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
-        <ArrowLeft size={14} /> Retour aux consultations
+        <ArrowLeft size={14} /> {t('detail.back')}
       </button>
 
       {loading ? (
         <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', color: '#90A4AE', boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
           <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} />
-          Chargement…
+          {t('detail.loading')}
           <style>{`@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }`}</style>
         </div>
       ) : error ? (
         <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: '24px 28px', color: '#C62828', fontSize: 14 }}>
           ⚠ {error}
-          <button onClick={load} style={{ marginLeft: 16, padding: '6px 12px', borderRadius: 6, border: '1px solid #C62828', background: 'transparent', color: '#C62828', cursor: 'pointer', fontSize: 12 }}>Réessayer</button>
+          <button onClick={load} style={{ marginLeft: 16, padding: '6px 12px', borderRadius: 6, border: '1px solid #C62828', background: 'transparent', color: '#C62828', cursor: 'pointer', fontSize: 12 }}>{t('detail.retry')}</button>
         </div>
       ) : !consultation ? null : (
         <>
@@ -138,12 +145,12 @@ export default function ConsultationDetailPage() {
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               {consultation.statut && (
                 <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: STATUT_CONFIG[consultation.statut]?.bg ?? '#F5F5F5', color: STATUT_CONFIG[consultation.statut]?.color ?? '#546E7A' }}>
-                  {STATUT_CONFIG[consultation.statut]?.label ?? consultation.statut}
+                  {statutLabel(consultation.statut)}
                 </span>
               )}
               <button onClick={handleFichePDF}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
-                <FileText size={13} /> Fiche PDF
+                <FileText size={13} /> {t('detail.fichePdf')}
               </button>
             </div>
           </div>
@@ -153,7 +160,7 @@ export default function ConsultationDetailPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* Patient */}
               <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient</p>
+                <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.cardPatient')}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                   <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#0D47A1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>
                     <User size={20} />
@@ -165,20 +172,20 @@ export default function ConsultationDetailPage() {
                 </div>
                 {consultation.patient?.groupeSanguin && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '1px solid #F5F7FA' }}>
-                    <span style={{ fontSize: 12, color: '#90A4AE' }}>Groupe sanguin</span>
+                    <span style={{ fontSize: 12, color: '#90A4AE' }}>{t('detail.groupeSanguin')}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#C62828' }}>{consultation.patient.groupeSanguin}</span>
                   </div>
                 )}
                 {consultation.patient?.allergies && (
                   <div style={{ marginTop: 8, padding: '8px 10px', background: '#FFEBEE', borderRadius: 6, fontSize: 12, color: '#C62828' }}>
-                    ⚠ Allergies: {consultation.patient.allergies}
+                    {t('detail.allergies', { value: consultation.patient.allergies })}
                   </div>
                 )}
               </div>
 
               {/* Médecin */}
               <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Médecin</p>
+                <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.cardMedecin')}</p>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#37474F' }}>
                   {consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—'}
                 </div>
@@ -188,7 +195,7 @@ export default function ConsultationDetailPage() {
               {/* Constantes vitales */}
               {consultation.constantesVitales && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                  <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Constantes vitales</p>
+                  <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.cardVitals')}</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {VITAUX.map(v => {
                       const val = (consultation.constantesVitales as any)?.[v.key];
@@ -211,12 +218,12 @@ export default function ConsultationDetailPage() {
             {/* Colonne droite — Contenu médical */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { title: 'Motif de consultation', value: consultation.motif, icon: '💬' },
-                { title: 'Anamnèse', value: consultation.anamnese, icon: '📋' },
-                { title: 'Examen clinique', value: consultation.examenClinique, icon: '🔬' },
-                { title: 'Diagnostic', value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : null, icon: '🎯' },
-                { title: 'Conclusion', value: consultation.conclusion, icon: '📝' },
-                { title: 'Plan de soins', value: consultation.planSoins, icon: '📌' },
+                { title: t('detail.sectionMotif'), value: consultation.motif, icon: '💬' },
+                { title: t('detail.sectionAnamnese'), value: consultation.anamnese, icon: '📋' },
+                { title: t('detail.sectionExamen'), value: consultation.examenClinique, icon: '🔬' },
+                { title: t('detail.sectionDiagnostic'), value: consultation.diagnostic ? `${consultation.diagnostic}${consultation.codeCIM10 ? ` (${consultation.codeCIM10})` : ''}` : null, icon: '🎯' },
+                { title: t('detail.sectionConclusion'), value: consultation.conclusion, icon: '📝' },
+                { title: t('detail.sectionPlanSoins'), value: consultation.planSoins, icon: '📌' },
               ].filter(s => s.value).map(s => (
                 <div key={s.title} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
                   <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{s.icon} {s.title}</p>
@@ -228,7 +235,7 @@ export default function ConsultationDetailPage() {
               {consultation.ordonnances && consultation.ordonnances.length > 0 && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
                   <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Pill size={15} /> Ordonnances
+                    <Pill size={15} /> {t('detail.ordonnances')}
                   </p>
                   {consultation.ordonnances.map(ord => (
                     <div key={ord.id} style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: 8, marginBottom: 8, borderLeft: '3px solid #1565C0' }}>
@@ -243,7 +250,7 @@ export default function ConsultationDetailPage() {
               {consultation.demandesAnalyses && consultation.demandesAnalyses.length > 0 && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
                   <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <FlaskConical size={15} /> Demandes d'analyses
+                    <FlaskConical size={15} /> {t('detail.demandesAnalyses')}
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {consultation.demandesAnalyses.map((a, i) => (

@@ -6,6 +6,7 @@ import {
   Search, FileText, User, ChevronRight, RefreshCw,
   Heart, Stethoscope, Pill, FlaskConical, Calendar, Droplets,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
 type Patient = {
@@ -42,6 +43,7 @@ const SANG_COLOR: Record<string,[string,string]> = {
 
 export default function DMEIndexPage() {
   const router = useRouter();
+  const t = useTranslations('dme');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
@@ -90,9 +92,9 @@ export default function DMEIndexPage() {
               <FileText size={24} color="#fff"/>
             </div>
             <div>
-              <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Dossiers Médicaux Électroniques</h1>
+              <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('index.heroTitle')}</h1>
               <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.7)', fontWeight:600 }}>
-                Sélectionnez un patient pour accéder à son dossier complet
+                {t('index.heroSubtitle')}
               </p>
             </div>
           </div>
@@ -100,12 +102,12 @@ export default function DMEIndexPage() {
           {/* Stats pills */}
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:6 }}>
             {[
-              { label:'Patients actifs', val:loading?'…':patients.length, icon:<User size={11}/>, reset:true },
-              { label:'Consultations', val:'DME complet', icon:<Stethoscope size={11}/>, reset:false },
-              { label:'Ordonnances', val:'& Analyses', icon:<Pill size={11}/>, reset:false },
+              { label:t('index.statPatientsActifs'), val:loading?'…':patients.length, icon:<User size={11}/>, reset:true },
+              { label:t('index.statConsultations'), val:t('index.statConsultationsVal'), icon:<Stethoscope size={11}/>, reset:false },
+              { label:t('index.statOrdonnances'), val:t('index.statOrdonnancesVal'), icon:<Pill size={11}/>, reset:false },
             ].map((s,i)=>(
               <div key={i} className={s.reset?'dme-stat':undefined}
-                title={s.reset?'Afficher tous les patients actifs':undefined}
+                title={s.reset?t('index.showAllActive'):undefined}
                 onClick={s.reset?()=>{ setSearch(''); setSexeFilter(''); load(); }:undefined}
                 style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'5px 12px' }}>
                 <span style={{ color:'rgba(255,255,255,0.7)' }}>{s.icon}</span>
@@ -120,12 +122,12 @@ export default function DMEIndexPage() {
       {/* ── ICÔNES MODULE ────────────────────────────────────────── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))', gap:10, marginBottom:20 }}>
         {[
-          { label:'Antécédents',   icon:<Heart size={20}/>,        color:'#C62828', bg:'#FFEBEE', border:'#FFCDD2' },
-          { label:'Consultations', icon:<Stethoscope size={20}/>,  color:'#1565C0', bg:'#EFF6FF', border:'#BBDEFB' },
-          { label:'Ordonnances',   icon:<Pill size={20}/>,          color:'#2E7D32', bg:'#E8F5E9', border:'#C8E6C9' },
-          { label:'Analyses labo', icon:<FlaskConical size={20}/>,  color:'#6A1B9A', bg:'#F3E5F5', border:'#E1BEE7' },
-          { label:'Documents',     icon:<FileText size={20}/>,      color:'#00695C', bg:'#E0F2F1', border:'#80CBC4' },
-          { label:'Rendez-vous',   icon:<Calendar size={20}/>,      color:'#E65100', bg:'#FFF3E0', border:'#FFCC80' },
+          { label:t('index.modAntecedents'),   icon:<Heart size={20}/>,        color:'#C62828', bg:'#FFEBEE', border:'#FFCDD2' },
+          { label:t('index.modConsultations'), icon:<Stethoscope size={20}/>,  color:'#1565C0', bg:'#EFF6FF', border:'#BBDEFB' },
+          { label:t('index.modOrdonnances'),   icon:<Pill size={20}/>,          color:'#2E7D32', bg:'#E8F5E9', border:'#C8E6C9' },
+          { label:t('index.modAnalysesLabo'), icon:<FlaskConical size={20}/>,  color:'#6A1B9A', bg:'#F3E5F5', border:'#E1BEE7' },
+          { label:t('index.modDocuments'),     icon:<FileText size={20}/>,      color:'#00695C', bg:'#E0F2F1', border:'#80CBC4' },
+          { label:t('index.modRendezVous'),   icon:<Calendar size={20}/>,      color:'#E65100', bg:'#FFF3E0', border:'#FFCC80' },
         ].map(m=>(
           <div key={m.label} style={{ background:'#fff', borderRadius:12, padding:'14px 16px', boxShadow:'0 1px 6px rgba(0,0,0,0.07)', border:`1.5px solid ${m.border}`, display:'flex', alignItems:'center', gap:10 }}>
             <div style={{ width:36, height:36, borderRadius:10, background:m.bg, display:'flex', alignItems:'center', justifyContent:'center', color:m.color, flexShrink:0 }}>{m.icon}</div>
@@ -139,11 +141,11 @@ export default function DMEIndexPage() {
         <div style={{ position:'relative', flex:1, minWidth:220 }}>
           <Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
           <input value={search} onChange={e=>setSearch(e.target.value)}
-            placeholder="Rechercher par nom, prénom, IPP ou téléphone…"
+            placeholder={t('index.searchPlaceholder')}
             style={{ width:'100%', padding:'10px 14px 10px 36px', borderRadius:11, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332', boxShadow:'0 1px 4px rgba(0,0,0,0.06)' }}/>
         </div>
         <div style={{ display:'flex', gap:6 }}>
-          {[{val:'',label:'Tous'},{val:'M',label:'♂ Hommes'},{val:'F',label:'♀ Femmes'}].map(s=>(
+          {[{val:'',label:t('index.filterAll')},{val:'M',label:t('index.filterMen')},{val:'F',label:t('index.filterWomen')}].map(s=>(
             <button key={s.val} onClick={()=>setSexeFilter(s.val)}
               style={{ padding:'8px 14px', borderRadius:20, border:`1.5px solid ${sexeFilter===s.val?'#1565C0':'#E0E8F0'}`, background:sexeFilter===s.val?'#1565C0':'#fff', color:sexeFilter===s.val?'#fff':'#546E7A', fontSize:12, fontWeight:sexeFilter===s.val?700:500, cursor:'pointer' }}>
               {s.label}
@@ -159,7 +161,7 @@ export default function DMEIndexPage() {
       {/* Résultats count */}
       {!loading&&(
         <div style={{ fontSize:12, color:'#90A4AE', fontWeight:600, marginBottom:10 }}>
-          {filtered.length} patient{filtered.length>1?'s':''} trouvé{filtered.length>1?'s':''}
+          {t('index.foundCount', { count: filtered.length })}
         </div>
       )}
 
@@ -173,9 +175,9 @@ export default function DMEIndexPage() {
       ) : filtered.length===0 ? (
         <div style={{ textAlign:'center', padding:'60px 20px', background:'#fff', borderRadius:14, boxShadow:'0 1px 6px rgba(0,0,0,0.07)' }}>
           <User size={40} style={{ color:'#BBDEFB', display:'block', margin:'0 auto 12px' }}/>
-          <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#37474F' }}>Aucun patient trouvé</p>
+          <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#37474F' }}>{t('index.emptyTitle')}</p>
           <p style={{ margin:'6px 0 0', fontSize:12, color:'#90A4AE' }}>
-            {search ? `Aucun résultat pour "${search}"` : 'Aucun patient actif dans la base'}
+            {search ? t('index.emptyNoResult', { search }) : t('index.emptyNoActive')}
           </p>
         </div>
       ) : (
@@ -210,7 +212,7 @@ export default function DMEIndexPage() {
                       </span>
                     )}
                     <span style={{ fontSize:10, fontWeight:600, color:'#546E7A' }}>
-                      {p.sexe==='M'?'♂':'♀'} {age?`${age} ans`:''}
+                      {p.sexe==='M'?'♂':'♀'} {age?t('index.ageYears', { age }):''}
                     </span>
                     {p.groupeSanguin&&(
                       <span style={{ fontSize:10, fontWeight:800, color:sc, background:sb, padding:'1px 7px', borderRadius:6, display:'flex', alignItems:'center', gap:3 }}>
@@ -221,9 +223,9 @@ export default function DMEIndexPage() {
 
                   <div style={{ marginTop:8, display:'flex', gap:8 }}>
                     {[
-                      { icon:<Stethoscope size={11}/>, label:'Consultations', color:'#1565C0', bg:'#EFF6FF' },
-                      { icon:<Pill size={11}/>,         label:'Ordonnances',  color:'#2E7D32', bg:'#E8F5E9' },
-                      { icon:<FlaskConical size={11}/>, label:'Analyses',     color:'#6A1B9A', bg:'#F3E5F5' },
+                      { icon:<Stethoscope size={11}/>, label:t('index.badgeConsultations'), color:'#1565C0', bg:'#EFF6FF' },
+                      { icon:<Pill size={11}/>,         label:t('index.badgeOrdonnances'),  color:'#2E7D32', bg:'#E8F5E9' },
+                      { icon:<FlaskConical size={11}/>, label:t('index.badgeAnalyses'),     color:'#6A1B9A', bg:'#F3E5F5' },
                     ].map(m=>(
                       <span key={m.label} style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:9, fontWeight:700, padding:'3px 8px', borderRadius:8, background:m.bg, color:m.color }}>
                         {m.icon} {m.label}

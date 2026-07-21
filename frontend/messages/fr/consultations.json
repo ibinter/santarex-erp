@@ -37,6 +37,7 @@
       "emptyCreateFirst": "Créez la première consultation",
       "diagnosticInProgress": "En cours…",
       "resultsShown": "{count} résultat(s) affiché(s)",
+      "resultsShownSuffix": "résultat(s) affiché(s)",
       "filterLabel": "— filtre : {label}",
       "clickRowHint": "Cliquer sur une ligne pour voir le détail",
       "expNumero": "N° Consultation",

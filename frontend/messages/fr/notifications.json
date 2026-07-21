@@ -1,0 +1,24 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "totalCount": "{n} notification(s) au total",
+    "unread": "{n} non lue(s)",
+    "markAllRead": "Tout marquer lu",
+    "filterAll": "Toutes",
+    "filterUnread": "Non lues",
+    "emptyTitle": "Aucune notification",
+    "emptyReadAll": "Toutes vos notifications ont été lues.",
+    "emptyNone": "Vous n'avez pas encore de notifications.",
+    "markReadTitle": "Marquer comme lu",
+    "markRead": "Marquer lu",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "page": "Page {page} / {total}",
+    "timeAgo": {
+      "now": "À l'instant",
+      "minutes": "Il y a {n} min",
+      "hours": "Il y a {n}h",
+      "days": "Il y a {n}j"
+    }
+  }
+}

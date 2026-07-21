@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
 import {
   UserCog, Plus, Search, Users, Calendar, Clock,
   TrendingUp, CheckCircle, XCircle, Download, Banknote, FileSpreadsheet,
@@ -91,9 +90,9 @@ function ancienneteYears(d?: string | null): number | null {
 function fullName(e: { nom: string; prenom: string }) { return `${e.prenom} ${e.nom}`.trim(); }
 
 const TABS = [
-  { key: 'personnel', icon: '👥' },
-  { key: 'conges', icon: '🌴' },
-  { key: 'paie', icon: '💳' },
+  { key: 'personnel', label: 'Personnel', icon: '👥' },
+  { key: 'conges', label: 'Congés', icon: '🌴' },
+  { key: 'paie', label: 'Paie', icon: '💳' },
 ] as const;
 
 function currentMois() { return new Date().toISOString().slice(0, 7); }

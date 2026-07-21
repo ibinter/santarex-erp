@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, User, Check, ChevronRight, ChevronLeft, Stethoscope, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string; dateNaissance?: string; groupeSanguin?: string; allergies?: string };
@@ -15,10 +16,11 @@ type FormData = {
   ta: string; fc: string; temperature: string; poids: string; taille: string; spo2: string;
 };
 
-const STEPS = ['Patient', 'Médecin', 'Motif & Anamnèse', 'Examen & Diagnostic', 'Récapitulatif'];
+const STEP_KEYS = ['new.stepPatient', 'new.stepMedecin', 'new.stepMotif', 'new.stepExamen', 'new.stepRecap'];
 
 export default function NouvelleConsultationPage() {
   const router = useRouter();
+  const t = useTranslations('consultations');
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export default function NouvelleConsultationPage() {
       });
       router.push('/consultations');
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création');
+      setError(e?.message ?? t('new.errCreate'));
     } finally { setSaving(false); }
   };
 
@@ -113,25 +115,25 @@ export default function NouvelleConsultationPage() {
     <div style={{ padding: 16, maxWidth: 760, margin: '0 auto' }}>
       <button onClick={() => router.push('/consultations')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
-        <ArrowLeft size={14} /> Retour
+        <ArrowLeft size={14} /> {t('new.back')}
       </button>
 
       {/* Progress */}
       <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-          {STEPS.map((s, i) => {
+          {STEP_KEYS.map((s, i) => {
             const n = i + 1;
             const done = n < step;
             const active = n === step;
             return (
-              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: i < STEPS.length - 1 ? 1 : 0 }}>
+              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: i < STEP_KEYS.length - 1 ? 1 : 0 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                   <div style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, background: done ? '#00695C' : active ? '#1565C0' : '#F0F0F0', color: done || active ? '#fff' : '#90A4AE', transition: 'all 0.2s' }}>
                     {done ? <Check size={14} /> : n}
                   </div>
-                  <span style={{ fontSize: 10, color: active ? '#1565C0' : done ? '#00695C' : '#90A4AE', fontWeight: active ? 700 : 400, whiteSpace: 'nowrap' }}>{s}</span>
+                  <span style={{ fontSize: 10, color: active ? '#1565C0' : done ? '#00695C' : '#90A4AE', fontWeight: active ? 700 : 400, whiteSpace: 'nowrap' }}>{t(s)}</span>
                 </div>
-                {i < STEPS.length - 1 && <div style={{ flex: 1, height: 2, background: done ? '#00695C' : '#E0E0E0', margin: '0 4px', marginBottom: 18 }} />}
+                {i < STEP_KEYS.length - 1 && <div style={{ flex: 1, height: 2, background: done ? '#00695C' : '#E0E0E0', margin: '0 4px', marginBottom: 18 }} />}
               </div>
             );
           })}
@@ -142,10 +144,10 @@ export default function NouvelleConsultationPage() {
       <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '24px', marginBottom: 16 }}>
         {step === 1 && (
           <div>
-            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Sélectionner le patient</h2>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{t('new.selectPatient')}</h2>
             <div style={{ position: 'relative', marginBottom: 12 }}>
               <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-              <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher par nom, IPP…"
+              <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('new.searchPatientPlaceholder')}
                 style={{ ...inputStyle, paddingLeft: 32 }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -163,17 +165,17 @@ export default function NouvelleConsultationPage() {
                   {selectedPatient?.id === p.id && <Check size={16} color="#1565C0" />}
                 </div>
               ))}
-              {patients.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>Aucun patient trouvé</p>}
+              {patients.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>{t('new.noPatientFound')}</p>}
             </div>
           </div>
         )}
 
         {step === 2 && (
           <div>
-            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Sélectionner le médecin</h2>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{t('new.selectMedecin')}</h2>
             <div style={{ position: 'relative', marginBottom: 12 }}>
               <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-              <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder="Rechercher un médecin…"
+              <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder={t('new.searchMedecinPlaceholder')}
                 style={{ ...inputStyle, paddingLeft: 32 }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -190,30 +192,30 @@ export default function NouvelleConsultationPage() {
                   {selectedMedecin?.id === m.id && <Check size={16} color="#1565C0" />}
                 </div>
               ))}
-              {medecins.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>Aucun médecin trouvé</p>}
+              {medecins.length === 0 && <p style={{ textAlign: 'center', color: '#90A4AE', fontSize: 13, padding: '20px 0' }}>{t('new.noMedecinFound')}</p>}
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Motif & Anamnèse</h2>
+            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{t('new.motifTitle')}</h2>
             <div>
-              <label style={labelStyle}>Motif de consultation <span style={{ color: '#C62828' }}>*</span></label>
-              <input value={form.motif} onChange={e => upd('motif', e.target.value)} placeholder="Ex: Céphalées persistantes…" style={inputStyle} />
+              <label style={labelStyle}>{t('new.labelMotif')} <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.motif} onChange={e => upd('motif', e.target.value)} placeholder={t('new.phMotif')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Anamnèse</label>
-              <textarea value={form.anamnese} onChange={e => upd('anamnese', e.target.value)} rows={4} placeholder="Histoire de la maladie…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('new.labelAnamnese')}</label>
+              <textarea value={form.anamnese} onChange={e => upd('anamnese', e.target.value)} rows={4} placeholder={t('new.phAnamnese')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
-                { k: 'ta', label: 'TA (mmHg)', ph: '120/80' },
-                { k: 'fc', label: 'FC (bpm)', ph: '75' },
-                { k: 'temperature', label: 'Temp (°C)', ph: '37.0' },
-                { k: 'poids', label: 'Poids (kg)', ph: '70' },
-                { k: 'taille', label: 'Taille (cm)', ph: '170' },
-                { k: 'spo2', label: 'SpO₂ (%)', ph: '98' },
+                { k: 'ta', label: t('new.vitalTa'), ph: '120/80' },
+                { k: 'fc', label: t('new.vitalFc'), ph: '75' },
+                { k: 'temperature', label: t('new.vitalTemp'), ph: '37.0' },
+                { k: 'poids', label: t('new.vitalPoids'), ph: '70' },
+                { k: 'taille', label: t('new.vitalTaille'), ph: '170' },
+                { k: 'spo2', label: t('new.vitalSpo2'), ph: '98' },
               ].map(f => (
                 <div key={f.k}>
                   <label style={labelStyle}>{f.label}</label>
@@ -226,42 +228,42 @@ export default function NouvelleConsultationPage() {
 
         {step === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Examen clinique & Diagnostic</h2>
+            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{t('new.examenTitle')}</h2>
             <div>
-              <label style={labelStyle}>Examen clinique</label>
-              <textarea value={form.examenClinique} onChange={e => upd('examenClinique', e.target.value)} rows={3} placeholder="Résultats de l'examen…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('new.labelExamen')}</label>
+              <textarea value={form.examenClinique} onChange={e => upd('examenClinique', e.target.value)} rows={3} placeholder={t('new.phExamen')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
               <div>
-                <label style={labelStyle}>Diagnostic</label>
-                <input value={form.diagnostic} onChange={e => upd('diagnostic', e.target.value)} placeholder="Ex: Migraine sans aura" style={inputStyle} />
+                <label style={labelStyle}>{t('new.labelDiagnostic')}</label>
+                <input value={form.diagnostic} onChange={e => upd('diagnostic', e.target.value)} placeholder={t('new.phDiagnostic')} style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Code CIM-10</label>
-                <input value={form.codeCIM10} onChange={e => upd('codeCIM10', e.target.value)} placeholder="G43.0" style={inputStyle} />
+                <label style={labelStyle}>{t('new.labelCim10')}</label>
+                <input value={form.codeCIM10} onChange={e => upd('codeCIM10', e.target.value)} placeholder={t('new.phCim10')} style={inputStyle} />
               </div>
             </div>
             <div>
-              <label style={labelStyle}>Plan de soins</label>
-              <textarea value={form.planSoins} onChange={e => upd('planSoins', e.target.value)} rows={3} placeholder="Traitement et recommandations…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('new.labelPlanSoins')}</label>
+              <textarea value={form.planSoins} onChange={e => upd('planSoins', e.target.value)} rows={3} placeholder={t('new.phPlanSoins')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
             <div>
-              <label style={labelStyle}>Conclusion</label>
-              <textarea value={form.conclusion} onChange={e => upd('conclusion', e.target.value)} rows={2} placeholder="Conclusion générale…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('new.labelConclusion')}</label>
+              <textarea value={form.conclusion} onChange={e => upd('conclusion', e.target.value)} rows={2} placeholder={t('new.phConclusion')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
           </div>
         )}
 
         {step === 5 && (
           <div>
-            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>Récapitulatif</h2>
+            <h2 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: '#1A2332' }}>{t('new.recapTitle')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { label: 'Patient', value: selectedPatient ? `${selectedPatient.prenom} ${selectedPatient.nom} (${selectedPatient.ipp ?? '—'})` : '—' },
-                { label: 'Médecin', value: selectedMedecin ? `Dr. ${selectedMedecin.prenom} ${selectedMedecin.nom}` : '—' },
-                { label: 'Motif', value: form.motif || '—' },
-                { label: 'Diagnostic', value: form.diagnostic || '—' },
-                { label: 'Constantes', value: [form.ta && `TA: ${form.ta}`, form.fc && `FC: ${form.fc}`, form.temperature && `T°: ${form.temperature}`].filter(Boolean).join(' • ') || '—' },
+                { label: t('new.recapPatient'), value: selectedPatient ? `${selectedPatient.prenom} ${selectedPatient.nom} (${selectedPatient.ipp ?? '—'})` : '—' },
+                { label: t('new.recapMedecin'), value: selectedMedecin ? `Dr. ${selectedMedecin.prenom} ${selectedMedecin.nom}` : '—' },
+                { label: t('new.recapMotif'), value: form.motif || '—' },
+                { label: t('new.recapDiagnostic'), value: form.diagnostic || '—' },
+                { label: t('new.recapConstantes'), value: [form.ta && t('new.recapTa', { value: form.ta }), form.fc && t('new.recapFc', { value: form.fc }), form.temperature && t('new.recapTemp', { value: form.temperature })].filter(Boolean).join(' • ') || '—' },
               ].map(r => (
                 <div key={r.label} style={{ display: 'flex', padding: '10px 0', borderBottom: '1px solid #F5F7FA' }}>
                   <span style={{ width: 120, fontSize: 12, color: '#90A4AE', fontWeight: 600, flexShrink: 0 }}>{r.label}</span>
@@ -282,17 +284,17 @@ export default function NouvelleConsultationPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <button onClick={() => step > 1 ? setStep(s => s - 1) : router.push('/consultations')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ChevronLeft size={14} /> {step === 1 ? 'Annuler' : 'Précédent'}
+          <ChevronLeft size={14} /> {step === 1 ? t('new.cancel') : t('new.previous')}
         </button>
-        {step < STEPS.length ? (
+        {step < STEP_KEYS.length ? (
           <button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, background: canNext() ? '#1565C0' : '#E0E0E0', border: 'none', cursor: canNext() ? 'pointer' : 'default', fontSize: 13, color: '#fff', fontWeight: 600 }}>
-            Suivant <ChevronRight size={14} />
+            {t('new.next')} <ChevronRight size={14} />
           </button>
         ) : (
           <button onClick={handleSubmit} disabled={saving}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, background: '#00695C', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: saving ? 0.7 : 1 }}>
-            {saving ? 'Enregistrement…' : 'Créer la consultation'}
+            {saving ? t('new.saving') : t('new.create')}
           </button>
         )}
       </div>

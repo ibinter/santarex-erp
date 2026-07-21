@@ -1,0 +1,31 @@
+{
+  "academie": {
+    "title": "SANTAREX Academy",
+    "subtitle": "Training paths, resources and progress tracking.",
+    "statCompleted": "Resources completed",
+    "statStarted": "Resources started",
+    "statAvailable": "Available content",
+    "globalProgress": "Overall progress",
+    "loading": "Loading the Academy…",
+    "loadError": "Loading error",
+    "retry": "Try again",
+    "emptyTitle": "No training path published yet.",
+    "emptySubtitle": "New training content will be added soon.",
+    "completed": "{count, plural, one {completed} other {completed}}",
+    "soon": "Coming soon",
+    "done": "Completed",
+    "open": "Open",
+    "finish": "Finish",
+    "minUnit": "min",
+    "niveau": {
+      "debutant": "Beginner",
+      "intermediaire": "Intermediate",
+      "avance": "Advanced"
+    },
+    "type": {
+      "video": "Video",
+      "document": "Document",
+      "quiz": "Quiz"
+    }
+  }
+}

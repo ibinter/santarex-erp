@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   Users, Plus, Search, UserCheck, UserX, Key,
   Pencil, X, Check, Eye, EyeOff, RefreshCw,
-  ShieldCheck, ChevronDown, Download, FileSpreadsheet,
+  ShieldCheck, Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';

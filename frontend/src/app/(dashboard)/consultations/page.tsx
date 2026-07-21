@@ -7,6 +7,7 @@ import {
   Clock, CheckCircle, Receipt, ChevronRight, Calendar,
   TrendingUp, Activity, User, Download, FileSpreadsheet,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
@@ -53,14 +54,20 @@ function timeSince(iso: string) {
 }
 
 const TABS = [
-  { key: '', label: 'Toutes', icon: Activity },
-  { key: 'en_cours', label: 'En cours', icon: Clock },
-  { key: 'terminee', label: 'Terminées', icon: CheckCircle },
-  { key: 'facturee', label: 'Facturées', icon: Receipt },
+  { key: '', labelKey: 'list.tabAll', icon: Activity },
+  { key: 'en_cours', labelKey: 'list.tabEnCours', icon: Clock },
+  { key: 'terminee', labelKey: 'list.tabTerminees', icon: CheckCircle },
+  { key: 'facturee', labelKey: 'list.tabFacturees', icon: Receipt },
 ];
 
 export default function ConsultationsPage() {
   const router = useRouter();
+  const t = useTranslations('consultations');
+  const statutLabel = (s: string) => (({
+    en_cours: t('common.statutEnCours'),
+    terminee: t('common.statutTerminee'),
+    facturee: t('common.statutFacturee'),
+  }) as Record<string, string>)[s] ?? s;
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -69,26 +76,26 @@ export default function ConsultationsPage() {
 
   const handleExportXLSX = () => exportXLSX(
     consultations.map(c => ({
-      'N° Consultation': c.numero ?? c.id.slice(0,8),
-      'Patient': c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—',
-      'IPP': c.patient?.ipp ?? '—',
-      'Médecin': c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
-      'Date & Heure': c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
-      'Motif': c.motif ?? '—',
-      'Diagnostic': c.diagnostic ?? '—',
-      'Statut': STATUT_CFG[c.statut]?.label ?? c.statut ?? '—',
+      [t('list.expNumero')]: c.numero ?? c.id.slice(0,8),
+      [t('list.expPatient')]: c.patient ? `${c.patient.prenom} ${c.patient.nom}` : '—',
+      [t('list.expIpp')]: c.patient?.ipp ?? '—',
+      [t('list.expMedecin')]: c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
+      [t('list.expDate')]: c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
+      [t('list.expMotif')]: c.motif ?? '—',
+      [t('list.expDiagnostic')]: c.diagnostic ?? '—',
+      [t('list.expStatut')]: statutLabel(c.statut),
     })),
     `consultations_${new Date().toISOString().slice(0,10)}`,
-    'Consultations',
+    t('list.title'),
   );
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'N°', dataKey: 'numero', width: 24 },
-      { header: 'Patient', dataKey: 'patient', width: 38 },
-      { header: 'Médecin', dataKey: 'medecin', width: 34 },
-      { header: 'Date & Heure', dataKey: 'date', width: 30 },
-      { header: 'Motif', dataKey: 'motif', width: 44 },
-      { header: 'Statut', dataKey: 'statut', width: 22 },
+      { header: t('list.pdfNumero'), dataKey: 'numero', width: 24 },
+      { header: t('list.expPatient'), dataKey: 'patient', width: 38 },
+      { header: t('list.expMedecin'), dataKey: 'medecin', width: 34 },
+      { header: t('list.expDate'), dataKey: 'date', width: 30 },
+      { header: t('list.expMotif'), dataKey: 'motif', width: 44 },
+      { header: t('list.expStatut'), dataKey: 'statut', width: 22 },
     ],
     consultations.map(c => ({
       numero: c.numero ?? c.id.slice(0,8),
@@ -96,11 +103,11 @@ export default function ConsultationsPage() {
       medecin: c.medecin ? `Dr ${c.medecin.prenom} ${c.medecin.nom}` : '—',
       date: c.dateHeure ? new Date(c.dateHeure).toLocaleString('fr-FR') : '—',
       motif: c.motif ?? '—',
-      statut: STATUT_CFG[c.statut]?.label ?? c.statut ?? '—',
+      statut: statutLabel(c.statut),
     })),
-    'Liste des Consultations',
+    t('list.pdfTitle'),
     `consultations_${new Date().toISOString().slice(0,10)}`,
-    `${consultations.length} consultation(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('list.pdfSubtitle', { count: consultations.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
   const load = useCallback(async () => {
@@ -173,9 +180,9 @@ export default function ConsultationsPage() {
             <Stethoscope size={26} color="#fff"/>
           </div>
           <div>
-            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Consultations</h1>
+            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('list.title')}</h1>
             <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)', fontWeight:500 }}>
-              {loading ? '…' : `${counts.total} consultation(s) au total`}
+              {loading ? '…' : t('list.totalCount', { count: counts.total })}
               {lastRefresh && <span style={{ marginLeft:10, opacity:.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
             </p>
           </div>
@@ -187,15 +194,15 @@ export default function ConsultationsPage() {
           </button>
           <button onClick={handleExportPDF} disabled={loading}
             style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(239,68,68,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
-            <Download size={13}/> PDF
+            <Download size={13}/> {t('list.pdf')}
           </button>
           <button onClick={handleExportXLSX} disabled={loading}
             style={{ display:'flex', alignItems:'center', gap:5, padding:'9px 13px', borderRadius:10, border:'1px solid rgba(255,255,255,0.3)', background:'rgba(34,197,94,0.25)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
-            <FileSpreadsheet size={13}/> XLSX
+            <FileSpreadsheet size={13}/> {t('list.xlsx')}
           </button>
           <button onClick={() => router.push('/consultations/nouvelle')}
             style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', borderRadius:10, background:'#fff', border:'none', color:'#00838F', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 10px rgba(0,0,0,0.15)' }}>
-            <Plus size={15}/> Nouvelle consultation
+            <Plus size={15}/> {t('list.new')}
           </button>
         </div>
       </div>
@@ -203,10 +210,10 @@ export default function ConsultationsPage() {
       {/* ── KPI CARDS ─────────────────────────────────────────────────── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:12, marginBottom:18 }}>
         {[
-          { label:'Total', value:counts.total, icon:<Activity size={18} color="#00838F"/>, bg:'#E0F7FA', color:'#00838F', border:'#B2EBF2', sub:'consultations' },
-          { label:'En cours', value:counts.en_cours, icon:<Clock size={18} color="#1565C0"/>, bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', sub:'en attente' },
-          { label:'Terminées', value:counts.terminee, icon:<CheckCircle size={18} color="#2E7D32"/>, bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', sub:'aujourd\'hui' },
-          { label:'Facturées', value:counts.facturee, icon:<Receipt size={18} color="#6A1B9A"/>, bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', sub:'réglées' },
+          { label:t('list.kpiTotal'), value:counts.total, icon:<Activity size={18} color="#00838F"/>, bg:'#E0F7FA', color:'#00838F', border:'#B2EBF2', sub:t('list.kpiTotalSub') },
+          { label:t('list.kpiEnCours'), value:counts.en_cours, icon:<Clock size={18} color="#1565C0"/>, bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', sub:t('list.kpiEnCoursSub') },
+          { label:t('list.kpiTerminees'), value:counts.terminee, icon:<CheckCircle size={18} color="#2E7D32"/>, bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', sub:t('list.kpiTermineesSub') },
+          { label:t('list.kpiFacturees'), value:counts.facturee, icon:<Receipt size={18} color="#6A1B9A"/>, bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', sub:t('list.kpiFactureesSub') },
         ].map((k,i) => (
           <div key={i} onClick={()=>setActiveTab(i===0?'':['','en_cours','terminee','facturee'][i])}
             style={{ background:'#fff', borderRadius:12, padding:'14px 16px', boxShadow:'0 1px 6px rgba(0,0,0,0.07)', cursor:'pointer', display:'flex', alignItems:'center', gap:12, borderLeft:`4px solid ${k.color}`, border:`1px solid ${k.border}`, borderLeftWidth:4, transition:'transform .15s,box-shadow .15s' }}
@@ -228,21 +235,21 @@ export default function ConsultationsPage() {
           <div style={{ position:'relative', flex:'1 1 260px' }}>
             <Search size={14} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE', pointerEvents:'none' }}/>
             <input value={search} onChange={e=>setSearch(e.target.value)}
-              placeholder="Rechercher patient, motif, N° consultation…"
+              placeholder={t('list.searchPlaceholder')}
               style={{ width:'100%', padding:'10px 10px 10px 36px', border:'1.5px solid #E0E8F0', borderRadius:10, fontSize:13, outline:'none', background:'#F8FAFC', boxSizing:'border-box', color:'#1A2332' }}
               onFocus={e=>(e.currentTarget.style.borderColor='#00838F')}
               onBlur={e=>(e.currentTarget.style.borderColor='#E0E8F0')}/>
           </div>
           <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-            {TABS.map(t => {
-              const Icon = t.icon;
-              const active = activeTab === t.key;
+            {TABS.map(tab => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.key;
               return (
-                <button key={t.key} onClick={()=>setActiveTab(t.key)} className="tab-btn"
+                <button key={tab.key} onClick={()=>setActiveTab(tab.key)} className="tab-btn"
                   style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 16px', borderRadius:20, border:`1.5px solid ${active?'#00838F':'#E0E8F0'}`, background:active?'#00838F':'#fff', color:active?'#fff':'#546E7A', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                  <Icon size={13}/> {t.label}
-                  {t.key && <span style={{ background:active?'rgba(255,255,255,0.25)':'#F0F4FA', color:active?'#fff':'#546E7A', fontSize:10, fontWeight:800, padding:'1px 6px', borderRadius:10, minWidth:18, textAlign:'center' }}>
-                    {counts[t.key as keyof typeof counts] ?? 0}
+                  <Icon size={13}/> {t(tab.labelKey)}
+                  {tab.key && <span style={{ background:active?'rgba(255,255,255,0.25)':'#F0F4FA', color:active?'#fff':'#546E7A', fontSize:10, fontWeight:800, padding:'1px 6px', borderRadius:10, minWidth:18, textAlign:'center' }}>
+                    {counts[tab.key as keyof typeof counts] ?? 0}
                   </span>}
                 </button>
               );
@@ -257,8 +264,8 @@ export default function ConsultationsPage() {
           <table style={{ width:'100%', borderCollapse:'collapse', minWidth:720 }}>
             <thead>
               <tr style={{ background:'linear-gradient(90deg,#F8FAFC,#F0FBF9)' }}>
-                {['N° Consultation','Patient','Médecin','Date & Heure','Motif','Diagnostic','Statut',''].map(h=>(
-                  <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.7px', whiteSpace:'nowrap', borderBottom:'2px solid #E0F7FA' }}>{h}</th>
+                {[t('list.colNumero'),t('list.colPatient'),t('list.colMedecin'),t('list.colDate'),t('list.colMotif'),t('list.colDiagnostic'),t('list.colStatut'),''].map((h,hi)=>(
+                  <th key={hi} style={{ padding:'12px 16px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.7px', whiteSpace:'nowrap', borderBottom:'2px solid #E0F7FA' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -283,15 +290,15 @@ export default function ConsultationsPage() {
                       <Stethoscope size={30} color="#B2EBF2"/>
                     </div>
                     <div>
-                      <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#37474F' }}>Aucune consultation trouvée</p>
+                      <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#37474F' }}>{t('list.emptyTitle')}</p>
                       <p style={{ margin:'4px 0 0', fontSize:12, color:'#90A4AE' }}>
-                        {search ? 'Essayez d\'autres termes de recherche' : 'Créez la première consultation'}
+                        {search ? t('list.emptyTryOther') : t('list.emptyCreateFirst')}
                       </p>
                     </div>
                     {!search && (
                       <button onClick={()=>router.push('/consultations/nouvelle')}
                         style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 20px', borderRadius:10, background:'#00838F', color:'#fff', border:'none', fontSize:13, fontWeight:700, cursor:'pointer' }}>
-                        <Plus size={14}/> Nouvelle consultation
+                        <Plus size={14}/> {t('list.new')}
                       </button>
                     )}
                   </div>
@@ -342,13 +349,13 @@ export default function ConsultationsPage() {
                     </td>
                     <td style={{ padding:'13px 16px', maxWidth:160 }}>
                       <div style={{ fontSize:12, color: c.diagnostic?'#1A2332':'#B0BEC5', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontStyle:c.diagnostic?'normal':'italic' }} title={c.diagnostic||''}>
-                        {c.diagnostic || (c.statut==='en_cours' ? 'En cours…' : '—')}
+                        {c.diagnostic || (c.statut==='en_cours' ? t('list.diagnosticInProgress') : '—')}
                       </div>
                     </td>
                     <td style={{ padding:'13px 16px' }}>
                       <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
                         <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block', animation:c.statut==='en_cours'?'pulse 2s infinite':undefined }}/>
-                        {cfg.label}
+                        {statutLabel(c.statut)}
                       </span>
                     </td>
                     <td style={{ padding:'13px 16px' }}>
@@ -367,10 +374,10 @@ export default function ConsultationsPage() {
         {displayed.length > 0 && (
           <div style={{ padding:'12px 20px', borderTop:'1px solid #F0F4FA', background:'#FAFBFC', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
             <span style={{ fontSize:12, color:'#546E7A' }}>
-              <strong style={{ color:'#1A2332' }}>{displayed.length}</strong> résultat{displayed.length>1?'s':''} affiché{displayed.length>1?'s':''}
-              {activeTab && <span style={{ marginLeft:6, color:'#90A4AE' }}>— filtre : {STATUT_CFG[activeTab]?.label}</span>}
+              <strong style={{ color:'#1A2332' }}>{displayed.length}</strong> {t('list.resultsShownSuffix')}
+              {activeTab && <span style={{ marginLeft:6, color:'#90A4AE' }}>{t('list.filterLabel', { label: statutLabel(activeTab) })}</span>}
             </span>
-            <span style={{ fontSize:11, color:'#90A4AE' }}>Cliquer sur une ligne pour voir le détail</span>
+            <span style={{ fontSize:11, color:'#90A4AE' }}>{t('list.clickRowHint')}</span>
           </div>
         )}
       </div>

@@ -6,6 +6,7 @@ import {
   Calendar, Building2, Users, Heart, Clock, Mail,
   Zap, Star, Crown, ShieldCheck,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -57,6 +58,7 @@ const PLANS = [
 ] as const;
 
 export default function LicencePage() {
+  const t = useTranslations('licence');
   const [info, setInfo] = useState<LicenceInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,9 +71,9 @@ export default function LicencePage() {
       const data = await apiClient<LicenceInfo>(`/superadmin/licences/tenant/${tenantSlug}/verifier`);
       setInfo(data);
     } catch (e: any) {
-      setError(e?.message ?? 'Impossible de vérifier la licence');
+      setError(e?.message ?? t('verifyErrorFallback'));
     } finally { setLoading(false); }
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -121,12 +123,12 @@ export default function LicencePage() {
                   : <XCircle size={28} color="#fff"/>}
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>Licence & Abonnement</h1>
+                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{t('title')}</h1>
                 <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}>
-                  {loading ? 'Vérification en cours…'
-                    : active ? 'Votre abonnement SANTAREX ERP est actif'
-                    : expire ? 'Votre abonnement a expiré'
-                    : 'Aucune licence active pour cet établissement'}
+                  {loading ? t('verifying')
+                    : active ? t('activeSubtitle')
+                    : expire ? t('expiredSubtitle')
+                    : t('noLicenseSubtitle')}
                 </p>
               </div>
             </div>
@@ -140,7 +142,7 @@ export default function LicencePage() {
               )}
               <button onClick={load} disabled={loading}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
-                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Vérifier
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> {t('verify')}
               </button>
             </div>
           </div>
@@ -152,26 +154,26 @@ export default function LicencePage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, padding: '5px 13px' }}>
                   <Clock size={11} color="rgba(255,255,255,0.8)"/>
                   <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{jours}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>jours restants</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{t('daysRemaining')}</span>
                 </div>
               )}
               {licence?.dateDebut && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '5px 13px' }}>
                   <Calendar size={11} color="rgba(255,255,255,0.7)"/>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>Depuis le</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{t('since')}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{fmtDate(licence.dateDebut)}</span>
                 </div>
               )}
               {licence?.dateFin && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: expire ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.12)', border: `1px solid ${expire ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.2)'}`, borderRadius: 8, padding: '5px 13px' }}>
                   <Calendar size={11} color="rgba(255,255,255,0.7)"/>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>Expire le</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{t('expiresOn')}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{fmtDate(licence.dateFin)}</span>
                 </div>
               )}
               {!info?.valide && !licence && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '5px 13px' }}>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>Contactez IBIGSOFT pour activer votre licence</span>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{t('contactActivate')}</span>
                 </div>
               )}
             </div>
@@ -184,11 +186,11 @@ export default function LicencePage() {
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 18px', background: '#FEF3C7', border: '1.5px solid #FDE68A', borderRadius: 12, marginBottom: 16 }}>
           <AlertTriangle size={18} color="#92400E" style={{ flexShrink: 0, marginTop: 1 }}/>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#92400E' }}>Renouvellement requis dans {jours} jour{jours! > 1 ? 's' : ''}</div>
-            <div style={{ fontSize: 12, color: '#78350F', marginTop: 3 }}>Contactez IBIGSOFT dès maintenant pour éviter toute interruption de service.</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#92400E' }}>{t('renewalRequired', { n: jours ?? 0 })}</div>
+            <div style={{ fontSize: 12, color: '#78350F', marginTop: 3 }}>{t('renewalWarning')}</div>
           </div>
           <a href="mailto:contact@ibigsoft.com" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: '#92400E', color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <Mail size={12}/> Renouveler
+            <Mail size={12}/> {t('renew')}
           </a>
         </div>
       )}
@@ -199,10 +201,10 @@ export default function LicencePage() {
           <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
             <XCircle size={24} color="#991B1B"/>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332', marginBottom: 6 }}>Erreur de vérification</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332', marginBottom: 6 }}>{t('verifyError')}</div>
           <div style={{ fontSize: 13, color: '#90A4AE', marginBottom: 18 }}>{error}</div>
           <button onClick={load} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 10, background: '#0F3460', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 700 }}>
-            <RefreshCw size={13}/> Réessayer
+            <RefreshCw size={13}/> {t('retry')}
           </button>
         </div>
       )}
@@ -223,10 +225,10 @@ export default function LicencePage() {
           {licence && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12, marginBottom: 18 }}>
               {[
-                { icon: <Calendar size={18} color="#1E40AF"/>, label: "Début d'abonnement", value: fmtDate(licence.dateDebut),  bg: '#DBEAFE', border: '#BFDBFE' },
-                { icon: <Calendar size={18} color={expire ? '#991B1B' : '#065F46'}/>, label: 'Expiration', value: fmtDate(licence.dateFin), bg: expire ? '#FEE2E2' : '#D1FAE5', border: expire ? '#FECACA' : '#A7F3D0' },
-                { icon: <Users size={18} color="#5B21B6"/>, label: 'Utilisateurs autorisés', value: licence.maxUtilisateurs != null ? `${licence.maxUtilisateurs} comptes` : 'Illimité', bg: '#EDE9FE', border: '#DDD6FE' },
-                { icon: <Heart size={18} color="#BE185D"/>, label: 'Patients autorisés',    value: licence.maxPatients != null ? `${licence.maxPatients.toLocaleString('fr-FR')} patients` : 'Illimité', bg: '#FCE7F3', border: '#F9A8D4' },
+                { icon: <Calendar size={18} color="#1E40AF"/>, label: t('subStart'), value: fmtDate(licence.dateDebut),  bg: '#DBEAFE', border: '#BFDBFE' },
+                { icon: <Calendar size={18} color={expire ? '#991B1B' : '#065F46'}/>, label: t('expiration'), value: fmtDate(licence.dateFin), bg: expire ? '#FEE2E2' : '#D1FAE5', border: expire ? '#FECACA' : '#A7F3D0' },
+                { icon: <Users size={18} color="#5B21B6"/>, label: t('maxUsers'), value: licence.maxUtilisateurs != null ? t('accounts', { n: licence.maxUtilisateurs }) : t('unlimited'), bg: '#EDE9FE', border: '#DDD6FE' },
+                { icon: <Heart size={18} color="#BE185D"/>, label: t('maxPatients'),    value: licence.maxPatients != null ? t('patientsCount', { n: licence.maxPatients }) : t('unlimited'), bg: '#FCE7F3', border: '#F9A8D4' },
               ].map((item, i) => (
                 <div key={i} style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14, border: `1.5px solid ${item.border}` }}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -246,18 +248,18 @@ export default function LicencePage() {
             <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: '20px 24px', marginBottom: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                 <Building2 size={16} color="#1A2332"/>
-                <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Modules inclus</h2>
+                <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('modulesIncluded')}</h2>
                 <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 700, color: '#065F46', background: '#D1FAE5', padding: '2px 8px', borderRadius: 20 }}>
                   {licence.modules.length} / {Object.keys(MODULE_LABELS).length}
                 </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 8 }}>
-                {Object.entries(MODULE_LABELS).map(([key, { label, icon }]) => {
+                {Object.entries(MODULE_LABELS).map(([key, { icon }]) => {
                   const included = licence.modules!.includes(key);
                   return (
                     <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 10, background: included ? '#F0FDF4' : '#FAFAFA', border: `1.5px solid ${included ? '#6EE7B7' : '#E0E8F0'}`, opacity: included ? 1 : 0.5 }}>
                       <span style={{ fontSize: 15 }}>{icon}</span>
-                      <span style={{ fontSize: 12, color: included ? '#065F46' : '#90A4AE', fontWeight: included ? 700 : 400 }}>{label}</span>
+                      <span style={{ fontSize: 12, color: included ? '#065F46' : '#90A4AE', fontWeight: included ? 700 : 400 }}>{t(`module.${key}`)}</span>
                       {included && <CheckCircle size={12} color="#10B981" style={{ marginLeft: 'auto', flexShrink: 0 }}/>}
                     </div>
                   );
@@ -270,7 +272,7 @@ export default function LicencePage() {
           <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: '20px 24px', marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <Crown size={16} color="#1A2332"/>
-              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>Plans disponibles</h2>
+              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('plansAvailable')}</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
               {PLANS.map(plan => {
@@ -279,7 +281,7 @@ export default function LicencePage() {
                   <div key={plan.key} style={{ borderRadius: 12, border: `2px solid ${isCurrent ? plan.border : '#E0E8F0'}`, background: isCurrent ? plan.bg : '#FAFBFC', padding: '16px 18px', position: 'relative' }}>
                     {isCurrent && (
                       <div style={{ position: 'absolute', top: -10, right: 14, fontSize: 10, fontWeight: 800, color: plan.color, background: plan.bg, border: `1.5px solid ${plan.border}`, padding: '2px 10px', borderRadius: 20 }}>
-                        ACTUEL
+                        {t('current')}
                       </div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -289,7 +291,7 @@ export default function LicencePage() {
                       <span style={{ fontSize: 15, fontWeight: 900, color: isCurrent ? plan.color : '#1A2332' }}>{plan.label}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {plan.features.map(f => (
+                      {(t.raw(`plans.${plan.key}.features`) as string[]).map(f => (
                         <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: isCurrent ? plan.color : '#546E7A', fontWeight: isCurrent ? 600 : 400 }}>
                           <CheckCircle size={11} color={isCurrent ? plan.color : '#90A4AE'}/>
                           {f}
@@ -306,15 +308,15 @@ export default function LicencePage() {
           <div style={{ background: 'linear-gradient(135deg,#1A1A2E,#0F3460)', borderRadius: 14, padding: '22px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>
-                {active ? 'Mettre à niveau votre abonnement ?' : 'Activer votre licence SANTAREX ERP'}
+                {active ? t('upgradeTitle') : t('activateTitle')}
               </div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>
-                {active ? 'Contactez IBIGSOFT pour passer à un plan supérieur.' : 'Contactez IBIGSOFT pour obtenir une licence et accéder à tous les modules.'}
+                {active ? t('upgradeDesc') : t('activateDesc')}
               </div>
             </div>
             <a href="mailto:contact@ibigsoft.com"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#fff', color: '#0F3460', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
-              <Mail size={14}/> Contacter le support
+              <Mail size={14}/> {t('contactSupport')}
             </a>
           </div>
 

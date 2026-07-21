@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Bell, CheckCheck, Trash2, RefreshCw, Info, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+
+type Translator = (key: string, values?: Record<string, string | number>) => string;
 
 type NotifType = 'info' | 'warning' | 'success' | 'error' | string;
 
@@ -24,12 +27,12 @@ const TYPE_CONFIG: Record<string, { color: string; bg: string; icon: React.React
   error:   { color: '#C62828', bg: '#FFEBEE', icon: <AlertCircle size={14} /> },
 };
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, t: Translator): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diff < 1) return 'À l\'instant';
-  if (diff < 60) return `Il y a ${diff} min`;
-  if (diff < 1440) return `Il y a ${Math.floor(diff / 60)}h`;
-  if (diff < 43200) return `Il y a ${Math.floor(diff / 1440)}j`;
+  if (diff < 1) return t('timeAgo.now');
+  if (diff < 60) return t('timeAgo.minutes', { n: diff });
+  if (diff < 1440) return t('timeAgo.hours', { n: Math.floor(diff / 60) });
+  if (diff < 43200) return t('timeAgo.days', { n: Math.floor(diff / 1440) });
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
@@ -51,6 +54,7 @@ function groupByDate(notifs: Notification[]): { date: string; items: Notificatio
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications');
   const [notifs, setNotifs] = useState<Notification[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -110,10 +114,10 @@ export default function NotificationsPage() {
             )}
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>Notifications</h1>
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#1A2332' }}>{t('title')}</h1>
             <p style={{ margin: 0, fontSize: 12, color: '#546E7A' }}>
-              {loading ? '…' : `${total} notification(s) au total`}
-              {nonLues > 0 && <span style={{ marginLeft: 8, color: '#C62828', fontWeight: 600 }}>{nonLues} non lue(s)</span>}
+              {loading ? '…' : t('totalCount', { n: total })}
+              {nonLues > 0 && <span style={{ marginLeft: 8, color: '#C62828', fontWeight: 600 }}>{t('unread', { n: nonLues })}</span>}
             </p>
           </div>
         </div>
@@ -125,7 +129,7 @@ export default function NotificationsPage() {
           {nonLues > 0 && (
             <button onClick={markAllRead} disabled={markingAll}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#0D47A1', border: 'none', cursor: 'pointer', fontSize: 13, color: '#fff', fontWeight: 600, opacity: markingAll ? 0.7 : 1 }}>
-              <CheckCheck size={14} /> Tout marquer lu
+              <CheckCheck size={14} /> {t('markAllRead')}
             </button>
           )}
         </div>
@@ -133,10 +137,10 @@ export default function NotificationsPage() {
 
       {/* Filtres */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderRadius: 10, background: '#F5F7FA', padding: 4, width: 'fit-content', border: '1px solid #E0E0E0' }}>
-        {([['toutes', 'Toutes'], ['non_lues', 'Non lues']] as const).map(([key, label]) => (
+        {([['toutes', 'filterAll'], ['non_lues', 'filterUnread']] as const).map(([key, labelKey]) => (
           <button key={key} onClick={() => { setFilter(key); setPage(1); }}
             style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: filter === key ? '#fff' : 'transparent', color: filter === key ? '#0D47A1' : '#546E7A', fontSize: 13, fontWeight: filter === key ? 700 : 400, cursor: 'pointer', boxShadow: filter === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </div>
@@ -160,9 +164,9 @@ export default function NotificationsPage() {
       ) : notifs.length === 0 ? (
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '60px 20px', textAlign: 'center' }}>
           <Bell size={48} style={{ display: 'block', margin: '0 auto 16px', opacity: 0.2 }} color="#546E7A" />
-          <p style={{ fontSize: 16, fontWeight: 600, color: '#37474F', margin: '0 0 4px' }}>Aucune notification</p>
+          <p style={{ fontSize: 16, fontWeight: 600, color: '#37474F', margin: '0 0 4px' }}>{t('emptyTitle')}</p>
           <p style={{ fontSize: 13, color: '#90A4AE', margin: 0 }}>
-            {filter === 'non_lues' ? 'Toutes vos notifications ont été lues.' : 'Vous n\'avez pas encore de notifications.'}
+            {filter === 'non_lues' ? t('emptyReadAll') : t('emptyNone')}
           </p>
         </div>
       ) : (
@@ -187,12 +191,12 @@ export default function NotificationsPage() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: '0 0 4px', fontSize: 13, color: '#37474F', fontWeight: n.lue ? 400 : 600, lineHeight: 1.4 }}>{n.message}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: '#90A4AE' }}>{timeAgo(n.createdAt)}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: '#90A4AE' }}>{timeAgo(n.createdAt, t)}</p>
                       </div>
                       {!n.lue && (
-                        <button onClick={e => { e.stopPropagation(); markRead(n.id); }} title="Marquer comme lu"
+                        <button onClick={e => { e.stopPropagation(); markRead(n.id); }} title={t('markReadTitle')}
                           style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 11, color: '#546E7A', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                          Marquer lu
+                          {t('markRead')}
                         </button>
                       )}
                     </div>
@@ -209,12 +213,12 @@ export default function NotificationsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 24 }}>
           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
             style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: page === 1 ? 'default' : 'pointer', fontSize: 13, color: page === 1 ? '#CFD8DC' : '#546E7A', fontWeight: 600 }}>
-            Précédent
+            {t('prev')}
           </button>
-          <span style={{ fontSize: 13, color: '#546E7A' }}>Page {page} / {totalPages}</span>
+          <span style={{ fontSize: 13, color: '#546E7A' }}>{t('page', { page, total: totalPages })}</span>
           <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
             style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: page === totalPages ? 'default' : 'pointer', fontSize: 13, color: page === totalPages ? '#CFD8DC' : '#546E7A', fontWeight: 600 }}>
-            Suivant
+            {t('next')}
           </button>
         </div>
       )}

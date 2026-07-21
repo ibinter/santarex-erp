@@ -5,6 +5,7 @@ import {
   GraduationCap, PlayCircle, FileText, HelpCircle, CheckCircle2,
   Clock, Lock, RefreshCw, BookOpen,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
 // ── Types alignés sur l'API backend (module academie) ─────────────────────────
@@ -64,6 +65,7 @@ const TYPE_META: Record<RessourceType, { icon: typeof PlayCircle; label: string;
 };
 
 export default function AcademiePage() {
+  const t = useTranslations('academie');
   const [groupes, setGroupes] = useState<GroupeCategorie[]>([]);
   const [progression, setProgression] = useState<Record<string, ProgressionStatut>>({});
   const [stats, setStats] = useState<Stats | null>(null);
@@ -86,11 +88,11 @@ export default function AcademiePage() {
       setProgression(map);
       setStats(s ?? null);
     } catch (e) {
-      setErreur(e instanceof Error ? e.message : 'Erreur de chargement');
+      setErreur(e instanceof Error ? e.message : t('loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { charger(); }, [charger]);
 
@@ -124,9 +126,9 @@ export default function AcademiePage() {
           <GraduationCap size={26} color="#0D47A1" />
         </div>
         <div>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1A2332' }}>Académie SANTAREX</h1>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#1A2332' }}>{t('title')}</h1>
           <p style={{ margin: '2px 0 0', fontSize: 14, color: '#546E7A' }}>
-            Parcours de formation, ressources et suivi de progression.
+            {t('subtitle')}
           </p>
         </div>
       </div>
@@ -138,12 +140,12 @@ export default function AcademiePage() {
           padding: '18px 20px', marginTop: 16, marginBottom: 24,
         }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center' }}>
-            <StatBloc valeur={stats.ressourcesTerminees} total={stats.totalRessourcesPubliees} label="Ressources terminées" />
-            <StatBloc valeur={stats.ressourcesCommencees} total={stats.totalRessourcesPubliees} label="Ressources commencées" />
-            <StatBloc valeur={stats.contenuDisponible} total={stats.totalRessourcesPubliees} label="Contenus disponibles" />
+            <StatBloc valeur={stats.ressourcesTerminees} total={stats.totalRessourcesPubliees} label={t('statCompleted')} />
+            <StatBloc valeur={stats.ressourcesCommencees} total={stats.totalRessourcesPubliees} label={t('statStarted')} />
+            <StatBloc valeur={stats.contenuDisponible} total={stats.totalRessourcesPubliees} label={t('statAvailable')} />
             <div style={{ flex: 1, minWidth: 220 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#546E7A', marginBottom: 6 }}>
-                <span>Progression globale</span>
+                <span>{t('globalProgress')}</span>
                 <span style={{ fontWeight: 700, color: '#0D47A1' }}>{stats.pourcentageTermine}%</span>
               </div>
               <div style={{ height: 10, background: '#EEF2F7', borderRadius: 6, overflow: 'hidden' }}>
@@ -161,22 +163,22 @@ export default function AcademiePage() {
       {loading && (
         <div style={{ padding: 40, textAlign: 'center', color: '#546E7A' }}>
           <RefreshCw size={22} className="spin" style={{ marginBottom: 8 }} />
-          <div>Chargement de l'Académie…</div>
+          <div>{t('loading')}</div>
         </div>
       )}
 
       {!loading && erreur && (
         <div style={{ padding: 20, borderRadius: 12, background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C' }}>
           {erreur}
-          <button onClick={charger} style={{ marginLeft: 12, ...btnLien }}>Réessayer</button>
+          <button onClick={charger} style={{ marginLeft: 12, ...btnLien }}>{t('retry')}</button>
         </div>
       )}
 
       {!loading && !erreur && totalRessources === 0 && (
         <div style={{ padding: 40, textAlign: 'center', color: '#546E7A', background: '#fff', border: '1px solid #E5E9F0', borderRadius: 14 }}>
           <BookOpen size={28} color="#90A4AE" style={{ marginBottom: 8 }} />
-          <div style={{ fontWeight: 600 }}>Aucun parcours publié pour le moment.</div>
-          <div style={{ fontSize: 13, marginTop: 4 }}>De nouveaux contenus de formation seront ajoutés prochainement.</div>
+          <div style={{ fontWeight: 600 }}>{t('emptyTitle')}</div>
+          <div style={{ fontSize: 13, marginTop: 4 }}>{t('emptySubtitle')}</div>
         </div>
       )}
 
@@ -200,7 +202,7 @@ export default function AcademiePage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                     <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1A2332' }}>{parcours.titre}</h3>
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#546E7A', background: '#F1F5F9', borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap' }}>
-                      {NIVEAU_LABEL[parcours.niveau] ?? parcours.niveau}
+                      {NIVEAU_LABEL[parcours.niveau] ? t(`niveau.${parcours.niveau}`) : parcours.niveau}
                     </span>
                   </div>
                   {parcours.description && (
@@ -210,7 +212,7 @@ export default function AcademiePage() {
                   {/* Barre de progression du parcours */}
                   <div style={{ marginBottom: 14 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#78909C', marginBottom: 4 }}>
-                      <span>{termines}/{parcours.ressources.length} terminé{termines > 1 ? 's' : ''}</span>
+                      <span>{termines}/{parcours.ressources.length} {t('completed', { count: termines })}</span>
                       <span>{pct}%</span>
                     </div>
                     <div style={{ height: 6, background: '#EEF2F7', borderRadius: 4, overflow: 'hidden' }}>
@@ -244,10 +246,10 @@ export default function AcademiePage() {
                               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.titre}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, fontSize: 11, color: '#78909C' }}>
-                              <span>{meta.label}</span>
+                              <span>{t(`type.${r.type}`)}</span>
                               {r.duree != null && (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                                  <Clock size={11} /> {r.duree} min
+                                  <Clock size={11} /> {r.duree} {t('minUnit')}
                                 </span>
                               )}
                             </div>
@@ -261,11 +263,11 @@ export default function AcademiePage() {
                               background: '#FEF3C7', border: '1px solid #FDE68A',
                               borderRadius: 6, padding: '4px 8px',
                             }}>
-                              <Lock size={11} /> Bientôt disponible
+                              <Lock size={11} /> {t('soon')}
                             </span>
                           ) : statut === 'termine' ? (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, fontSize: 11, fontWeight: 600, color: '#15803D' }}>
-                              <CheckCircle2 size={14} /> Terminé
+                              <CheckCircle2 size={14} /> {t('done')}
                             </span>
                           ) : (
                             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -273,11 +275,11 @@ export default function AcademiePage() {
                                 <a href={r.url} target="_blank" rel="noopener noreferrer"
                                   onClick={() => { if (statut === 'non_commence') marquer(r.id, 'en_cours'); }}
                                   style={{ ...btnPrimaireSm }}>
-                                  Ouvrir
+                                  {t('open')}
                                 </a>
                               )}
                               <button disabled={busy === r.id} onClick={() => marquer(r.id, 'termine')} style={{ ...btnSecondaireSm, opacity: busy === r.id ? 0.6 : 1 }}>
-                                Terminer
+                                {t('finish')}
                               </button>
                             </div>
                           )}
