@@ -4,11 +4,13 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between, LessThan, MoreThan, In } from 'typeorm';
 import {
   RendezVous,
   StatutRendezVous,
 } from './entities/rendez-vous.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateRdvDto } from './dto/create-rdv.dto';
 import { UpdateRdvDto } from './dto/update-rdv.dto';
 
@@ -29,7 +31,50 @@ export class RendezVousService {
   constructor(
     @InjectRepository(RendezVous)
     private rdvRepository: Repository<RendezVous>,
+    @InjectRepository(Patient)
+    private patientRepository: Repository<Patient>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
+
+  /**
+   * Hydrate en bulk (aucune boucle N+1) les objets `patient` et `medecin`,
+   * en conservant `patientId`/`medecinId` (rétro-compat frontend).
+   */
+  private async enrichir<T extends { patientId?: string; medecinId?: string }>(
+    records: T[],
+    tenantId: string,
+  ): Promise<(T & {
+    patient: { id: string; nom: string; prenom: string; ipp: string } | null;
+    medecin: { id: string; nom: string; prenom: string } | null;
+  })[]> {
+    if (records.length === 0) return [];
+
+    const patientIds = [...new Set(records.map((r) => r.patientId).filter(Boolean))] as string[];
+    const medecinIds = [...new Set(records.map((r) => r.medecinId).filter(Boolean))] as string[];
+
+    const [patients, medecins] = await Promise.all([
+      patientIds.length
+        ? this.patientRepository.find({ where: { id: In(patientIds), tenantId } })
+        : Promise.resolve([] as Patient[]),
+      medecinIds.length
+        ? this.userRepository.find({ where: { id: In(medecinIds), tenantId } })
+        : Promise.resolve([] as User[]),
+    ]);
+
+    const pMap = new Map(patients.map((p) => [p.id, p]));
+    const mMap = new Map(medecins.map((m) => [m.id, m]));
+
+    return records.map((r) => {
+      const p = r.patientId ? pMap.get(r.patientId) : undefined;
+      const m = r.medecinId ? mMap.get(r.medecinId) : undefined;
+      return {
+        ...r,
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+        medecin: m ? { id: m.id, nom: m.lastName, prenom: m.firstName } : null,
+      };
+    });
+  }
 
   async create(dto: CreateRdvDto, tenantId: string, userId: string) {
     await this.checkDisponibilite(
@@ -72,7 +117,7 @@ export class RendezVousService {
       take: limit,
     });
 
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
   async findByMedecin(medecinId: string, date: string, tenantId: string) {
@@ -81,7 +126,7 @@ export class RendezVousService {
     const dateFin = new Date(date);
     dateFin.setHours(23, 59, 59, 999);
 
-    return this.rdvRepository.find({
+    const data = await this.rdvRepository.find({
       where: {
         medecinId,
         tenantId,
@@ -89,13 +134,15 @@ export class RendezVousService {
       },
       order: { dateHeure: 'ASC' },
     });
+    return this.enrichir(data, tenantId);
   }
 
   async findByPatient(patientId: string, tenantId: string) {
-    return this.rdvRepository.find({
+    const data = await this.rdvRepository.find({
       where: { patientId, tenantId },
       order: { dateHeure: 'DESC' },
     });
+    return this.enrichir(data, tenantId);
   }
 
   async findOne(id: string, tenantId: string) {

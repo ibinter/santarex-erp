@@ -4,9 +4,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Paiement, StatutPaiement } from './entities/paiement.entity';
 import { Facture, StatutFacture } from '../facturation/entities/facture.entity';
+import { Patient } from '../patients/entities/patient.entity';
 import { CreatePaiementDto } from './dto/create-paiement.dto';
 
 @Injectable()
@@ -16,7 +17,36 @@ export class PaiementsService {
     private paiementRepo: Repository<Paiement>,
     @InjectRepository(Facture)
     private factureRepo: Repository<Facture>,
+    @InjectRepository(Patient)
+    private patientRepo: Repository<Patient>,
   ) {}
+
+  /**
+   * Hydrate en bulk (aucune boucle N+1) l'objet `patient`, en conservant
+   * `patientId` brut (rétro-compat frontend). Pas de médecin sur un paiement.
+   */
+  private async enrichir<T extends { patientId?: string }>(
+    records: T[],
+    tenantId: string,
+  ): Promise<(T & {
+    patient: { id: string; nom: string; prenom: string; ipp: string } | null;
+  })[]> {
+    if (records.length === 0) return [];
+
+    const patientIds = [...new Set(records.map((r) => r.patientId).filter(Boolean))] as string[];
+    const patients = patientIds.length
+      ? await this.patientRepo.find({ where: { id: In(patientIds), tenantId } })
+      : [];
+    const pMap = new Map(patients.map((p) => [p.id, p]));
+
+    return records.map((r) => {
+      const p = r.patientId ? pMap.get(r.patientId) : undefined;
+      return {
+        ...r,
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+      };
+    });
+  }
 
   private async genererReference(tenantId: string): Promise<string> {
     const year = new Date().getFullYear();
@@ -119,7 +149,7 @@ export class PaiementsService {
     if (filters.dateFin) qb.andWhere('p.createdAt <= :dateFin', { dateFin: filters.dateFin });
 
     const [data, total] = await qb.orderBy('p.createdAt', 'DESC').skip(skip).take(limit).getManyAndCount();
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
   async findOne(id: string, tenantId: string): Promise<Paiement> {

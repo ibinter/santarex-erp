@@ -6,6 +6,7 @@ import NavSidebar from '@/components/layout/NavSidebar';
 import Topbar from '@/components/layout/Topbar';
 import BottomNav from '@/components/layout/BottomNav';
 import AiChat from '@/components/AiChat';
+import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { isAuthenticated } from '@/lib/auth';
 import Link from 'next/link';
 import {
@@ -154,6 +155,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <BottomNav onMoreClick={() => setMoreDrawerOpen(v => !v)} />
         <AiChat />
+        <PwaInstallPrompt />
       </div>
     </>
   );

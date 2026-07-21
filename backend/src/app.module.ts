@@ -14,6 +14,8 @@ import { ComptabiliteModule } from './comptabilite/comptabilite.module';
 import { RhModule } from './rh/rh.module';
 import { BlocOperatoireModule } from './bloc-operatoire/bloc-operatoire.module';
 import { ImagerieModule } from './imagerie/imagerie.module';
+import { ImportsModule } from './imports/imports.module';
+import { VerificationModule } from './verification/verification.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -86,6 +88,8 @@ import { SeedModule } from './database/seed.module';
     RhModule,
     BlocOperatoireModule,
     ImagerieModule,
+    ImportsModule,
+    VerificationModule,
     SeedModule,
   ],
   providers: [

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Users, UserPlus, Search, RefreshCw, Eye, Edit,
   Download, ChevronLeft, ChevronRight, Filter, X,
-  TrendingUp, UserCheck, Heart, Activity, FileSpreadsheet,
+  TrendingUp, UserCheck, Heart, Activity, FileSpreadsheet, Upload,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
@@ -194,6 +194,10 @@ export default function PatientsPage() {
           <button onClick={handleExportXLSX} disabled={loading}
             style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:10, background:'rgba(46,125,50,0.85)', border:'1px solid rgba(255,255,255,0.2)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
             <FileSpreadsheet size={14}/> XLSX
+          </button>
+          <button onClick={() => router.push('/patients/import')}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 14px', borderRadius:10, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', color:'#fff', cursor:'pointer', fontSize:12, fontWeight:700 }}>
+            <Upload size={14}/> Importer
           </button>
           <button onClick={() => router.push('/patients/nouveau')}
             style={{ display:'flex', alignItems:'center', gap:7, padding:'8px 18px', borderRadius:10, background:'#fff', border:'none', color:'#1565C0', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}>

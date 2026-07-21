@@ -4,10 +4,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, In } from 'typeorm';
 import { TypeAnalyse, CategorieAnalyse } from './entities/type-analyse.entity';
 import { DemandeAnalyse, StatutPrelevement } from './entities/demande-analyse.entity';
 import { ResultatAnalyse, StatutResultat, InterpretationResultat } from './entities/resultat-analyse.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateDemandeAnalyseDto } from './dto/create-demande-analyse.dto';
 import { SaisirTousResultatsDto } from './dto/saisir-resultats.dto';
 
@@ -20,7 +22,64 @@ export class LaboratoireService {
     private readonly demandeRepo: Repository<DemandeAnalyse>,
     @InjectRepository(ResultatAnalyse)
     private readonly resultatRepo: Repository<ResultatAnalyse>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
+
+  /**
+   * Hydrate en bulk (aucune boucle N+1) `patient`, `medecin` et `typesAnalyse`
+   * (résolution du tableau d'ids `analyses` → objets type), en conservant
+   * `patientId`/`medecinId`/`analyses` bruts (rétro-compat frontend).
+   */
+  private async enrichirDemandes(
+    demandes: DemandeAnalyse[],
+    tenantId: string,
+  ): Promise<(DemandeAnalyse & {
+    patient: { id: string; nom: string; prenom: string; ipp: string } | null;
+    medecin: { id: string; nom: string; prenom: string } | null;
+    typesAnalyse: { id: string; nom: string; code: string }[];
+  })[]> {
+    if (demandes.length === 0) return [];
+
+    const patientIds = [...new Set(demandes.map((d) => d.patientId).filter(Boolean))];
+    const medecinIds = [...new Set(demandes.map((d) => d.medecinId).filter(Boolean))];
+    const typeIds = [
+      ...new Set(demandes.flatMap((d) => d.analyses ?? []).filter(Boolean)),
+    ];
+
+    const [patients, medecins, types] = await Promise.all([
+      patientIds.length
+        ? this.patientRepo.find({ where: { id: In(patientIds), tenantId } })
+        : Promise.resolve([] as Patient[]),
+      medecinIds.length
+        ? this.userRepo.find({ where: { id: In(medecinIds), tenantId } })
+        : Promise.resolve([] as User[]),
+      typeIds.length
+        ? this.typeAnalyseRepo.find({ where: { id: In(typeIds), tenantId } })
+        : Promise.resolve([] as TypeAnalyse[]),
+    ]);
+
+    const pMap = new Map(patients.map((p) => [p.id, p]));
+    const mMap = new Map(medecins.map((m) => [m.id, m]));
+    const tMap = new Map(types.map((t) => [t.id, t]));
+
+    return demandes.map((d) => {
+      const p = d.patientId ? pMap.get(d.patientId) : undefined;
+      const m = d.medecinId ? mMap.get(d.medecinId) : undefined;
+      const typesAnalyse = (d.analyses ?? [])
+        .map((id) => tMap.get(id))
+        .filter((t): t is TypeAnalyse => !!t)
+        .map((t) => ({ id: t.id, nom: t.nom, code: t.code }));
+      return {
+        ...d,
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+        medecin: m ? { id: m.id, nom: m.lastName, prenom: m.firstName } : null,
+        typesAnalyse,
+      };
+    });
+  }
 
   // ────────────────────────────────────────────────────────────────
   // Génération numéro demande
@@ -97,7 +156,7 @@ export class LaboratoireService {
     tenantId: string,
     filters: { patientId?: string; statut?: StatutPrelevement; urgence?: boolean; date?: string } = {},
     pagination: { page?: number; limit?: number } = {},
-  ): Promise<{ data: DemandeAnalyse[]; total: number; page: number; limit: number }> {
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const { page = 1, limit = 20 } = pagination;
     const skip = (page - 1) * limit;
 
@@ -123,7 +182,7 @@ export class LaboratoireService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, total, page, limit };
+    return { data: await this.enrichirDemandes(data, tenantId), total, page, limit };
   }
 
   async findOneDemande(id: string, tenantId: string): Promise<DemandeAnalyse> {

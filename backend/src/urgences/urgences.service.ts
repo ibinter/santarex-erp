@@ -11,6 +11,8 @@ import {
   CategorieUrgence,
   DispositionUrgence,
 } from './entities/patient-urgence.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 import { AdmissionUrgenceDto } from './dto/admission-urgence.dto';
 import { UpdateTriageDto } from './dto/update-triage.dto';
 
@@ -19,7 +21,51 @@ export class UrgencesService {
   constructor(
     @InjectRepository(PatientUrgence)
     private urgenceRepo: Repository<PatientUrgence>,
+    @InjectRepository(Patient)
+    private patientRepo: Repository<Patient>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
+
+  /**
+   * Hydrate en bulk (aucune boucle N+1) `patient` et `medecin` (responsable),
+   * en conservant `patientId`/`medecinResponsableId` bruts (rétro-compat).
+   * Le patient peut être absent (admission sur `nomProvisoire`) → `patient: null`.
+   */
+  private async enrichir<T extends { patientId?: string; medecinResponsableId?: string }>(
+    records: T[],
+    tenantId: string,
+  ): Promise<(T & {
+    patient: { id: string; nom: string; prenom: string; ipp: string } | null;
+    medecin: { id: string; nom: string; prenom: string } | null;
+  })[]> {
+    if (records.length === 0) return [];
+
+    const patientIds = [...new Set(records.map((r) => r.patientId).filter(Boolean))] as string[];
+    const medecinIds = [...new Set(records.map((r) => r.medecinResponsableId).filter(Boolean))] as string[];
+
+    const [patients, medecins] = await Promise.all([
+      patientIds.length
+        ? this.patientRepo.find({ where: { id: In(patientIds), tenantId } })
+        : Promise.resolve([] as Patient[]),
+      medecinIds.length
+        ? this.userRepo.find({ where: { id: In(medecinIds), tenantId } })
+        : Promise.resolve([] as User[]),
+    ]);
+
+    const pMap = new Map(patients.map((p) => [p.id, p]));
+    const mMap = new Map(medecins.map((m) => [m.id, m]));
+
+    return records.map((r) => {
+      const p = r.patientId ? pMap.get(r.patientId) : undefined;
+      const m = r.medecinResponsableId ? mMap.get(r.medecinResponsableId) : undefined;
+      return {
+        ...r,
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+        medecin: m ? { id: m.id, nom: m.lastName, prenom: m.firstName } : null,
+      };
+    });
+  }
 
   private async genererNumero(tenantId: string): Promise<string> {
     const year = new Date().getFullYear();
@@ -98,17 +144,18 @@ export class UrgencesService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
-  async findActifs(tenantId: string): Promise<PatientUrgence[]> {
-    return this.urgenceRepo.find({
+  async findActifs(tenantId: string) {
+    const data = await this.urgenceRepo.find({
       where: {
         tenantId,
         statut: Not(In([StatutUrgence.SORTI, StatutUrgence.TRANSFERE, StatutUrgence.DECEDE])),
       },
       order: { categorieUrgence: 'ASC', dateHeureArrivee: 'ASC' },
     });
+    return this.enrichir(data, tenantId);
   }
 
   async findOne(id: string, tenantId: string): Promise<PatientUrgence> {

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Providers from './providers';
+import PwaRegister from '@/components/PwaRegister';
 
 export const metadata: Metadata = {
   title: 'SANTAREX ERP — Gestion Hospitalière',
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
+        <PwaRegister />
         <Providers>{children}</Providers>
       </body>
     </html>

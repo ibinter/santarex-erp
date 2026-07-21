@@ -4,9 +4,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Lit, ServiceHospitalisation, StatutLit } from './entities/lit.entity';
 import { Sejour, StatutSejour, TypeSortie } from './entities/sejour.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 import { NoteEvolution } from './entities/note-evolution.entity';
 import { SoinInfirmier } from './entities/soin-infirmier.entity';
 import { CreateLitDto } from './dto/create-lit.dto';
@@ -25,7 +27,50 @@ export class HospitalisationService {
     private readonly noteRepo: Repository<NoteEvolution>,
     @InjectRepository(SoinInfirmier)
     private readonly soinRepo: Repository<SoinInfirmier>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
+
+  /**
+   * Hydrate en bulk (aucune boucle N+1) `patient` et `medecin` (référent),
+   * en conservant `patientId`/`medecinReferentId` bruts (rétro-compat).
+   */
+  private async enrichir<T extends { patientId?: string; medecinReferentId?: string }>(
+    records: T[],
+    tenantId: string,
+  ): Promise<(T & {
+    patient: { id: string; nom: string; prenom: string; ipp: string } | null;
+    medecin: { id: string; nom: string; prenom: string } | null;
+  })[]> {
+    if (records.length === 0) return [];
+
+    const patientIds = [...new Set(records.map((r) => r.patientId).filter(Boolean))] as string[];
+    const medecinIds = [...new Set(records.map((r) => r.medecinReferentId).filter(Boolean))] as string[];
+
+    const [patients, medecins] = await Promise.all([
+      patientIds.length
+        ? this.patientRepo.find({ where: { id: In(patientIds), tenantId } })
+        : Promise.resolve([] as Patient[]),
+      medecinIds.length
+        ? this.userRepo.find({ where: { id: In(medecinIds), tenantId } })
+        : Promise.resolve([] as User[]),
+    ]);
+
+    const pMap = new Map(patients.map((p) => [p.id, p]));
+    const mMap = new Map(medecins.map((m) => [m.id, m]));
+
+    return records.map((r) => {
+      const p = r.patientId ? pMap.get(r.patientId) : undefined;
+      const m = r.medecinReferentId ? mMap.get(r.medecinReferentId) : undefined;
+      return {
+        ...r,
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+        medecin: m ? { id: m.id, nom: m.lastName, prenom: m.firstName } : null,
+      };
+    });
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // Génération de numéro de séjour
@@ -162,14 +207,15 @@ export class HospitalisationService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
-  async findSejoursActifs(tenantId: string): Promise<Sejour[]> {
-    return this.sejourRepo.find({
+  async findSejoursActifs(tenantId: string) {
+    const data = await this.sejourRepo.find({
       where: { tenantId, statut: StatutSejour.ACTIF },
       order: { dateHeureAdmission: 'DESC' },
     });
+    return this.enrichir(data, tenantId);
   }
 
   async findOne(id: string, tenantId: string): Promise<Sejour> {
