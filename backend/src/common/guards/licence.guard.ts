@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { LicenceLifecycleService } from '../../payments/licence-lifecycle.service';
+import { EntitlementService } from '../entitlement.service';
 import { SKIP_LICENCE_KEY } from '../decorators/skip-licence.decorator';
 
 /**
@@ -77,7 +77,7 @@ export class LicenceGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly lifecycle: LicenceLifecycleService,
+    private readonly entitlement: EntitlementService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -105,7 +105,7 @@ export class LicenceGuard implements CanActivate {
     // 4) Décision d'entitlement — fail-open sur erreur interne.
     const tenantSlug: string | undefined = user.tenantId ?? user.tenantSlug;
     try {
-      const access = await this.lifecycle.getTenantAccess(tenantSlug ?? '');
+      const access = await this.entitlement.getTenantAccess(tenantSlug ?? '');
       if (!access.allowed) {
         throw new ForbiddenException(
           `Licence ${access.reason}. Renouvelez votre abonnement.`,

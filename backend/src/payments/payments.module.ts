@@ -34,13 +34,9 @@ import { VoucherService } from './voucher.service';
 import { LicenceLifecycleService } from './licence-lifecycle.service';
 import { LicenceSchedulerService } from './licence-scheduler.service';
 
-// ── Gardes d'application de licence / entitlement module ────────────────────
-//  Exposés ici (providers + exports) pour être appliqués PAR CONTRÔLEUR via
-//  `@UseGuards(JwtAuthGuard, LicenceGuard, ModuleGuard)`. Non enregistrés en
-//  APP_GUARD car le JwtAuthGuard n'est PAS global (voir
-//  src/common/guards/README-licence-enforcement.md).
-import { LicenceGuard } from '../common/guards/licence.guard';
-import { ModuleGuard } from '../common/guards/module.guard';
+// Note : LicenceGuard / ModuleGuard sont désormais fournis par
+// EntitlementModule (@Global, autonome basé sur EntitlementService), plus par
+// PaymentsModule — voir src/common/entitlement.module.ts.
 
 // ── Controllers ─────────────────────────────────────────────────────────────
 import { AdminPaymentsController } from './admin-payments.controller';
@@ -103,8 +99,6 @@ import { VoucherController, VoucherClientController } from './voucher.controller
     VoucherService,
     LicenceLifecycleService,
     LicenceSchedulerService,
-    LicenceGuard,
-    ModuleGuard,
   ],
   exports: [
     PaymentConfigService,
@@ -112,8 +106,6 @@ import { VoucherController, VoucherClientController } from './voucher.controller
     GatewayService,
     VoucherService,
     LicenceLifecycleService,
-    LicenceGuard,
-    ModuleGuard,
   ],
 })
 export class PaymentsModule {}

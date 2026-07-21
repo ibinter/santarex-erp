@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { LicenceLifecycleService } from '../../payments/licence-lifecycle.service';
+import { EntitlementService } from '../entitlement.service';
 import { SKIP_LICENCE_KEY } from '../decorators/skip-licence.decorator';
 import { isExemptPath, normalisePath } from './licence.guard';
 
@@ -60,7 +60,7 @@ export class ModuleGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly lifecycle: LicenceLifecycleService,
+    private readonly entitlement: EntitlementService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -88,7 +88,7 @@ export class ModuleGuard implements CanActivate {
 
     const tenantSlug: string | undefined = user.tenantId ?? user.tenantSlug;
     try {
-      const access = await this.lifecycle.getTenantAccess(tenantSlug ?? '');
+      const access = await this.entitlement.getTenantAccess(tenantSlug ?? '');
       // modules === null → aucune restriction (tout autorisé). Fail-open.
       if (access.modules === null) return true;
       if (access.modules.includes(mod)) return true;

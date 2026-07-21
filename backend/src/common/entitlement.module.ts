@@ -1,23 +1,23 @@
 import { Global, Module } from '@nestjs/common';
-import { PaymentsModule } from '../payments/payments.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Licence } from '../licences/entities/licence.entity';
+import { EntitlementService } from './entitlement.service';
 import { LicenceGuard } from './guards/licence.guard';
 import { ModuleGuard } from './guards/module.guard';
 
 /**
- * EntitlementModule — rend `LicenceGuard` et `ModuleGuard` (fournis par
- * PaymentsModule) injectables dans TOUS les contrôleurs métier, sans que chaque
- * module ait à importer PaymentsModule.
+ * EntitlementModule — AUTONOME et @Global. Fournit `LicenceGuard` et
+ * `ModuleGuard` (application de la licence + entitlement module) injectables
+ * dans TOUS les contrôleurs métier via `@UseGuards(JwtAuthGuard, RolesGuard,
+ * LicenceGuard, ModuleGuard)` — sans dépendre de PaymentsModule.
  *
- * Usage par contrôleur (APRÈS le JwtAuthGuard qui pose `req.user`) :
- *   @UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
- *
- * @Global → une seule déclaration ici suffit ; production-safe (les guards
- * font fail-open sur "pas de licence" / erreur interne, cf. licence.guard.ts).
+ * Ne dépend que du repo `Licence` (via EntitlementService). Production-safe :
+ * fail-open sur pas-de-licence / erreur (cf. entitlement.service.ts).
  */
 @Global()
 @Module({
-  imports: [PaymentsModule], // fournit LicenceLifecycleService (dépendance des guards)
-  providers: [LicenceGuard, ModuleGuard],
-  exports: [LicenceGuard, ModuleGuard],
+  imports: [TypeOrmModule.forFeature([Licence])],
+  providers: [EntitlementService, LicenceGuard, ModuleGuard],
+  exports: [EntitlementService, LicenceGuard, ModuleGuard],
 })
 export class EntitlementModule {}
