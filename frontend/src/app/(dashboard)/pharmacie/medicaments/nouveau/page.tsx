@@ -3,23 +3,12 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Pill, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
-const FORMES = [
-  { value: 'comprime', label: 'Comprimé' }, { value: 'gelule', label: 'Gélule' },
-  { value: 'sirop', label: 'Sirop' }, { value: 'injectable', label: 'Injectable' },
-  { value: 'pommade', label: 'Pommade' }, { value: 'collyre', label: 'Collyre' },
-  { value: 'suppositoire', label: 'Suppositoire' }, { value: 'patch', label: 'Patch' },
-  { value: 'spray', label: 'Spray' }, { value: 'autre', label: 'Autre' },
-];
+const FORMES = ['comprime','gelule','sirop','injectable','pommade','collyre','suppositoire','patch','spray','autre'];
 
-const CATEGORIES = [
-  { value: 'antibiotique', label: 'Antibiotique' }, { value: 'antalgique', label: 'Antalgique' },
-  { value: 'antihypertenseur', label: 'Antihypertenseur' }, { value: 'antipaludeen', label: 'Antipaludéen' },
-  { value: 'antiretroviral', label: 'Antirétroviral' }, { value: 'vaccin', label: 'Vaccin' },
-  { value: 'cardiovasculaire', label: 'Cardiovasculaire' }, { value: 'diabetologie', label: 'Diabétologie' },
-  { value: 'autre', label: 'Autre' },
-];
+const CATEGORIES = ['antibiotique','antalgique','antihypertenseur','antipaludeen','antiretroviral','vaccin','cardiovasculaire','diabetologie','autre'];
 
 type FormData = {
   nom: string; dci: string; forme: string; dosage: string; categorie: string;
@@ -29,6 +18,7 @@ type FormData = {
 
 export default function NouveauMedicamentPage() {
   const router = useRouter();
+  const t = useTranslations('pharmacie');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({
@@ -41,7 +31,7 @@ export default function NouveauMedicamentPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.nom.trim()) { setError('Le nom du médicament est obligatoire.'); return; }
+    if (!form.nom.trim()) { setError(t('form.errNom')); return; }
     setLoading(true); setError(null);
     try {
       await apiClient('/pharmacie/medicaments', {
@@ -63,7 +53,7 @@ export default function NouveauMedicamentPage() {
       });
       router.push('/pharmacie');
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création');
+      setError(e?.message ?? t('form.errCreate'));
     } finally { setLoading(false); }
   };
 
@@ -82,66 +72,66 @@ export default function NouveauMedicamentPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/pharmacie')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('form.back')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 9, background: '#E0F2F1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Pill size={18} color="#00695C" />
           </div>
-          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouveau médicament</h1>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>{t('form.title')}</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
-        <Section title="Identification">
+        <Section title={t('form.sectionIdentification')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Nom commercial <span style={{ color: '#C62828' }}>*</span></label>
-              <input value={form.nom} onChange={e => upd('nom', e.target.value)} placeholder="Ex: Amoxicilline 500mg" style={inputStyle} />
+              <label style={labelStyle}>{t('form.labelNom')} <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.nom} onChange={e => upd('nom', e.target.value)} placeholder={t('form.phNom')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>DCI (substance active)</label>
-              <input value={form.dci} onChange={e => upd('dci', e.target.value)} placeholder="Ex: Amoxicilline" style={inputStyle} />
+              <label style={labelStyle}>{t('form.labelDci')}</label>
+              <input value={form.dci} onChange={e => upd('dci', e.target.value)} placeholder={t('form.phDci')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Forme pharmaceutique</label>
+              <label style={labelStyle}>{t('form.labelForme')}</label>
               <select value={form.forme} onChange={e => upd('forme', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                {FORMES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                {FORMES.map(f => <option key={f} value={f}>{t(('formes.' + f) as any)}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Dosage</label>
-              <input value={form.dosage} onChange={e => upd('dosage', e.target.value)} placeholder="Ex: 500mg, 250mg/5mL" style={inputStyle} />
+              <label style={labelStyle}>{t('form.labelDosage')}</label>
+              <input value={form.dosage} onChange={e => upd('dosage', e.target.value)} placeholder={t('form.phDosage')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Catégorie</label>
+              <label style={labelStyle}>{t('form.labelCategorie')}</label>
               <select value={form.categorie} onChange={e => upd('categorie', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c}>{t(('categories.' + c) as any)}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Fabricant / Laboratoire</label>
-              <input value={form.fabricant} onChange={e => upd('fabricant', e.target.value)} placeholder="Ex: Sanofi, Pfizer…" style={inputStyle} />
+              <label style={labelStyle}>{t('form.labelFabricant')}</label>
+              <input value={form.fabricant} onChange={e => upd('fabricant', e.target.value)} placeholder={t('form.phFabricant')} style={inputStyle} />
             </div>
           </div>
         </Section>
 
-        <Section title="Stock & Prix">
+        <Section title={t('form.sectionStockPrix')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Prix de vente (XOF)</label>
-              <input type="number" min={0} value={form.prixVente} onChange={e => upd('prixVente', e.target.value)} placeholder="0" style={{ ...inputStyle, textAlign: 'right' }} />
+              <label style={labelStyle}>{t('form.labelPrixVente')}</label>
+              <input type="number" min={0} value={form.prixVente} onChange={e => upd('prixVente', e.target.value)} placeholder={t('form.phPrix')} style={{ ...inputStyle, textAlign: 'right' }} />
             </div>
             <div>
-              <label style={labelStyle}>Stock actuel</label>
+              <label style={labelStyle}>{t('form.labelStockActuel')}</label>
               <input type="number" min={0} value={form.stockActuel} onChange={e => upd('stockActuel', e.target.value)} style={{ ...inputStyle, textAlign: 'right' }} />
             </div>
             <div>
-              <label style={labelStyle}>Stock minimum</label>
+              <label style={labelStyle}>{t('form.labelStockMinimum')}</label>
               <input type="number" min={0} value={form.stockMinimum} onChange={e => upd('stockMinimum', e.target.value)} style={{ ...inputStyle, textAlign: 'right' }} />
             </div>
             <div>
-              <label style={labelStyle}>Date d'expiration</label>
+              <label style={labelStyle}>{t('form.labelDateExpiration')}</label>
               <input type="date" value={form.dateExpiration} onChange={e => upd('dateExpiration', e.target.value)} style={inputStyle} />
             </div>
           </div>
@@ -152,16 +142,16 @@ export default function NouveauMedicamentPage() {
                 <span style={{ position: 'absolute', top: 3, left: form.ordonnanceRequise ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
               </button>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>Ordonnance requise</div>
-                <div style={{ fontSize: 11, color: '#90A4AE' }}>Ce médicament nécessite une prescription médicale</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{t('form.labelOrdonnance')}</div>
+                <div style={{ fontSize: 11, color: '#90A4AE' }}>{t('form.ordonnanceHint')}</div>
               </div>
             </label>
           </div>
         </Section>
 
-        <Section title="Description">
+        <Section title={t('form.sectionDescription')}>
           <textarea value={form.description} onChange={e => upd('description', e.target.value)} rows={3}
-            placeholder="Indications, contre-indications, notes particulières…"
+            placeholder={t('form.phDescription')}
             style={{ ...inputStyle, resize: 'vertical' }} />
         </Section>
 
@@ -174,11 +164,11 @@ export default function NouveauMedicamentPage() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingBottom: 32 }}>
           <button type="button" onClick={() => router.push('/pharmacie')}
             style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-            Annuler
+            {t('form.cancel')}
           </button>
           <button type="submit" disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 8, background: '#00695C', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={14} /> {loading ? 'Enregistrement…' : 'Enregistrer le médicament'}
+            <Save size={14} /> {loading ? t('form.saving') : t('form.save')}
           </button>
         </div>
       </form>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 // Role-based visibility
 type RoleKey = string;
@@ -20,7 +21,7 @@ const ADMIN_ONLY: RoleKey[] = ['superadmin','admin'];
 const ADMIN_DIR: RoleKey[] = ['superadmin','admin','directeur'];
 
 interface NavItem {
-  label: string;
+  key: string;
   href: string;
   icon: React.ReactNode;
   badge?: number;
@@ -29,62 +30,62 @@ interface NavItem {
 }
 
 interface NavGroup {
-  label: string;
+  key: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    label: 'Tableau de bord',
+    key: 'groupDashboard',
     items: [
-      { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} />, roles: ALL_ROLES },
+      { key: 'dashboard', href: '/dashboard', icon: <LayoutDashboard size={18} />, roles: ALL_ROLES },
     ],
   },
   {
-    label: 'Patients & Consultations',
+    key: 'groupPatients',
     items: [
-      { label: 'Patients', href: '/patients', icon: <Users size={18} />, roles: CLINICAL },
-      { label: 'Consultations', href: '/consultations', icon: <Stethoscope size={18} />, roles: CLINICAL },
-      { label: 'Rendez-vous', href: '/rendez-vous', icon: <Calendar size={18} />, roles: CLINICAL },
-      { label: 'Dossier Médical (DME)', href: '/dme', icon: <BookOpen size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
+      { key: 'patients', href: '/patients', icon: <Users size={18} />, roles: CLINICAL },
+      { key: 'consultations', href: '/consultations', icon: <Stethoscope size={18} />, roles: CLINICAL },
+      { key: 'rendezVous', href: '/rendez-vous', icon: <Calendar size={18} />, roles: CLINICAL },
+      { key: 'dmeLong', href: '/dme', icon: <BookOpen size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
     ],
   },
   {
-    label: 'Soins & Hospitalisation',
+    key: 'groupSoins',
     items: [
-      { label: 'Hospitalisation', href: '/hospitalisation', icon: <BedDouble size={18} />, roles: CLINICAL },
-      { label: 'Bloc Opératoire', href: '/bloc-operatoire', icon: <Scissors size={18} />, roles: ['superadmin','admin','medecin'] },
-      { label: 'Urgences', href: '/urgences', icon: <Siren size={18} />, alert: true, roles: CLINICAL },
-      { label: 'Imagerie Médicale', href: '/imagerie', icon: <Scan size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
+      { key: 'hospitalisation', href: '/hospitalisation', icon: <BedDouble size={18} />, roles: CLINICAL },
+      { key: 'blocOperatoire', href: '/bloc-operatoire', icon: <Scissors size={18} />, roles: ['superadmin','admin','medecin'] },
+      { key: 'urgences', href: '/urgences', icon: <Siren size={18} />, alert: true, roles: CLINICAL },
+      { key: 'imagerieLong', href: '/imagerie', icon: <Scan size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
     ],
   },
   {
-    label: 'Médical & Pharmacie',
+    key: 'groupMedical',
     items: [
-      { label: 'Laboratoire', href: '/laboratoire', icon: <FlaskConical size={18} />, roles: ['superadmin','admin','medecin','laborantin'] },
-      { label: 'Pharmacie', href: '/pharmacie', icon: <Pill size={18} />, roles: ['superadmin','admin','pharmacien','medecin'] },
+      { key: 'laboratoire', href: '/laboratoire', icon: <FlaskConical size={18} />, roles: ['superadmin','admin','medecin','laborantin'] },
+      { key: 'pharmacie', href: '/pharmacie', icon: <Pill size={18} />, roles: ['superadmin','admin','pharmacien','medecin'] },
     ],
   },
   {
-    label: 'Finance & Facturation',
+    key: 'groupFinance',
     items: [
-      { label: 'Facturation', href: '/facturation', icon: <Receipt size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
-      { label: 'Caisse', href: '/caisse', icon: <CreditCard size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
-      { label: 'Comptabilité', href: '/comptabilite', icon: <Building2 size={18} />, roles: ADMIN_DIR },
+      { key: 'facturation', href: '/facturation', icon: <Receipt size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'caisse', href: '/caisse', icon: <CreditCard size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'comptabilite', href: '/comptabilite', icon: <Building2 size={18} />, roles: ADMIN_DIR },
     ],
   },
   {
-    label: 'Administration',
+    key: 'groupAdmin',
     items: [
-      { label: 'Utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} />, roles: ADMIN_ONLY },
-      { label: 'Ressources Humaines', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
-      { label: 'Reporting & BI', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
-      { label: "Journal d'audit", href: '/audit-logs', icon: <ShieldCheck size={18} />, roles: ADMIN_DIR },
-      { label: 'Licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
-      { label: 'Guide utilisateur', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },
-      { label: 'FAQ', href: '/faq', icon: <HelpCircle size={18} />, roles: ALL_ROLES },
-      { label: 'Support', href: '/support', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
-      { label: 'Paramètres', href: '/parametres', icon: <Settings size={18} />, roles: ADMIN_DIR },
+      { key: 'utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} />, roles: ADMIN_ONLY },
+      { key: 'rhLong', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
+      { key: 'reportingLong', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
+      { key: 'auditLogs', href: '/audit-logs', icon: <ShieldCheck size={18} />, roles: ADMIN_DIR },
+      { key: 'licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
+      { key: 'guide', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },
+      { key: 'faq', href: '/faq', icon: <HelpCircle size={18} />, roles: ALL_ROLES },
+      { key: 'support', href: '/support', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
+      { key: 'parametres', href: '/parametres', icon: <Settings size={18} />, roles: ADMIN_DIR },
     ],
   },
 ];
@@ -98,6 +99,7 @@ interface NavSidebarProps {
 export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollapsedChange }: NavSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('nav');
   const [collapsed, setCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
 
@@ -219,7 +221,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
               height: '28px',
               flexShrink: 0,
             }}
-            aria-label={collapsed ? 'Développer' : 'Réduire'}
+            aria-label={collapsed ? t('expand') : t('collapse')}
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
@@ -241,7 +243,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
               flexShrink: 0,
               display: 'none',
             }}
-            aria-label="Fermer le menu"
+            aria-label={t('closeMenu')}
           >
             <X size={14} />
           </button>
@@ -253,7 +255,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
             const visibleItems = group.items.filter(canSee);
             if (visibleItems.length === 0) return null;
             return (
-            <div key={group.label} style={{ marginBottom: '4px' }}>
+            <div key={group.key} style={{ marginBottom: '4px' }}>
               {!collapsed && (
                 <div
                   style={{
@@ -265,7 +267,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
                     textTransform: 'uppercase',
                   }}
                 >
-                  {group.label}
+                  {t(group.key)}
                 </div>
               )}
               {collapsed && <div style={{ height: '8px' }} />}
@@ -277,7 +279,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
                       <Link
                         href={item.href}
                         onClick={onMobileClose}
-                        title={collapsed ? item.label : undefined}
+                        title={collapsed ? t(item.key) : undefined}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -317,7 +319,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
                               flex: 1,
                             }}
                           >
-                            {item.label}
+                            {t(item.key)}
                           </span>
                         )}
                         {!collapsed && item.alert && (
@@ -367,7 +369,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
         >
           <button
             onClick={handleLogout}
-            title={collapsed ? 'Déconnexion' : undefined}
+            title={collapsed ? t('logout') : undefined}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -393,7 +395,7 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
             }}
           >
             <LogOut size={18} />
-            {!collapsed && 'Déconnexion'}
+            {!collapsed && t('logout')}
           </button>
         </div>
       </aside>

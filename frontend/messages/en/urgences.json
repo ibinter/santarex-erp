@@ -1,0 +1,36 @@
+{
+  "urgences": {
+    "title": "Emergency",
+    "subtitle": "Triage room — Real time",
+    "actualise": "Updated {time}",
+    "admettre": "Admit",
+    "manchester": {
+      "ROUGE": "RED",
+      "ORANGE": "ORANGE",
+      "JAUNE": "YELLOW",
+      "VERT": "GREEN",
+      "NOIR": "DECEASED"
+    },
+    "statut": {
+      "attente_triage": "Await. triage",
+      "en_triage": "In triage",
+      "en_soins": "In care",
+      "en_observation": "Observation"
+    },
+    "delai": "DELAY",
+    "patientInconnu": "Unknown patient",
+    "nonAssigne": "Unassigned",
+    "triage": "Triage",
+    "prendreEnCharge": "Take in charge",
+    "statCritiques": "Critical",
+    "statUrgences": "Urgent",
+    "statSemiUrg": "Semi-urg.",
+    "statNonUrg": "Non-urg.",
+    "statTotal": "Total",
+    "filtrer": "Filter: {label}",
+    "aucunPatient": "No patient in emergency",
+    "salleCalme": "The emergency room is calm",
+    "filtreActif": "Active filter:",
+    "toutVoir": "Show all"
+  }
+}

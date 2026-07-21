@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bed, Search, Save, AlertTriangle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
 type Lit = { id: string; numero: string; chambre?: string; service?: string; type?: string };
 type Medecin = { id: string; prenom: string; nom: string };
 
 export default function AdmettreHospitalisationPage() {
+  const t = useTranslations('hospitalisation');
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [lits, setLits] = useState<Lit[]>([]);
@@ -48,8 +50,8 @@ export default function AdmettreHospitalisationPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedPatient) { setError('Sélectionnez un patient.'); return; }
-    if (!selectedLit) { setError('Sélectionnez un lit.'); return; }
+    if (!selectedPatient) { setError(t('erreurPatientRequis')); return; }
+    if (!selectedLit) { setError(t('erreurLitRequis')); return; }
     setLoading(true); setError(null);
     try {
       const created = await apiClient<any>('/hospitalisation/sejours/admettre', {
@@ -63,7 +65,7 @@ export default function AdmettreHospitalisationPage() {
         },
       });
       router.push(created?.id ? `/hospitalisation/${created.id}` : '/hospitalisation');
-    } catch (e: any) { setError(e?.message ?? "Erreur lors de l'admission"); }
+    } catch (e: any) { setError(e?.message ?? t('erreurAdmission')); }
     finally { setLoading(false); }
   };
 
@@ -82,19 +84,19 @@ export default function AdmettreHospitalisationPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/hospitalisation')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('retour')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Bed size={20} color="#1565C0" />
           </div>
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>Admettre un patient</h1>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>{t('admettrePatient')}</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
         {/* Patient */}
-        <Card title="Patient *">
+        <Card title={t('cardPatient')}>
           {selectedPatient ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#EFF6FF', border: '2px solid #1565C0' }}>
               <div>
@@ -107,7 +109,7 @@ export default function AdmettreHospitalisationPage() {
             <>
               <div style={{ position: 'relative', marginBottom: 8 }}>
                 <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('rechercherPatient')} style={{ ...inputStyle, paddingLeft: 28 }} />
               </div>
               {patients.slice(0, 5).map(p => (
                 <div key={p.id} onClick={() => setSelectedPatient(p)}
@@ -126,10 +128,10 @@ export default function AdmettreHospitalisationPage() {
         </Card>
 
         {/* Lit */}
-        <Card title="Lit d'hospitalisation *">
-          <label style={labelStyle}>Sélectionner un lit disponible</label>
+        <Card title={t('cardLit')}>
+          <label style={labelStyle}>{t('selectionnerLit')}</label>
           <select value={selectedLit} onChange={e => setSelectedLit(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-            <option value="">— Choisir un lit —</option>
+            <option value="">{t('choisirLit')}</option>
             {lits.map(l => (
               <option key={l.id} value={l.id}>{l.numero}{l.chambre ? ` · Ch.${l.chambre}` : ''}{l.service ? ` · ${l.service}` : ''}{l.type ? ` (${l.type})` : ''}</option>
             ))}
@@ -137,7 +139,7 @@ export default function AdmettreHospitalisationPage() {
         </Card>
 
         {/* Médecin */}
-        <Card title="Médecin référent">
+        <Card title={t('cardMedecin')}>
           {selectedMedecin ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E0E0E0' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{medecins.find(m => m.id === selectedMedecin)?.prenom ?? ''} {medecins.find(m => m.id === selectedMedecin)?.nom ?? ''}</span>
@@ -147,7 +149,7 @@ export default function AdmettreHospitalisationPage() {
             <>
               <div style={{ position: 'relative', marginBottom: 8 }}>
                 <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder="Rechercher un médecin…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder={t('rechercherMedecin')} style={{ ...inputStyle, paddingLeft: 28 }} />
               </div>
               {medecins.slice(0, 4).map(m => (
                 <div key={m.id} onClick={() => setSelectedMedecin(m.id)}
@@ -162,15 +164,15 @@ export default function AdmettreHospitalisationPage() {
         </Card>
 
         {/* Motif */}
-        <Card title="Motif & Diagnostic">
+        <Card title={t('cardMotif')}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <label style={labelStyle}>Motif d'admission</label>
-              <textarea value={motifAdmission} onChange={e => setMotifAdmission(e.target.value)} rows={2} placeholder="Raison principale de l'hospitalisation…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('labelMotifAdmission')}</label>
+              <textarea value={motifAdmission} onChange={e => setMotifAdmission(e.target.value)} rows={2} placeholder={t('placeholderMotif')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
             <div>
-              <label style={labelStyle}>Diagnostic d'admission</label>
-              <textarea value={diagnostic} onChange={e => setDiagnostic(e.target.value)} rows={2} placeholder="Diagnostic initial, code CIM-10…" style={{ ...inputStyle, resize: 'vertical' }} />
+              <label style={labelStyle}>{t('labelDiagnosticAdmission')}</label>
+              <textarea value={diagnostic} onChange={e => setDiagnostic(e.target.value)} rows={2} placeholder={t('placeholderDiagnostic')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
           </div>
         </Card>
@@ -183,10 +185,10 @@ export default function AdmettreHospitalisationPage() {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingBottom: 32 }}>
           <button type="button" onClick={() => router.push('/hospitalisation')}
-            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>Annuler</button>
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>{t('annuler')}</button>
           <button type="submit" disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={14} /> {loading ? 'Admission…' : 'Admettre le patient'}
+            <Save size={14} /> {loading ? t('admissionEnCours') : t('admettreLePatient')}
           </button>
         </div>
       </form>

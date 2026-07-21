@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Scissors, Clock, CheckCircle, Plus, Calendar, AlertTriangle, RefreshCw, Play, Square, X, Loader2, Wrench } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 // ── Types (miroir des entités backend) ──────────────────────────────────────
 type StatutSalle = 'disponible' | 'occupee' | 'nettoyage' | 'maintenance';
@@ -67,6 +68,7 @@ function progression(debut?: string | null, dureeMin?: number) {
 }
 
 export default function BlocOperatoirePage() {
+  const t = useTranslations('blocOperatoire');
   const [tab, setTab] = useState<'salles'|'programme'>('salles');
   const [now, setNow] = useState(new Date());
 
@@ -124,7 +126,7 @@ export default function BlocOperatoirePage() {
       setStats(st);
       resolveNames(planning.interventions ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur de chargement');
+      setError(e instanceof Error ? e.message : t('erreurChargement'));
     } finally {
       setLoading(false);
     }
@@ -132,15 +134,15 @@ export default function BlocOperatoirePage() {
 
   useEffect(()=>{ load(); }, [load]);
 
-  const patientNom = (id: string) => patientNames[id] ?? `Patient ${id.slice(0,6)}`;
+  const patientNom = (id: string) => patientNames[id] ?? t('patientFallback', { id: id.slice(0,6) });
   const medecinNom = (id?: string | null) => (id ? (medecinNames[id] ?? `Dr. ${id.slice(0,6)}`) : '—');
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const changerStatut = async (interv: Intervention, statut: StatutIntervention) => {
-    if (statut === 'annulee' && !window.confirm(`Annuler l'intervention ${interv.numero} ?`)) return;
+    if (statut === 'annulee' && !window.confirm(t('confirmAnnuler', { numero: interv.numero }))) return;
     let compteRendu: string | undefined;
     if (statut === 'terminee') {
-      const cr = window.prompt('Compte-rendu opératoire (optionnel) :', '');
+      const cr = window.prompt(t('promptCompteRendu'), '');
       if (cr === null) return; // annulé
       compteRendu = cr.trim() || undefined;
     }
@@ -152,7 +154,7 @@ export default function BlocOperatoirePage() {
       });
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Action impossible');
+      alert(e instanceof Error ? e.message : t('actionImpossible'));
     } finally {
       setBusyId(null);
     }
@@ -192,9 +194,9 @@ export default function BlocOperatoirePage() {
                 <Scissors size={24} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Bloc Opératoire</h1>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('title')}</h1>
                 <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', fontWeight:600, marginTop:2 }}>
-                  Gestion des salles et programme chirurgical
+                  {t('subtitle')}
                 </div>
               </div>
             </div>
@@ -209,11 +211,11 @@ export default function BlocOperatoirePage() {
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={()=>{ setTab('programme'); load(); }}
               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 18px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.3)', background:'rgba(255,255,255,0.12)', cursor:'pointer', fontSize:13, color:'#fff', fontWeight:700 }}>
-              <Calendar size={14}/> Programme
+              <Calendar size={14}/> {t('programme')}
             </button>
             <button onClick={()=>setModalOpen(true)}
               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', fontSize:13, color:'#1A237E', fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
-              <Plus size={14}/> Nouvelle intervention
+              <Plus size={14}/> {t('nouvelleIntervention')}
             </button>
           </div>
         </div>
@@ -221,12 +223,12 @@ export default function BlocOperatoirePage() {
         {/* KPIs inline */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:18, position:'relative', zIndex:1 }}>
           {[
-            { label:'Salles disponibles', val:`${disponibles}/${totalSalles||0}`, icon:<CheckCircle size={16}/>, color:'#BBF7D0', tab:'salles' as const },
-            { label:'En cours',           val:`${enCours}`,       icon:<Scissors size={16}/>,    color:'#BAE6FD', tab:'salles' as const },
-            { label:'Programmées',        val:`${programmees}`,   icon:<Calendar size={16}/>,    color:'#FED7AA', tab:'programme' as const },
-            { label:'Durée moyenne',      val:`${moyDuree}min`,   icon:<Clock size={16}/>,       color:'#E9D5FF', tab:'programme' as const },
+            { label:t('kpiSallesDisponibles'), val:`${disponibles}/${totalSalles||0}`, icon:<CheckCircle size={16}/>, color:'#BBF7D0', tab:'salles' as const },
+            { label:t('kpiEnCours'),           val:`${enCours}`,       icon:<Scissors size={16}/>,    color:'#BAE6FD', tab:'salles' as const },
+            { label:t('kpiProgrammees'),        val:`${programmees}`,   icon:<Calendar size={16}/>,    color:'#FED7AA', tab:'programme' as const },
+            { label:t('kpiDureeMoyenne'),      val:`${moyDuree}min`,   icon:<Clock size={16}/>,       color:'#E9D5FF', tab:'programme' as const },
           ].map((k,i)=>(
-            <div key={i} className="bloc-kpi" title={`Voir : ${k.label}`} onClick={()=>setTab(k.tab)}
+            <div key={i} className="bloc-kpi" title={t('voir',{label:k.label})} onClick={()=>setTab(k.tab)}
               style={{ background:'rgba(255,255,255,0.12)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(255,255,255,0.18)', backdropFilter:'blur(8px)' }}>
               <div style={{ color:k.color, marginBottom:6 }}>{k.icon}</div>
               <div style={{ fontSize:22, fontWeight:900, color:'#fff', lineHeight:1 }}>{k.val}</div>
@@ -239,7 +241,7 @@ export default function BlocOperatoirePage() {
       {/* ── TABS + refresh ───────────────────────────────────────── */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, marginBottom:16, flexWrap:'wrap' }}>
         <div style={{ display:'flex', gap:0, background:'#fff', borderRadius:12, padding:5, boxShadow:'0 1px 6px rgba(0,0,0,0.07)', width:'fit-content' }}>
-          {[{id:'salles' as const,label:'État des salles'},{id:'programme' as const,label:`Programme du jour (${interventions.length})`}].map(t=>(
+          {[{id:'salles' as const,label:t('tabSalles')},{id:'programme' as const,label:t('tabProgramme',{count:interventions.length})}].map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)}
               style={{ padding:'9px 20px', borderRadius:9, border:'none', background:tab===t.id?'linear-gradient(135deg,#1A237E,#1D4ED8)':'transparent', color:tab===t.id?'#fff':'#546E7A', fontSize:13, fontWeight:tab===t.id?700:500, cursor:'pointer', whiteSpace:'nowrap', transition:'all .2s' }}>
               {t.label}
@@ -248,7 +250,7 @@ export default function BlocOperatoirePage() {
         </div>
         <button onClick={load} className="bloc-btn" disabled={loading}
           style={{ display:'flex', alignItems:'center', gap:7, padding:'9px 16px', borderRadius:10, border:'1px solid #E0E8F0', background:'#fff', cursor:'pointer', fontSize:12, color:'#1A237E', fontWeight:700 }}>
-          <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
+          <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> {t('actualiser')}
         </button>
       </div>
 
@@ -260,7 +262,7 @@ export default function BlocOperatoirePage() {
 
       {loading && !salles.length && (
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:60, color:'#90A4AE', gap:10 }}>
-          <Loader2 size={22} style={{ animation:'spin 1s linear infinite' }}/> Chargement du bloc opératoire...
+          <Loader2 size={22} style={{ animation:'spin 1s linear infinite' }}/> {t('chargement')}
         </div>
       )}
 
@@ -268,8 +270,8 @@ export default function BlocOperatoirePage() {
       {tab==='salles' && !loading && !salles.length && (
         <div style={{ textAlign:'center', padding:60, color:'#90A4AE', background:'#fff', borderRadius:14, border:'1px dashed #CBD5E1' }}>
           <Scissors size={34} color="#CBD5E1" style={{ marginBottom:10 }}/>
-          <p style={{ margin:0, fontWeight:700, color:'#546E7A' }}>Aucune salle d'opération configurée</p>
-          <p style={{ margin:'6px 0 0', fontSize:12 }}>Créez des salles côté administration pour démarrer le planning.</p>
+          <p style={{ margin:0, fontWeight:700, color:'#546E7A' }}>{t('aucuneSalle')}</p>
+          <p style={{ margin:'6px 0 0', fontSize:12 }}>{t('aucuneSalleAide')}</p>
         </div>
       )}
 
@@ -292,7 +294,7 @@ export default function BlocOperatoirePage() {
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'4px 10px', border:'1px solid rgba(255,255,255,0.25)' }}>
                     <span style={{ width:6, height:6, borderRadius:'50%', background:s.statut==='occupee'?'#4ADE80':'rgba(255,255,255,0.6)', display:'inline-block', animation:s.statut==='occupee'?'pulse 1.5s infinite':'none' }}/>
-                    <span style={{ fontSize:11, fontWeight:800, color:'#fff' }}>{cfg.label}</span>
+                    <span style={{ fontSize:11, fontWeight:800, color:'#fff' }}>{t(`statutSalle.${s.statut}`)}</span>
                   </div>
                 </div>
 
@@ -300,22 +302,22 @@ export default function BlocOperatoirePage() {
                   {!affiche && s.statut==='disponible' && (
                     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:80, gap:8 }}>
                       <CheckCircle size={28} color="#22C55E"/>
-                      <p style={{ margin:0, fontSize:13, color:'#15803D', fontWeight:700 }}>Salle disponible</p>
-                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>Aucune intervention planifiée</p>
+                      <p style={{ margin:0, fontSize:13, color:'#15803D', fontWeight:700 }}>{t('salleDisponible')}</p>
+                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>{t('aucuneInterventionPlanifiee')}</p>
                     </div>
                   )}
                   {s.statut==='nettoyage' && !enCoursInt && (
                     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:80, gap:8 }}>
                       <RefreshCw size={24} color="#94A3B8" style={{ animation:'spin 3s linear infinite' }}/>
-                      <p style={{ margin:0, fontSize:13, color:'#475569', fontWeight:700 }}>Nettoyage en cours</p>
-                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>Salle bientôt disponible</p>
+                      <p style={{ margin:0, fontSize:13, color:'#475569', fontWeight:700 }}>{t('nettoyageEnCours')}</p>
+                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>{t('salleBientotDisponible')}</p>
                     </div>
                   )}
                   {s.statut==='maintenance' && !enCoursInt && (
                     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:80, gap:8 }}>
                       <Wrench size={24} color="#B45309"/>
-                      <p style={{ margin:0, fontSize:13, color:'#92400E', fontWeight:700 }}>En maintenance</p>
-                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>Salle indisponible</p>
+                      <p style={{ margin:0, fontSize:13, color:'#92400E', fontWeight:700 }}>{t('enMaintenance')}</p>
+                      <p style={{ margin:0, fontSize:11, color:'#9CA3AF' }}>{t('salleIndisponible')}</p>
                     </div>
                   )}
 
@@ -348,13 +350,13 @@ export default function BlocOperatoirePage() {
                       {prog && (
                         <div>
                           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                            <span style={{ fontSize:9, color:'#6B7280', fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px' }}>Progression</span>
+                            <span style={{ fontSize:9, color:'#6B7280', fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px' }}>{t('progression')}</span>
                             <span style={{ fontSize:10, fontWeight:800, color:prog.pct>90?'#DC2626':cfg.color }}>{prog.elapsed}min / {prog.dureeMin}min</span>
                           </div>
                           <div style={{ height:5, borderRadius:3, background:'#E2E8F0', overflow:'hidden' }}>
                             <div style={{ height:'100%', width:`${prog.pct}%`, background:prog.pct>90?'#EF4444':cfg.headerBg, borderRadius:3, transition:'width .5s' }}/>
                           </div>
-                          <div style={{ fontSize:9, color:'#9CA3AF', textAlign:'right', marginTop:3 }}>{prog.pct}% écoulé</div>
+                          <div style={{ fontSize:9, color:'#9CA3AF', textAlign:'right', marginTop:3 }}>{t('pctEcoule',{pct:prog.pct})}</div>
                         </div>
                       )}
 
@@ -362,12 +364,12 @@ export default function BlocOperatoirePage() {
                       {enCoursInt ? (
                         <button className="bloc-btn" disabled={busyId===enCoursInt.id} onClick={()=>changerStatut(enCoursInt,'terminee')}
                           style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'8px', borderRadius:9, border:'none', background:'#15803D', color:'#fff', fontWeight:700, fontSize:12, cursor:'pointer' }}>
-                          {busyId===enCoursInt.id ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/> : <Square size={13}/>} Terminer l'intervention
+                          {busyId===enCoursInt.id ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/> : <Square size={13}/>} {t('terminerIntervention')}
                         </button>
                       ) : affiche.statut==='programmee' && (
                         <button className="bloc-btn" disabled={busyId===affiche.id} onClick={()=>changerStatut(affiche,'en_cours')}
                           style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'8px', borderRadius:9, border:'none', background:'#1D4ED8', color:'#fff', fontWeight:700, fontSize:12, cursor:'pointer' }}>
-                          {busyId===affiche.id ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/> : <Play size={13}/>} Démarrer l'intervention
+                          {busyId===affiche.id ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/> : <Play size={13}/>} {t('demarrerIntervention')}
                         </button>
                       )}
                     </div>
@@ -385,16 +387,16 @@ export default function BlocOperatoirePage() {
           <div style={{ padding:'14px 20px', background:'linear-gradient(135deg,#F0F4FF,#E8EEFF)', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid #E8EEFA' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <Calendar size={16} color="#1A237E"/>
-              <span style={{ fontSize:13, fontWeight:800, color:'#1A237E' }}>Programme du {now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</span>
+              <span style={{ fontSize:13, fontWeight:800, color:'#1A237E' }}>{t('programmeDu',{date:now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})})}</span>
             </div>
-            <span style={{ fontSize:11, fontWeight:700, color:'#6B7280', background:'#fff', padding:'3px 10px', borderRadius:20, border:'1px solid #E0E8F0' }}>{interventions.length} interventions</span>
+            <span style={{ fontSize:11, fontWeight:700, color:'#6B7280', background:'#fff', padding:'3px 10px', borderRadius:20, border:'1px solid #E0E8F0' }}>{t('nbInterventions',{count:interventions.length})}</span>
           </div>
           {interventions.length===0 ? (
             <div style={{ textAlign:'center', padding:50, color:'#90A4AE' }}>
               <Calendar size={30} color="#CBD5E1" style={{ marginBottom:8 }}/>
-              <p style={{ margin:0, fontWeight:700, color:'#546E7A' }}>Aucune intervention programmée aujourd'hui</p>
+              <p style={{ margin:0, fontWeight:700, color:'#546E7A' }}>{t('aucuneInterventionJour')}</p>
               <button onClick={()=>setModalOpen(true)} style={{ marginTop:12, padding:'8px 18px', borderRadius:9, border:'none', background:'#1A237E', color:'#fff', fontWeight:700, fontSize:12, cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6 }}>
-                <Plus size={13}/> Programmer une intervention
+                <Plus size={13}/> {t('programmerIntervention')}
               </button>
             </div>
           ) : (
@@ -402,7 +404,7 @@ export default function BlocOperatoirePage() {
               <table style={{ width:'100%', borderCollapse:'collapse', minWidth:760 }}>
                 <thead>
                   <tr style={{ background:'#F8FAFC' }}>
-                    {['Heure','Salle','Intervention','Patient','Chirurgien','Anesthésiste','Durée','Statut','Actions'].map(h=>(
+                    {[t('thHeure'),t('thSalle'),t('thIntervention'),t('thPatient'),t('thChirurgien'),t('thAnesthesiste'),t('thDuree'),t('thStatut'),t('thActions')].map(h=>(
                       <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.5px', whiteSpace:'nowrap' }}>{h}</th>
                     ))}
                   </tr>
@@ -414,10 +416,10 @@ export default function BlocOperatoirePage() {
                     const nom=patientNom(p.patientId);
                     const [ac,ab]=aColor(nom);
                     const stCfg: Record<StatutIntervention,{label:string;bg:string;color:string}> = {
-                      programmee:{label:'Programmée',bg:'#FFF7ED',color:'#C2410C'},
-                      en_cours:  {label:'En cours',  bg:'#EFF6FF',color:'#1D4ED8'},
-                      terminee:  {label:'Terminée',  bg:'#F0FDF4',color:'#15803D'},
-                      annulee:   {label:'Annulée',   bg:'#FEF2F2',color:'#B91C1C'},
+                      programmee:{label:t('statutIntervention.programmee'),bg:'#FFF7ED',color:'#C2410C'},
+                      en_cours:  {label:t('statutIntervention.en_cours'),  bg:'#EFF6FF',color:'#1D4ED8'},
+                      terminee:  {label:t('statutIntervention.terminee'),  bg:'#F0FDF4',color:'#15803D'},
+                      annulee:   {label:t('statutIntervention.annulee'),   bg:'#FEF2F2',color:'#B91C1C'},
                     };
                     const st=stCfg[p.statut];
                     return (
@@ -441,7 +443,7 @@ export default function BlocOperatoirePage() {
                         <td style={{ padding:'13px 14px', fontSize:12, fontWeight:700, color:'#374151', fontFamily:'monospace' }}>{p.dureeEstimee}min</td>
                         <td style={{ padding:'13px 14px' }}>
                           <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:st.bg, color:st.color }}>
-                            {p.urgence && p.statut==='programmee' ? <><AlertTriangle size={9}/> URGENCE</> : st.label}
+                            {p.urgence && p.statut==='programmee' ? <><AlertTriangle size={9}/> {t('urgence')}</> : st.label}
                           </span>
                         </td>
                         <td style={{ padding:'13px 14px', whiteSpace:'nowrap' }}>
@@ -449,18 +451,18 @@ export default function BlocOperatoirePage() {
                             <div style={{ display:'flex', gap:6 }}>
                               <button className="bloc-btn" disabled={busyId===p.id} onClick={()=>changerStatut(p,'en_cours')}
                                 style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:7, border:'none', background:'#1D4ED8', color:'#fff', fontWeight:700, fontSize:11, cursor:'pointer' }}>
-                                <Play size={11}/> Démarrer
+                                <Play size={11}/> {t('demarrer')}
                               </button>
                               <button className="bloc-btn" disabled={busyId===p.id} onClick={()=>changerStatut(p,'annulee')}
                                 style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:7, border:'1px solid #FECACA', background:'#fff', color:'#B91C1C', fontWeight:700, fontSize:11, cursor:'pointer' }}>
-                                <X size={11}/> Annuler
+                                <X size={11}/> {t('annulerAction')}
                               </button>
                             </div>
                           )}
                           {p.statut==='en_cours' && (
                             <button className="bloc-btn" disabled={busyId===p.id} onClick={()=>changerStatut(p,'terminee')}
                               style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'5px 10px', borderRadius:7, border:'none', background:'#15803D', color:'#fff', fontWeight:700, fontSize:11, cursor:'pointer' }}>
-                              <Square size={11}/> Terminer
+                              <Square size={11}/> {t('terminer')}
                             </button>
                           )}
                           {(p.statut==='terminee'||p.statut==='annulee') && (
@@ -497,6 +499,7 @@ interface MedecinLite { id: string; nom: string; prenom: string; specialite?: st
 function NouvelleInterventionModal({ salles, onClose, onCreated }: {
   salles: Salle[]; onClose: ()=>void; onCreated: ()=>void;
 }) {
+  const t = useTranslations('blocOperatoire');
   const [patientQ, setPatientQ] = useState('');
   const [patients, setPatients] = useState<PatientLite[]>([]);
   const [patient, setPatient] = useState<PatientLite | null>(null);
@@ -557,7 +560,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
       });
       onCreated();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Création impossible');
+      setErr(e instanceof Error ? e.message : t('creationImpossible'));
     } finally {
       setSubmitting(false);
     }
@@ -572,7 +575,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 22px', background:'linear-gradient(135deg,#1A237E,#1D4ED8)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <Scissors size={20} color="#fff"/>
-            <h2 style={{ margin:0, color:'#fff', fontSize:16, fontWeight:800 }}>Nouvelle intervention</h2>
+            <h2 style={{ margin:0, color:'#fff', fontSize:16, fontWeight:800 }}>{t('nouvelleIntervention')}</h2>
           </div>
           <button onClick={onClose} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:8, width:30, height:30, cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}><X size={16}/></button>
         </div>
@@ -582,7 +585,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
 
           {/* Patient */}
           <div>
-            <label style={lbl}>Patient <span style={{ color:'#DC2626' }}>*</span></label>
+            <label style={lbl}>{t('labelPatient')} <span style={{ color:'#DC2626' }}>*</span></label>
             {patient ? (
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 12px', border:'1px solid #93C5FD', background:'#EFF6FF', borderRadius:9 }}>
                 <span style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{patient.prenom} {patient.nom}{patient.ipp?` · ${patient.ipp}`:''}</span>
@@ -590,7 +593,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
               </div>
             ) : (
               <>
-                <input style={inp} placeholder="Rechercher par nom, prénom ou IPP..." value={patientQ} onChange={e=>setPatientQ(e.target.value)} />
+                <input style={inp} placeholder={t('rechercherPatientIpp')} value={patientQ} onChange={e=>setPatientQ(e.target.value)} />
                 {patients.length>0 && (
                   <div style={{ marginTop:6, border:'1px solid #E5E9F0', borderRadius:9, maxHeight:150, overflowY:'auto' }}>
                     {patients.map(p=>(
@@ -607,7 +610,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
 
           {/* Chirurgien */}
           <div>
-            <label style={lbl}>Chirurgien <span style={{ color:'#DC2626' }}>*</span></label>
+            <label style={lbl}>{t('labelChirurgien')} <span style={{ color:'#DC2626' }}>*</span></label>
             {chirurgien ? (
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 12px', border:'1px solid #93C5FD', background:'#EFF6FF', borderRadius:9 }}>
                 <span style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>Dr. {chirurgien.prenom} {chirurgien.nom}</span>
@@ -615,7 +618,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
               </div>
             ) : (
               <>
-                <input style={inp} placeholder="Rechercher un médecin..." value={medecinQ} onChange={e=>setMedecinQ(e.target.value)} />
+                <input style={inp} placeholder={t('rechercherMedecin')} value={medecinQ} onChange={e=>setMedecinQ(e.target.value)} />
                 {medecins.length>0 && (
                   <div style={{ marginTop:6, border:'1px solid #E5E9F0', borderRadius:9, maxHeight:130, overflowY:'auto' }}>
                     {medecins.map(m=>(
@@ -632,7 +635,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
 
           {/* Anesthésiste (optionnel) */}
           <div>
-            <label style={lbl}>Anesthésiste <span style={{ color:'#9CA3AF', fontWeight:500 }}>(optionnel)</span></label>
+            <label style={lbl}>{t('labelAnesthesiste')} <span style={{ color:'#9CA3AF', fontWeight:500 }}>{t('optionnel')}</span></label>
             {anesthesiste ? (
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 12px', border:'1px solid #C4B5FD', background:'#F5F3FF', borderRadius:9 }}>
                 <span style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>Dr. {anesthesiste.prenom} {anesthesiste.nom}</span>
@@ -640,7 +643,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
               </div>
             ) : (
               <select style={inp} value="" onChange={e=>{ const m=medecins.find(x=>x.id===e.target.value); if(m) setAnesthesiste(m); }}>
-                <option value="">— Sélectionner (liste médecins) —</option>
+                <option value="">{t('selectionnerMedecin')}</option>
                 {medecins.map(m=><option key={m.id} value={m.id}>Dr. {m.prenom} {m.nom}</option>)}
               </select>
             )}
@@ -649,26 +652,26 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
           {/* Salle + type */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
             <div>
-              <label style={lbl}>Salle <span style={{ color:'#DC2626' }}>*</span></label>
+              <label style={lbl}>{t('labelSalle')} <span style={{ color:'#DC2626' }}>*</span></label>
               <select style={inp} value={salleId} onChange={e=>setSalleId(e.target.value)}>
-                <option value="">— Choisir une salle —</option>
+                <option value="">{t('choisirSalle')}</option>
                 {salles.map(s=><option key={s.id} value={s.id}>{s.nom} · {s.type}</option>)}
               </select>
             </div>
             <div>
-              <label style={lbl}>Type d'intervention <span style={{ color:'#DC2626' }}>*</span></label>
-              <input style={inp} placeholder="Ex. Appendicectomie" value={typeIntervention} onChange={e=>setTypeIntervention(e.target.value)} />
+              <label style={lbl}>{t('labelTypeIntervention')} <span style={{ color:'#DC2626' }}>*</span></label>
+              <input style={inp} placeholder={t('placeholderType')} value={typeIntervention} onChange={e=>setTypeIntervention(e.target.value)} />
             </div>
           </div>
 
           {/* Date + durée */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 130px', gap:14 }}>
             <div>
-              <label style={lbl}>Date & heure prévues <span style={{ color:'#DC2626' }}>*</span></label>
+              <label style={lbl}>{t('labelDateHeure')} <span style={{ color:'#DC2626' }}>*</span></label>
               <input type="datetime-local" style={inp} value={dateHeurePrevue} onChange={e=>setDateHeurePrevue(e.target.value)} />
             </div>
             <div>
-              <label style={lbl}>Durée (min) <span style={{ color:'#DC2626' }}>*</span></label>
+              <label style={lbl}>{t('labelDuree')} <span style={{ color:'#DC2626' }}>*</span></label>
               <input type="number" min={1} style={inp} value={dureeEstimee} onChange={e=>setDureeEstimee(e.target.value)} />
             </div>
           </div>
@@ -676,15 +679,15 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
           {/* Urgence */}
           <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', fontSize:13, color:'#374151', fontWeight:600 }}>
             <input type="checkbox" checked={urgence} onChange={e=>setUrgence(e.target.checked)} style={{ width:16, height:16 }} />
-            <AlertTriangle size={14} color="#DC2626" /> Marquer comme intervention urgente
+            <AlertTriangle size={14} color="#DC2626" /> {t('marquerUrgente')}
           </label>
         </div>
 
         <div style={{ display:'flex', gap:10, padding:'16px 22px', borderTop:'1px solid #EEF2F7' }}>
-          <button onClick={onClose} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #D1D9E6', background:'#fff', color:'#546E7A', fontWeight:700, fontSize:13, cursor:'pointer' }}>Annuler</button>
+          <button onClick={onClose} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #D1D9E6', background:'#fff', color:'#546E7A', fontWeight:700, fontSize:13, cursor:'pointer' }}>{t('annuler')}</button>
           <button onClick={submit} disabled={!canSubmit||submitting}
             style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background: (!canSubmit||submitting) ? '#9FA8DA' : 'linear-gradient(135deg,#1A237E,#1D4ED8)', color:'#fff', fontWeight:800, fontSize:13, cursor:(!canSubmit||submitting)?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-            {submitting ? <><Loader2 size={15} style={{ animation:'spin 1s linear infinite' }}/> Programmation...</> : <><Plus size={15}/> Programmer l'intervention</>}
+            {submitting ? <><Loader2 size={15} style={{ animation:'spin 1s linear infinite' }}/> {t('programmation')}</> : <><Plus size={15}/> {t('programmerLIntervention')}</>}
           </button>
         </div>
       </div>

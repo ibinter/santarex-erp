@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Bell, User as UserIcon, Settings, ChevronDown, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getCurrentUser, getFullName, getUserInitials } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
 import type { User } from '@/types';
@@ -14,6 +15,7 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
   onMobileMenuToggle?: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslations('common');
   const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -60,10 +62,10 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
 
   function timeAgo(iso: string): string {
     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (diff < 1) return 'À l\'instant';
-    if (diff < 60) return `Il y a ${diff} min`;
-    if (diff < 1440) return `Il y a ${Math.floor(diff / 60)}h`;
-    return `Il y a ${Math.floor(diff / 1440)}j`;
+    if (diff < 1) return t('justNow');
+    if (diff < 60) return t('minAgo', { n: diff });
+    if (diff < 1440) return t('hoursAgo', { n: Math.floor(diff / 60) });
+    return t('daysAgo', { n: Math.floor(diff / 1440) });
   }
 
   const leftOffset = sidebarCollapsed ? '64px' : '260px';
@@ -127,7 +129,7 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
             color: '#546E7A',
             flexShrink: 0,
           }}
-          aria-label="Ouvrir le menu"
+          aria-label={t('openMenu')}
         >
           <Menu size={22} />
         </button>
@@ -150,7 +152,7 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher patient, acte, médicament…"
+              placeholder={t('searchPlaceholder')}
               style={{
                 width: '100%',
                 paddingLeft: '36px',
@@ -196,13 +198,13 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
             {notifOpen && (
               <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 8px)', width: 'min(320px, calc(100vw - 32px))', background: '#fff', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: '1px solid #E8EAED', zIndex: 100 }}>
                 <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8EAED', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>Notifications {notifCount > 0 && <span style={{ color: '#C62828' }}>({notifCount})</span>}</span>
-                  {notifCount > 0 && <span onClick={markAllRead} style={{ fontSize: '11px', color: '#1976D2', cursor: 'pointer' }}>Tout marquer lu</span>}
+                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#37474F' }}>{t('notifications')} {notifCount > 0 && <span style={{ color: '#C62828' }}>({notifCount})</span>}</span>
+                  {notifCount > 0 && <span onClick={markAllRead} style={{ fontSize: '11px', color: '#1976D2', cursor: 'pointer' }}>{t('markAllRead')}</span>}
                 </div>
                 {notifLoading ? (
-                  <div style={{ padding: '20px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>Chargement…</div>
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>{t('loadingShort')}</div>
                 ) : notifications.length === 0 ? (
-                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>Aucune notification</div>
+                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>{t('noNotifications')}</div>
                 ) : notifications.map((n, i) => (
                   <div key={n.id} style={{ padding: '12px 16px', borderBottom: i < notifications.length - 1 ? '1px solid #F5F7FA' : 'none', display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer', opacity: n.lue ? 0.6 : 1 }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = '#F5F7FA'; }}
@@ -215,7 +217,7 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
                   </div>
                 ))}
                 <div style={{ padding: '10px 16px', textAlign: 'center', borderTop: '1px solid #F5F7FA' }}>
-                  <span onClick={() => { setNotifOpen(false); router.push('/notifications'); }} style={{ fontSize: '12px', color: '#1976D2', cursor: 'pointer' }}>Voir toutes les notifications</span>
+                  <span onClick={() => { setNotifOpen(false); router.push('/notifications'); }} style={{ fontSize: '12px', color: '#1976D2', cursor: 'pointer' }}>{t('viewAllNotifications')}</span>
                 </div>
               </div>
             )}
@@ -248,7 +250,7 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
               </div>
               <div data-topbar-username style={{ textAlign: 'left' }}>
                 <div style={{ fontSize: '12px', fontWeight: 600, color: '#37474F', lineHeight: 1.2 }}>
-                  {getFullName(user) || 'Utilisateur'}
+                  {getFullName(user) || t('user')}
                 </div>
                 <div style={{ fontSize: '10px', color: '#90A4AE', textTransform: 'capitalize' }}>
                   {(user as any)?.role || 'admin'}
@@ -269,8 +271,8 @@ export default function Topbar({ sidebarCollapsed, onMobileMenuToggle }: {
                   <div style={{ fontSize: '11px', color: '#90A4AE', marginTop: '2px' }}>{user?.email}</div>
                 </div>
                 {[
-                  { label: 'Mon profil', icon: <UserIcon size={15} />, href: '/profil' },
-                  { label: 'Paramètres', icon: <Settings size={15} />, href: '/parametres' },
+                  { label: t('myProfile'), icon: <UserIcon size={15} />, href: '/profil' },
+                  { label: t('settings'), icon: <Settings size={15} />, href: '/parametres' },
                 ].map(item => (
                   <button key={item.href} onClick={() => { router.push(item.href); setDropdownOpen(false); }}
                     style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '13px', color: '#37474F', textAlign: 'left' }}

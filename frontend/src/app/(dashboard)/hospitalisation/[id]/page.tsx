@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, BedDouble, RefreshCw, User, Activity, Thermometer, Heart, Wind, FileText, Pill, Stethoscope, Calendar } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { exportFichePDF } from '@/lib/export';
+import { useTranslations } from 'next-intl';
 
 type Constantes = { tensionArterielle?: string; frequenceCardiaque?: number; temperature?: number; spo2?: number; poids?: number };
 type NoteMedicale = { id: string; contenu?: string; constantes?: Constantes; createdAt?: string; medecin?: { nom: string; prenom: string } };
@@ -50,8 +51,14 @@ const TABS = [
 ];
 
 export default function SejourDetailPage() {
+  const t = useTranslations('hospitalisation');
   const params = useParams();
   const router = useRouter();
+  const joursLabel = (dateAdmission?: string) => {
+    if (!dateAdmission) return '';
+    const j = Math.floor((Date.now() - new Date(dateAdmission).getTime()) / 86400000);
+    return t('joursHospitalisation', { j });
+  };
   const [sejour, setSejour] = useState<Sejour | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,40 +69,42 @@ export default function SejourDetailPage() {
     try {
       const data = await apiClient<Sejour>(`/hospitalisation/sejours/${params.id}`);
       setSejour(data);
-    } catch (e: any) { setError(e?.message ?? 'Erreur de chargement'); }
+    } catch (e: any) { setError(e?.message ?? t('erreurChargement')); }
     finally { setLoading(false); }
   }, [params.id]);
 
   useEffect(() => { load(); }, [load]);
 
   const scfg = STATUT_CONFIG[sejour?.statut ?? 'actif'] ?? STATUT_CONFIG.actif;
+  const statutKey = STATUT_CONFIG[sejour?.statut ?? 'actif'] ? (sejour?.statut ?? 'actif') : 'actif';
+  const statutLabel = t(`statutSejour.${statutKey}`);
 
   const handleFichePDF = () => {
     if (!sejour) return;
     exportFichePDF(
-      `Séjour ${sejour.numero ?? sejour.id.slice(0, 8).toUpperCase()}`,
+      `${t('pdfSejour')} ${sejour.numero ?? sejour.id.slice(0, 8).toUpperCase()}`,
       [
-        { label: 'Séjour', fields: [
-          { key: 'N° Séjour', value: sejour.numero ?? sejour.id.slice(0, 8).toUpperCase() },
-          { key: 'Statut', value: scfg.label },
-          { key: 'Type', value: sejour.typeHospitalisation ?? '—' },
-          { key: 'Service', value: sejour.service ?? sejour.lit?.service ?? '—' },
-          { key: 'Lit', value: sejour.litNumero ?? sejour.lit?.numero ?? '—' },
-          { key: 'Admission', value: fmtDate(sejour.dateAdmission) },
-          { key: 'Sortie', value: fmtDate(sejour.dateSortie) },
-          { key: 'Durée', value: joursDepuis(sejour.dateAdmission) || '—' },
+        { label: t('pdfSejour'), fields: [
+          { key: t('pdfNumeroSejour'), value: sejour.numero ?? sejour.id.slice(0, 8).toUpperCase() },
+          { key: t('pdfStatut'), value: statutLabel },
+          { key: t('pdfType'), value: sejour.typeHospitalisation ?? '—' },
+          { key: t('pdfService'), value: sejour.service ?? sejour.lit?.service ?? '—' },
+          { key: t('pdfLit'), value: sejour.litNumero ?? sejour.lit?.numero ?? '—' },
+          { key: t('pdfAdmission'), value: fmtDate(sejour.dateAdmission) },
+          { key: t('pdfSortie'), value: fmtDate(sejour.dateSortie) },
+          { key: t('pdfDuree'), value: joursLabel(sejour.dateAdmission) || '—' },
         ]},
-        { label: 'Patient', fields: [
-          { key: 'Nom', value: sejour.patient ? `${sejour.patient.prenom} ${sejour.patient.nom}` : '—' },
-          { key: 'IPP', value: sejour.patient?.ipp ?? '—' },
-          { key: 'Sexe', value: sejour.patient?.sexe === 'M' ? 'Homme' : sejour.patient?.sexe === 'F' ? 'Femme' : '—' },
-          { key: 'Assurance', value: sejour.patient?.assuranceTiersPayant ? (sejour.patient.assuranceNom ?? 'Tiers payant') : '—' },
+        { label: t('pdfPatient'), fields: [
+          { key: t('pdfNom'), value: sejour.patient ? `${sejour.patient.prenom} ${sejour.patient.nom}` : '—' },
+          { key: t('pdfIPP'), value: sejour.patient?.ipp ?? '—' },
+          { key: t('pdfSexe'), value: sejour.patient?.sexe === 'M' ? t('sexeHomme') : sejour.patient?.sexe === 'F' ? t('sexeFemme') : '—' },
+          { key: t('pdfAssurance'), value: sejour.patient?.assuranceTiersPayant ? (sejour.patient.assuranceNom ?? t('tiersPayant')) : '—' },
         ]},
-        { label: 'Prise en charge', fields: [
-          { key: 'Médecin', value: sejour.medecin ? `Dr. ${sejour.medecin.prenom} ${sejour.medecin.nom}` : '—' },
-          { key: 'Spécialité', value: sejour.medecin?.specialite ?? '—' },
-          { key: 'Diagnostic entrée', value: sejour.diagnosticEntree ?? '—' },
-          { key: 'Diagnostic sortie', value: sejour.diagnosticSortie ?? '—' },
+        { label: t('pdfPriseEnCharge'), fields: [
+          { key: t('pdfMedecin'), value: sejour.medecin ? `Dr. ${sejour.medecin.prenom} ${sejour.medecin.nom}` : '—' },
+          { key: t('pdfSpecialite'), value: sejour.medecin?.specialite ?? '—' },
+          { key: t('pdfDiagnosticEntree'), value: sejour.diagnosticEntree ?? '—' },
+          { key: t('pdfDiagnosticSortie'), value: sejour.diagnosticSortie ?? '—' },
         ]},
       ],
       `sejour-${sejour.numero ?? sejour.id.slice(0, 8)}`,
@@ -108,12 +117,12 @@ export default function SejourDetailPage() {
 
       <button onClick={() => router.push('/hospitalisation')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
-        <ArrowLeft size={14} /> Retour à l'hospitalisation
+        <ArrowLeft size={14} /> {t('retourHospitalisation')}
       </button>
 
       {loading ? (
         <div style={{ background: '#fff', borderRadius: 12, padding: 60, textAlign: 'center', color: '#90A4AE' }}>
-          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> Chargement…
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> {t('loading')}
         </div>
       ) : error ? (
         <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: 24, color: '#C62828' }}>⚠ {error}</div>
@@ -126,7 +135,7 @@ export default function SejourDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                   <BedDouble size={20} color="#00695C" />
                   <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#1A2332' }}>{sejour.numero ?? `SEJ-${sejour.id.slice(0,8).toUpperCase()}`}</h1>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>{scfg.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>{statutLabel}</span>
                 </div>
                 <p style={{ margin: 0, fontSize: 13, color: '#37474F', fontWeight: 600 }}>
                   {sejour.patient ? `${sejour.patient.prenom} ${sejour.patient.nom}` : '—'}
@@ -140,18 +149,18 @@ export default function SejourDetailPage() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                 <button onClick={handleFichePDF}
                   style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#E0F2F1', border: '1px solid #80CBC4', cursor: 'pointer', fontSize: 12, color: '#00695C', fontWeight: 600 }}>
-                  <FileText size={13} /> Fiche PDF
+                  <FileText size={13} /> {t('fichePDF')}
                 </button>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, color: '#90A4AE' }}>Admission</div>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{t('admissionLabel')}</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{fmtDate(sejour.dateAdmission)}</div>
-                  <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>{joursDepuis(sejour.dateAdmission)}</div>
+                  <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>{joursLabel(sejour.dateAdmission)}</div>
                 </div>
               </div>
             </div>
             {sejour.diagnosticEntree && (
               <div style={{ marginTop: 14, padding: '12px 16px', background: '#F8FAFC', borderRadius: 10, borderLeft: '3px solid #00695C', fontSize: 13, color: '#37474F' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#00695C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 4 }}>Diagnostic d'entrée</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#00695C', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 4 }}>{t('diagnosticEntreeLabel')}</span>
                 {sejour.diagnosticEntree}
               </div>
             )}
@@ -161,26 +170,26 @@ export default function SejourDetailPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             {sejour.medecin && (
               <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '14px 18px' }}>
-                <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Médecin responsable</p>
+                <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('medecinResponsable')}</p>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Dr. {sejour.medecin.prenom} {sejour.medecin.nom}</div>
                 {sejour.medecin.specialite && <div style={{ fontSize: 11, color: '#90A4AE' }}>{sejour.medecin.specialite}</div>}
               </div>
             )}
             {sejour.patient?.assuranceTiersPayant && (
               <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '14px 18px' }}>
-                <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assurance</p>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{sejour.patient.assuranceNom ?? 'Tiers payant'}</div>
+                <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('assurance')}</p>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{sejour.patient.assuranceNom ?? t('tiersPayant')}</div>
               </div>
             )}
           </div>
 
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 0, marginBottom: 12, background: '#fff', borderRadius: 10, padding: 4, boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: 'none', background: tab === t.id ? '#00695C' : 'transparent', color: tab === t.id ? '#fff' : '#546E7A', fontSize: 13, fontWeight: tab === t.id ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
-                {t.icon} {t.label}
-                {t.id === 'notes' && sejour.notesMedicales && <span style={{ marginLeft: 4, fontSize: 10, background: tab === t.id ? 'rgba(255,255,255,0.3)' : '#F0F0F0', borderRadius: 10, padding: '1px 6px' }}>{sejour.notesMedicales.length}</span>}
+            {TABS.map(tb => (
+              <button key={tb.id} onClick={() => setTab(tb.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: 'none', background: tab === tb.id ? '#00695C' : 'transparent', color: tab === tb.id ? '#fff' : '#546E7A', fontSize: 13, fontWeight: tab === tb.id ? 700 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+                {tb.icon} {t(`tabs.${tb.id}`)}
+                {tb.id === 'notes' && sejour.notesMedicales && <span style={{ marginLeft: 4, fontSize: 10, background: tab === tb.id ? 'rgba(255,255,255,0.3)' : '#F0F0F0', borderRadius: 10, padding: '1px 6px' }}>{sejour.notesMedicales.length}</span>}
               </button>
             ))}
           </div>
@@ -189,12 +198,12 @@ export default function SejourDetailPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {tab === 'notes' && (
               (!sejour.notesMedicales || sejour.notesMedicales.length === 0) ? (
-                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>Aucune note médicale</div>
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>{t('aucuneNote')}</div>
               ) : sejour.notesMedicales.map(n => (
                 <div key={n.id} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: '#546E7A' }}>
-                      {n.medecin ? `Dr. ${n.medecin.prenom} ${n.medecin.nom}` : 'Médecin'}
+                      {n.medecin ? `Dr. ${n.medecin.prenom} ${n.medecin.nom}` : t('medecinFallback')}
                     </div>
                     <div style={{ fontSize: 11, color: '#90A4AE', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <Calendar size={11} /> {fmtDate(n.createdAt)}
@@ -203,11 +212,11 @@ export default function SejourDetailPage() {
                   {n.constantes && (
                     <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
                       {[
-                        { label: 'TA', value: n.constantes.tensionArterielle, unit: 'mmHg', color: '#C62828' },
-                        { label: 'FC', value: n.constantes.frequenceCardiaque, unit: 'bpm', color: '#AD1457' },
-                        { label: 'Temp', value: n.constantes.temperature, unit: '°C', color: '#E65100' },
+                        { label: t('constTA'), value: n.constantes.tensionArterielle, unit: 'mmHg', color: '#C62828' },
+                        { label: t('constFC'), value: n.constantes.frequenceCardiaque, unit: 'bpm', color: '#AD1457' },
+                        { label: t('constTemp'), value: n.constantes.temperature, unit: '°C', color: '#E65100' },
                         { label: 'SpO₂', value: n.constantes.spo2, unit: '%', color: '#00695C' },
-                        { label: 'Poids', value: n.constantes.poids, unit: 'kg', color: '#0D47A1' },
+                        { label: t('constPoids'), value: n.constantes.poids, unit: 'kg', color: '#0D47A1' },
                       ].filter(c => c.value != null).map(c => (
                         <div key={c.label} style={{ padding: '4px 10px', borderRadius: 8, background: '#F8FAFC', fontSize: 11 }}>
                           <span style={{ color: '#90A4AE' }}>{c.label}: </span>
@@ -223,12 +232,12 @@ export default function SejourDetailPage() {
 
             {tab === 'prescrip' && (
               (!sejour.prescriptions || sejour.prescriptions.length === 0) ? (
-                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>Aucune prescription</div>
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>{t('aucunePrescription')}</div>
               ) : sejour.prescriptions.map(p => (
                 <div key={p.id} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '14px 18px', display: 'flex', gap: 12, alignItems: 'center' }}>
                   <Pill size={16} color="#6A1B9A" />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{p.medicament ?? 'Médicament'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{p.medicament ?? t('medicamentFallback')}</div>
                     {p.posologie && <div style={{ fontSize: 12, color: '#546E7A' }}>{p.posologie}{p.duree && ` — ${p.duree}`}</div>}
                   </div>
                   {p.statut && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 10px', borderRadius: 10, background: '#E8F5E9', color: '#2E7D32' }}>{p.statut}</span>}
@@ -238,15 +247,15 @@ export default function SejourDetailPage() {
 
             {tab === 'soins' && (
               (!sejour.soinsInfirmiers || sejour.soinsInfirmiers.length === 0) ? (
-                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>Aucun soin enregistré</div>
+                <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '40px', textAlign: 'center', color: '#90A4AE' }}>{t('aucunSoin')}</div>
               ) : sejour.soinsInfirmiers.map(s => (
                 <div key={s.id} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '14px 18px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{s.type ?? 'Soin'}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{s.type ?? t('soinFallback')}</div>
                     <div style={{ fontSize: 11, color: '#90A4AE' }}>{fmtDate(s.createdAt)}</div>
                   </div>
                   {s.description && <p style={{ margin: 0, fontSize: 13, color: '#37474F' }}>{s.description}</p>}
-                  {s.effectuePar && <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>Par: {s.effectuePar}</div>}
+                  {s.effectuePar && <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>{t('parLabel',{nom:s.effectuePar})}</div>}
                 </div>
               ))
             )}

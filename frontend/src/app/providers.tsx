@@ -2,8 +2,17 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  messages,
+  locale,
+}: {
+  children: React.ReactNode;
+  messages: Record<string, unknown>;
+  locale: string;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -17,6 +26,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      timeZone="Africa/Abidjan"
+      // Conversion progressive : ne jamais crasher si une clé manque —
+      // on affiche un repli lisible (dernier segment de la clé).
+      onError={() => {}}
+      getMessageFallback={({ key }) => key.split('.').pop() ?? key}
+    >
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </NextIntlClientProvider>
   );
 }

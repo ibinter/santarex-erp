@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
   Receipt, Plus, Search, RefreshCw, Eye,
@@ -51,6 +52,7 @@ function fmtDate(iso?: string) {
 }
 
 export default function FacturationPage() {
+  const t = useTranslations('facturation');
   const router = useRouter();
   const [factures, setFactures] = useState<Facture[]>([]);
   const [stats, setStats] = useState<StatsFacturation | null>(null);
@@ -61,28 +63,28 @@ export default function FacturationPage() {
 
   const handleExportXLSX = () => exportXLSX(
     factures.map(f => ({
-      'N° Facture': f.numero ?? f.id.slice(0,8),
-      'Patient': f.patient ? `${f.patient.prenom} ${f.patient.nom}` : '—',
-      'IPP': f.patient?.ipp ?? '—',
-      'Date émission': f.dateEmission ? new Date(f.dateEmission).toLocaleDateString('fr-FR') : '—',
-      'Total (XOF)': f.total ?? 0,
-      'Payé (XOF)': f.montantPaye ?? 0,
-      'Reste dû (XOF)': f.resteAPayer ?? 0,
-      'Assurance': f.assuranceNom ?? '—',
-      'Statut': f.statut ?? '—',
+      [t('expColNumero')]: f.numero ?? f.id.slice(0,8),
+      [t('expColPatient')]: f.patient ? `${f.patient.prenom} ${f.patient.nom}` : '—',
+      [t('expColIpp')]: f.patient?.ipp ?? '—',
+      [t('expColDateEmission')]: f.dateEmission ? new Date(f.dateEmission).toLocaleDateString('fr-FR') : '—',
+      [t('expColTotalXof')]: f.total ?? 0,
+      [t('expColPayeXof')]: f.montantPaye ?? 0,
+      [t('expColResteXof')]: f.resteAPayer ?? 0,
+      [t('expColAssurance')]: f.assuranceNom ?? '—',
+      [t('expColStatut')]: f.statut ?? '—',
     })),
     `factures_${new Date().toISOString().slice(0,10)}`,
-    'Factures',
+    t('expSheet'),
   );
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'N° Facture', dataKey: 'numero', width: 28 },
-      { header: 'Patient', dataKey: 'patient', width: 40 },
-      { header: 'Date', dataKey: 'date', width: 24 },
-      { header: 'Total XOF', dataKey: 'total', width: 28 },
-      { header: 'Payé XOF', dataKey: 'paye', width: 28 },
-      { header: 'Reste XOF', dataKey: 'reste', width: 28 },
-      { header: 'Statut', dataKey: 'statut', width: 24 },
+      { header: t('expColNumero'), dataKey: 'numero', width: 28 },
+      { header: t('expColPatient'), dataKey: 'patient', width: 40 },
+      { header: t('expColDate'), dataKey: 'date', width: 24 },
+      { header: t('expColTotalXofCourt'), dataKey: 'total', width: 28 },
+      { header: t('expColPayeXofCourt'), dataKey: 'paye', width: 28 },
+      { header: t('expColResteXofCourt'), dataKey: 'reste', width: 28 },
+      { header: t('expColStatut'), dataKey: 'statut', width: 24 },
     ],
     factures.map(f => ({
       numero: f.numero ?? f.id.slice(0,8),
@@ -93,9 +95,9 @@ export default function FacturationPage() {
       reste: (f.resteAPayer ?? 0).toLocaleString('fr-FR'),
       statut: f.statut ?? '—',
     })),
-    'Liste des Factures',
+    t('expTitre'),
     `factures_${new Date().toISOString().slice(0,10)}`,
-    `${factures.length} facture(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('expSous', { count: factures.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
   const load = useCallback(async () => {
@@ -158,16 +160,16 @@ export default function FacturationPage() {
                 <Receipt size={26} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>Facturation</h1>
+                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{t('titre')}</h1>
                 <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>
-                  {loading ? '…' : `${factures.length} facture(s)`}
+                  {loading ? '…' : t('nbFactures', { count: factures.length })}
                   {lastRefresh && <span style={{ marginLeft: 8, opacity: 0.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
                 </p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
-                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> {t('actualiser')}
               </button>
               <button onClick={handleExportPDF} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <Download size={13}/> PDF
@@ -176,7 +178,7 @@ export default function FacturationPage() {
                 <FileSpreadsheet size={13}/> XLSX
               </button>
               <button onClick={() => router.push('/facturation/nouvelle')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 800 }}>
-                <Plus size={14}/> Nouvelle facture
+                <Plus size={14}/> {t('nouvelleFacture')}
               </button>
             </div>
           </div>
@@ -184,10 +186,10 @@ export default function FacturationPage() {
           {/* KPI mini-pills */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
             {[
-              { label: 'Total émis',      val: loading ? '…' : fmtXOF(totalEmis),      icon: <TrendingUp size={11}/> },
-              { label: 'En attente',      val: loading ? '…' : fmtXOF(totalEnAttente), icon: <AlertCircle size={11}/> },
-              { label: 'Factures payées', val: loading ? '…' : nbPayees,               icon: <CheckCircle size={11}/> },
-              { label: 'Total factures',  val: loading ? '…' : factures.length,        icon: <FileText size={11}/> },
+              { label: t('kpiTotalEmis'),      val: loading ? '…' : fmtXOF(totalEmis),      icon: <TrendingUp size={11}/> },
+              { label: t('kpiEnAttente'),      val: loading ? '…' : fmtXOF(totalEnAttente), icon: <AlertCircle size={11}/> },
+              { label: t('kpiFacturesPayees'), val: loading ? '…' : nbPayees,               icon: <CheckCircle size={11}/> },
+              { label: t('kpiTotalFactures'),  val: loading ? '…' : factures.length,        icon: <FileText size={11}/> },
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '5px 12px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.7)' }}>{s.icon}</span>
@@ -204,11 +206,11 @@ export default function FacturationPage() {
         <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
           <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }}/>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Rechercher patient, N° facture, IPP…"
+            placeholder={t('rechercher')}
             style={{ width: '100%', padding: '10px 14px 10px 36px', borderRadius: 11, border: '1.5px solid #E0E8F0', background: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', color: '#1A2332', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}/>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {[{ val: '', label: 'Tous' }, ...Object.entries(STATUT_CONFIG).map(([k, v]) => ({ val: k, label: v.label }))].map(s => (
+          {[{ val: '', label: t('filtreTous') }, ...Object.keys(STATUT_CONFIG).map(k => ({ val: k, label: t(`statut.${k}`) }))].map(s => (
             <button key={s.val} onClick={() => setStatutFilter(s.val)}
               style={{ padding: '8px 14px', borderRadius: 20, border: `1.5px solid ${statutFilter === s.val ? '#1565C0' : '#E0E8F0'}`, background: statutFilter === s.val ? '#1565C0' : '#fff', color: statutFilter === s.val ? '#fff' : '#546E7A', fontSize: 12, fontWeight: statutFilter === s.val ? 700 : 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {s.label}
@@ -219,7 +221,7 @@ export default function FacturationPage() {
 
       {!loading && (
         <div style={{ fontSize: 12, color: '#90A4AE', fontWeight: 600, marginBottom: 10 }}>
-          {displayed.length} facture{displayed.length > 1 ? 's' : ''} trouvée{displayed.length > 1 ? 's' : ''}
+          {t('resultats', { count: displayed.length })}
         </div>
       )}
 
@@ -229,7 +231,7 @@ export default function FacturationPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 680 }}>
             <thead>
               <tr style={{ background: '#F8FAFC' }}>
-                {['N° Facture', 'Patient', 'Date', 'Total', 'Payé', 'Reste dû', 'Assurance', 'Statut', ''].map(h => (
+                {[t('thNumero'), t('thPatient'), t('thDate'), t('thTotal'), t('thPaye'), t('thResteDu'), t('thAssurance'), t('thStatut'), ''].map(h => (
                   <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', whiteSpace: 'nowrap', borderBottom: '1.5px solid #EEF2F8' }}>{h}</th>
                 ))}
               </tr>
@@ -247,8 +249,8 @@ export default function FacturationPage() {
                 <tr>
                   <td colSpan={9} style={{ textAlign: 'center', padding: '60px 20px', color: '#90A4AE' }}>
                     <Receipt size={36} style={{ display: 'block', margin: '0 auto 10px', opacity: 0.3 }}/>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#37474F' }}>Aucune facture trouvée</div>
-                    <div style={{ fontSize: 12, marginTop: 4 }}>{search ? `Aucun résultat pour "${search}"` : 'Aucune facture dans la base'}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#37474F' }}>{t('vide')}</div>
+                    <div style={{ fontSize: 12, marginTop: 4 }}>{search ? t('videRecherche', { q: search }) : t('videBase')}</div>
                   </td>
                 </tr>
               ) : displayed.map(f => {
@@ -305,7 +307,7 @@ export default function FacturationPage() {
                     <td style={{ padding: '12px 14px' }}>
                       {f.tiersPayant ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#6A1B9A', background: '#F3E5F5', padding: '2px 8px', borderRadius: 6 }}>
-                          <Shield size={9}/> {f.assuranceNom || 'Tiers'}
+                          <Shield size={9}/> {f.assuranceNom || t('tiers')}
                         </span>
                       ) : <span style={{ fontSize: 12, color: '#CFD8DC' }}>—</span>}
                     </td>
@@ -314,7 +316,7 @@ export default function FacturationPage() {
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot, display: 'inline-block', flexShrink: 0 }}/>
-                        {cfg.label}
+                        {t(`statut.${f.statut}`)}
                       </span>
                     </td>
 

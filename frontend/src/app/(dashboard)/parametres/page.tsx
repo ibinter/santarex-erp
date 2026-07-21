@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Settings, Building, Shield, Bell, Users,
   Globe, Palette, Database, Save, CheckCircle,
@@ -10,24 +11,24 @@ import {
 import { apiClient } from '@/lib/api';
 
 const NAV_SECTIONS = [
-  { id: 'etablissement', label: 'Établissement',    icon: <Building size={15}/>,  color: '#1E40AF' },
-  { id: 'securite',      label: 'Sécurité & Accès', icon: <Shield size={15}/>,    color: '#991B1B' },
-  { id: 'notifications', label: 'Notifications',     icon: <Bell size={15}/>,      color: '#92400E' },
-  { id: 'utilisateurs',  label: 'Utilisateurs & Rôles', icon: <Users size={15}/>, color: '#5B21B6' },
-  { id: 'langue',        label: 'Langue & Région',   icon: <Globe size={15}/>,     color: '#065F46' },
-  { id: 'apparence',     label: 'Apparence',         icon: <Palette size={15}/>,   color: '#0369A1' },
-  { id: 'sauvegarde',    label: 'Sauvegardes',       icon: <Database size={15}/>,  color: '#374151' },
+  { id: 'etablissement', icon: <Building size={15}/>,  color: '#1E40AF' },
+  { id: 'securite',      icon: <Shield size={15}/>,    color: '#991B1B' },
+  { id: 'notifications', icon: <Bell size={15}/>,      color: '#92400E' },
+  { id: 'utilisateurs',  icon: <Users size={15}/>, color: '#5B21B6' },
+  { id: 'langue',        icon: <Globe size={15}/>,     color: '#065F46' },
+  { id: 'apparence',     icon: <Palette size={15}/>,   color: '#0369A1' },
+  { id: 'sauvegarde',    icon: <Database size={15}/>,  color: '#374151' },
 ];
 
 const ROLES = [
-  { nom: 'Super Administrateur', permissions: ['Tout accès', 'Gestion système'],                    count: 1,  color: '#991B1B', bg: '#FEE2E2' },
-  { nom: 'Administrateur',       permissions: ['Gestion utilisateurs', 'Rapports', 'Paramètres'],   count: 2,  color: '#1E40AF', bg: '#DBEAFE' },
-  { nom: 'Médecin',              permissions: ['DME', 'Consultations', 'Ordonnances', 'Labo'],      count: 18, color: '#0F766E', bg: '#CCFBF1' },
-  { nom: 'Infirmier(e)',         permissions: ['Soins', 'Hospitalisation', 'Urgences'],             count: 42, color: '#065F46', bg: '#D1FAE5' },
-  { nom: 'Pharmacien',           permissions: ['Pharmacie', 'Stocks', 'Dispensation'],             count: 5,  color: '#92400E', bg: '#FEF3C7' },
-  { nom: 'Biologiste',           permissions: ['Laboratoire', 'Résultats', 'Validation'],          count: 4,  color: '#5B21B6', bg: '#EDE9FE' },
-  { nom: 'Caissier(e)',          permissions: ['Facturation', 'Paiements', 'Caisse'],              count: 8,  color: '#374151', bg: '#F3F4F6' },
-  { nom: 'Technicien Imagerie',  permissions: ['Imagerie', 'Examens', 'Comptes-rendus'],           count: 3,  color: '#0369A1', bg: '#E0F2FE' },
+  { count: 1,  color: '#991B1B', bg: '#FEE2E2' },
+  { count: 2,  color: '#1E40AF', bg: '#DBEAFE' },
+  { count: 18, color: '#0F766E', bg: '#CCFBF1' },
+  { count: 42, color: '#065F46', bg: '#D1FAE5' },
+  { count: 5,  color: '#92400E', bg: '#FEF3C7' },
+  { count: 4,  color: '#5B21B6', bg: '#EDE9FE' },
+  { count: 8,  color: '#374151', bg: '#F3F4F6' },
+  { count: 3,  color: '#0369A1', bg: '#E0F2FE' },
 ];
 
 function Toggle({ value, onChange, color = '#1E40AF' }: { value: boolean; onChange: (v: boolean) => void; color?: string }) {
@@ -52,6 +53,7 @@ function FieldInput({ label, value, onChange, type = 'text' }: { label: string; 
 }
 
 export default function ParametresPage() {
+  const t = useTranslations('parametres');
   const [section, setSection] = useState('etablissement');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -98,14 +100,14 @@ export default function ParametresPage() {
               <Settings size={24} color="#fff"/>
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.2px' }}>Paramètres</h1>
-              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>Configuration de l'établissement et préférences système</p>
+              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.2px' }}>{t('title')}</h1>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{t('subtitle')}</p>
             </div>
           </div>
           <button onClick={handleSave} disabled={saving}
             style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 20px', borderRadius: 10, border: 'none', background: saved ? '#10B981' : '#fff', cursor: 'pointer', fontSize: 13, color: saved ? '#fff' : '#1E293B', fontWeight: 800, transition: 'all .25s', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
             {saved ? <CheckCircle size={15}/> : <Save size={15}/>}
-            {saved ? 'Enregistré !' : saving ? 'Sauvegarde…' : 'Enregistrer'}
+            {saved ? t('saved') : saving ? t('saving') : t('save')}
           </button>
         </div>
       </div>
@@ -121,7 +123,7 @@ export default function ParametresPage() {
               <button key={s.id} onClick={() => setSection(s.id)} className="param-nav"
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer', textAlign: 'left', marginBottom: 2, background: isActive ? '#F0F4FF' : 'transparent', borderLeft: `3px solid ${isActive ? s.color : 'transparent'}`, transition: 'all .12s' }}>
                 <span style={{ color: isActive ? s.color : '#90A4AE', transition: 'color .12s' }}>{s.icon}</span>
-                <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? s.color : '#546E7A' }}>{s.label}</span>
+                <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? s.color : '#546E7A' }}>{t(`nav.${s.id}`)}</span>
               </button>
             );
           })}
@@ -132,7 +134,7 @@ export default function ParametresPage() {
           {/* Panel header */}
           <div style={{ padding: '16px 24px', borderBottom: '1.5px solid #EEF2F8', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ color: activeSec.color }}>{activeSec.icon}</span>
-            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1A2332' }}>{activeSec.label}</h2>
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1A2332' }}>{t(`nav.${activeSec.id}`)}</h2>
           </div>
 
           <div style={{ padding: '24px' }}>
@@ -141,20 +143,20 @@ export default function ParametresPage() {
             {section === 'etablissement' && (
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                  <FieldInput label="Nom de l'établissement" value={nomEtab} onChange={setNomEtab}/>
-                  <FieldInput label="Ville" value={ville} onChange={setVille}/>
-                  <FieldInput label="Pays" value={pays} onChange={setPays}/>
-                  <FieldInput label="Téléphone" value={tel} onChange={setTel}/>
+                  <FieldInput label={t('etab.nom')} value={nomEtab} onChange={setNomEtab}/>
+                  <FieldInput label={t('etab.ville')} value={ville} onChange={setVille}/>
+                  <FieldInput label={t('etab.pays')} value={pays} onChange={setPays}/>
+                  <FieldInput label={t('etab.telephone')} value={tel} onChange={setTel}/>
                   <div style={{ gridColumn: '1 / -1' }}>
-                    <FieldInput label="Email de contact" value={email} onChange={setEmail} type="email"/>
+                    <FieldInput label={t('etab.email')} value={email} onChange={setEmail} type="email"/>
                   </div>
                 </div>
                 <div style={{ background: '#EFF6FF', borderRadius: 12, padding: '14px 18px', border: '1.5px solid #BFDBFE', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <Info size={16} color="#1E40AF" style={{ flexShrink: 0, marginTop: 1 }}/>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: '#1E40AF', marginBottom: 3 }}>Identifiant Tenant</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#1E40AF', marginBottom: 3 }}>{t('etab.tenantTitle')}</div>
                     <div style={{ fontSize: 13, color: '#1A2332', fontFamily: 'monospace', background: '#fff', display: 'inline-block', padding: '2px 10px', borderRadius: 6 }}>clinique-saint-joseph</div>
-                    <div style={{ fontSize: 11, color: '#546E7A', marginTop: 4 }}>Identifiant unique de votre établissement — non modifiable</div>
+                    <div style={{ fontSize: 11, color: '#546E7A', marginTop: 4 }}>{t('etab.tenantNote')}</div>
                   </div>
                 </div>
               </div>
@@ -169,8 +171,8 @@ export default function ParametresPage() {
                       <Lock size={17} color="#991B1B"/>
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Authentification à 2 facteurs (2FA)</div>
-                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>Exige un code TOTP en plus du mot de passe pour tous les comptes</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('securite.twoFa')}</div>
+                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>{t('securite.twoFaDesc')}</div>
                     </div>
                   </div>
                   <Toggle value={twoFa} onChange={setTwoFa} color="#991B1B"/>
@@ -182,15 +184,15 @@ export default function ParametresPage() {
                       <Clock size={17} color="#1E40AF"/>
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Expiration de session</div>
-                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>Déconnexion automatique après inactivité</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('securite.sessionTitle')}</div>
+                      <div style={{ fontSize: 11, color: '#78909C', marginTop: 2 }}>{t('securite.sessionDesc')}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['15', '30', '60', '120', '240', '480'].map(v => (
                       <button key={v} onClick={() => setSessionTimeout(v)}
                         style={{ padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${sessionTimeout === v ? '#1E40AF' : '#E0E8F0'}`, background: sessionTimeout === v ? '#1E40AF' : '#fff', color: sessionTimeout === v ? '#fff' : '#546E7A', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                        {v} min
+                        {t('securite.minutes', { v })}
                       </button>
                     ))}
                   </div>
@@ -202,10 +204,10 @@ export default function ParametresPage() {
             {section === 'notifications' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { label: 'Alertes de stock critique',  desc: 'Notifier quand un médicament passe sous le seuil',  value: notifStock,   onChange: setNotifStock,   icon: <Pill size={16}/>,        color: '#047857', bg: '#D1FAE5' },
-                  { label: 'Rappels de rendez-vous',     desc: 'Rappel 1h avant chaque rendez-vous',               value: notifRdv,     onChange: setNotifRdv,     icon: <Calendar size={16}/>,    color: '#6D28D9', bg: '#EDE9FE' },
-                  { label: 'Résultats de laboratoire',   desc: 'Notifier quand les résultats sont disponibles',     value: notifLabo,    onChange: setNotifLabo,    icon: <FlaskConical size={16}/>, color: '#5B21B6', bg: '#EDE9FE' },
-                  { label: 'Factures impayées',          desc: 'Alerte quotidienne sur les impayés > 7 jours',      value: notifFacture, onChange: setNotifFacture, icon: <Receipt size={16}/>,     color: '#1E40AF', bg: '#DBEAFE' },
+                  { label: t('notifs.stock'),  desc: t('notifs.stockDesc'),  value: notifStock,   onChange: setNotifStock,   icon: <Pill size={16}/>,        color: '#047857', bg: '#D1FAE5' },
+                  { label: t('notifs.rdv'),     desc: t('notifs.rdvDesc'),               value: notifRdv,     onChange: setNotifRdv,     icon: <Calendar size={16}/>,    color: '#6D28D9', bg: '#EDE9FE' },
+                  { label: t('notifs.labo'),   desc: t('notifs.laboDesc'),     value: notifLabo,    onChange: setNotifLabo,    icon: <FlaskConical size={16}/>, color: '#5B21B6', bg: '#EDE9FE' },
+                  { label: t('notifs.facture'),          desc: t('notifs.factureDesc'),      value: notifFacture, onChange: setNotifFacture, icon: <Receipt size={16}/>,     color: '#1E40AF', bg: '#DBEAFE' },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: item.value ? item.bg.replace(')', '44)').replace('rgb', 'rgba') : '#F8FAFC', borderRadius: 12, border: `1.5px solid ${item.value ? item.color + '44' : '#E0E8F0'}`, transition: 'all .2s' }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -226,17 +228,17 @@ export default function ParametresPage() {
             {/* ── UTILISATEURS / RÔLES ──────────────────── */}
             {section === 'utilisateurs' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {ROLES.map(r => (
-                  <div key={r.nom} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', background: '#F8FAFC', borderRadius: 12, border: '1.5px solid #E0E8F0', borderLeft: `4px solid ${r.color}` }}>
+                {ROLES.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', background: '#F8FAFC', borderRadius: 12, border: '1.5px solid #E0E8F0', borderLeft: `4px solid ${r.color}` }}>
                     <div style={{ width: 38, height: 38, borderRadius: 10, background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Users size={16} color={r.color}/>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#1A2332' }}>{r.nom}</div>
-                      <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{r.permissions.join(' · ')}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#1A2332' }}>{t(`roles.${i}.nom`)}</div>
+                      <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{(t.raw(`roles.${i}.permissions`) as string[]).join(' · ')}</div>
                     </div>
                     <span style={{ background: r.bg, color: r.color, fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, flexShrink: 0, border: `1px solid ${r.color}33` }}>
-                      {r.count} utilisateur{r.count > 1 ? 's' : ''}
+                      {t('userCount', { count: r.count })}
                     </span>
                   </div>
                 ))}
@@ -247,10 +249,10 @@ export default function ParametresPage() {
             {section === 'langue' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 {[
-                  { label: "Langue de l'interface", options: ['Français', 'English'], selected: 'Français' },
-                  { label: 'Devise', options: ['XOF (Franc CFA)', 'EUR (Euro)', 'USD (Dollar)'], selected: 'XOF (Franc CFA)' },
-                  { label: 'Format de date', options: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'], selected: 'DD/MM/YYYY' },
-                  { label: 'Fuseau horaire', options: ['Africa/Abidjan (UTC+0)', 'Africa/Dakar (UTC+0)', 'Africa/Lagos (UTC+1)'], selected: 'Africa/Abidjan (UTC+0)' },
+                  { label: t('langue.interface'), options: [t('langue.optFr'), t('langue.optEn')], selected: t('langue.optFr') },
+                  { label: t('langue.devise'), options: [t('langue.deviseXof'), t('langue.deviseEur'), t('langue.deviseUsd')], selected: t('langue.deviseXof') },
+                  { label: t('langue.formatDate'), options: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'], selected: 'DD/MM/YYYY' },
+                  { label: t('langue.fuseau'), options: ['Africa/Abidjan (UTC+0)', 'Africa/Dakar (UTC+0)', 'Africa/Lagos (UTC+1)'], selected: 'Africa/Abidjan (UTC+0)' },
                 ].map(f => (
                   <div key={f.label}>
                     <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{f.label}</label>
@@ -270,13 +272,13 @@ export default function ParametresPage() {
                   {section === 'apparence' ? <Palette size={26} color="#90A4AE"/> : <Database size={26} color="#90A4AE"/>}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#37474F', marginBottom: 6 }}>
-                  {section === 'apparence' ? 'Personnalisation de l\'interface' : 'Gestion des sauvegardes'}
+                  {section === 'apparence' ? t('comingSoon.apparence') : t('comingSoon.sauvegarde')}
                 </div>
                 <div style={{ fontSize: 13, color: '#90A4AE', maxWidth: 300, margin: '0 auto' }}>
-                  Cette section sera disponible dans une prochaine mise à jour.
+                  {t('comingSoon.desc')}
                 </div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 18, padding: '8px 18px', borderRadius: 20, background: '#F0F4FA', fontSize: 12, color: '#78909C', fontWeight: 700 }}>
-                  🚀 Bientôt disponible
+                  {t('comingSoon.badge')}
                 </div>
               </div>
             )}

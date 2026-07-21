@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft, User, Phone, MapPin, Heart, FlaskConical, FileText,
   Pill, Calendar, Stethoscope, RefreshCw, Edit, ExternalLink
@@ -22,10 +23,10 @@ type Ordonnance = { id: string; createdAt: string; status?: string };
 type DemandeLabo = { id: string; createdAt: string; urgence?: boolean; status?: string };
 type Facture = { id: string; createdAt: string; montantTotal?: number; status?: string };
 
-function age(dob?: string) {
-  if (!dob) return '—';
+function ageNum(dob?: string) {
+  if (!dob) return null;
   const diff = Date.now() - new Date(dob).getTime();
-  return Math.floor(diff / (365.25 * 24 * 3600 * 1000)) + ' ans';
+  return Math.floor(diff / (365.25 * 24 * 3600 * 1000));
 }
 function fmtDate(d?: string) {
   if (!d) return '—';
@@ -33,12 +34,14 @@ function fmtDate(d?: string) {
 }
 function fmtXOF(v?: number) { return v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—'; }
 
-const SEXE_LABEL: Record<string, string> = { M: 'Masculin', F: 'Féminin', I: 'Indéterminé' };
-
 export default function PatientDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const t = useTranslations('patients');
   const id = params?.id as string;
+
+  const age = (dob?: string) => { const n = ageNum(dob); return n == null ? '—' : t('common.years', { n }); };
+  const sexeLabel = (s?: string) => s === 'M' ? t('detail.sexM') : s === 'F' ? t('detail.sexF') : s === 'I' ? t('detail.sexI') : '—';
 
   const [patient, setPatient] = useState<Patient | null>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
@@ -59,7 +62,7 @@ export default function PatientDetailPage() {
       apiClient<any>(`/laboratoire/demandes?patientId=${id}&limit=20`),
       apiClient<any>(`/facturation?patientId=${id}&limit=20`),
     ]);
-    if (p.status === 'rejected') { setError('Patient introuvable'); setLoading(false); return; }
+    if (p.status === 'rejected') { setError(t('detail.notFound')); setLoading(false); return; }
     setPatient(p.value);
     if (c.status === 'fulfilled') { const v = c.value; setConsultations(Array.isArray(v) ? v : v?.items ?? []); }
     if (o.status === 'fulfilled') { const v = o.value; setOrdonnances(Array.isArray(v) ? v : v?.items ?? []); }
@@ -71,42 +74,42 @@ export default function PatientDetailPage() {
   useEffect(() => { load(); }, [load]);
 
   const TAB_CONFIG = [
-    { key: 'info', label: 'Informations', count: null },
-    { key: 'consultations', label: 'Consultations', count: consultations.length },
-    { key: 'ordonnances', label: 'Ordonnances', count: ordonnances.length },
-    { key: 'labo', label: 'Analyses', count: demandes.length },
-    { key: 'factures', label: 'Factures', count: factures.length },
+    { key: 'info', label: t('detail.tabInfo'), count: null },
+    { key: 'consultations', label: t('detail.tabConsultations'), count: consultations.length },
+    { key: 'ordonnances', label: t('detail.tabOrdonnances'), count: ordonnances.length },
+    { key: 'labo', label: t('detail.tabLabo'), count: demandes.length },
+    { key: 'factures', label: t('detail.tabFactures'), count: factures.length },
   ] as const;
 
   const handleFichePDF = () => {
     if (!patient) return;
     exportFichePDF(
-      `Fiche patient — ${patient.prenom} ${patient.nom}`,
+      t('detail.pdfTitle', { name: `${patient.prenom} ${patient.nom}` }),
       [
-        { label: 'Identité', fields: [
-          { key: 'Nom', value: patient.nom || '—' },
-          { key: 'Prénom', value: patient.prenom || '—' },
-          { key: 'IPP', value: patient.ipp ?? '—' },
-          { key: 'Sexe', value: SEXE_LABEL[patient.sexe ?? ''] ?? '—' },
-          { key: 'Naissance', value: fmtDate(patient.dateNaissance) },
-          { key: 'Âge', value: age(patient.dateNaissance) },
+        { label: t('detail.pdfSectionIdentity'), fields: [
+          { key: t('detail.pdfNom'), value: patient.nom || '—' },
+          { key: t('detail.pdfPrenom'), value: patient.prenom || '—' },
+          { key: t('detail.pdfIpp'), value: patient.ipp ?? '—' },
+          { key: t('detail.pdfSexe'), value: sexeLabel(patient.sexe) },
+          { key: t('detail.pdfNaissance'), value: fmtDate(patient.dateNaissance) },
+          { key: t('detail.pdfAge'), value: age(patient.dateNaissance) },
         ]},
-        { label: 'Coordonnées', fields: [
-          { key: 'Téléphone', value: patient.telephone ?? '—' },
-          { key: 'Urgence', value: patient.telephoneUrgence ?? '—' },
-          { key: 'Adresse', value: patient.adresse ?? '—' },
-          { key: 'Ville', value: patient.ville ?? '—' },
-          { key: 'Pays', value: patient.pays ?? '—' },
+        { label: t('detail.pdfSectionContact'), fields: [
+          { key: t('detail.pdfTelephone'), value: patient.telephone ?? '—' },
+          { key: t('detail.pdfUrgence'), value: patient.telephoneUrgence ?? '—' },
+          { key: t('detail.pdfAdresse'), value: patient.adresse ?? '—' },
+          { key: t('detail.pdfVille'), value: patient.ville ?? '—' },
+          { key: t('detail.pdfPays'), value: patient.pays ?? '—' },
         ]},
-        { label: 'Dossier médical', fields: [
-          { key: 'Groupe sanguin', value: patient.groupeSanguin ?? '—' },
-          { key: 'Allergies', value: patient.allergies ?? '—' },
-          { key: 'Antécédents', value: patient.antecedents ?? '—' },
+        { label: t('detail.pdfSectionMedical'), fields: [
+          { key: t('detail.pdfGroupeSanguin'), value: patient.groupeSanguin ?? '—' },
+          { key: t('detail.pdfAllergies'), value: patient.allergies ?? '—' },
+          { key: t('detail.pdfAntecedents'), value: patient.antecedents ?? '—' },
         ]},
-        { label: 'Assurance', fields: [
-          { key: 'Assurance', value: patient.assuranceNom ?? '—' },
-          { key: 'N° police', value: patient.assuranceNumero ?? '—' },
-          { key: 'Tiers payant', value: patient.assuranceTiersPayant ? 'Oui' : 'Non' },
+        { label: t('detail.pdfSectionInsurance'), fields: [
+          { key: t('detail.pdfInsurance'), value: patient.assuranceNom ?? '—' },
+          { key: t('detail.pdfPolicy'), value: patient.assuranceNumero ?? '—' },
+          { key: t('detail.pdfTiersPayant'), value: patient.assuranceTiersPayant ? t('common.yes') : t('common.no') },
         ]},
       ],
       `patient-${patient.ipp ?? patient.id.slice(0, 8)}`,
@@ -131,9 +134,9 @@ export default function PatientDetailPage() {
 
   if (error || !patient) return (
     <div style={{ padding: 32, textAlign: 'center' }}>
-      <p style={{ color: '#C62828', marginBottom: 16 }}>{error ?? 'Patient introuvable'}</p>
+      <p style={{ color: '#C62828', marginBottom: 16 }}>{error ?? t('detail.notFound')}</p>
       <button onClick={load} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13 }}>
-        <RefreshCw size={13} /> Réessayer
+        <RefreshCw size={13} /> {t('detail.retry')}
       </button>
     </div>
   );
@@ -143,7 +146,7 @@ export default function PatientDetailPage() {
       {/* Back */}
       <button onClick={() => router.push('/patients')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600, marginBottom: 16 }}>
-        <ArrowLeft size={14} /> Retour aux patients
+        <ArrowLeft size={14} /> {t('detail.back')}
       </button>
 
       {/* Hero */}
@@ -157,23 +160,23 @@ export default function PatientDetailPage() {
             <div>
               <div style={{ fontSize: 22, fontWeight: 800 }}>{patient.prenom} {patient.nom}</div>
               <div style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>
-                {patient.ipp && <span style={{ marginRight: 12 }}>IPP: {patient.ipp}</span>}
-                <span>{SEXE_LABEL[patient.sexe ?? ''] ?? '—'} · {age(patient.dateNaissance)}</span>
+                {patient.ipp && <span style={{ marginRight: 12 }}>{t('detail.ipp', { ipp: patient.ipp })}</span>}
+                <span>{sexeLabel(patient.sexe)} · {age(patient.dateNaissance)}</span>
               </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button onClick={handleFichePDF}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
-              <FileText size={12} /> Fiche PDF
+              <FileText size={12} /> {t('detail.fichePdf')}
             </button>
             <button onClick={() => router.push(`/dme/${patient.id}`)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
-              <ExternalLink size={12} /> DME complet
+              <ExternalLink size={12} /> {t('detail.dmeComplet')}
             </button>
             <button onClick={() => router.push(`/patients/${patient.id}/modifier`)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
-              <Edit size={12} /> Modifier
+              <Edit size={12} /> {t('detail.edit')}
             </button>
           </div>
         </div>
@@ -186,12 +189,12 @@ export default function PatientDetailPage() {
           )}
           {patient.assuranceTiersPayant && (
             <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(46,125,50,0.4)', fontSize: 12, fontWeight: 600, border: '1px solid rgba(255,255,255,0.3)' }}>
-              Tiers payant {patient.assuranceNom ? `· ${patient.assuranceNom}` : ''}
+              {t('detail.badgeTiersPayant')} {patient.assuranceNom ? `· ${patient.assuranceNom}` : ''}
             </span>
           )}
           {patient.allergies && (
             <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(198,40,40,0.4)', fontSize: 12, fontWeight: 600, border: '1px solid rgba(255,255,255,0.3)' }}>
-              ⚠ Allergies
+              {t('detail.badgeAllergies')}
             </span>
           )}
         </div>
@@ -212,12 +215,12 @@ export default function PatientDetailPage() {
       {tab === 'info' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}><User size={14} color="#1565C0" /> Coordonnées</h3>
+            <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}><User size={14} color="#1565C0" /> {t('detail.cardContact')}</h3>
             {[
-              { l: 'Téléphone', v: patient.telephone },
-              { l: 'Urgence', v: patient.telephoneUrgence },
-              { l: 'Adresse', v: [patient.adresse, patient.ville, patient.pays].filter(Boolean).join(', ') || null },
-              { l: 'Naissance', v: patient.dateNaissance ? `${fmtDate(patient.dateNaissance)} (${age(patient.dateNaissance)})` : null },
+              { l: t('detail.rowTelephone'), v: patient.telephone },
+              { l: t('detail.rowUrgence'), v: patient.telephoneUrgence },
+              { l: t('detail.rowAdresse'), v: [patient.adresse, patient.ville, patient.pays].filter(Boolean).join(', ') || null },
+              { l: t('detail.rowNaissance'), v: patient.dateNaissance ? `${fmtDate(patient.dateNaissance)} (${age(patient.dateNaissance)})` : null },
             ].map(row => row.v ? (
               <div key={row.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid #F5F7FA', fontSize: 13 }}>
                 <span style={{ color: '#90A4AE', fontWeight: 600 }}>{row.l}</span>
@@ -226,27 +229,27 @@ export default function PatientDetailPage() {
             ) : null)}
           </div>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px' }}>
-            <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}><Heart size={14} color="#C62828" /> Dossier médical</h3>
+            <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}><Heart size={14} color="#C62828" /> {t('detail.cardMedical')}</h3>
             {patient.allergies && (
               <div style={{ padding: '8px 12px', background: '#FFEBEE', borderRadius: 8, marginBottom: 10, fontSize: 12, color: '#C62828', borderLeft: '3px solid #C62828' }}>
-                <strong>Allergies:</strong> {patient.allergies}
+                <strong>{t('detail.labelAllergies')}</strong> {patient.allergies}
               </div>
             )}
             {patient.antecedents && (
               <div style={{ padding: '8px 12px', background: '#F8FAFC', borderRadius: 8, fontSize: 12, color: '#37474F', borderLeft: '3px solid #1565C0' }}>
-                <strong>Antécédents:</strong> {patient.antecedents}
+                <strong>{t('detail.labelAntecedents')}</strong> {patient.antecedents}
               </div>
             )}
-            {!patient.allergies && !patient.antecedents && <p style={{ color: '#CFD8DC', fontSize: 13 }}>Aucune information médicale renseignée</p>}
+            {!patient.allergies && !patient.antecedents && <p style={{ color: '#CFD8DC', fontSize: 13 }}>{t('detail.noMedicalInfo')}</p>}
           </div>
           {patient.assuranceNom && (
             <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '20px 24px', gridColumn: '1/-1' }}>
-              <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Assurance</h3>
+              <h3 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('detail.cardInsurance')}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, fontSize: 13 }}>
                 {[
-                  { l: 'Assurance', v: patient.assuranceNom },
-                  { l: 'N° police', v: patient.assuranceNumero },
-                  { l: 'Tiers payant', v: patient.assuranceTiersPayant ? 'Oui' : 'Non' },
+                  { l: t('detail.insuranceName'), v: patient.assuranceNom },
+                  { l: t('detail.insurancePolicy'), v: patient.assuranceNumero },
+                  { l: t('detail.insuranceTiersPayant'), v: patient.assuranceTiersPayant ? t('common.yes') : t('common.no') },
                 ].map(r => (
                   <div key={r.l}>
                     <div style={{ fontSize: 11, color: '#90A4AE', marginBottom: 4, fontWeight: 700, textTransform: 'uppercase' }}>{r.l}</div>
@@ -262,16 +265,16 @@ export default function PatientDetailPage() {
       {/* Tab: Consultations */}
       {tab === 'consultations' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {consultations.length === 0 ? <EmptyState icon={<Stethoscope size={24} />} text="Aucune consultation" /> : consultations.map(c => (
+          {consultations.length === 0 ? <EmptyState icon={<Stethoscope size={24} />} text={t('detail.emptyConsultations')} /> : consultations.map(c => (
             <div key={c.id} onClick={() => router.push(`/consultations/${c.id}`)}
               style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '14px 18px', cursor: 'pointer', borderLeft: '3px solid #1565C0' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
               onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{c.motif ?? 'Consultation'}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{c.motif ?? t('detail.consultationDefault')}</div>
                   {c.diagnostic && <div style={{ fontSize: 12, color: '#546E7A', marginTop: 3 }}>{c.diagnostic}</div>}
-                  {c.medecin && <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>Dr {c.medecin.prenom} {c.medecin.nom}</div>}
+                  {c.medecin && <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>{t('detail.doctorPrefix', { name: `${c.medecin.prenom} ${c.medecin.nom}` })}</div>}
                 </div>
                 <div style={{ fontSize: 11, color: '#90A4AE', flexShrink: 0 }}>{fmtDate(c.createdAt)}</div>
               </div>
@@ -283,12 +286,12 @@ export default function PatientDetailPage() {
       {/* Tab: Ordonnances */}
       {tab === 'ordonnances' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {ordonnances.length === 0 ? <EmptyState icon={<Pill size={24} />} text="Aucune ordonnance" /> : ordonnances.map(o => {
+          {ordonnances.length === 0 ? <EmptyState icon={<Pill size={24} />} text={t('detail.emptyOrdonnances')} /> : ordonnances.map(o => {
             const [bg, col] = statusColor(o.status);
             return (
               <div key={o.id} style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: 13, color: '#1A2332' }}>Ordonnance du {fmtDate(o.createdAt)}</div>
-                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{o.status ?? 'créée'}</span>
+                <div style={{ fontSize: 13, color: '#1A2332' }}>{t('detail.ordonnanceFrom', { date: fmtDate(o.createdAt) })}</div>
+                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{o.status ?? t('detail.statusCreee')}</span>
               </div>
             );
           })}
@@ -298,7 +301,7 @@ export default function PatientDetailPage() {
       {/* Tab: Analyses */}
       {tab === 'labo' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {demandes.length === 0 ? <EmptyState icon={<FlaskConical size={24} />} text="Aucune demande d'analyses" /> : demandes.map(d => {
+          {demandes.length === 0 ? <EmptyState icon={<FlaskConical size={24} />} text={t('detail.emptyLabo')} /> : demandes.map(d => {
             const [bg, col] = statusColor(d.status);
             return (
               <div key={d.id} onClick={() => router.push(`/laboratoire/demandes/${d.id}`)}
@@ -306,10 +309,10 @@ export default function PatientDetailPage() {
                 onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                 onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {d.urgence && <span style={{ fontSize: 10, padding: '2px 8px', background: '#FFEBEE', color: '#C62828', borderRadius: 20, fontWeight: 700 }}>URGENT</span>}
-                  <span style={{ fontSize: 13, color: '#1A2332' }}>Demande du {fmtDate(d.createdAt)}</span>
+                  {d.urgence && <span style={{ fontSize: 10, padding: '2px 8px', background: '#FFEBEE', color: '#C62828', borderRadius: 20, fontWeight: 700 }}>{t('detail.urgent')}</span>}
+                  <span style={{ fontSize: 13, color: '#1A2332' }}>{t('detail.demandeFrom', { date: fmtDate(d.createdAt) })}</span>
                 </div>
-                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{d.status ?? 'en attente'}</span>
+                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{d.status ?? t('detail.statusPending')}</span>
               </div>
             );
           })}
@@ -319,7 +322,7 @@ export default function PatientDetailPage() {
       {/* Tab: Factures */}
       {tab === 'factures' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {factures.length === 0 ? <EmptyState icon={<FileText size={24} />} text="Aucune facture" /> : factures.map(f => {
+          {factures.length === 0 ? <EmptyState icon={<FileText size={24} />} text={t('detail.emptyFactures')} /> : factures.map(f => {
             const [bg, col] = statusColor(f.status);
             return (
               <div key={f.id} onClick={() => router.push(`/facturation/${f.id}`)}

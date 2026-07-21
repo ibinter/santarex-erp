@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getFullName, getUserInitials } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 import type { User } from '@/types';
 import {
   Users, Calendar, BedDouble, Scissors, Siren, Scan,
@@ -12,23 +13,34 @@ import {
   AlertTriangle, ArrowRight, RefreshCw, Activity, Heart,
   Clock, CheckCircle, ChevronRight,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 // ── modules ──────────────────────────────────────────────────────────────────
-const MODULES = [
-  { id: 'patients',       title: 'Patients',           icon: Users,        color: '#1565C0', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/patients',       desc: 'Dossiers & suivi' },
-  { id: 'consultations',  title: 'Consultations',       icon: Stethoscope,  color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/consultations',  desc: 'Visites médicales' },
-  { id: 'rendez-vous',    title: 'Rendez-vous',         icon: Calendar,     color: '#0288D1', bg: 'linear-gradient(135deg,#E1F5FE,#B3E5FC)', href: '/rendez-vous',    desc: 'Agenda & plannings' },
-  { id: 'hospitalisation',title: 'Hospitalisation',     icon: BedDouble,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/hospitalisation',desc: 'Séjours & lits' },
-  { id: 'bloc-operatoire',title: 'Bloc Opératoire',     icon: Scissors,     color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/bloc-operatoire',desc: 'Interventions & salles' },
-  { id: 'urgences',       title: 'Urgences',            icon: Siren,        color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/urgences',       desc: 'Triage Manchester' },
-  { id: 'imagerie',       title: 'Imagerie',            icon: Scan,         color: '#00695C', bg: 'linear-gradient(135deg,#E0F2F1,#B2DFDB)', href: '/imagerie',       desc: 'Radio, scanner, IRM' },
-  { id: 'laboratoire',    title: 'Laboratoire',         icon: FlaskConical, color: '#6A1B9A', bg: 'linear-gradient(135deg,#F3E5F5,#E1BEE7)', href: '/laboratoire',    desc: 'Analyses & résultats' },
-  { id: 'pharmacie',      title: 'Pharmacie',           icon: Pill,         color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/pharmacie',      desc: 'Stock & dispensation' },
-  { id: 'facturation',    title: 'Facturation',         icon: Receipt,      color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/facturation',    desc: 'Factures & créances' },
-  { id: 'caisse',         title: 'Caisse',              icon: CreditCard,   color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/caisse',         desc: 'Encaissements' },
-  { id: 'comptabilite',   title: 'Comptabilité',        icon: Building2,    color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/comptabilite',   desc: 'Journal & bilan' },
-  { id: 'rh',             title: 'Ressources Humaines', icon: UserCog,      color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/rh',             desc: 'Personnel & congés' },
-  { id: 'reporting',      title: 'Reporting & BI',      icon: BarChart2,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/reporting',      desc: 'Tableaux & analyses' },
+type ModuleDef = {
+  id: string;
+  tkey: string;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+  href: string;
+};
+type ModuleView = ModuleDef & { title: string; desc: string };
+
+const MODULES: ModuleDef[] = [
+  { id: 'patients',       tkey: 'patients',        icon: Users,        color: '#1565C0', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/patients' },
+  { id: 'consultations',  tkey: 'consultations',   icon: Stethoscope,  color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/consultations' },
+  { id: 'rendez-vous',    tkey: 'rendezVous',      icon: Calendar,     color: '#0288D1', bg: 'linear-gradient(135deg,#E1F5FE,#B3E5FC)', href: '/rendez-vous' },
+  { id: 'hospitalisation',tkey: 'hospitalisation', icon: BedDouble,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/hospitalisation' },
+  { id: 'bloc-operatoire',tkey: 'blocOperatoire',  icon: Scissors,     color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/bloc-operatoire' },
+  { id: 'urgences',       tkey: 'urgences',        icon: Siren,        color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/urgences' },
+  { id: 'imagerie',       tkey: 'imagerie',        icon: Scan,         color: '#00695C', bg: 'linear-gradient(135deg,#E0F2F1,#B2DFDB)', href: '/imagerie' },
+  { id: 'laboratoire',    tkey: 'laboratoire',     icon: FlaskConical, color: '#6A1B9A', bg: 'linear-gradient(135deg,#F3E5F5,#E1BEE7)', href: '/laboratoire' },
+  { id: 'pharmacie',      tkey: 'pharmacie',       icon: Pill,         color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/pharmacie' },
+  { id: 'facturation',    tkey: 'facturation',     icon: Receipt,      color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/facturation' },
+  { id: 'caisse',         tkey: 'caisse',          icon: CreditCard,   color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/caisse' },
+  { id: 'comptabilite',   tkey: 'comptabilite',    icon: Building2,    color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/comptabilite' },
+  { id: 'rh',             tkey: 'rh',              icon: UserCog,      color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/rh' },
+  { id: 'reporting',      tkey: 'reporting',       icon: BarChart2,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/reporting' },
 ];
 
 // ── mini sparkline SVG ────────────────────────────────────────────────────────
@@ -123,16 +135,22 @@ function fmtXof(n: number) {
 
 const JOURS_COURT = ['L', 'M', 'Me', 'J', 'V', 'S', 'D'];
 
-const ACTIVITES = [
-  { time: '08:42', action: 'Patient admis en urgence', who: 'Dr. Koné', color: '#C62828', icon: '🔴' },
-  { time: '08:15', action: 'Facture FAC-2026-0892 émise', who: 'Caisse', color: '#E65100', icon: '🧾' },
-  { time: '07:55', action: 'Résultats labo validés — Traoré I.', who: 'Dr. Ouédraogo', color: '#6A1B9A', icon: '🔬' },
-  { time: '07:30', action: 'Nouveau patient enregistré', who: 'Accueil', color: '#1565C0', icon: '👤' },
-  { time: '07:10', action: 'Stock paracétamol réapprovisionné', who: 'Pharmacie', color: '#2E7D32', icon: '💊' },
+const ACTIVITES: { time: string; actKey: string; who?: string; whoKey?: string; color: string; icon: string }[] = [
+  { time: '08:42', actKey: 'act1', who: 'Dr. Koné', color: '#C62828', icon: '🔴' },
+  { time: '08:15', actKey: 'act2', whoKey: 'whoCash', color: '#E65100', icon: '🧾' },
+  { time: '07:55', actKey: 'act3', who: 'Dr. Ouédraogo', color: '#6A1B9A', icon: '🔬' },
+  { time: '07:30', actKey: 'act4', whoKey: 'whoReception', color: '#1565C0', icon: '👤' },
+  { time: '07:10', actKey: 'act5', whoKey: 'whoPharmacy', color: '#2E7D32', icon: '💊' },
 ];
 
 export default function DashboardPage() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
+  const modules: ModuleView[] = MODULES.map(m => ({
+    ...m,
+    title: t(`mod.${m.tkey}.title`),
+    desc: t(`mod.${m.tkey}.desc`),
+  }));
   const [user, setUser] = useState<User | null>(null);
   const [now, setNow] = useState(new Date());
   const [loading, setLoading] = useState(true);
@@ -175,7 +193,7 @@ export default function DashboardPage() {
   useEffect(() => { loadStats(); }, [loadStats]);
 
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  const greeting = hour < 12 ? t('greetingMorning') : hour < 18 ? t('greetingAfternoon') : t('greetingEvening');
   const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
@@ -183,9 +201,9 @@ export default function DashboardPage() {
   const consultJour = BARS_CONSULT[BARS_CONSULT.length - 1];
 
   const alertes = [
-    ...(stats.urgencesCritiques > 0 ? [{ level: 'danger', text: `${stats.urgencesCritiques} patient(s) critique(s) aux urgences`, href: '/urgences' }] : []),
-    ...(stats.medicamentsRupture > 0 ? [{ level: 'warning', text: `${stats.medicamentsRupture} médicament(s) en rupture de stock`, href: '/pharmacie' }] : []),
-    { level: 'info', text: 'Synchronisation temps réel active — toutes les données sont à jour', href: '#' },
+    ...(stats.urgencesCritiques > 0 ? [{ level: 'danger', text: t('criticalPatients', { n: stats.urgencesCritiques }), href: '/urgences' }] : []),
+    ...(stats.medicamentsRupture > 0 ? [{ level: 'warning', text: t('medsOutOfStock', { n: stats.medicamentsRupture }), href: '/pharmacie' }] : []),
+    { level: 'info', text: t('realtimeSync'), href: '#' },
   ];
 
   return (
@@ -222,10 +240,10 @@ export default function DashboardPage() {
           </div>
           <div>
             <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:'#fff', letterSpacing:'-0.3px' }}>
-              {greeting}, {user?.firstName ?? 'Utilisateur'} 👋
+              {greeting}, {user?.firstName ?? t('user')} 👋
             </h1>
             <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)', fontWeight:500 }}>
-              SANTAREX ERP — Tableau de bord clinique
+              {t('heroSubtitle')}
             </p>
           </div>
         </div>
@@ -234,11 +252,11 @@ export default function DashboardPage() {
           <div style={{ textAlign:'right' }}>
             <div style={{ color:'#fff', fontSize:13, fontWeight:600, letterSpacing:'0.2px' }}>{dateStr}</div>
             <div style={{ color:'rgba(255,255,255,0.7)', fontSize:22, fontWeight:800, letterSpacing:'1px', marginTop:1 }}>{timeStr}</div>
-            {lastRefresh && <div style={{ color:'rgba(255,255,255,0.45)', fontSize:10, marginTop:2 }}>Actualisé à {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>}
+            {lastRefresh && <div style={{ color:'rgba(255,255,255,0.45)', fontSize:10, marginTop:2 }}>{t('refreshedAt', { time: lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) })}</div>}
           </div>
           <button onClick={loadStats} disabled={loading}
             style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:10, color:'#fff', width:38, height:38, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background .15s' }}
-            title="Actualiser les données">
+            title={t('refreshData')}>
             <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           </button>
         </div>
@@ -251,13 +269,13 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/caisse')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', position:'relative', overflow:'hidden', borderBottom:'3px solid #2E7D32' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Encaissements du jour</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiEncaissements')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#2E7D32', lineHeight:1.1, marginTop:6 }}>
                 {loading ? <span style={{display:'inline-block',width:90,height:24,background:'#E8F5E9',borderRadius:4}}/> : fmtXof(stats.encaissementJour)}
               </div>
               <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
                 <TrendingUp size={12} color="#2E7D32"/>
-                <span style={{ fontSize:11, color:'#2E7D32', fontWeight:600 }}>+12% vs hier</span>
+                <span style={{ fontSize:11, color:'#2E7D32', fontWeight:600 }}>{t('vsYesterday')}</span>
               </div>
             </div>
             <div style={{ background:'#E8F5E9', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -276,14 +294,14 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/urgences')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #C62828' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Urgences actives</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiUrgences')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#C62828', lineHeight:1.1, marginTop:6 }}>
                 {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFEBEE',borderRadius:4}}/> : stats.urgencesActives}
               </div>
               {stats.urgencesCritiques > 0 && (
                 <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
                   <span style={{ width:6, height:6, borderRadius:'50%', background:'#C62828', display:'inline-block', animation:'pulse-dot 1s infinite' }}/>
-                  <span style={{ fontSize:11, color:'#C62828', fontWeight:700 }}>{stats.urgencesCritiques} CRITIQUE(S)</span>
+                  <span style={{ fontSize:11, color:'#C62828', fontWeight:700 }}>{t('critical', { n: stats.urgencesCritiques })}</span>
                 </div>
               )}
             </div>
@@ -303,9 +321,9 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/hospitalisation')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #1565C0' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Occupation des lits</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiOccupation')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#1565C0', lineHeight:1.1, marginTop:6 }}>{litOccupancyPct}%</div>
-              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>36 / 50 lits occupés</div>
+              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>{t('bedsOccupied')}</div>
             </div>
             <DonutChart pct={litOccupancyPct} color="#1565C0" size={72} />
           </div>
@@ -318,11 +336,11 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/consultations')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #00838F' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Consultations du jour</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiConsultations')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#00838F', lineHeight:1.1, marginTop:6 }}>{consultJour}</div>
               <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
                 <TrendingUp size={12} color="#00838F"/>
-                <span style={{ fontSize:11, color:'#00838F', fontWeight:600 }}>+15% cette semaine</span>
+                <span style={{ fontSize:11, color:'#00838F', fontWeight:600 }}>{t('vsWeek')}</span>
               </div>
             </div>
             <div style={{ background:'#E0F7FA', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -341,12 +359,12 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/pharmacie')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #E65100' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>Médicaments en rupture</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiRupture')}</p>
               <div style={{ fontSize:26, fontWeight:900, color: stats.medicamentsRupture > 0 ? '#E65100' : '#2E7D32', lineHeight:1.1, marginTop:6 }}>
                 {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFF3E0',borderRadius:4}}/> : stats.medicamentsRupture}
               </div>
               <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>
-                {stats.medicamentsRupture > 0 ? 'Approvisionnement requis' : 'Stock optimal'}
+                {stats.medicamentsRupture > 0 ? t('restockRequired') : t('stockOptimal')}
               </div>
             </div>
             <div style={{ background:'#FFF3E0', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -358,7 +376,7 @@ export default function DashboardPage() {
               {['Paracétamol','Amoxicilline','Ibuprofène','Oméprazole'].map((m,i) => (
                 <span key={i} style={{ fontSize:9, background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:8, fontWeight:600, whiteSpace:'nowrap' }}>{m}</span>
               )).slice(0, stats.medicamentsRupture || 0)}
-              {stats.medicamentsRupture === 0 && <span style={{ fontSize:10, color:'#2E7D32', fontWeight:600 }}>✓ Aucune rupture détectée</span>}
+              {stats.medicamentsRupture === 0 && <span style={{ fontSize:10, color:'#2E7D32', fontWeight:600 }}>{t('noStockout')}</span>}
             </div>
           </div>
         </div>
@@ -367,9 +385,9 @@ export default function DashboardPage() {
         <div className="dash-kpi" onClick={() => router.push('/reporting')} style={{ background:'linear-gradient(135deg,#0A2E6E,#1565C0)', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(13,71,161,0.25)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #0288D1' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
-              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'.6px' }}>Modules actifs</p>
+              <p style={{ margin:0, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiModules')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#fff', lineHeight:1.1, marginTop:6 }}>{MODULES.length}</div>
-              <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', marginTop:5 }}>Système opérationnel</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', marginTop:5 }}>{t('systemOperational')}</div>
             </div>
             <div style={{ background:'rgba(255,255,255,0.15)', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <BarChart2 size={20} color="#fff"/>
@@ -381,7 +399,7 @@ export default function DashboardPage() {
                 <div key={i} style={{ width:8, height:8, borderRadius:2, background: i < 14 ? '#4ADE80' : 'rgba(255,255,255,0.2)' }}/>
               ))}
             </div>
-            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>14/14 modules en ligne</div>
+            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>{t('modulesOnline')}</div>
           </div>
         </div>
 
@@ -396,9 +414,9 @@ export default function DashboardPage() {
             <div style={{ width:28, height:28, borderRadius:8, background:'#FFEBEE', display:'flex', alignItems:'center', justifyContent:'center' }}>
               <AlertTriangle size={14} color="#C62828"/>
             </div>
-            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>Alertes système</span>
+            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>{t('systemAlerts')}</span>
             <span style={{ marginLeft:'auto', background:'#FFEBEE', color:'#C62828', fontSize:10, fontWeight:800, padding:'2px 8px', borderRadius:20 }}>
-              {alertes.filter(a=>a.level==='danger').length} urgente(s)
+              {t('urgentCount', { n: alertes.filter(a=>a.level==='danger').length })}
             </span>
           </div>
           <div style={{ padding:'8px 10px' }}>
@@ -420,8 +438,8 @@ export default function DashboardPage() {
             <div style={{ width:28, height:28, borderRadius:8, background:'#E3F2FD', display:'flex', alignItems:'center', justifyContent:'center' }}>
               <Activity size={14} color="#1565C0"/>
             </div>
-            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>Activité récente</span>
-            <span style={{ marginLeft:'auto', fontSize:10, color:'#90A4AE', fontWeight:600 }}>ce matin</span>
+            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>{t('recentActivity')}</span>
+            <span style={{ marginLeft:'auto', fontSize:10, color:'#90A4AE', fontWeight:600 }}>{t('thisMorning')}</span>
           </div>
           <div style={{ padding:'6px 10px' }}>
             {ACTIVITES.map((a, i) => (
@@ -430,8 +448,8 @@ export default function DashboardPage() {
                 onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>
                 <span style={{ fontSize:15, flexShrink:0 }}>{a.icon}</span>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:12, color:'#37474F', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{a.action}</div>
-                  <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{a.who}</div>
+                  <div style={{ fontSize:12, color:'#37474F', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t(a.actKey)}</div>
+                  <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{a.whoKey ? t(a.whoKey) : a.who}</div>
                 </div>
                 <div style={{ fontSize:10, color:'#90A4AE', fontWeight:600, flexShrink:0 }}>{a.time}</div>
               </div>
@@ -445,16 +463,16 @@ export default function DashboardPage() {
       <div style={{ background:'#fff', borderRadius:16, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', padding:'20px', marginBottom:20 }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
           <div>
-            <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:'#1A2332' }}>Modules de gestion</h2>
-            <p style={{ margin:'2px 0 0', fontSize:12, color:'#90A4AE' }}>{MODULES.length} modules disponibles</p>
+            <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:'#1A2332' }}>{t('modulesTitle')}</h2>
+            <p style={{ margin:'2px 0 0', fontSize:12, color:'#90A4AE' }}>{t('modulesAvailable', { n: MODULES.length })}</p>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:6, background:'#E8F5E9', padding:'5px 12px', borderRadius:20 }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', animation:'pulse-dot 2s infinite' }}/>
-            <span style={{ fontSize:11, color:'#2E7D32', fontWeight:700 }}>Tous opérationnels</span>
+            <span style={{ fontSize:11, color:'#2E7D32', fontWeight:700 }}>{t('allOperational')}</span>
           </div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))', gap:12 }}>
-          {MODULES.map(mod => (
+          {modules.map(mod => (
             <ModuleCard key={mod.id} mod={mod} onClick={() => router.push(mod.href)} />
           ))}
         </div>
@@ -465,16 +483,16 @@ export default function DashboardPage() {
         <div style={{ position:'absolute', top:-30, right:60, width:140, height:140, borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }}/>
         <div style={{ position:'absolute', bottom:-40, right:200, width:100, height:100, borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }}/>
         <p style={{ margin:'0 0 14px', fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'1px' }}>
-          Accès rapides
+          {t('quickAccess')}
         </p>
         <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
           {[
-            { label:'+ Nouveau patient',      href:'/patients/nouveau',       color:'#fff', bg:'rgba(255,255,255,0.15)', icon:'👤' },
-            { label:'+ Consultation',          href:'/consultations/nouvelle', color:'#fff', bg:'rgba(255,255,255,0.12)', icon:'🩺' },
-            { label:'+ Admettre urgence',      href:'/urgences',               color:'#FFCDD2', bg:'rgba(198,40,40,0.35)', icon:'🚨' },
-            { label:'+ Nouvelle facture',      href:'/facturation/nouvelle',   color:'#FFE0B2', bg:'rgba(230,81,0,0.35)',  icon:'🧾' },
-            { label:'+ Ordonnance labo',       href:'/laboratoire/demandes/nouvelle', color:'#E1BEE7', bg:'rgba(106,27,154,0.35)', icon:'🔬' },
-            { label:'📊 Rapports',             href:'/reporting',              color:'#B3E5FC', bg:'rgba(2,136,209,0.35)', icon:'' },
+            { label:t('qNewPatient'),      href:'/patients/nouveau',       color:'#fff', bg:'rgba(255,255,255,0.15)', icon:'👤' },
+            { label:t('qConsultation'),          href:'/consultations/nouvelle', color:'#fff', bg:'rgba(255,255,255,0.12)', icon:'🩺' },
+            { label:t('qAdmitEmergency'),      href:'/urgences',               color:'#FFCDD2', bg:'rgba(198,40,40,0.35)', icon:'🚨' },
+            { label:t('qNewInvoice'),      href:'/facturation/nouvelle',   color:'#FFE0B2', bg:'rgba(230,81,0,0.35)',  icon:'🧾' },
+            { label:t('qLabOrder'),       href:'/laboratoire/demandes/nouvelle', color:'#E1BEE7', bg:'rgba(106,27,154,0.35)', icon:'🔬' },
+            { label:t('qReports'),             href:'/reporting',              color:'#B3E5FC', bg:'rgba(2,136,209,0.35)', icon:'' },
           ].map(item => (
             <a key={item.href} href={item.href} className="quick-btn"
               style={{ padding:'9px 16px', borderRadius:22, background:item.bg, color:item.color, fontSize:12, fontWeight:700, textDecoration:'none', display:'flex', alignItems:'center', gap:6, border:'1px solid rgba(255,255,255,0.15)', transition:'all .15s', backdropFilter:'blur(4px)' }}>
@@ -489,7 +507,8 @@ export default function DashboardPage() {
   );
 }
 
-function ModuleCard({ mod, onClick }: { mod: typeof MODULES[0]; onClick: () => void }) {
+function ModuleCard({ mod, onClick }: { mod: ModuleView; onClick: () => void }) {
+  const t = useTranslations('dashboard');
   const [hov, setHov] = useState(false);
   const Icon = mod.icon;
   return (
@@ -513,7 +532,7 @@ function ModuleCard({ mod, onClick }: { mod: typeof MODULES[0]; onClick: () => v
         </div>
       </div>
       <div style={{ padding:'6px 14px 10px', display:'flex', alignItems:'center', gap:4 }}>
-        <span style={{ fontSize:10, color: hov ? mod.color : '#90A4AE', fontWeight:600 }}>Accéder</span>
+        <span style={{ fontSize:10, color: hov ? mod.color : '#90A4AE', fontWeight:600 }}>{t('access')}</span>
         <ChevronRight size={11} color={hov ? mod.color : '#B0BEC5'} />
       </div>
     </div>

@@ -1,0 +1,100 @@
+{
+  "reporting": {
+    "title": "Reporting & Indicateurs",
+    "subtitle": "Tableau de bord transversal — {date}",
+    "refresh": "Actualiser",
+    "pills": {
+      "recouvrement": "Recouvrement",
+      "encaisse": "Encaissé",
+      "sejoursActifs": "Séjours actifs",
+      "urgencesLabo": "Urgences labo"
+    },
+    "kpi": {
+      "patients": "Total patients",
+      "patientsUnit": "dossiers",
+      "patientsSub": "enregistrés",
+      "recettes": "Recettes (TTC)",
+      "recettesUnit": "XOF",
+      "recettesSub": "{n} factures",
+      "occupation": "Taux d'occupation",
+      "occupationSub": "{occupes} / {total} lits",
+      "hospitalisation": "Hospitalisation",
+      "analyses": "Analyses du jour",
+      "analysesUnit": "demandes",
+      "analysesSub": "{n} urgente(s)",
+      "laboratoire": "Laboratoire"
+    },
+    "statuts": {
+      "payee": "Payée",
+      "partielle": "Partielle",
+      "impayee": "Impayée",
+      "en_attente": "En attente",
+      "annulee": "Annulée"
+    },
+    "panels": {
+      "facturesParStatut": "Factures par statut",
+      "total": "{n} total",
+      "aucuneDonnee": "Aucune donnée",
+      "totalEncaisse": "Total encaissé",
+      "tauxRecouvrement": "Taux de recouvrement",
+      "hospitalisation": "Hospitalisation",
+      "occupationBadge": "{pct} occupation",
+      "sejoursActifs": "Séjours actifs",
+      "totalSejours": "Total séjours",
+      "litsOccupes": "Lits occupés",
+      "totalLits": "Total lits",
+      "capaciteUtilisee": "Capacité utilisée",
+      "litsRatio": "{occupes} / {total} lits",
+      "capaciteElevee": "Capacité élevée — surveiller les admissions",
+      "aucuneDonneeDispo": "Aucune donnée disponible"
+    },
+    "labo": {
+      "titre": "Laboratoire — activité du jour",
+      "totalDemandes": "Total demandes",
+      "urgentes": "Urgentes",
+      "traitees": "Traitées"
+    },
+    "exports": {
+      "titre": "Exports disponibles",
+      "synthesePDF": "Synthèse PDF",
+      "syntheseXLSX": "Synthèse XLSX",
+      "genererPDF": "Générer PDF",
+      "xlsx": "XLSX"
+    },
+    "rapports": {
+      "0": { "titre": "Activité médicale", "desc": "Consultations, actes, diagnostics" },
+      "1": { "titre": "Rapport financier", "desc": "Recettes, dépenses, résultat net" },
+      "2": { "titre": "Tableau de bord DRH", "desc": "Personnel, absences, heures sup." },
+      "3": { "titre": "Pharmacie & stocks", "desc": "Mouvements, ruptures, valorisation" },
+      "4": { "titre": "Rapport épidémiologique", "desc": "Maladies, tendances, alertes" },
+      "5": { "titre": "Qualité des soins", "desc": "Satisfaction, incidents, KPIs" }
+    },
+    "pdf": {
+      "colIndicateur": "Indicateur",
+      "colValeur": "Valeur",
+      "title": "Reporting & Indicateurs",
+      "subtitle": "Tableau de bord transversal — {date}",
+      "statPatients": "Patients",
+      "statRecouvrement": "Recouvrement",
+      "statOccupation": "Occupation",
+      "statAnalyses": "Analyses/jour",
+      "sheet": "Indicateurs"
+    },
+    "rows": {
+      "totalPatients": "Total patients enregistrés",
+      "nombreFactures": "Nombre de factures",
+      "recettesTTC": "Recettes (TTC)",
+      "totalEncaisse": "Total encaissé",
+      "tauxRecouvrement": "Taux de recouvrement",
+      "facturesStatut": "Factures — {label}",
+      "sejoursActifs": "Séjours actifs",
+      "totalSejours": "Total séjours",
+      "litsOccupes": "Lits occupés",
+      "totalLits": "Total lits",
+      "tauxOccupation": "Taux d'occupation",
+      "analysesTotal": "Analyses du jour — total",
+      "analysesUrgentes": "Analyses du jour — urgentes",
+      "analysesTraitees": "Analyses du jour — traitées"
+    }
+  }
+}

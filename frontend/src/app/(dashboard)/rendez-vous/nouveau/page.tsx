@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Search, Save, AlertTriangle, Clock } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
 type Medecin = { id: string; prenom: string; nom: string };
@@ -21,6 +22,7 @@ const CRENEAUX = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 export default function NouveauRendezVousPage() {
+  const t = useTranslations('rendezVous');
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [medecins, setMedecins] = useState<Medecin[]>([]);
@@ -52,9 +54,9 @@ export default function NouveauRendezVousPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedPatient) { setError('Sélectionnez un patient.'); return; }
-    if (!selectedMedecin) { setError('Sélectionnez un médecin.'); return; }
-    if (!date) { setError('Choisissez une date.'); return; }
+    if (!selectedPatient) { setError(t('erreurPatientRequis')); return; }
+    if (!selectedMedecin) { setError(t('erreurMedecinRequis')); return; }
+    if (!date) { setError(t('erreurDateRequise')); return; }
     setLoading(true); setError(null);
     try {
       const dateHeure = `${date}T${heure}:00`;
@@ -70,7 +72,7 @@ export default function NouveauRendezVousPage() {
         },
       });
       router.push('/rendez-vous');
-    } catch (e: any) { setError(e?.message ?? 'Erreur lors de la création'); }
+    } catch (e: any) { setError(e?.message ?? t('erreurCreation')); }
     finally { setLoading(false); }
   };
 
@@ -97,24 +99,24 @@ export default function NouveauRendezVousPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/rendez-vous')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('retour')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Calendar size={20} color="#6A1B9A" />
           </div>
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>Nouveau rendez-vous</h1>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>{t('nouveauRendezVous')}</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
         {/* Patient */}
-        <Card title="Patient *">
+        <Card title={t('cardPatient')}>
           {selectedPatient ? <PersonCard p={selectedPatient} onClear={() => setSelectedPatient(null)} /> : (
             <>
               <div style={{ position: 'relative', marginBottom: 8 }}>
                 <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('rechercherPatient')} style={{ ...inputStyle, paddingLeft: 28 }} />
               </div>
               {patients.slice(0,5).map(p => (
                 <div key={p.id} onClick={() => setSelectedPatient(p)}
@@ -133,12 +135,12 @@ export default function NouveauRendezVousPage() {
         </Card>
 
         {/* Médecin */}
-        <Card title="Médecin *">
+        <Card title={t('cardMedecin')}>
           {selectedMedecin ? <PersonCard p={selectedMedecin} onClear={() => setSelectedMedecin(null)} /> : (
             <>
               <div style={{ position: 'relative', marginBottom: 8 }}>
                 <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder="Rechercher un médecin…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                <input value={mSearch} onChange={e => setMSearch(e.target.value)} placeholder={t('rechercherMedecin')} style={{ ...inputStyle, paddingLeft: 28 }} />
               </div>
               {medecins.slice(0,4).map(m => (
                 <div key={m.id} onClick={() => setSelectedMedecin(m)}
@@ -153,26 +155,26 @@ export default function NouveauRendezVousPage() {
         </Card>
 
         {/* Date & Heure */}
-        <Card title="Date & Heure *">
+        <Card title={t('cardDateHeure')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
-              <label style={labelStyle}>Date</label>
+              <label style={labelStyle}>{t('labelDate')}</label>
               <input type="date" value={date} min={todayStr()} onChange={e => setDate(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Heure</label>
+              <label style={labelStyle}>{t('labelHeure')}</label>
               <select value={heure} onChange={e => setHeure(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 {CRENEAUX.map(c => <option key={c} value={c}><Clock size={10} /> {c}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label style={labelStyle}>Type</label>
+            <label style={labelStyle}>{t('labelType')}</label>
             <div style={{ display: 'flex', gap: 8 }}>
-              {TYPES.map(t => (
-                <button key={t.v} type="button" onClick={() => setType(t.v)}
-                  style={{ padding: '7px 14px', borderRadius: 8, border: `2px solid ${type === t.v ? '#6A1B9A' : '#E0E0E0'}`, background: type === t.v ? '#F3E5F5' : '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: type === t.v ? '#6A1B9A' : '#546E7A' }}>
-                  {t.l}
+              {TYPES.map(opt => (
+                <button key={opt.v} type="button" onClick={() => setType(opt.v)}
+                  style={{ padding: '7px 14px', borderRadius: 8, border: `2px solid ${type === opt.v ? '#6A1B9A' : '#E0E0E0'}`, background: type === opt.v ? '#F3E5F5' : '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: type === opt.v ? '#6A1B9A' : '#546E7A' }}>
+                  {t(`types.${opt.v}`)}
                 </button>
               ))}
             </div>
@@ -180,7 +182,7 @@ export default function NouveauRendezVousPage() {
         </Card>
 
         {/* Motif */}
-        <Card title="Motif">
+        <Card title={t('cardMotif')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: motif === 'Autre' ? 12 : 0 }}>
             {MOTIFS.map(m => (
               <button key={m} type="button" onClick={() => setMotif(m)}
@@ -190,11 +192,11 @@ export default function NouveauRendezVousPage() {
             ))}
           </div>
           {motif === 'Autre' && (
-            <input value={motifCustom} onChange={e => setMotifCustom(e.target.value)} placeholder="Préciser le motif…" style={{ ...inputStyle, marginTop: 10 }} />
+            <input value={motifCustom} onChange={e => setMotifCustom(e.target.value)} placeholder={t('placeholderMotif')} style={{ ...inputStyle, marginTop: 10 }} />
           )}
           <div style={{ marginTop: 14 }}>
-            <label style={labelStyle}>Notes (optionnel)</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Informations complémentaires…" style={{ ...inputStyle, resize: 'vertical' }} />
+            <label style={labelStyle}>{t('labelNotes')}</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder={t('placeholderNotes')} style={{ ...inputStyle, resize: 'vertical' }} />
           </div>
         </Card>
 
@@ -206,10 +208,10 @@ export default function NouveauRendezVousPage() {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingBottom: 32 }}>
           <button type="button" onClick={() => router.push('/rendez-vous')}
-            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>Annuler</button>
+            style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>{t('annuler')}</button>
           <button type="submit" disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 8, background: '#6A1B9A', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={14} /> {loading ? 'Création…' : 'Créer le rendez-vous'}
+            <Save size={14} /> {loading ? t('creationEnCours') : t('creerRdv')}
           </button>
         </div>
       </form>

@@ -1,0 +1,79 @@
+{
+  "imagerie": {
+    "statut": {
+      "EN_ATTENTE": "Pending",
+      "EN_COURS": "In progress",
+      "TERMINE": "Completed",
+      "VALIDE": "Validated"
+    },
+    "hero": {
+      "title": "Medical Imaging",
+      "loading": "Loading…",
+      "displayedCount": "{count, plural, one {# exam shown} other {# exams shown}}",
+      "kpiTotal": "Total today",
+      "kpiEnAttente": "Pending",
+      "kpiEnCours": "In progress",
+      "kpiTermines": "Completed",
+      "filterTitle": "Filter: {label}",
+      "newExam": "New exam"
+    },
+    "list": {
+      "searchPlaceholder": "Search patient, exam type…",
+      "filterAll": "All",
+      "colNumero": "No.",
+      "colPatient": "Patient",
+      "colType": "Exam type",
+      "colRegion": "Region",
+      "colMedecin": "Physician",
+      "colUrgence": "Urgency",
+      "colStatut": "Status",
+      "empty": "No exam",
+      "urgent": "Urgent",
+      "doctorPrefix": "Dr."
+    },
+    "detail": {
+      "title": "Exam detail",
+      "patient": "Patient",
+      "regionAnatomique": "Anatomical region",
+      "medecinPrescripteur": "Prescribing physician",
+      "date": "Date",
+      "urgence": "Urgency",
+      "yes": "Yes",
+      "no": "No",
+      "statut": "Status",
+      "resultat": "Result",
+      "resultatEnAttente": "Result pending",
+      "demarrer": "Start exam",
+      "compteRendu": "Radiology report",
+      "phCompteRendu": "Detailed report (technique, observations)…",
+      "phConclusion": "Conclusion / summary…",
+      "crSaving": "Saving…",
+      "crSave": "Save and validate",
+      "doctorPrefix": "Dr."
+    },
+    "modal": {
+      "title": "New imaging exam",
+      "patient": "Patient",
+      "searchPatient": "Search a patient…",
+      "noPatient": "No patient found.",
+      "typeExamen": "Exam type",
+      "selectPlaceholder": "— Select —",
+      "regionAnatomique": "Anatomical region",
+      "phRegion": "e.g. Chest, Skull…",
+      "indicationClinique": "Clinical indication",
+      "phIndication": "Reason / clinical information…",
+      "examenUrgent": "Urgent exam",
+      "cancel": "Cancel",
+      "creating": "Creating…",
+      "create": "Create request"
+    },
+    "errors": {
+      "selectPatient": "Please select a patient.",
+      "selectType": "Please select an exam type.",
+      "invalidSession": "Invalid session, please sign in again.",
+      "create": "Error while creating",
+      "crEmpty": "Enter a conclusion or a report.",
+      "crSave": "Error while saving"
+    }
+  }
+}

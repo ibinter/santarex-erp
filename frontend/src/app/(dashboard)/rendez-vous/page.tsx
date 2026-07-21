@@ -7,6 +7,7 @@ import {
   Clock, User, CheckCircle, XCircle, AlertCircle, LayoutGrid, List,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 
 type StatutRdv = 'planifie' | 'confirme' | 'annule' | 'absent' | 'honore';
 
@@ -50,6 +51,7 @@ function avColor(n: string): [string,string] {
 }
 
 export default function RendezVousPage() {
+  const t = useTranslations('rendezVous');
   const router = useRouter();
   const [rdvs, setRdvs] = useState<Rdv[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,9 +129,9 @@ export default function RendezVousPage() {
             <Calendar size={26} color="#fff"/>
           </div>
           <div>
-            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Rendez-vous</h1>
+            <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('title')}</h1>
             <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(255,255,255,0.75)' }}>
-              {loading?'…':`${counts.total} RDV cette semaine`}
+              {loading?'…':t('rdvSemaine',{count:counts.total})}
               {lastRefresh&&<span style={{ marginLeft:10, opacity:.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
             </p>
           </div>
@@ -141,7 +143,7 @@ export default function RendezVousPage() {
               <button key={v} onClick={()=>setView(v)} className="view-btn"
                 style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 14px', borderRadius:8, border:'none', background:view===v?'#fff':'transparent', color:view===v?'#6A1B9A':'rgba(255,255,255,0.8)', fontSize:12, fontWeight:700, cursor:'pointer' }}>
                 {v==='semaine'?<LayoutGrid size={13}/>:<List size={13}/>}
-                {v==='semaine'?'Semaine':'Liste'}
+                {v==='semaine'?t('vueSemaine'):t('vueListe')}
               </button>
             ))}
           </div>
@@ -151,7 +153,7 @@ export default function RendezVousPage() {
           </button>
           <button onClick={()=>router.push('/rendez-vous/nouveau')}
             style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 20px', borderRadius:10, background:'#fff', border:'none', color:'#6A1B9A', cursor:'pointer', fontSize:13, fontWeight:800, boxShadow:'0 2px 10px rgba(0,0,0,0.15)' }}>
-            <Plus size={15}/> Nouveau RDV
+            <Plus size={15}/> {t('nouveauRdv')}
           </button>
         </div>
       </div>
@@ -159,15 +161,15 @@ export default function RendezVousPage() {
       {/* ── KPI ──────────────────────────────────────────────────── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:12, marginBottom:18 }}>
         {[
-          { label:'Total semaine', value:counts.total,    icon:<Calendar size={18} color="#6A1B9A"/>,  bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', filtre:'all' as const },
-          { label:'Confirmés',     value:counts.confirme, icon:<CheckCircle size={18} color="#2E7D32"/>,bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', filtre:'confirme' as const },
-          { label:'Planifiés',     value:counts.planifie, icon:<Clock size={18} color="#1565C0"/>,     bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', filtre:'planifie' as const },
-          { label:'Honorés',       value:counts.honore,   icon:<User size={18} color="#8E24AA"/>,      bg:'#F3E5F5', color:'#8E24AA', border:'#CE93D8', filtre:'honore' as const },
-          { label:'Annulés/Abs.',  value:counts.annule,   icon:<XCircle size={18} color="#C62828"/>,   bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2', filtre:'annuleabs' as const },
+          { label:t('kpiTotalSemaine'), value:counts.total,    icon:<Calendar size={18} color="#6A1B9A"/>,  bg:'#F3E5F5', color:'#6A1B9A', border:'#E1BEE7', filtre:'all' as const },
+          { label:t('kpiConfirmes'),     value:counts.confirme, icon:<CheckCircle size={18} color="#2E7D32"/>,bg:'#E8F5E9', color:'#2E7D32', border:'#C8E6C9', filtre:'confirme' as const },
+          { label:t('kpiPlanifies'),     value:counts.planifie, icon:<Clock size={18} color="#1565C0"/>,     bg:'#EFF6FF', color:'#1565C0', border:'#BBDEFB', filtre:'planifie' as const },
+          { label:t('kpiHonores'),       value:counts.honore,   icon:<User size={18} color="#8E24AA"/>,      bg:'#F3E5F5', color:'#8E24AA', border:'#CE93D8', filtre:'honore' as const },
+          { label:t('kpiAnnulesAbs'),  value:counts.annule,   icon:<XCircle size={18} color="#C62828"/>,   bg:'#FFEBEE', color:'#C62828', border:'#FFCDD2', filtre:'annuleabs' as const },
         ].map((k,i)=>{
           const active = statutFilter===k.filtre && view==='liste';
           return (
-          <div key={i} className="rdv-kpi" title={`Voir la liste : ${k.label}`}
+          <div key={i} className="rdv-kpi" title={t('voirListe',{label:k.label})}
             onClick={()=>{ setView('liste'); setStatutFilter(k.filtre); }}
             style={{ background:'#fff', borderRadius:12, padding:'13px 15px', boxShadow:active?`0 4px 14px ${k.color}44`:'0 1px 6px rgba(0,0,0,0.07)', display:'flex', alignItems:'center', gap:10, border:`1px solid ${active?k.color:k.border}`, borderLeft:`4px solid ${k.color}` }}>
             <div style={{ width:36, height:36, borderRadius:10, background:k.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{k.icon}</div>
@@ -197,7 +199,7 @@ export default function RendezVousPage() {
         </button>
         <button onClick={()=>setWeekStart(getWeekStart(new Date()))}
           style={{ padding:'6px 14px', borderRadius:9, border:'1.5px solid #6A1B9A', background:'#F3E5F5', color:'#6A1B9A', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-          Aujourd'hui
+          {t('aujourdhui')}
         </button>
       </div>
 
@@ -211,16 +213,16 @@ export default function RendezVousPage() {
               <div key={i} style={{ background:'#fff', borderRadius:14, overflow:'hidden', border:`2px solid ${isToday?'#6A1B9A':'#EEF0F5'}`, boxShadow:isToday?'0 4px 16px rgba(106,27,154,0.2)':'0 1px 6px rgba(0,0,0,0.06)' }}>
                 {/* Entête jour */}
                 <div style={{ padding:'10px 12px', background:isToday?'linear-gradient(135deg,#6A1B9A,#8E24AA)':'#F8FAFC', borderBottom:`1px solid ${isToday?'transparent':'#EEF0F5'}` }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:isToday?'rgba(255,255,255,0.8)':'#90A4AE', textTransform:'uppercase', letterSpacing:'.6px' }}>{JOURS_C[i]}</div>
+                  <div style={{ fontSize:10, fontWeight:700, color:isToday?'rgba(255,255,255,0.8)':'#90A4AE', textTransform:'uppercase', letterSpacing:'.6px' }}>{t(`joursCourts.${i}`)}</div>
                   <div style={{ fontSize:20, fontWeight:900, color:isToday?'#fff':'#1A2332', lineHeight:1.1 }}>{day.getDate()}</div>
-                  {dayRdvs.length>0&&<div style={{ fontSize:9, fontWeight:700, color:isToday?'rgba(255,255,255,0.7)':'#90A4AE', marginTop:2 }}>{dayRdvs.length} RDV</div>}
+                  {dayRdvs.length>0&&<div style={{ fontSize:9, fontWeight:700, color:isToday?'rgba(255,255,255,0.7)':'#90A4AE', marginTop:2 }}>{t('nbRdv',{count:dayRdvs.length})}</div>}
                 </div>
                 {/* RDVs du jour */}
                 <div style={{ padding:'6px', minHeight:100 }}>
                   {loading?(
                     <div style={{ height:44, background:'#F3E5F5', borderRadius:8, margin:'4px 2px', opacity:.5 }}/>
                   ):dayRdvs.length===0?(
-                    <p style={{ fontSize:10, color:'#CFD8DC', textAlign:'center', marginTop:20, fontStyle:'italic' }}>Libre</p>
+                    <p style={{ fontSize:10, color:'#CFD8DC', textAlign:'center', marginTop:20, fontStyle:'italic' }}>{t('libre')}</p>
                   ):dayRdvs.map(r=>{
                     const cfg=STATUT_CFG[r.statut]??STATUT_CFG.planifie;
                     const [ac,ab]=avColor(pName(r));
@@ -244,11 +246,11 @@ export default function RendezVousPage() {
       {/* ── VUE LISTE ────────────────────────────────────────────── */}
       {view==='liste'&&statutFilter!=='all'&&(
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-          <span style={{ fontSize:12, color:'#546E7A', fontWeight:600 }}>Filtre actif :</span>
+          <span style={{ fontSize:12, color:'#546E7A', fontWeight:600 }}>{t('filtreActif')}</span>
           <span style={{ fontSize:11, fontWeight:800, padding:'3px 12px', borderRadius:20, background:'#F3E5F5', color:'#6A1B9A' }}>
-            {statutFilter==='annuleabs'?'Annulés / Absents':STATUT_CFG[statutFilter as StatutRdv]?.label??statutFilter}
+            {statutFilter==='annuleabs'?t('annulesAbsents'):(STATUT_CFG[statutFilter as StatutRdv]?t(`statut.${statutFilter}`):statutFilter)}
           </span>
-          <button onClick={()=>setStatutFilter('all')} style={{ fontSize:11, color:'#9CA3AF', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Tout voir</button>
+          <button onClick={()=>setStatutFilter('all')} style={{ fontSize:11, color:'#9CA3AF', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>{t('toutVoir')}</button>
         </div>
       )}
       {view==='liste'&&(
@@ -257,7 +259,7 @@ export default function RendezVousPage() {
             <table style={{ width:'100%', borderCollapse:'collapse', minWidth:640 }}>
               <thead>
                 <tr style={{ background:'linear-gradient(90deg,#F8FAFC,#F5F0FF)' }}>
-                  {['Date & Heure','Patient','Médecin','Motif','Durée','Statut'].map(h=>(
+                  {[t('thDateHeure'),t('thPatient'),t('thMedecin'),t('thMotif'),t('thDuree'),t('thStatut')].map(h=>(
                     <th key={h} style={{ padding:'12px 16px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.7px', whiteSpace:'nowrap', borderBottom:'2px solid #E1BEE7' }}>{h}</th>
                   ))}
                 </tr>
@@ -275,7 +277,7 @@ export default function RendezVousPage() {
                       <div style={{ width:56, height:56, borderRadius:'50%', background:'#F3E5F5', display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <Calendar size={28} color="#E1BEE7"/>
                       </div>
-                      <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#546E7A' }}>Aucun rendez-vous cette semaine</p>
+                      <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#546E7A' }}>{t('aucunRdv')}</p>
                     </div>
                   </td></tr>
                 ):rdvsListe.map(r=>{
@@ -307,7 +309,7 @@ export default function RendezVousPage() {
                       <td style={{ padding:'13px 16px' }}>
                         <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
                           <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
-                          {cfg.label}
+                          {t(`statut.${r.statut}`)}
                         </span>
                       </td>
                     </tr>

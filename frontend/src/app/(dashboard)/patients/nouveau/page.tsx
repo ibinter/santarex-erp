@@ -2,24 +2,13 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, Save, AlertTriangle, UserPlus } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-const PAYS = [
-  { code: 'CI', label: "Côte d'Ivoire" },
-  { code: 'SN', label: 'Sénégal' },
-  { code: 'ML', label: 'Mali' },
-  { code: 'BF', label: 'Burkina Faso' },
-  { code: 'GH', label: 'Ghana' },
-  { code: 'NG', label: 'Nigeria' },
-  { code: 'CM', label: 'Cameroun' },
-  { code: 'TG', label: 'Togo' },
-  { code: 'BJ', label: 'Bénin' },
-  { code: 'GN', label: 'Guinée' },
-  { code: 'FR', label: 'France' },
-];
+const PAYS_CODES = ['CI', 'SN', 'ML', 'BF', 'GH', 'NG', 'CM', 'TG', 'BJ', 'GN', 'FR'];
 
 type FormData = {
   nom: string; prenom: string; dateNaissance: string; sexe: string;
@@ -30,6 +19,7 @@ type FormData = {
 
 export default function NouveauPatientPage() {
   const router = useRouter();
+  const t = useTranslations('patients.form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({
@@ -44,7 +34,7 @@ export default function NouveauPatientPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.nom.trim() || !form.prenom.trim() || !form.dateNaissance) {
-      setError('Nom, prénom et date de naissance sont obligatoires.');
+      setError(t('errRequired'));
       return;
     }
     setLoading(true); setError(null);
@@ -71,7 +61,7 @@ export default function NouveauPatientPage() {
       });
       router.push('/patients');
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création du patient');
+      setError(e?.message ?? t('errCreate'));
     } finally { setLoading(false); }
   };
 
@@ -91,38 +81,38 @@ export default function NouveauPatientPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/patients')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('back')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <UserPlus size={20} color="#1565C0" />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>Nouveau patient</h1>
-            <p style={{ margin: 0, fontSize: 12, color: '#546E7A' }}>Les champs marqués * sont obligatoires</p>
+            <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A2332' }}>{t('newTitle')}</h1>
+            <p style={{ margin: 0, fontSize: 12, color: '#546E7A' }}>{t('requiredHint')}</p>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} noValidate>
-        <Section title="Informations obligatoires">
+        <Section title={t('sectionRequired')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Nom de famille <span style={{ color: '#C62828' }}>*</span></label>
-              <input value={form.nom} onChange={e => upd('nom', e.target.value)} placeholder="KOUASSI" style={inputStyle} />
+              <label style={labelStyle}>{t('labelNom')} <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.nom} onChange={e => upd('nom', e.target.value)} placeholder={t('phNom')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Prénom(s) <span style={{ color: '#C62828' }}>*</span></label>
-              <input value={form.prenom} onChange={e => upd('prenom', e.target.value)} placeholder="Amara Jean" style={inputStyle} />
+              <label style={labelStyle}>{t('labelPrenom')} <span style={{ color: '#C62828' }}>*</span></label>
+              <input value={form.prenom} onChange={e => upd('prenom', e.target.value)} placeholder={t('phPrenom')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Date de naissance <span style={{ color: '#C62828' }}>*</span></label>
+              <label style={labelStyle}>{t('labelDateNaissance')} <span style={{ color: '#C62828' }}>*</span></label>
               <input type="date" value={form.dateNaissance} onChange={e => upd('dateNaissance', e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Sexe <span style={{ color: '#C62828' }}>*</span></label>
+              <label style={labelStyle}>{t('labelSexe')} <span style={{ color: '#C62828' }}>*</span></label>
               <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-                {[{ v: 'M', l: 'Masculin' }, { v: 'F', l: 'Féminin' }, { v: 'I', l: 'Indéterminé' }].map(o => (
+                {[{ v: 'M', l: t('sexM') }, { v: 'F', l: t('sexF') }, { v: 'I', l: t('sexI') }].map(o => (
                   <label key={o.v} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, color: '#37474F' }}>
                     <input type="radio" name="sexe" value={o.v} checked={form.sexe === o.v} onChange={() => upd('sexe', o.v)} />
                     {o.l}
@@ -133,64 +123,64 @@ export default function NouveauPatientPage() {
           </div>
         </Section>
 
-        <Section title="Coordonnées">
+        <Section title={t('sectionContact')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Téléphone principal</label>
-              <input value={form.telephone} onChange={e => upd('telephone', e.target.value)} placeholder="+225 07 00 00 00 00" style={inputStyle} />
+              <label style={labelStyle}>{t('labelTelephone')}</label>
+              <input value={form.telephone} onChange={e => upd('telephone', e.target.value)} placeholder={t('phTelephone')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Téléphone d'urgence</label>
-              <input value={form.telephoneUrgence} onChange={e => upd('telephoneUrgence', e.target.value)} placeholder="+225 05 00 00 00 00" style={inputStyle} />
+              <label style={labelStyle}>{t('labelTelephoneUrgence')}</label>
+              <input value={form.telephoneUrgence} onChange={e => upd('telephoneUrgence', e.target.value)} placeholder={t('phTelephoneUrgence')} style={inputStyle} />
             </div>
             <div style={{ gridColumn: '1/-1' }}>
-              <label style={labelStyle}>Adresse</label>
-              <input value={form.adresse} onChange={e => upd('adresse', e.target.value)} placeholder="Quartier, rue, numéro…" style={inputStyle} />
+              <label style={labelStyle}>{t('labelAdresse')}</label>
+              <input value={form.adresse} onChange={e => upd('adresse', e.target.value)} placeholder={t('phAdresse')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Ville</label>
-              <input value={form.ville} onChange={e => upd('ville', e.target.value)} placeholder="Abidjan" style={inputStyle} />
+              <label style={labelStyle}>{t('labelVille')}</label>
+              <input value={form.ville} onChange={e => upd('ville', e.target.value)} placeholder={t('phVille')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Pays</label>
+              <label style={labelStyle}>{t('labelPays')}</label>
               <select value={form.pays} onChange={e => upd('pays', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                {PAYS.map(p => <option key={p.code} value={p.code}>{p.label}</option>)}
+                {PAYS_CODES.map(code => <option key={code} value={code}>{t(`country.${code}`)}</option>)}
               </select>
             </div>
           </div>
         </Section>
 
-        <Section title="Informations médicales">
+        <Section title={t('sectionMedical')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Groupe sanguin</label>
+              <label style={labelStyle}>{t('labelGroupeSanguin')}</label>
               <select value={form.groupeSanguin} onChange={e => upd('groupeSanguin', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                <option value="">Non renseigné</option>
+                <option value="">{t('optionNonRenseigne')}</option>
                 {GROUPES_SANGUINS.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
             <div style={{ gridColumn: '1/-1' }}>
-              <label style={labelStyle}>Allergies connues</label>
+              <label style={labelStyle}>{t('labelAllergies')}</label>
               <textarea value={form.allergies} onChange={e => upd('allergies', e.target.value)} rows={2}
-                placeholder="Pénicilline, arachides, latex… (laisser vide si aucune)" style={{ ...inputStyle, resize: 'vertical' }} />
+                placeholder={t('phAllergies')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
             <div style={{ gridColumn: '1/-1' }}>
-              <label style={labelStyle}>Antécédents médicaux</label>
+              <label style={labelStyle}>{t('labelAntecedents')}</label>
               <textarea value={form.antecedents} onChange={e => upd('antecedents', e.target.value)} rows={2}
-                placeholder="Diabète, hypertension, chirurgies passées…" style={{ ...inputStyle, resize: 'vertical' }} />
+                placeholder={t('phAntecedents')} style={{ ...inputStyle, resize: 'vertical' }} />
             </div>
           </div>
         </Section>
 
-        <Section title="Assurance maladie">
+        <Section title={t('sectionInsurance')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <label style={labelStyle}>Nom de l'assurance</label>
-              <input value={form.assuranceNom} onChange={e => upd('assuranceNom', e.target.value)} placeholder="NSIA, SUNU, CNPS…" style={inputStyle} />
+              <label style={labelStyle}>{t('labelAssuranceNom')}</label>
+              <input value={form.assuranceNom} onChange={e => upd('assuranceNom', e.target.value)} placeholder={t('phAssuranceNom')} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>N° de police / adhérent</label>
-              <input value={form.assuranceNumero} onChange={e => upd('assuranceNumero', e.target.value)} placeholder="ASSU-2024-000000" style={inputStyle} />
+              <label style={labelStyle}>{t('labelAssuranceNumero')}</label>
+              <input value={form.assuranceNumero} onChange={e => upd('assuranceNumero', e.target.value)} placeholder={t('phAssuranceNumero')} style={inputStyle} />
             </div>
             <div style={{ gridColumn: '1/-1' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
@@ -199,8 +189,8 @@ export default function NouveauPatientPage() {
                   <span style={{ position: 'absolute', top: 3, left: form.assuranceTiersPayant ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </button>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>Prise en charge tiers-payant</div>
-                  <div style={{ fontSize: 11, color: '#90A4AE' }}>Le patient bénéficie d'une prise en charge directe par l'assurance</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#37474F' }}>{t('toggleTiersPayant')}</div>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{t('toggleTiersPayantDesc')}</div>
                 </div>
               </label>
             </div>
@@ -216,11 +206,11 @@ export default function NouveauPatientPage() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingBottom: 32 }}>
           <button type="button" onClick={() => router.push('/patients')}
             style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-            Annuler
+            {t('cancel')}
           </button>
           <button type="submit" disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: loading ? 'default' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={14} /> {loading ? 'Enregistrement…' : 'Enregistrer le patient'}
+            <Save size={14} /> {loading ? t('saving') : t('saveNew')}
           </button>
         </div>
       </form>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Pill, RefreshCw, AlertTriangle, Edit, Package, TrendingDown, Calendar, ClipboardList, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportFichePDF } from '@/lib/export';
 
@@ -12,17 +13,6 @@ type Medicament = {
   stockActuel?: number; stockMinimum?: number; dateExpiration?: string;
   ordonnanceRequise?: boolean; description?: string; actif?: boolean;
   createdAt?: string; updatedAt?: string;
-};
-
-const FORME_LABELS: Record<string, string> = {
-  comprime: 'Comprimé', gelule: 'Gélule', sirop: 'Sirop', injectable: 'Injectable',
-  pommade: 'Pommade', collyre: 'Collyre', suppositoire: 'Suppositoire',
-  patch: 'Patch', spray: 'Spray', autre: 'Autre',
-};
-const CAT_LABELS: Record<string, string> = {
-  antibiotique: 'Antibiotique', antalgique: 'Antalgique', antihypertenseur: 'Antihypertenseur',
-  antipaludeen: 'Antipaludéen', antiretroviral: 'Antirétroviral', vaccin: 'Vaccin',
-  cardiovasculaire: 'Cardiovasculaire', diabetologie: 'Diabétologie', autre: 'Autre',
 };
 
 function fmtXOF(v?: number) { return v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—'; }
@@ -40,7 +30,10 @@ function expiresSoon(d?: string) {
 export default function MedicamentDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const t = useTranslations('pharmacie');
   const id = params?.id as string;
+  const formeLabel = (f?: string) => f ? t(('formes.' + f) as any) : '—';
+  const catLabel = (c?: string) => c ? t(('categories.' + c) as any) : '—';
 
   const [med, setMed] = useState<Medicament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +46,7 @@ export default function MedicamentDetailPage() {
       const data = await apiClient<Medicament>(`/pharmacie/medicaments/${id}`);
       setMed(data);
     } catch (e: any) {
-      setError(e?.message ?? 'Médicament introuvable');
+      setError(e?.message ?? t('detail.errNotFound'));
     } finally { setLoading(false); }
   }, [id]);
 
@@ -68,9 +61,9 @@ export default function MedicamentDetailPage() {
 
   if (error || !med) return (
     <div style={{ padding: 32, textAlign: 'center', maxWidth: 500, margin: '60px auto' }}>
-      <p style={{ color: '#C62828', marginBottom: 16 }}>{error ?? 'Médicament introuvable'}</p>
+      <p style={{ color: '#C62828', marginBottom: 16 }}>{error ?? t('detail.errNotFound')}</p>
       <button onClick={load} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, background: '#00695C', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13 }}>
-        <RefreshCw size={13} /> Réessayer
+        <RefreshCw size={13} /> {t('detail.retry')}
       </button>
     </div>
   );
@@ -82,26 +75,26 @@ export default function MedicamentDetailPage() {
 
   const handleFichePDF = () => {
     exportFichePDF(
-      `Fiche médicament — ${med.nom}`,
+      t('fiche.titlePrefix', { nom: med.nom }),
       [
-        { label: 'Identification', fields: [
-          { key: 'Nom', value: med.nom || '—' },
-          { key: 'DCI', value: med.dci ?? '—' },
-          { key: 'Forme', value: FORME_LABELS[med.forme ?? ''] ?? med.forme ?? '—' },
-          { key: 'Dosage', value: med.dosage ?? '—' },
-          { key: 'Catégorie', value: CAT_LABELS[med.categorie ?? ''] ?? med.categorie ?? '—' },
-          { key: 'Fabricant', value: med.fabricant ?? '—' },
-          { key: 'Ordonnance', value: med.ordonnanceRequise ? 'Requise' : 'Non requise' },
-          { key: 'Statut', value: med.actif === false ? 'Inactif' : 'Actif' },
+        { label: t('fiche.sectionIdentification'), fields: [
+          { key: t('fiche.fNom'), value: med.nom || '—' },
+          { key: t('fiche.fDci'), value: med.dci ?? '—' },
+          { key: t('fiche.fForme'), value: formeLabel(med.forme) },
+          { key: t('fiche.fDosage'), value: med.dosage ?? '—' },
+          { key: t('fiche.fCategorie'), value: catLabel(med.categorie) },
+          { key: t('fiche.fFabricant'), value: med.fabricant ?? '—' },
+          { key: t('fiche.fOrdonnance'), value: med.ordonnanceRequise ? t('fiche.requise') : t('fiche.nonRequise') },
+          { key: t('fiche.fStatut'), value: med.actif === false ? t('fiche.inactif') : t('fiche.actif') },
         ]},
-        { label: 'Stock & Prix', fields: [
-          { key: 'Stock actuel', value: med.stockActuel != null ? `${med.stockActuel} unités` : '—' },
-          { key: 'Stock minimum', value: med.stockMinimum != null ? `${med.stockMinimum} unités` : '—' },
-          { key: 'Prix de vente', value: fmtXOF(med.prixVente) },
-          { key: "Prix d'achat", value: fmtXOF(med.prixAchat) },
-          { key: 'Expiration', value: fmtDate(med.dateExpiration) },
+        { label: t('fiche.sectionStockPrix'), fields: [
+          { key: t('fiche.fStockActuel'), value: med.stockActuel != null ? t('fiche.unites', { count: med.stockActuel }) : '—' },
+          { key: t('fiche.fStockMinimum'), value: med.stockMinimum != null ? t('fiche.unites', { count: med.stockMinimum }) : '—' },
+          { key: t('fiche.fPrixVente'), value: fmtXOF(med.prixVente) },
+          { key: t('fiche.fPrixAchat'), value: fmtXOF(med.prixAchat) },
+          { key: t('fiche.fExpiration'), value: fmtDate(med.dateExpiration) },
         ]},
-        ...(med.description ? [{ label: 'Description', fields: [{ key: 'Notes', value: med.description }] }] : []),
+        ...(med.description ? [{ label: t('fiche.sectionDescription'), fields: [{ key: t('fiche.fNotes'), value: med.description }] }] : []),
       ],
       `medicament-${med.id.slice(0, 8)}`,
     );
@@ -111,7 +104,7 @@ export default function MedicamentDetailPage() {
     <div style={{ padding: 16, maxWidth: 820, margin: '0 auto' }}>
       <button onClick={() => router.push('/pharmacie')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600, marginBottom: 16 }}>
-        <ArrowLeft size={14} /> Retour à la pharmacie
+        <ArrowLeft size={14} /> {t('detail.back')}
       </button>
 
       {/* Hero */}
@@ -124,23 +117,23 @@ export default function MedicamentDetailPage() {
             </div>
             <div>
               <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>{med.nom}</h1>
-              {med.dci && <div style={{ fontSize: 13, opacity: 0.85, marginTop: 3 }}>DCI: {med.dci}</div>}
+              {med.dci && <div style={{ fontSize: 13, opacity: 0.85, marginTop: 3 }}>{t('detail.dciPrefix', { dci: med.dci })}</div>}
               <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                {med.forme && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 700 }}>{FORME_LABELS[med.forme] ?? med.forme}</span>}
+                {med.forme && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: 700 }}>{formeLabel(med.forme)}</span>}
                 {med.dosage && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', fontSize: 11 }}>{med.dosage}</span>}
-                {med.ordonnanceRequise && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,100,0,0.4)', fontSize: 11, fontWeight: 700 }}>Ordonnance requise</span>}
-                {!med.actif && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(0,0,0,0.3)', fontSize: 11, fontWeight: 700 }}>Inactif</span>}
+                {med.ordonnanceRequise && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,100,0,0.4)', fontSize: 11, fontWeight: 700 }}>{t('detail.ordonnanceRequise')}</span>}
+                {!med.actif && <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(0,0,0,0.3)', fontSize: 11, fontWeight: 700 }}>{t('detail.inactif')}</span>}
               </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             <button onClick={handleFichePDF}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
-              <FileText size={12} /> Fiche PDF
+              <FileText size={12} /> {t('detail.fichePdf')}
             </button>
             <button onClick={() => router.push(`/pharmacie/medicaments/${med.id}/modifier`)}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600 }}>
-              <Edit size={12} /> Modifier
+              <Edit size={12} /> {t('detail.edit')}
             </button>
           </div>
         </div>
@@ -149,10 +142,10 @@ export default function MedicamentDetailPage() {
       {/* Alertes */}
       {(stockNul || expired || soon || stockBas) && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-          {stockNul && <Alert color="#C62828" bg="#FFEBEE" border="#FFCDD2" icon={<AlertTriangle size={14} />} text="Rupture de stock — aucune unité disponible" />}
-          {!stockNul && stockBas && <Alert color="#E65100" bg="#FFF3E0" border="#FFE0B2" icon={<TrendingDown size={14} />} text={`Stock faible : ${med.stockActuel} unités (seuil : ${med.stockMinimum})`} />}
-          {expired && <Alert color="#C62828" bg="#FFEBEE" border="#FFCDD2" icon={<Calendar size={14} />} text={`Médicament périmé depuis le ${fmtDate(med.dateExpiration)}`} />}
-          {!expired && soon && <Alert color="#E65100" bg="#FFF3E0" border="#FFE0B2" icon={<Calendar size={14} />} text={`Expiration proche : ${fmtDate(med.dateExpiration)}`} />}
+          {stockNul && <Alert color="#C62828" bg="#FFEBEE" border="#FFCDD2" icon={<AlertTriangle size={14} />} text={t('detail.alertRupture')} />}
+          {!stockNul && stockBas && <Alert color="#E65100" bg="#FFF3E0" border="#FFE0B2" icon={<TrendingDown size={14} />} text={t('detail.alertStockBas', { stock: med.stockActuel ?? 0, min: med.stockMinimum ?? 0 })} />}
+          {expired && <Alert color="#C62828" bg="#FFEBEE" border="#FFCDD2" icon={<Calendar size={14} />} text={t('detail.alertExpired', { date: fmtDate(med.dateExpiration) })} />}
+          {!expired && soon && <Alert color="#E65100" bg="#FFF3E0" border="#FFE0B2" icon={<Calendar size={14} />} text={t('detail.alertExpiresSoon', { date: fmtDate(med.dateExpiration) })} />}
         </div>
       )}
 
@@ -160,14 +153,14 @@ export default function MedicamentDetailPage() {
         {/* Stock & Prix */}
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 22px' }}>
           <h2 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Package size={14} color="#00695C" /> Stock & Prix
+            <Package size={14} color="#00695C" /> {t('detail.sectionStockPrix')}
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[
-              { l: 'Stock actuel', v: med.stockActuel != null ? `${med.stockActuel} unités` : '—', warn: stockBas },
-              { l: 'Stock minimum', v: med.stockMinimum != null ? `${med.stockMinimum} unités` : '—', warn: false },
-              { l: 'Prix de vente', v: fmtXOF(med.prixVente), warn: false },
-              { l: "Prix d'achat", v: fmtXOF(med.prixAchat), warn: false },
+              { l: t('detail.labelStockActuel'), v: med.stockActuel != null ? t('detail.unites', { count: med.stockActuel }) : '—', warn: stockBas },
+              { l: t('detail.labelStockMinimum'), v: med.stockMinimum != null ? t('detail.unites', { count: med.stockMinimum }) : '—', warn: false },
+              { l: t('detail.labelPrixVente'), v: fmtXOF(med.prixVente), warn: false },
+              { l: t('detail.labelPrixAchat'), v: fmtXOF(med.prixAchat), warn: false },
             ].map(item => (
               <div key={item.l} style={{ padding: '10px 12px', borderRadius: 8, background: item.warn ? '#FFF3E0' : '#F8FAFC' }}>
                 <div style={{ fontSize: 10, color: '#90A4AE', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{item.l}</div>
@@ -180,13 +173,13 @@ export default function MedicamentDetailPage() {
         {/* Informations */}
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 22px' }}>
           <h2 style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ClipboardList size={14} color="#1565C0" /> Informations
+            <ClipboardList size={14} color="#1565C0" /> {t('detail.sectionInformations')}
           </h2>
           {[
-            { l: 'Catégorie', v: CAT_LABELS[med.categorie ?? ''] ?? med.categorie ?? '—' },
-            { l: 'Fabricant', v: med.fabricant ?? '—' },
-            { l: "Date d'expiration", v: fmtDate(med.dateExpiration) },
-            { l: 'Ordonnance', v: med.ordonnanceRequise ? 'Requise' : 'Non requise' },
+            { l: t('detail.labelCategorie'), v: catLabel(med.categorie) },
+            { l: t('detail.labelFabricant'), v: med.fabricant ?? '—' },
+            { l: t('detail.labelDateExpiration'), v: fmtDate(med.dateExpiration) },
+            { l: t('detail.labelOrdonnance'), v: med.ordonnanceRequise ? t('detail.ordonnanceRequise2') : t('detail.ordonnanceNonRequise') },
           ].map(row => (
             <div key={row.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F5F7FA', fontSize: 13 }}>
               <span style={{ color: '#90A4AE', fontWeight: 600 }}>{row.l}</span>
@@ -198,7 +191,7 @@ export default function MedicamentDetailPage() {
         {/* Description */}
         {med.description && (
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 22px', gridColumn: '1/-1' }}>
-            <h2 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Description & Notes</h2>
+            <h2 style={{ margin: '0 0 10px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('detail.sectionDescription')}</h2>
             <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.7 }}>{med.description}</p>
           </div>
         )}

@@ -1,0 +1,99 @@
+{
+  "utilisateurs": {
+    "roles": {
+      "admin": "Administrator",
+      "medecin": "Physician",
+      "infirmier": "Nurse",
+      "caissier": "Cashier",
+      "pharmacien": "Pharmacist",
+      "laborantin": "Lab Technician",
+      "drh": "HR Director",
+      "directeur": "Director"
+    },
+    "statut": {
+      "actif": "Active",
+      "inactif": "Inactive"
+    },
+    "xlsx": {
+      "prenom": "First name",
+      "nom": "Last name",
+      "email": "Email",
+      "role": "Role",
+      "statut": "Status",
+      "creeLe": "Created on",
+      "sheet": "Users"
+    },
+    "pdf": {
+      "prenom": "First name",
+      "nom": "Last name",
+      "email": "Email",
+      "role": "Role",
+      "statut": "Status",
+      "title": "User List",
+      "subtitle": "{n} user(s) — {date}"
+    },
+    "errors": {
+      "load": "Loading error",
+      "requiredFields": "All required fields must be filled in.",
+      "passwordRequired": "A password is required for a new user.",
+      "save": "Error while saving.",
+      "generic": "Error",
+      "passwordMin": "The password must be at least 8 characters long."
+    },
+    "success": {
+      "updated": "User updated successfully.",
+      "created": "User created successfully.",
+      "activated": "User activated successfully.",
+      "deactivated": "User deactivated successfully.",
+      "passwordReset": "Password reset successfully."
+    },
+    "hero": {
+      "title": "Users",
+      "count": "{total} account(s) · {actifs} active",
+      "newUser": "New user"
+    },
+    "filters": {
+      "search": "Search by name or email…",
+      "all": "All",
+      "found": "{count, plural, one {# user found} other {# users found}}"
+    },
+    "table": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "statut": "Status",
+      "since": "Since",
+      "actions": "Actions",
+      "empty": "No user found",
+      "emptyFilters": "Adjust your filters",
+      "emptyCreate": "Create the first user"
+    },
+    "actions": {
+      "edit": "Edit",
+      "resetPwd": "Reset password",
+      "deactivate": "Deactivate",
+      "activate": "Activate"
+    },
+    "modal": {
+      "editTitle": "Edit user",
+      "newTitle": "New user",
+      "prenom": "First name *",
+      "nom": "Last name *",
+      "email": "Email *",
+      "role": "Role *",
+      "password": "Password *",
+      "passwordPlaceholder": "Min. 8 characters",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "edit": "Edit",
+      "create": "Create"
+    },
+    "reset": {
+      "title": "Reset password",
+      "for": "New password for",
+      "placeholder": "Min. 8 characters",
+      "cancel": "Cancel",
+      "submit": "Reset"
+    }
+  }
+}

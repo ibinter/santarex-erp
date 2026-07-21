@@ -1,0 +1,72 @@
+{
+  "parametres": {
+    "title": "Settings",
+    "subtitle": "Facility configuration and system preferences",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "nav": {
+      "etablissement": "Facility",
+      "securite": "Security & Access",
+      "notifications": "Notifications",
+      "utilisateurs": "Users & Roles",
+      "langue": "Language & Region",
+      "apparence": "Appearance",
+      "sauvegarde": "Backups"
+    },
+    "etab": {
+      "nom": "Facility name",
+      "ville": "City",
+      "pays": "Country",
+      "telephone": "Phone",
+      "email": "Contact email",
+      "tenantTitle": "Tenant identifier",
+      "tenantNote": "Unique identifier for your facility — not editable"
+    },
+    "securite": {
+      "twoFa": "Two-factor authentication (2FA)",
+      "twoFaDesc": "Requires a TOTP code in addition to the password for all accounts",
+      "sessionTitle": "Session timeout",
+      "sessionDesc": "Automatic logout after inactivity",
+      "minutes": "{v} min"
+    },
+    "notifs": {
+      "stock": "Critical stock alerts",
+      "stockDesc": "Notify when a medication falls below the threshold",
+      "rdv": "Appointment reminders",
+      "rdvDesc": "Reminder 1h before each appointment",
+      "labo": "Laboratory results",
+      "laboDesc": "Notify when results are available",
+      "facture": "Unpaid invoices",
+      "factureDesc": "Daily alert on overdue payments > 7 days"
+    },
+    "langue": {
+      "interface": "Interface language",
+      "devise": "Currency",
+      "formatDate": "Date format",
+      "fuseau": "Time zone",
+      "optFr": "French",
+      "optEn": "English",
+      "deviseXof": "XOF (CFA Franc)",
+      "deviseEur": "EUR (Euro)",
+      "deviseUsd": "USD (Dollar)"
+    },
+    "userCount": "{count, plural, one {# user} other {# users}}",
+    "roles": {
+      "0": { "nom": "Super Administrator", "permissions": ["Full access", "System management"] },
+      "1": { "nom": "Administrator", "permissions": ["User management", "Reports", "Settings"] },
+      "2": { "nom": "Physician", "permissions": ["EMR", "Consultations", "Prescriptions", "Lab"] },
+      "3": { "nom": "Nurse", "permissions": ["Care", "Inpatient", "Emergencies"] },
+      "4": { "nom": "Pharmacist", "permissions": ["Pharmacy", "Stock", "Dispensing"] },
+      "5": { "nom": "Biologist", "permissions": ["Laboratory", "Results", "Validation"] },
+      "6": { "nom": "Cashier", "permissions": ["Billing", "Payments", "Cash desk"] },
+      "7": { "nom": "Imaging Technician", "permissions": ["Imaging", "Exams", "Reports"] }
+    },
+    "comingSoon": {
+      "apparence": "Interface customization",
+      "sauvegarde": "Backup management",
+      "desc": "This section will be available in an upcoming update.",
+      "badge": "🚀 Coming soon"
+    }
+  }
+}

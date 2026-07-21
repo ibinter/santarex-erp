@@ -1,0 +1,35 @@
+{
+  "support": {
+    "title": "Support",
+    "subtitle": "Open a ticket, our team replies within 24h",
+    "newTicket": "+ New ticket",
+    "empty": "No tickets — click \"New ticket\" to get started",
+    "replies": "{n} reply(ies)",
+    "replyPlaceholder": "Your reply…",
+    "send": "Send",
+    "statut": {
+      "ouvert": "Open",
+      "en_cours": "In progress",
+      "resolu": "Resolved",
+      "ferme": "Closed"
+    },
+    "categories": {
+      "bug": "Bug",
+      "question": "Question",
+      "amelioration": "Improvement",
+      "facturation": "Billing",
+      "autre": "Other"
+    },
+    "modal": {
+      "title": "New ticket",
+      "category": "Category",
+      "subject": "Subject",
+      "message": "Message",
+      "subjectPlaceholder": "Briefly describe your issue",
+      "messagePlaceholder": "Detail your request…",
+      "cancel": "Cancel",
+      "sending": "Sending…",
+      "send": "Send"
+    }
+  }
+}

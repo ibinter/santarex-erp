@@ -8,6 +8,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import AiChat from '@/components/AiChat';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { isAuthenticated } from '@/lib/auth';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, Stethoscope, Calendar, BookOpen,
@@ -17,30 +18,32 @@ import {
 } from 'lucide-react';
 
 const ALL_NAV = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Patients', href: '/patients', icon: Users },
-  { label: 'Consultations', href: '/consultations', icon: Stethoscope },
-  { label: 'Rendez-vous', href: '/rendez-vous', icon: Calendar },
-  { label: 'DME', href: '/dme', icon: BookOpen },
-  { label: 'Hospitalisation', href: '/hospitalisation', icon: BedDouble },
-  { label: 'Bloc Opératoire', href: '/bloc-operatoire', icon: Scissors },
-  { label: 'Urgences', href: '/urgences', icon: Siren },
-  { label: 'Imagerie', href: '/imagerie', icon: Scan },
-  { label: 'Laboratoire', href: '/laboratoire', icon: FlaskConical },
-  { label: 'Pharmacie', href: '/pharmacie', icon: Pill },
-  { label: 'Facturation', href: '/facturation', icon: Receipt },
-  { label: 'Caisse', href: '/caisse', icon: CreditCard },
-  { label: 'Comptabilité', href: '/comptabilite', icon: Building2 },
-  { label: 'RH', href: '/rh', icon: UserCog },
-  { label: 'Reporting', href: '/reporting', icon: BarChart2 },
-  { label: 'Support', href: '/support', icon: MessageSquare },
-  { label: 'Académie', href: '/academie', icon: GraduationCap },
-  { label: 'Paramètres', href: '/parametres', icon: Settings },
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { key: 'patients', href: '/patients', icon: Users },
+  { key: 'consultations', href: '/consultations', icon: Stethoscope },
+  { key: 'rendezVous', href: '/rendez-vous', icon: Calendar },
+  { key: 'dme', href: '/dme', icon: BookOpen },
+  { key: 'hospitalisation', href: '/hospitalisation', icon: BedDouble },
+  { key: 'blocOperatoire', href: '/bloc-operatoire', icon: Scissors },
+  { key: 'urgences', href: '/urgences', icon: Siren },
+  { key: 'imagerie', href: '/imagerie', icon: Scan },
+  { key: 'laboratoire', href: '/laboratoire', icon: FlaskConical },
+  { key: 'pharmacie', href: '/pharmacie', icon: Pill },
+  { key: 'facturation', href: '/facturation', icon: Receipt },
+  { key: 'caisse', href: '/caisse', icon: CreditCard },
+  { key: 'comptabilite', href: '/comptabilite', icon: Building2 },
+  { key: 'rh', href: '/rh', icon: UserCog },
+  { key: 'reporting', href: '/reporting', icon: BarChart2 },
+  { key: 'support', href: '/support', icon: MessageSquare },
+  { key: 'academie', href: '/academie', icon: GraduationCap },
+  { key: 'parametres', href: '/parametres', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('nav');
+  const nav = ALL_NAV.map(n => ({ ...n, label: t(n.key) }));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [moreDrawerOpen, setMoreDrawerOpen] = useState(false);
@@ -101,13 +104,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           flexDirection: 'column',
         }}>
           <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F5F7FA', flexShrink: 0 }}>
-            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1A2332' }}>Tous les modules</span>
+            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1A2332' }}>{t('allModules')}</span>
             <button onClick={() => setMoreDrawerOpen(false)} style={{ border: 'none', background: '#F5F7FA', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <X size={18} color="#546E7A" />
             </button>
           </div>
           <div style={{ overflowY: 'auto', padding: '12px 16px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-            {ALL_NAV.map(({ href, label, icon: Icon }) => {
+            {nav.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
               return (
                 <Link

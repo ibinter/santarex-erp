@@ -1,0 +1,36 @@
+{
+  "urgences": {
+    "title": "Urgences",
+    "subtitle": "Salle de triage — Temps réel",
+    "actualise": "Actualisé {time}",
+    "admettre": "Admettre",
+    "manchester": {
+      "ROUGE": "ROUGE",
+      "ORANGE": "ORANGE",
+      "JAUNE": "JAUNE",
+      "VERT": "VERT",
+      "NOIR": "DÉCÉDÉ"
+    },
+    "statut": {
+      "attente_triage": "Att. triage",
+      "en_triage": "En triage",
+      "en_soins": "En soins",
+      "en_observation": "Observation"
+    },
+    "delai": "DÉLAI",
+    "patientInconnu": "Patient inconnu",
+    "nonAssigne": "Non assigné",
+    "triage": "Triage",
+    "prendreEnCharge": "Prendre en charge",
+    "statCritiques": "Critiques",
+    "statUrgences": "Urgences",
+    "statSemiUrg": "Semi-urg.",
+    "statNonUrg": "Non urg.",
+    "statTotal": "Total",
+    "filtrer": "Filtrer : {label}",
+    "aucunPatient": "Aucun patient en urgences",
+    "salleCalme": "La salle des urgences est calme",
+    "filtreActif": "Filtre actif :",
+    "toutVoir": "Tout voir"
+  }
+}

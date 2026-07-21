@@ -1,0 +1,43 @@
+{
+  "profil": {
+    "defaultUser": "Utilisateur",
+    "hopital": "Hôpital Central",
+    "errors": {
+      "save": "Erreur lors de la sauvegarde",
+      "allFields": "Veuillez remplir tous les champs.",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "minLength": "Le mot de passe doit contenir au moins 8 caractères.",
+      "currentWrong": "Mot de passe actuel incorrect"
+    },
+    "info": {
+      "title": "Mes informations",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Adresse email",
+      "firstNamePlaceholder": "Prénom",
+      "lastNamePlaceholder": "Nom de famille",
+      "emailPlaceholder": "votre@email.com",
+      "save": "Enregistrer",
+      "saved": "Informations sauvegardées"
+    },
+    "security": {
+      "title": "Sécurité",
+      "current": "Mot de passe actuel",
+      "next": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "submit": "Changer le mot de passe",
+      "saved": "Mot de passe mis à jour"
+    },
+    "prefs": {
+      "title": "Préférences",
+      "language": "Langue de l'interface",
+      "optFr": "Français",
+      "optEn": "English",
+      "emailNotif": "Notifications email",
+      "emailNotifDesc": "Recevoir les alertes et résumés par email",
+      "toggleAria": "Basculer les notifications email",
+      "submit": "Enregistrer les préférences",
+      "saved": "Préférences sauvegardées"
+    }
+  }
+}

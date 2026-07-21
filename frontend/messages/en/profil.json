@@ -1,0 +1,43 @@
+{
+  "profil": {
+    "defaultUser": "User",
+    "hopital": "Central Hospital",
+    "errors": {
+      "save": "Error while saving",
+      "allFields": "Please fill in all fields.",
+      "mismatch": "The passwords do not match.",
+      "minLength": "The password must contain at least 8 characters.",
+      "currentWrong": "Current password is incorrect"
+    },
+    "info": {
+      "title": "My information",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email address",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name",
+      "emailPlaceholder": "your@email.com",
+      "save": "Save",
+      "saved": "Information saved"
+    },
+    "security": {
+      "title": "Security",
+      "current": "Current password",
+      "next": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Change password",
+      "saved": "Password updated"
+    },
+    "prefs": {
+      "title": "Preferences",
+      "language": "Interface language",
+      "optFr": "French",
+      "optEn": "English",
+      "emailNotif": "Email notifications",
+      "emailNotifDesc": "Receive alerts and summaries by email",
+      "toggleAria": "Toggle email notifications",
+      "submit": "Save preferences",
+      "saved": "Preferences saved"
+    }
+  }
+}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, FlaskConical, ChevronDown, ChevronUp, Zap, AlertTriangle, Check, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
@@ -43,6 +44,7 @@ function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
 
 export default function NouvelleDemandeLaboratoirePage() {
   const router = useRouter();
+  const t = useTranslations('laboratoire');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [pSearch, setPSearch] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -96,8 +98,8 @@ export default function NouvelleDemandeLaboratoirePage() {
   const total = selectedAnalyses.reduce((s, a) => s + (a.prix ?? 0), 0);
 
   const handleSubmit = async () => {
-    if (!selectedPatient) { setError('Veuillez sélectionner un patient.'); return; }
-    if (selectedIds.size === 0) { setError('Veuillez sélectionner au moins une analyse.'); return; }
+    if (!selectedPatient) { setError(t('form.errNoPatient')); return; }
+    if (selectedIds.size === 0) { setError(t('form.errNoAnalyse')); return; }
     setLoading(true); setError(null);
     try {
       const created = await apiClient<any>('/laboratoire/demandes', {
@@ -111,7 +113,7 @@ export default function NouvelleDemandeLaboratoirePage() {
       });
       router.push(created?.id ? `/laboratoire/demandes/${created.id}` : '/laboratoire');
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création');
+      setError(e?.message ?? t('form.errCreate'));
     } finally { setLoading(false); }
   };
 
@@ -122,13 +124,13 @@ export default function NouvelleDemandeLaboratoirePage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/laboratoire')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('form.back')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 9, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlaskConical size={18} color="#6A1B9A" />
           </div>
-          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouvelle demande d'analyses</h1>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>{t('form.title')}</h1>
         </div>
       </div>
 
@@ -137,7 +139,7 @@ export default function NouvelleDemandeLaboratoirePage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Patient */}
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
-            <h2 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Patient</h2>
+            <h2 style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('form.patient')}</h2>
             {selectedPatient ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#EFF6FF', border: '2px solid #1565C0' }}>
                 <div>
@@ -150,7 +152,7 @@ export default function NouvelleDemandeLaboratoirePage() {
               <>
                 <div style={{ position: 'relative', marginBottom: 8 }}>
                   <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('form.searchPatient')} style={{ ...inputStyle, paddingLeft: 28 }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {patients.slice(0, 5).map(p => (
@@ -179,19 +181,19 @@ export default function NouvelleDemandeLaboratoirePage() {
               </button>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: urgence ? '#C62828' : '#37474F' }}>
-                  <Zap size={13} /> Urgente
+                  <Zap size={13} /> {t('form.urgente')}
                 </div>
-                <div style={{ fontSize: 11, color: '#90A4AE' }}>Traitement prioritaire</div>
+                <div style={{ fontSize: 11, color: '#90A4AE' }}>{t('form.urgenteHint')}</div>
               </div>
             </label>
             <div style={{ flex: 1 }}>
-              <input value={motif} onChange={e => setMotif(e.target.value)} placeholder="Motif de prescription (optionnel)…" style={inputStyle} />
+              <input value={motif} onChange={e => setMotif(e.target.value)} placeholder={t('form.motifPlaceholder')} style={inputStyle} />
             </div>
           </div>
 
           {/* Catalogue */}
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #F5F7FA', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>Sélectionner les analyses</div>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid #F5F7FA', fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('form.selectAnalyses')}</div>
             {catalogue.map(cat => (
               <div key={cat.categorie}>
                 <button onClick={() => toggleCat(cat.categorie)}
@@ -227,9 +229,9 @@ export default function NouvelleDemandeLaboratoirePage() {
         {/* Right — Résumé */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 76 }}>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
-            <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Récapitulatif</p>
+            <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('form.recap')}</p>
             {selectedAnalyses.length === 0 ? (
-              <p style={{ color: '#CFD8DC', fontSize: 13, textAlign: 'center', padding: '12px 0' }}>Aucune analyse sélectionnée</p>
+              <p style={{ color: '#CFD8DC', fontSize: 13, textAlign: 'center', padding: '12px 0' }}>{t('form.noAnalyseSelected')}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
                 {selectedAnalyses.map(a => (
@@ -241,7 +243,7 @@ export default function NouvelleDemandeLaboratoirePage() {
               </div>
             )}
             <div style={{ borderTop: '1px solid #F5F7FA', paddingTop: 10 }}>
-              <div style={{ fontSize: 10, color: '#90A4AE' }}>{selectedIds.size} analyse(s) • Total estimatif</div>
+              <div style={{ fontSize: 10, color: '#90A4AE' }}>{t('form.totalLine', { count: selectedIds.size })}</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: '#6A1B9A', marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(total)}</div>
             </div>
           </div>
@@ -254,7 +256,7 @@ export default function NouvelleDemandeLaboratoirePage() {
 
           <button onClick={handleSubmit} disabled={loading || !selectedPatient || selectedIds.size === 0}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: (!selectedPatient || selectedIds.size === 0 || loading) ? '#E0E0E0' : '#6A1B9A', border: 'none', cursor: (!selectedPatient || selectedIds.size === 0 || loading) ? 'default' : 'pointer', fontSize: 14, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={15} /> {loading ? 'Création…' : 'Créer la demande'}
+            <Save size={15} /> {loading ? t('form.creating') : t('form.create')}
           </button>
         </div>
       </div>

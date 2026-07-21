@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   DollarSign, Receipt, Banknote, Smartphone, CreditCard,
   Shield, RefreshCw, Download, TrendingUp, Hash, FileSpreadsheet,
@@ -36,6 +37,7 @@ interface Paiement {
 }
 
 export default function CaissePage() {
+  const t = useTranslations('caisse');
   const [stats, setStats] = useState<StatsCaisse | null>(null);
   const [paiements, setPaiements] = useState<Paiement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,25 +46,25 @@ export default function CaissePage() {
 
   const handleExportXLSX = () => exportXLSX(
     paiements.map(p => ({
-      'Référence': p.reference ?? p.id.slice(0,8),
-      'Patient': p.patient?.nomComplet ?? (p.patient ? `${p.patient.prenom ?? ''} ${p.patient.nom ?? ''}`.trim() : '—'),
-      'Facture': p.facture?.reference ?? '—',
-      'Mode paiement': p.modePaiement ?? '—',
-      'Montant (XOF)': p.montant ?? 0,
-      'Statut': p.statut ?? '—',
-      'Date': p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—',
+      [t('expColReference')]: p.reference ?? p.id.slice(0,8),
+      [t('expColPatient')]: p.patient?.nomComplet ?? (p.patient ? `${p.patient.prenom ?? ''} ${p.patient.nom ?? ''}`.trim() : '—'),
+      [t('expColFacture')]: p.facture?.reference ?? '—',
+      [t('expColModePaiement')]: p.modePaiement ?? '—',
+      [t('expColMontantXof')]: p.montant ?? 0,
+      [t('expColStatut')]: p.statut ?? '—',
+      [t('expColDate')]: p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—',
     })),
     `caisse_${new Date().toISOString().slice(0,10)}`,
-    'Paiements',
+    t('expSheet'),
   );
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'Référence', dataKey: 'ref', width: 30 },
-      { header: 'Patient', dataKey: 'patient', width: 42 },
-      { header: 'Mode', dataKey: 'mode', width: 28 },
-      { header: 'Montant XOF', dataKey: 'montant', width: 32 },
-      { header: 'Statut', dataKey: 'statut', width: 22 },
-      { header: 'Date', dataKey: 'date', width: 24 },
+      { header: t('expColReference'), dataKey: 'ref', width: 30 },
+      { header: t('expColPatient'), dataKey: 'patient', width: 42 },
+      { header: t('expColMode'), dataKey: 'mode', width: 28 },
+      { header: t('expColMontantXofCourt'), dataKey: 'montant', width: 32 },
+      { header: t('expColStatut'), dataKey: 'statut', width: 22 },
+      { header: t('expColDate'), dataKey: 'date', width: 24 },
     ],
     paiements.map(p => ({
       ref: p.reference ?? p.id.slice(0,8),
@@ -72,9 +74,9 @@ export default function CaissePage() {
       statut: p.statut ?? '—',
       date: p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—',
     })),
-    'Caisse — Paiements',
+    t('expTitre'),
     `caisse_${new Date().toISOString().slice(0,10)}`,
-    `${paiements.length} paiement(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('expSous', { count: paiements.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
   const load = useCallback(async () => {
@@ -115,7 +117,7 @@ export default function CaissePage() {
 
   const repartition = (stats?.parMode ?? []).map(m => ({
     mode: m.modePaiement,
-    label: MODE_CONFIG[m.modePaiement]?.label ?? m.modePaiement,
+    label: MODE_CONFIG[m.modePaiement] ? t(`mode.${m.modePaiement}`) : m.modePaiement,
     montant: Number(m.total),
     count: Number(m.count),
     color: MODE_CONFIG[m.modePaiement]?.color ?? '#546E7A',
@@ -143,7 +145,7 @@ export default function CaissePage() {
                 <CreditCard size={26} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>Caisse du jour</h1>
+                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{t('titre')}</h1>
                 <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'capitalize' }}>
                   {TODAY_STR}
                   {lastRefresh && <span style={{ marginLeft: 8, opacity: 0.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
@@ -152,7 +154,7 @@ export default function CaissePage() {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={load} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
-                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> Actualiser
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}/> {t('actualiser')}
               </button>
               <button onClick={handleExportPDF} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 700 }}>
                 <Download size={13}/> PDF
@@ -166,11 +168,11 @@ export default function CaissePage() {
           {/* KPI pills */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
             {[
-              { label: 'Total encaissé',   val: loading ? '…' : fmtXOF(totalJour),    icon: <TrendingUp size={11}/> },
-              { label: 'Transactions',     val: loading ? '…' : nbTransactions,        icon: <Hash size={11}/> },
-              { label: 'Espèces',          val: loading ? '…' : fmtXOF(totalEspeces),  icon: <Banknote size={11}/> },
-              { label: 'Mobile Money',     val: loading ? '…' : fmtXOF(totalMobile),   icon: <Smartphone size={11}/> },
-              { label: 'Carte',            val: loading ? '…' : fmtXOF(totalCarte),    icon: <CreditCard size={11}/> },
+              { label: t('kpiTotalEncaisse'), val: loading ? '…' : fmtXOF(totalJour),    icon: <TrendingUp size={11}/> },
+              { label: t('kpiTransactions'),  val: loading ? '…' : nbTransactions,        icon: <Hash size={11}/> },
+              { label: t('kpiEspeces'),       val: loading ? '…' : fmtXOF(totalEspeces),  icon: <Banknote size={11}/> },
+              { label: t('kpiMobileMoney'),   val: loading ? '…' : fmtXOF(totalMobile),   icon: <Smartphone size={11}/> },
+              { label: t('kpiCarte'),         val: loading ? '…' : fmtXOF(totalCarte),    icon: <CreditCard size={11}/> },
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '5px 12px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.7)' }}>{s.icon}</span>
@@ -189,14 +191,14 @@ export default function CaissePage() {
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden', animation: 'fadeUp .25s ease' }}>
           {/* Mode filter chips */}
           <div style={{ padding: '12px 16px', borderBottom: '1.5px solid #EEF2F8', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, color: '#90A4AE', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Mode :</span>
+            <span style={{ fontSize: 11, color: '#90A4AE', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('modeLabel')}</span>
             {['', ...Object.keys(MODE_CONFIG)].map(mode => {
               const cfg = mode ? MODE_CONFIG[mode] : null;
               const active = modeFilter === mode;
               return (
                 <button key={mode || 'all'} onClick={() => setModeFilter(mode)}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${active ? (cfg?.color ?? '#065F46') : '#E0E8F0'}`, background: active ? (cfg?.bg ?? '#D1FAE5') : '#fff', color: active ? (cfg?.color ?? '#065F46') : '#546E7A', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all .15s' }}>
-                  {cfg?.icon} {mode ? cfg?.label : 'Tous'}
+                  {cfg?.icon} {mode ? t(`mode.${mode}`) : t('filtreTous')}
                 </button>
               );
             })}
@@ -206,7 +208,7 @@ export default function CaissePage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 580 }}>
               <thead>
                 <tr style={{ background: '#F8FAFC' }}>
-                  {['Heure', 'Référence', 'Patient', 'Facture', 'Mode', 'Montant', 'Statut'].map(h => (
+                  {[t('thHeure'), t('thReference'), t('thPatient'), t('thFacture'), t('thMode'), t('thMontant'), t('thStatut')].map(h => (
                     <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', whiteSpace: 'nowrap', borderBottom: '1.5px solid #EEF2F8' }}>{h}</th>
                   ))}
                 </tr>
@@ -224,33 +226,34 @@ export default function CaissePage() {
                   <tr>
                     <td colSpan={7} style={{ textAlign: 'center', padding: '60px 20px', color: '#90A4AE' }}>
                       <Receipt size={36} style={{ display: 'block', margin: '0 auto 10px', opacity: 0.3 }}/>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#37474F' }}>Aucune transaction</div>
-                      <div style={{ fontSize: 12, marginTop: 4 }}>Aucun paiement pour ce filtre</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#37474F' }}>{t('vide')}</div>
+                      <div style={{ fontSize: 12, marginTop: 4 }}>{t('videFiltre')}</div>
                     </td>
                   </tr>
-                ) : filtered.map(t => {
-                  const cfg = MODE_CONFIG[t.modePaiement] ?? MODE_CONFIG['especes'];
-                  const annule = t.statut?.toLowerCase().includes('annul');
+                ) : filtered.map(tx => {
+                  const cfg = MODE_CONFIG[tx.modePaiement] ?? MODE_CONFIG['especes'];
+                  const mKey = MODE_CONFIG[tx.modePaiement] ? tx.modePaiement : 'especes';
+                  const annule = tx.statut?.toLowerCase().includes('annul');
                   return (
-                    <tr key={t.id} className="tx-row"
+                    <tr key={tx.id} className="tx-row"
                       style={{ borderTop: '1px solid #F0F4FA', opacity: annule ? 0.55 : 1, transition: 'background .15s' }}>
-                      <td style={{ padding: '11px 14px', fontSize: 12, color: '#546E7A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{fmtTime(t.createdAt)}</td>
+                      <td style={{ padding: '11px 14px', fontSize: 12, color: '#546E7A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{fmtTime(tx.createdAt)}</td>
                       <td style={{ padding: '11px 14px' }}>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: '#065F46', background: '#D1FAE5', padding: '2px 8px', borderRadius: 5, fontFamily: 'monospace' }}>{t.reference || '—'}</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: '#065F46', background: '#D1FAE5', padding: '2px 8px', borderRadius: 5, fontFamily: 'monospace' }}>{tx.reference || '—'}</span>
                       </td>
-                      <td style={{ padding: '11px 14px', fontSize: 13, color: '#37474F', fontWeight: 600 }}>{patientName(t)}</td>
-                      <td style={{ padding: '11px 14px', fontSize: 11, color: '#90A4AE' }}>{t.facture?.reference || '—'}</td>
+                      <td style={{ padding: '11px 14px', fontSize: 13, color: '#37474F', fontWeight: 600 }}>{patientName(tx)}</td>
+                      <td style={{ padding: '11px 14px', fontSize: 11, color: '#90A4AE' }}>{tx.facture?.reference || '—'}</td>
                       <td style={{ padding: '11px 14px' }}>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, padding: '3px 10px', borderRadius: 20 }}>
-                          {cfg.icon} {cfg.label}
+                          {cfg.icon} {t(`mode.${mKey}`)}
                         </span>
                       </td>
                       <td style={{ padding: '11px 14px', fontSize: 13, fontWeight: 800, color: annule ? '#90A4AE' : '#065F46', textDecoration: annule ? 'line-through' : 'none', whiteSpace: 'nowrap', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                        {fmtXOF(t.montant)}
+                        {fmtXOF(tx.montant)}
                       </td>
                       <td style={{ padding: '11px 14px' }}>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: annule ? '#FFEBEE' : '#D1FAE5', color: annule ? '#C62828' : '#065F46' }}>
-                          {annule ? 'Annulé' : 'Validé'}
+                          {annule ? t('statutAnnule') : t('statutValide')}
                         </span>
                       </td>
                     </tr>
@@ -263,19 +266,19 @@ export default function CaissePage() {
 
         {/* Répartition panel */}
         <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: '18px', animation: 'fadeUp .3s ease' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 11, fontWeight: 700, color: '#90A4AE', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Répartition par mode</h3>
+          <h3 style={{ margin: '0 0 16px', fontSize: 11, fontWeight: 700, color: '#90A4AE', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{t('repartitionTitre')}</h3>
 
           {/* Total visuel */}
           <div style={{ background: 'linear-gradient(135deg,#064E3B,#047857)', borderRadius: 12, padding: '14px 16px', marginBottom: 16, textAlign: 'center' }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Total du jour</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('totalDuJour')}</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
               {loading ? '…' : fmtXOF(totalJour)}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{nbTransactions} transaction{nbTransactions > 1 ? 's' : ''}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{t('nbTransactions', { count: nbTransactions })}</div>
           </div>
 
           {repartition.length === 0 ? (
-            <p style={{ fontSize: 12, color: '#90A4AE', textAlign: 'center', margin: '20px 0' }}>Aucune donnée disponible</p>
+            <p style={{ fontSize: 12, color: '#90A4AE', textAlign: 'center', margin: '20px 0' }}>{t('aucuneDonnee')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {repartition.map(r => {
@@ -293,7 +296,7 @@ export default function CaissePage() {
                     </div>
                     <div style={{ fontSize: 10, color: '#90A4AE', marginTop: 3, display: 'flex', justifyContent: 'space-between' }}>
                       <span>{fmtXOF(r.montant)}</span>
-                      <span>{r.count} tx</span>
+                      <span>{r.count} {t('txUnit')}</span>
                     </div>
                   </div>
                 );

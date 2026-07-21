@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   UserCog, Plus, Search, Users, Calendar, Clock,
   TrendingUp, CheckCircle, XCircle, Download, Banknote, FileSpreadsheet,
@@ -83,22 +84,16 @@ function initials(nom: string, prenom: string) {
 }
 function num(v: number | string | null | undefined): number { return Number(v ?? 0) || 0; }
 function fmtXOF(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
-function anciennete(d?: string | null) {
-  if (!d) return '—';
-  const yrs = Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 24 * 3600000));
-  return yrs < 1 ? '< 1 an' : `${yrs} an${yrs > 1 ? 's' : ''}`;
+function ancienneteYears(d?: string | null): number | null {
+  if (!d) return null;
+  return Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 24 * 3600000));
 }
 function fullName(e: { nom: string; prenom: string }) { return `${e.prenom} ${e.nom}`.trim(); }
 
-const CONGE_TYPE_LABEL: Record<Conge['type'], string> = {
-  conge: 'Congé annuel', maladie: 'Congé maladie', maternite: 'Maternité',
-  formation: 'Formation', autre: 'Autre',
-};
-
 const TABS = [
-  { key: 'personnel', label: 'Personnel', icon: '👥' },
-  { key: 'conges', label: 'Congés & Absences', icon: '🌴' },
-  { key: 'paie', label: 'Paie', icon: '💳' },
+  { key: 'personnel', icon: '👥' },
+  { key: 'conges', icon: '🌴' },
+  { key: 'paie', icon: '💳' },
 ] as const;
 
 function currentMois() { return new Date().toISOString().slice(0, 7); }

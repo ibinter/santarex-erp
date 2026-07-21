@@ -1,0 +1,100 @@
+{
+  "reporting": {
+    "title": "Reporting & Indicators",
+    "subtitle": "Cross-functional dashboard — {date}",
+    "refresh": "Refresh",
+    "pills": {
+      "recouvrement": "Collection rate",
+      "encaisse": "Collected",
+      "sejoursActifs": "Active stays",
+      "urgencesLabo": "Lab emergencies"
+    },
+    "kpi": {
+      "patients": "Total patients",
+      "patientsUnit": "records",
+      "patientsSub": "registered",
+      "recettes": "Revenue (incl. tax)",
+      "recettesUnit": "XOF",
+      "recettesSub": "{n} invoices",
+      "occupation": "Occupancy rate",
+      "occupationSub": "{occupes} / {total} beds",
+      "hospitalisation": "Inpatient care",
+      "analyses": "Today's tests",
+      "analysesUnit": "requests",
+      "analysesSub": "{n} urgent",
+      "laboratoire": "Laboratory"
+    },
+    "statuts": {
+      "payee": "Paid",
+      "partielle": "Partial",
+      "impayee": "Unpaid",
+      "en_attente": "Pending",
+      "annulee": "Cancelled"
+    },
+    "panels": {
+      "facturesParStatut": "Invoices by status",
+      "total": "{n} total",
+      "aucuneDonnee": "No data",
+      "totalEncaisse": "Total collected",
+      "tauxRecouvrement": "Collection rate",
+      "hospitalisation": "Inpatient care",
+      "occupationBadge": "{pct} occupancy",
+      "sejoursActifs": "Active stays",
+      "totalSejours": "Total stays",
+      "litsOccupes": "Occupied beds",
+      "totalLits": "Total beds",
+      "capaciteUtilisee": "Capacity used",
+      "litsRatio": "{occupes} / {total} beds",
+      "capaciteElevee": "High capacity — monitor admissions",
+      "aucuneDonneeDispo": "No data available"
+    },
+    "labo": {
+      "titre": "Laboratory — today's activity",
+      "totalDemandes": "Total requests",
+      "urgentes": "Urgent",
+      "traitees": "Processed"
+    },
+    "exports": {
+      "titre": "Available exports",
+      "synthesePDF": "PDF summary",
+      "syntheseXLSX": "XLSX summary",
+      "genererPDF": "Generate PDF",
+      "xlsx": "XLSX"
+    },
+    "rapports": {
+      "0": { "titre": "Medical activity", "desc": "Consultations, procedures, diagnoses" },
+      "1": { "titre": "Financial report", "desc": "Revenue, expenses, net result" },
+      "2": { "titre": "HR dashboard", "desc": "Staff, absences, overtime" },
+      "3": { "titre": "Pharmacy & stock", "desc": "Movements, shortages, valuation" },
+      "4": { "titre": "Epidemiological report", "desc": "Diseases, trends, alerts" },
+      "5": { "titre": "Quality of care", "desc": "Satisfaction, incidents, KPIs" }
+    },
+    "pdf": {
+      "colIndicateur": "Indicator",
+      "colValeur": "Value",
+      "title": "Reporting & Indicators",
+      "subtitle": "Cross-functional dashboard — {date}",
+      "statPatients": "Patients",
+      "statRecouvrement": "Collection",
+      "statOccupation": "Occupancy",
+      "statAnalyses": "Tests/day",
+      "sheet": "Indicators"
+    },
+    "rows": {
+      "totalPatients": "Total registered patients",
+      "nombreFactures": "Number of invoices",
+      "recettesTTC": "Revenue (incl. tax)",
+      "totalEncaisse": "Total collected",
+      "tauxRecouvrement": "Collection rate",
+      "facturesStatut": "Invoices — {label}",
+      "sejoursActifs": "Active stays",
+      "totalSejours": "Total stays",
+      "litsOccupes": "Occupied beds",
+      "totalLits": "Total beds",
+      "tauxOccupation": "Occupancy rate",
+      "analysesTotal": "Today's tests — total",
+      "analysesUrgentes": "Today's tests — urgent",
+      "analysesTraitees": "Today's tests — processed"
+    }
+  }
+}

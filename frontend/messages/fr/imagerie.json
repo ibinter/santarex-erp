@@ -1,0 +1,79 @@
+{
+  "imagerie": {
+    "statut": {
+      "EN_ATTENTE": "En attente",
+      "EN_COURS": "En cours",
+      "TERMINE": "Terminé",
+      "VALIDE": "Validé"
+    },
+    "hero": {
+      "title": "Imagerie Médicale",
+      "loading": "Chargement…",
+      "displayedCount": "{count, plural, one {# examen affiché} other {# examens affichés}}",
+      "kpiTotal": "Total du jour",
+      "kpiEnAttente": "En attente",
+      "kpiEnCours": "En cours",
+      "kpiTermines": "Terminés",
+      "filterTitle": "Filtrer : {label}",
+      "newExam": "Nouvel examen"
+    },
+    "list": {
+      "searchPlaceholder": "Rechercher patient, type d'examen…",
+      "filterAll": "Tous",
+      "colNumero": "N°",
+      "colPatient": "Patient",
+      "colType": "Type d'examen",
+      "colRegion": "Région",
+      "colMedecin": "Médecin",
+      "colUrgence": "Urgence",
+      "colStatut": "Statut",
+      "empty": "Aucun examen",
+      "urgent": "Urgent",
+      "doctorPrefix": "Dr."
+    },
+    "detail": {
+      "title": "Détail examen",
+      "patient": "Patient",
+      "regionAnatomique": "Région anatomique",
+      "medecinPrescripteur": "Médecin prescripteur",
+      "date": "Date",
+      "urgence": "Urgence",
+      "yes": "Oui",
+      "no": "Non",
+      "statut": "Statut",
+      "resultat": "Résultat",
+      "resultatEnAttente": "Résultat en attente",
+      "demarrer": "Démarrer l'examen",
+      "compteRendu": "Compte-rendu radiologique",
+      "phCompteRendu": "Compte-rendu détaillé (technique, observations)…",
+      "phConclusion": "Conclusion / synthèse…",
+      "crSaving": "Enregistrement…",
+      "crSave": "Enregistrer et valider",
+      "doctorPrefix": "Dr."
+    },
+    "modal": {
+      "title": "Nouvel examen d'imagerie",
+      "patient": "Patient",
+      "searchPatient": "Rechercher un patient…",
+      "noPatient": "Aucun patient trouvé.",
+      "typeExamen": "Type d'examen",
+      "selectPlaceholder": "— Sélectionner —",
+      "regionAnatomique": "Région anatomique",
+      "phRegion": "Ex : Thorax, Crâne…",
+      "indicationClinique": "Indication clinique",
+      "phIndication": "Motif / renseignements cliniques…",
+      "examenUrgent": "Examen urgent",
+      "cancel": "Annuler",
+      "creating": "Création…",
+      "create": "Créer la demande"
+    },
+    "errors": {
+      "selectPatient": "Sélectionnez un patient.",
+      "selectType": "Sélectionnez un type d'examen.",
+      "invalidSession": "Session invalide, reconnectez-vous.",
+      "create": "Erreur lors de la création",
+      "crEmpty": "Saisissez une conclusion ou un compte-rendu.",
+      "crSave": "Erreur lors de l'enregistrement"
+    }
+  }
+}

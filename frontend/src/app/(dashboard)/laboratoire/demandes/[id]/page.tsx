@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FlaskConical, RefreshCw, CheckCircle, Clock, Zap, AlertTriangle, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportFichePDF } from '@/lib/export';
 
@@ -20,11 +21,11 @@ type Demande = {
   commentaire?: string;
 };
 
-const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  en_attente:  { label: 'En attente',  color: '#E65100', bg: '#FFF3E0', icon: <Clock size={12} /> },
-  en_analyse:  { label: 'En analyse',  color: '#1565C0', bg: '#EFF6FF', icon: <RefreshCw size={12} /> },
-  disponible:  { label: 'Disponible',  color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={12} /> },
-  valide:      { label: 'Validé',      color: '#00695C', bg: '#E0F2F1', icon: <CheckCircle size={12} /> },
+const STATUT_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
+  en_attente:  { color: '#E65100', bg: '#FFF3E0', icon: <Clock size={12} /> },
+  en_analyse:  { color: '#1565C0', bg: '#EFF6FF', icon: <RefreshCw size={12} /> },
+  disponible:  { color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircle size={12} /> },
+  valide:      { color: '#00695C', bg: '#E0F2F1', icon: <CheckCircle size={12} /> },
 };
 
 const INTERP_CONFIG: Record<string, { color: string; bg: string }> = {
@@ -42,6 +43,7 @@ function fmtDate(iso?: string) {
 export default function DemandeLaboPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations('laboratoire');
   const [demande, setDemande] = useState<Demande | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function DemandeLaboPage() {
       const data = await apiClient<Demande>(`/laboratoire/demandes/${params.id}`);
       setDemande(data);
       if (data.typesAnalyse?.length) setExpanded([data.typesAnalyse[0].id]);
-    } catch (e: any) { setError(e?.message ?? 'Erreur de chargement'); }
+    } catch (e: any) { setError(e?.message ?? t('detail.errLoad')); }
     finally { setLoading(false); }
   }, [params.id]);
 
@@ -66,6 +68,7 @@ export default function DemandeLaboPage() {
     demande?.resultats?.find(r => r.parametreId === parametreId);
 
   const scfg = STATUT_CONFIG[demande?.statut ?? 'en_attente'] ?? STATUT_CONFIG.en_attente;
+  const scfgLabel = t(('statut.' + (demande?.statut ?? 'en_attente')) as any);
 
   const handleFichePDF = () => {
     if (!demande) return;
@@ -73,36 +76,36 @@ export default function DemandeLaboPage() {
       (ta.parametres ?? []).map(p => {
         const res = demande.resultats?.find(r => r.parametreId === p.id);
         const normes = p.valeurNormaleMin != null && p.valeurNormaleMax != null
-          ? ` (norme ${p.valeurNormaleMin}–${p.valeurNormaleMax}${p.unite ? ' ' + p.unite : ''})`
+          ? ' ' + t('fiche.norme', { min: p.valeurNormaleMin, max: p.valeurNormaleMax, unite: p.unite ? ' ' + p.unite : '' })
           : '';
         const val = res?.valeur ? `${res.valeur}${p.unite ? ' ' + p.unite : ''}${res.interpretation ? ` — ${res.interpretation}` : ''}${normes}` : '—';
         return { key: p.nom, value: val };
       }),
     );
     exportFichePDF(
-      `Demande d'analyses ${demande.numero ?? demande.id.slice(0, 8).toUpperCase()}`,
+      t('fiche.titlePrefix', { ref: demande.numero ?? demande.id.slice(0, 8).toUpperCase() }),
       [
-        { label: 'Demande', fields: [
-          { key: 'N° Demande', value: demande.numero ?? demande.id.slice(0, 8).toUpperCase() },
-          { key: 'Statut', value: scfg.label },
-          { key: 'Urgence', value: demande.urgence ? 'Oui' : 'Non' },
-          { key: 'Date demande', value: fmtDate(demande.dateCreation) },
-          { key: 'Prélèvement', value: fmtDate(demande.datePrelevement) },
+        { label: t('fiche.sectionDemande'), fields: [
+          { key: t('fiche.fNumero'), value: demande.numero ?? demande.id.slice(0, 8).toUpperCase() },
+          { key: t('fiche.fStatut'), value: scfgLabel },
+          { key: t('fiche.fUrgence'), value: demande.urgence ? t('fiche.yes') : t('fiche.no') },
+          { key: t('fiche.fDateDemande'), value: fmtDate(demande.dateCreation) },
+          { key: t('fiche.fPrelevement'), value: fmtDate(demande.datePrelevement) },
         ]},
-        { label: 'Patient', fields: [
-          { key: 'Nom', value: demande.patient ? `${demande.patient.prenom} ${demande.patient.nom}` : '—' },
-          { key: 'IPP', value: demande.patient?.ipp ?? '—' },
-          { key: 'Sexe', value: demande.patient?.sexe === 'M' ? 'Homme' : demande.patient?.sexe === 'F' ? 'Femme' : '—' },
+        { label: t('fiche.sectionPatient'), fields: [
+          { key: t('fiche.fNom'), value: demande.patient ? `${demande.patient.prenom} ${demande.patient.nom}` : '—' },
+          { key: t('fiche.fIpp'), value: demande.patient?.ipp ?? '—' },
+          { key: t('fiche.fSexe'), value: demande.patient?.sexe === 'M' ? t('fiche.homme') : demande.patient?.sexe === 'F' ? t('fiche.femme') : '—' },
         ]},
-        { label: 'Prescripteur', fields: [
-          { key: 'Médecin', value: demande.medecin ? `Dr. ${demande.medecin.prenom} ${demande.medecin.nom}` : '—' },
-          { key: 'Spécialité', value: demande.medecin?.specialite ?? '—' },
+        { label: t('fiche.sectionPrescripteur'), fields: [
+          { key: t('fiche.fMedecin'), value: demande.medecin ? `Dr. ${demande.medecin.prenom} ${demande.medecin.nom}` : '—' },
+          { key: t('fiche.fSpecialite'), value: demande.medecin?.specialite ?? '—' },
         ]},
-        { label: 'Analyses demandées', fields: (demande.typesAnalyse ?? []).length > 0
+        { label: t('fiche.sectionAnalyses'), fields: (demande.typesAnalyse ?? []).length > 0
           ? (demande.typesAnalyse ?? []).map(ta => ({ key: ta.nom, value: [ta.code, ta.categorie].filter(Boolean).join(' • ') || '—' }))
-          : [{ key: 'Analyses', value: '—' }] },
-        ...(resultatsFields.length > 0 ? [{ label: 'Résultats', fields: resultatsFields }] : []),
-        ...(demande.commentaire ? [{ label: 'Commentaire biologiste', fields: [{ key: 'Note', value: demande.commentaire }] }] : []),
+          : [{ key: t('fiche.fAnalyses'), value: '—' }] },
+        ...(resultatsFields.length > 0 ? [{ label: t('fiche.sectionResultats'), fields: resultatsFields }] : []),
+        ...(demande.commentaire ? [{ label: t('fiche.sectionCommentaire'), fields: [{ key: t('fiche.fNote'), value: demande.commentaire }] }] : []),
       ],
       `demande-labo-${demande.numero ?? demande.id.slice(0, 8)}`,
     );
@@ -114,12 +117,12 @@ export default function DemandeLaboPage() {
 
       <button onClick={() => router.push('/laboratoire')}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', marginBottom: 20, fontWeight: 600 }}>
-        <ArrowLeft size={14} /> Retour au laboratoire
+        <ArrowLeft size={14} /> {t('detail.back')}
       </button>
 
       {loading ? (
         <div style={{ background: '#fff', borderRadius: 12, padding: 60, textAlign: 'center', color: '#90A4AE' }}>
-          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> Chargement…
+          <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', display: 'block', margin: '0 auto 12px' }} /> {t('detail.loading')}
         </div>
       ) : error ? (
         <div style={{ background: '#FFEBEE', border: '1px solid #FFCDD2', borderRadius: 12, padding: 24, color: '#C62828' }}>⚠ {error}</div>
@@ -134,22 +137,22 @@ export default function DemandeLaboPage() {
                   <h1 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#1A2332' }}>{demande.numero ?? `LAB-${demande.id.slice(0,8).toUpperCase()}`}</h1>
                   {demande.urgence && (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#C62828', padding: '2px 10px', borderRadius: 10, background: '#FFEBEE' }}>
-                      <Zap size={11} /> URGENT
+                      <Zap size={11} /> {t('detail.urgentBadge')}
                     </span>
                   )}
                 </div>
                 <p style={{ margin: 0, fontSize: 12, color: '#90A4AE' }}>
-                  Demandé le {fmtDate(demande.dateCreation)}
-                  {demande.datePrelevement && ` • Prélevé le ${fmtDate(demande.datePrelevement)}`}
+                  {t('detail.requestedOn', { date: fmtDate(demande.dateCreation) })}
+                  {demande.datePrelevement && t('detail.sampledOn', { date: fmtDate(demande.datePrelevement) })}
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
-                  {scfg.icon} {scfg.label}
+                  {scfg.icon} {scfgLabel}
                 </span>
                 <button onClick={handleFichePDF}
                   style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
-                  <FileText size={13} /> Fiche PDF
+                  <FileText size={13} /> {t('detail.fichePdf')}
                 </button>
               </div>
             </div>
@@ -160,17 +163,17 @@ export default function DemandeLaboPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {demande.patient && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient</p>
+                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.patient')}</p>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{demande.patient.prenom} {demande.patient.nom}</div>
                   {demande.patient.ipp && <div style={{ fontSize: 11, color: '#90A4AE' }}>{demande.patient.ipp}</div>}
                   {demande.patient.sexe && (
-                    <div style={{ fontSize: 12, color: '#546E7A', marginTop: 4 }}>{demande.patient.sexe === 'M' ? 'Homme' : 'Femme'}</div>
+                    <div style={{ fontSize: 12, color: '#546E7A', marginTop: 4 }}>{demande.patient.sexe === 'M' ? t('detail.homme') : t('detail.femme')}</div>
                   )}
                 </div>
               )}
               {demande.medecin && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Prescripteur</p>
+                  <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.prescripteur')}</p>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Dr. {demande.medecin.prenom} {demande.medecin.nom}</div>
                   {demande.medecin.specialite && <div style={{ fontSize: 12, color: '#90A4AE' }}>{demande.medecin.specialite}</div>}
                 </div>
@@ -181,7 +184,7 @@ export default function DemandeLaboPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(!demande.typesAnalyse || demande.typesAnalyse.length === 0) ? (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: 32, textAlign: 'center', color: '#90A4AE' }}>
-                  Aucune analyse détaillée disponible
+                  {t('detail.noAnalyseDetail')}
                 </div>
               ) : demande.typesAnalyse.map(ta => {
                 const isOpen = expanded.includes(ta.id);
@@ -204,8 +207,8 @@ export default function DemandeLaboPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                           <thead style={{ background: '#F8FAFC' }}>
                             <tr>
-                              {['Paramètre', 'Résultat', 'Normes', 'Interprétation'].map(h => (
-                                <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{h}</th>
+                              {[t('detail.colParametre'), t('detail.colResultat'), t('detail.colNormes'), t('detail.colInterpretation')].map((h,hi) => (
+                                <th key={hi} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{h}</th>
                               ))}
                             </tr>
                           </thead>
@@ -245,7 +248,7 @@ export default function DemandeLaboPage() {
 
               {demande.commentaire && (
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '16px 18px' }}>
-                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Commentaire biologiste</p>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('detail.commentaireBiologiste')}</p>
                   <p style={{ margin: 0, fontSize: 13, color: '#37474F', lineHeight: 1.6 }}>{demande.commentaire}</p>
                 </div>
               )}

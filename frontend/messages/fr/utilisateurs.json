@@ -1,0 +1,99 @@
+{
+  "utilisateurs": {
+    "roles": {
+      "admin": "Administrateur",
+      "medecin": "Médecin",
+      "infirmier": "Infirmier(e)",
+      "caissier": "Caissier(e)",
+      "pharmacien": "Pharmacien(ne)",
+      "laborantin": "Laborantin(e)",
+      "drh": "DRH",
+      "directeur": "Directeur"
+    },
+    "statut": {
+      "actif": "Actif",
+      "inactif": "Inactif"
+    },
+    "xlsx": {
+      "prenom": "Prénom",
+      "nom": "Nom",
+      "email": "Email",
+      "role": "Rôle",
+      "statut": "Statut",
+      "creeLe": "Créé le",
+      "sheet": "Utilisateurs"
+    },
+    "pdf": {
+      "prenom": "Prénom",
+      "nom": "Nom",
+      "email": "Email",
+      "role": "Rôle",
+      "statut": "Statut",
+      "title": "Liste des Utilisateurs",
+      "subtitle": "{n} utilisateur(s) — {date}"
+    },
+    "errors": {
+      "load": "Erreur de chargement",
+      "requiredFields": "Tous les champs obligatoires doivent être remplis.",
+      "passwordRequired": "Le mot de passe est obligatoire pour un nouvel utilisateur.",
+      "save": "Erreur lors de la sauvegarde.",
+      "generic": "Erreur",
+      "passwordMin": "Le mot de passe doit comporter au moins 8 caractères."
+    },
+    "success": {
+      "updated": "Utilisateur modifié avec succès.",
+      "created": "Utilisateur créé avec succès.",
+      "activated": "Utilisateur activé avec succès.",
+      "deactivated": "Utilisateur désactivé avec succès.",
+      "passwordReset": "Mot de passe réinitialisé avec succès."
+    },
+    "hero": {
+      "title": "Utilisateurs",
+      "count": "{total} compte(s) · {actifs} actif(s)",
+      "newUser": "Nouvel utilisateur"
+    },
+    "filters": {
+      "search": "Rechercher par nom ou email…",
+      "all": "Tous",
+      "found": "{count, plural, one {# utilisateur trouvé} other {# utilisateurs trouvés}}"
+    },
+    "table": {
+      "user": "Utilisateur",
+      "email": "Email",
+      "role": "Rôle",
+      "statut": "Statut",
+      "since": "Depuis",
+      "actions": "Actions",
+      "empty": "Aucun utilisateur trouvé",
+      "emptyFilters": "Modifiez vos filtres",
+      "emptyCreate": "Créez le premier utilisateur"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "resetPwd": "Réinitialiser mot de passe",
+      "deactivate": "Désactiver",
+      "activate": "Activer"
+    },
+    "modal": {
+      "editTitle": "Modifier l'utilisateur",
+      "newTitle": "Nouvel utilisateur",
+      "prenom": "Prénom *",
+      "nom": "Nom *",
+      "email": "Email *",
+      "role": "Rôle *",
+      "password": "Mot de passe *",
+      "passwordPlaceholder": "Min. 8 caractères",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "edit": "Modifier",
+      "create": "Créer"
+    },
+    "reset": {
+      "title": "Réinitialiser le mot de passe",
+      "for": "Nouveau mot de passe pour",
+      "placeholder": "Min. 8 caractères",
+      "cancel": "Annuler",
+      "submit": "Réinitialiser"
+    }
+  }
+}

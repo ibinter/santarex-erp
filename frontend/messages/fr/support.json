@@ -1,0 +1,35 @@
+{
+  "support": {
+    "title": "Support",
+    "subtitle": "Ouvrez un ticket, notre équipe vous répond sous 24h",
+    "newTicket": "+ Nouveau ticket",
+    "empty": "Aucun ticket — cliquez sur \"Nouveau ticket\" pour commencer",
+    "replies": "{n} réponse(s)",
+    "replyPlaceholder": "Votre réponse…",
+    "send": "Envoyer",
+    "statut": {
+      "ouvert": "Ouvert",
+      "en_cours": "En cours",
+      "resolu": "Résolu",
+      "ferme": "Fermé"
+    },
+    "categories": {
+      "bug": "Bug",
+      "question": "Question",
+      "amelioration": "Amélioration",
+      "facturation": "Facturation",
+      "autre": "Autre"
+    },
+    "modal": {
+      "title": "Nouveau ticket",
+      "category": "Catégorie",
+      "subject": "Sujet",
+      "message": "Message",
+      "subjectPlaceholder": "Décrivez brièvement votre problème",
+      "messagePlaceholder": "Détaillez votre demande…",
+      "cancel": "Annuler",
+      "sending": "Envoi…",
+      "send": "Envoyer"
+    }
+  }
+}

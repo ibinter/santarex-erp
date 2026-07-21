@@ -7,6 +7,7 @@ import {
   Clock, CheckCircle, AlertTriangle, Zap, Calendar, Stethoscope,
   Download, FileSpreadsheet,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
@@ -20,12 +21,12 @@ type DemandeAnalyse = {
   createdAt: string; datePrelevement?: string;
 };
 
-const STATUT_CFG: Record<StatutDemande,{ label:string; bg:string; color:string; border:string; dot:string; icon:React.ReactNode }> = {
-  attente_prelevement: { label:'Attente prélèvement', bg:'#FFF7ED', color:'#C2410C', border:'#FED7AA', dot:'#F97316', icon:<Clock size={11}/> },
-  preleve:             { label:'Prélevé',              bg:'#EFF6FF', color:'#1D4ED8', border:'#BFDBFE', dot:'#3B82F6', icon:<FlaskConical size={11}/> },
-  en_analyse:          { label:'En analyse',           bg:'#EDE9FE', color:'#6D28D9', border:'#DDD6FE', dot:'#8B5CF6', icon:<FlaskConical size={11}/> },
-  termine:             { label:'Terminé',              bg:'#CCFBF1', color:'#0F766E', border:'#99F6E4', dot:'#14B8A6', icon:<CheckCircle size={11}/> },
-  valide:              { label:'Validé',               bg:'#DCFCE7', color:'#15803D', border:'#86EFAC', dot:'#22C55E', icon:<CheckCircle size={11}/> },
+const STATUT_CFG: Record<StatutDemande,{ bg:string; color:string; border:string; dot:string; icon:React.ReactNode }> = {
+  attente_prelevement: { bg:'#FFF7ED', color:'#C2410C', border:'#FED7AA', dot:'#F97316', icon:<Clock size={11}/> },
+  preleve:             { bg:'#EFF6FF', color:'#1D4ED8', border:'#BFDBFE', dot:'#3B82F6', icon:<FlaskConical size={11}/> },
+  en_analyse:          { bg:'#EDE9FE', color:'#6D28D9', border:'#DDD6FE', dot:'#8B5CF6', icon:<FlaskConical size={11}/> },
+  termine:             { bg:'#CCFBF1', color:'#0F766E', border:'#99F6E4', dot:'#14B8A6', icon:<CheckCircle size={11}/> },
+  valide:              { bg:'#DCFCE7', color:'#15803D', border:'#86EFAC', dot:'#22C55E', icon:<CheckCircle size={11}/> },
 };
 
 const ANALYSE_COLORS = ['#EDE9FE','#DBEAFE','#CCFBF1','#FEF3C7','#FCE7F3','#E0E7FF'];
@@ -49,6 +50,7 @@ function fmtDate(iso: string) {
 
 export default function LaboratoirePage() {
   const router = useRouter();
+  const t = useTranslations('laboratoire');
   const [demandes, setDemandes]   = useState<DemandeAnalyse[]>([]);
   const [loading, setLoading]     = useState(true);
   const [search, setSearch]       = useState('');
@@ -56,43 +58,44 @@ export default function LaboratoirePage() {
   const [urgOnly, setUrgOnly]     = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
 
+  const statutLabel = (s: string) => t(`statut.${s}` as any);
   const handleExportXLSX = () => exportXLSX(
     demandes.map(d => ({
-      'N° Demande': d.numero ?? d.id.slice(0,8),
-      'Patient': d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
-      'IPP': d.patient?.ipp ?? '—',
-      'Médecin': d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
-      'Analyses': d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
-      'Urgence': d.urgence ? 'OUI' : 'Non',
-      'Statut': STATUT_CFG[d.statut]?.label ?? d.statut ?? '—',
-      'Date demande': d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
-      'Date prélèvement': d.datePrelevement ? new Date(d.datePrelevement).toLocaleDateString('fr-FR') : '—',
+      [t('export.colNumero')]: d.numero ?? d.id.slice(0,8),
+      [t('export.colPatient')]: d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
+      [t('export.colIpp')]: d.patient?.ipp ?? '—',
+      [t('export.colMedecin')]: d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
+      [t('export.colAnalyses')]: d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
+      [t('export.colUrgence')]: d.urgence ? t('export.yes') : t('export.no'),
+      [t('export.colStatut')]: d.statut ? statutLabel(d.statut) : '—',
+      [t('export.colDateDemande')]: d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
+      [t('export.colDatePrelevement')]: d.datePrelevement ? new Date(d.datePrelevement).toLocaleDateString('fr-FR') : '—',
     })),
     `laboratoire_${new Date().toISOString().slice(0,10)}`,
-    'Demandes Analyses',
+    t('export.sheetName'),
   );
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'N° Demande', dataKey: 'numero', width: 28 },
-      { header: 'Patient', dataKey: 'patient', width: 38 },
-      { header: 'Médecin', dataKey: 'medecin', width: 34 },
-      { header: 'Analyses', dataKey: 'analyses', width: 48 },
-      { header: 'Urgence', dataKey: 'urgence', width: 18 },
-      { header: 'Statut', dataKey: 'statut', width: 24 },
-      { header: 'Date', dataKey: 'date', width: 22 },
+      { header: t('export.colNumero'), dataKey: 'numero', width: 28 },
+      { header: t('export.colPatient'), dataKey: 'patient', width: 38 },
+      { header: t('export.colMedecin'), dataKey: 'medecin', width: 34 },
+      { header: t('export.colAnalyses'), dataKey: 'analyses', width: 48 },
+      { header: t('export.colUrgence'), dataKey: 'urgence', width: 18 },
+      { header: t('export.colStatut'), dataKey: 'statut', width: 24 },
+      { header: t('export.colDate'), dataKey: 'date', width: 22 },
     ],
     demandes.map(d => ({
       numero: d.numero ?? d.id.slice(0,8),
       patient: d.patient ? `${d.patient.prenom} ${d.patient.nom}` : '—',
       medecin: d.medecin ? `Dr ${d.medecin.prenom} ${d.medecin.nom}` : '—',
       analyses: d.typesAnalyse?.map((a: any) => a.code).join(', ') ?? '—',
-      urgence: d.urgence ? 'OUI' : 'Non',
-      statut: STATUT_CFG[d.statut]?.label ?? d.statut ?? '—',
+      urgence: d.urgence ? t('export.yes') : t('export.no'),
+      statut: d.statut ? statutLabel(d.statut) : '—',
       date: d.createdAt ? new Date(d.createdAt).toLocaleDateString('fr-FR') : '—',
     })),
-    'Demandes d\'Analyses — Laboratoire',
+    t('export.pdfTitle'),
     `laboratoire_${new Date().toISOString().slice(0,10)}`,
-    `${demandes.length} demande(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('export.pdfSubtitle', { count: demandes.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
   const load = useCallback(async () => {
@@ -170,11 +173,11 @@ export default function LaboratoirePage() {
                 <FlaskConical size={24} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Laboratoire d'Analyses</h1>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('list.heroTitle')}</h1>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
                   <span style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', display:'inline-block', animation:'pulse 2s infinite' }}/>
                   <span style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontWeight:600 }}>
-                    {loading?'Chargement…':`${total} demande${total>1?'s':''} • ${enCours} en cours`}
+                    {loading?t('list.loading'):t('list.summary', { total, enCours })}
                   </span>
                   {lastRefresh&&<span style={{ fontSize:10, color:'rgba(255,255,255,0.45)', marginLeft:4 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
                 </div>
@@ -197,7 +200,7 @@ export default function LaboratoirePage() {
             </button>
             <button onClick={()=>router.push('/laboratoire/demandes/nouvelle')}
               style={{ padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', color:'#3730A3', display:'flex', alignItems:'center', gap:8, fontSize:13, fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
-              <Plus size={14}/> Nouvelle demande
+              <Plus size={14}/> {t('list.newRequest')}
             </button>
           </div>
         </div>
@@ -205,10 +208,10 @@ export default function LaboratoirePage() {
         {/* KPI inline */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:16, position:'relative', zIndex:1 }}>
           {[
-            { label:'Total',      val:total,    dot:'rgba(255,255,255,0.7)', valColor:'#fff' },
-            { label:'En cours',   val:enCours,  dot:'#FCD34D',              valColor:'#FCD34D' },
-            { label:'Urgentes',   val:urgentes, dot:'#FCA5A5',              valColor:'#FCA5A5' },
-            { label:'Terminées',  val:termines, dot:'#BBF7D0',              valColor:'#BBF7D0' },
+            { label:t('list.kpiTotal'),     val:total,    dot:'rgba(255,255,255,0.7)', valColor:'#fff' },
+            { label:t('list.kpiEnCours'),   val:enCours,  dot:'#FCD34D',              valColor:'#FCD34D' },
+            { label:t('list.kpiUrgentes'),  val:urgentes, dot:'#FCA5A5',              valColor:'#FCA5A5' },
+            { label:t('list.kpiTerminees'), val:termines, dot:'#BBF7D0',              valColor:'#BBF7D0' },
           ].map((k,i)=>(
             <div key={i} style={{ background:'rgba(255,255,255,0.1)', borderRadius:12, padding:'10px 14px', border:'1px solid rgba(255,255,255,0.15)' }}>
               <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:4 }}>
@@ -225,17 +228,17 @@ export default function LaboratoirePage() {
       <div style={{ display:'flex', gap:10, marginBottom:14, flexWrap:'wrap', alignItems:'center' }}>
         <div style={{ position:'relative', flex:1, minWidth:220 }}>
           <Search size={13} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher patient, N° demande, IPP…"
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={t('list.searchPlaceholder')}
             style={{ width:'100%', padding:'9px 12px 9px 34px', borderRadius:10, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
         </div>
         <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
           <button onClick={()=>setUrgOnly(!urgOnly)}
             style={{ padding:'7px 14px', borderRadius:20, border:`1.5px solid ${urgOnly?'#DC2626':'#E0E8F0'}`, background:urgOnly?'#FEE2E2':'#fff', color:urgOnly?'#DC2626':'#546E7A', fontSize:11, fontWeight:urgOnly?800:500, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
-            <Zap size={11} style={{ fill:urgOnly?'#DC2626':'none' }}/> Urgentes
+            <Zap size={11} style={{ fill:urgOnly?'#DC2626':'none' }}/> {t('list.filterUrgentes')}
           </button>
           <button onClick={()=>setFiltre('')}
             style={{ padding:'7px 14px', borderRadius:20, border:`1.5px solid ${filtre===''?'#3730A3':'#E0E8F0'}`, background:filtre===''?'#3730A3':'#fff', color:filtre===''?'#fff':'#546E7A', fontSize:11, fontWeight:filtre===''?800:500, cursor:'pointer' }}>
-            Tous
+            {t('list.filterAll')}
           </button>
           {(Object.keys(STATUT_CFG) as StatutDemande[]).map(s=>{
             const cfg=STATUT_CFG[s];
@@ -243,7 +246,7 @@ export default function LaboratoirePage() {
               <button key={s} onClick={()=>setFiltre(filtre===s?'':s)}
                 style={{ padding:'7px 12px', borderRadius:20, border:`1.5px solid ${filtre===s?cfg.border:'#E0E8F0'}`, background:filtre===s?cfg.bg:'#fff', color:filtre===s?cfg.color:'#546E7A', fontSize:11, fontWeight:filtre===s?800:500, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>
                 <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
-                {cfg.label}
+                {statutLabel(s)}
               </button>
             );
           })}
@@ -251,7 +254,7 @@ export default function LaboratoirePage() {
       </div>
 
       {/* Résumé filtres */}
-      {!loading&&<div style={{ fontSize:11, color:'#90A4AE', fontWeight:600, marginBottom:10 }}>{displayed.length} demande{displayed.length>1?'s':''} affichée{displayed.length>1?'s':''}</div>}
+      {!loading&&<div style={{ fontSize:11, color:'#90A4AE', fontWeight:600, marginBottom:10 }}>{t('list.displayedCount', { count: displayed.length })}</div>}
 
       {/* ── TABLE ────────────────────────────────────────────────── */}
       <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 1px 6px rgba(0,0,0,0.07)', overflow:'hidden', animation:'fadeUp .25s ease' }}>
@@ -259,8 +262,8 @@ export default function LaboratoirePage() {
           <table style={{ width:'100%', borderCollapse:'collapse', minWidth:700 }}>
             <thead>
               <tr style={{ background:'linear-gradient(135deg,#F0EEFF,#EDE9FE)' }}>
-                {['N° Demande','Patient','Médecin','Date','Analyses','Urgence','Statut',''].map(h=>(
-                  <th key={h} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#4C1D95', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
+                {[t('list.colDemande'),t('list.colPatient'),t('list.colMedecin'),t('list.colDate'),t('list.colAnalyses'),t('list.colUrgence'),t('list.colStatut'),''].map((h,hi)=>(
+                  <th key={hi} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#4C1D95', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -274,7 +277,7 @@ export default function LaboratoirePage() {
               )) : displayed.length===0 ? (
                 <tr><td colSpan={8} style={{ textAlign:'center', padding:'60px 20px', color:'#90A4AE' }}>
                   <FlaskConical size={38} style={{ display:'block', margin:'0 auto 12px', color:'#DDD6FE' }}/>
-                  <p style={{ margin:0, fontSize:13, fontWeight:600 }}>Aucune demande trouvée</p>
+                  <p style={{ margin:0, fontSize:13, fontWeight:600 }}>{t('list.emptyTitle')}</p>
                 </td></tr>
               ) : displayed.map(d=>{
                 const cfg=STATUT_CFG[d.statut]??STATUT_CFG.attente_prelevement;
@@ -294,12 +297,12 @@ export default function LaboratoirePage() {
                         <div style={{ width:34, height:34, borderRadius:10, background:ab, border:`1.5px solid ${ac}33`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, color:ac, flexShrink:0 }}>{ii}</div>
                         <div>
                           <div style={{ fontSize:13, fontWeight:700, color:'#1A2332' }}>{nom}</div>
-                          {d.patient?.ipp&&<div style={{ fontSize:10, color:'#90A4AE', fontFamily:'monospace' }}>IPP: {d.patient.ipp}</div>}
+                          {d.patient?.ipp&&<div style={{ fontSize:10, color:'#90A4AE', fontFamily:'monospace' }}>{t('list.ippLabel')} {d.patient.ipp}</div>}
                         </div>
                       </div>
                     </td>
                     <td style={{ padding:'12px 14px', fontSize:12, color:'#546E7A', whiteSpace:'nowrap' }}>
-                      {d.medecin?<><span style={{ fontWeight:700 }}>Dr.</span> {d.medecin.prenom} {d.medecin.nom}</>:'—'}
+                      {d.medecin?<><span style={{ fontWeight:700 }}>{t('list.doctorPrefix')}</span> {d.medecin.prenom} {d.medecin.nom}</>:'—'}
                     </td>
                     <td style={{ padding:'12px 14px', fontSize:11, color:'#546E7A', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:4 }}>
                       <Calendar size={10} color="#B0BEC5"/> {fmtDate(d.createdAt)}
@@ -315,14 +318,14 @@ export default function LaboratoirePage() {
                     <td style={{ padding:'12px 14px' }}>
                       {d.urgence?(
                         <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:'#FEE2E2', color:'#DC2626' }}>
-                          <Zap size={10} style={{ fill:'#DC2626' }}/> URGENT
+                          <Zap size={10} style={{ fill:'#DC2626' }}/> {t('list.urgentBadge')}
                         </span>
                       ):(<span style={{ fontSize:12, color:'#D1D5DB' }}>—</span>)}
                     </td>
                     <td style={{ padding:'12px 14px' }}>
                       <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
                         <span style={{ width:5, height:5, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
-                        {cfg.label}
+                        {statutLabel(d.statut)}
                       </span>
                     </td>
                     <td style={{ padding:'12px 14px' }}><ChevronRight size={14} color="#B0BEC5"/></td>

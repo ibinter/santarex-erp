@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import Providers from './providers';
 import PwaRegister from '@/components/PwaRegister';
@@ -17,16 +18,21 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <body>
         <PwaRegister />
-        <Providers>{children}</Providers>
+        <Providers locale={locale} messages={messages as Record<string, unknown>}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

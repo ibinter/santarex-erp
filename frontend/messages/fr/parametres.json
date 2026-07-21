@@ -1,0 +1,72 @@
+{
+  "parametres": {
+    "title": "Paramètres",
+    "subtitle": "Configuration de l'établissement et préférences système",
+    "save": "Enregistrer",
+    "saving": "Sauvegarde…",
+    "saved": "Enregistré !",
+    "nav": {
+      "etablissement": "Établissement",
+      "securite": "Sécurité & Accès",
+      "notifications": "Notifications",
+      "utilisateurs": "Utilisateurs & Rôles",
+      "langue": "Langue & Région",
+      "apparence": "Apparence",
+      "sauvegarde": "Sauvegardes"
+    },
+    "etab": {
+      "nom": "Nom de l'établissement",
+      "ville": "Ville",
+      "pays": "Pays",
+      "telephone": "Téléphone",
+      "email": "Email de contact",
+      "tenantTitle": "Identifiant Tenant",
+      "tenantNote": "Identifiant unique de votre établissement — non modifiable"
+    },
+    "securite": {
+      "twoFa": "Authentification à 2 facteurs (2FA)",
+      "twoFaDesc": "Exige un code TOTP en plus du mot de passe pour tous les comptes",
+      "sessionTitle": "Expiration de session",
+      "sessionDesc": "Déconnexion automatique après inactivité",
+      "minutes": "{v} min"
+    },
+    "notifs": {
+      "stock": "Alertes de stock critique",
+      "stockDesc": "Notifier quand un médicament passe sous le seuil",
+      "rdv": "Rappels de rendez-vous",
+      "rdvDesc": "Rappel 1h avant chaque rendez-vous",
+      "labo": "Résultats de laboratoire",
+      "laboDesc": "Notifier quand les résultats sont disponibles",
+      "facture": "Factures impayées",
+      "factureDesc": "Alerte quotidienne sur les impayés > 7 jours"
+    },
+    "langue": {
+      "interface": "Langue de l'interface",
+      "devise": "Devise",
+      "formatDate": "Format de date",
+      "fuseau": "Fuseau horaire",
+      "optFr": "Français",
+      "optEn": "English",
+      "deviseXof": "XOF (Franc CFA)",
+      "deviseEur": "EUR (Euro)",
+      "deviseUsd": "USD (Dollar)"
+    },
+    "userCount": "{count, plural, one {# utilisateur} other {# utilisateurs}}",
+    "roles": {
+      "0": { "nom": "Super Administrateur", "permissions": ["Tout accès", "Gestion système"] },
+      "1": { "nom": "Administrateur", "permissions": ["Gestion utilisateurs", "Rapports", "Paramètres"] },
+      "2": { "nom": "Médecin", "permissions": ["DME", "Consultations", "Ordonnances", "Labo"] },
+      "3": { "nom": "Infirmier(e)", "permissions": ["Soins", "Hospitalisation", "Urgences"] },
+      "4": { "nom": "Pharmacien", "permissions": ["Pharmacie", "Stocks", "Dispensation"] },
+      "5": { "nom": "Biologiste", "permissions": ["Laboratoire", "Résultats", "Validation"] },
+      "6": { "nom": "Caissier(e)", "permissions": ["Facturation", "Paiements", "Caisse"] },
+      "7": { "nom": "Technicien Imagerie", "permissions": ["Imagerie", "Examens", "Comptes-rendus"] }
+    },
+    "comingSoon": {
+      "apparence": "Personnalisation de l'interface",
+      "sauvegarde": "Gestion des sauvegardes",
+      "desc": "Cette section sera disponible dans une prochaine mise à jour.",
+      "badge": "🚀 Bientôt disponible"
+    }
+  }
+}

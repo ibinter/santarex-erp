@@ -6,6 +6,7 @@ import {
   Package, AlertTriangle, TrendingUp, Plus, Search,
   RefreshCw, Download, ChevronRight, Pill, BarChart3, ShieldAlert, FileSpreadsheet,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
@@ -27,10 +28,10 @@ function stockStatus(m: Medicament): StockStatus {
   if (m.stockActuel<=m.stockMinimum) return 'alerte';
   return 'ok';
 }
-const STATUS_CFG: Record<StockStatus,{ label:string; color:string; bg:string; border:string; dot:string; barColor:string }> = {
-  ok:      { label:'En stock',  color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', dot:'#22C55E', barColor:'#4ADE80' },
-  alerte:  { label:'Alerte',    color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', dot:'#F97316', barColor:'#FB923C' },
-  rupture: { label:'Rupture',   color:'#DC2626', bg:'#FEE2E2', border:'#FCA5A5', dot:'#EF4444', barColor:'#EF4444' },
+const STATUS_CFG: Record<StockStatus,{ color:string; bg:string; border:string; dot:string; barColor:string }> = {
+  ok:      { color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', dot:'#22C55E', barColor:'#4ADE80' },
+  alerte:  { color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', dot:'#F97316', barColor:'#FB923C' },
+  rupture: { color:'#DC2626', bg:'#FEE2E2', border:'#FCA5A5', dot:'#EF4444', barColor:'#EF4444' },
 };
 
 const FORME_ICON: Record<string,string> = {
@@ -57,6 +58,7 @@ function catColor(c?: string): [string,string] {
 
 export default function PharmaciePage() {
   const router = useRouter();
+  const t = useTranslations('pharmacie');
   const [medicaments, setMedicaments] = useState<Medicament[]>([]);
   const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState('');
@@ -79,31 +81,34 @@ export default function PharmaciePage() {
   const enStock      = medicaments.filter(m=>m.stockActuel>m.stockMinimum).length;
   const valeurTotale = medicaments.reduce((acc,m)=>acc+m.stockActuel*(parseFloat(m.prixVente)||0),0);
 
+  const statutLabel = (s: StockStatus) => t(`statut.${s}` as any);
+  const exportStatut = (m: Medicament) => m.stockActuel <= 0 ? t('export.statutRupture') : m.stockActuel <= m.stockMinimum ? t('export.statutAlerte') : t('export.statutEnStock');
+
   const handleExportXLSX = () => exportXLSX(
     medicaments.map(m => ({
-      'Code': m.code,
-      'Médicament': m.nom,
-      'Forme': m.forme ?? '—',
-      'Dosage': m.dosage ?? '—',
-      'Catégorie': m.categorie ?? '—',
-      'Stock actuel': m.stockActuel,
-      'Stock minimum': m.stockMinimum,
-      'Prix vente (XOF)': parseFloat(m.prixVente) || 0,
-      'Statut': m.stockActuel <= 0 ? 'Rupture' : m.stockActuel <= m.stockMinimum ? 'Alerte' : 'En stock',
+      [t('export.colCode')]: m.code,
+      [t('export.colMedicament')]: m.nom,
+      [t('export.colForme')]: m.forme ?? '—',
+      [t('export.colDosage')]: m.dosage ?? '—',
+      [t('export.colCategorie')]: m.categorie ?? '—',
+      [t('export.colStockActuel')]: m.stockActuel,
+      [t('export.colStockMinimum')]: m.stockMinimum,
+      [t('export.colPrixVenteXof')]: parseFloat(m.prixVente) || 0,
+      [t('export.colStatut')]: exportStatut(m),
     })),
-    `pharmacie_stock_${new Date().toISOString().slice(0, 10)}`, 'Stock Pharmacie',
+    `pharmacie_stock_${new Date().toISOString().slice(0, 10)}`, t('export.sheetName'),
   );
 
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'Code', dataKey: 'code', width: 24 },
-      { header: 'Médicament', dataKey: 'nom', width: 44 },
-      { header: 'Forme', dataKey: 'forme', width: 24 },
-      { header: 'Catégorie', dataKey: 'categorie', width: 30 },
-      { header: 'Stock', dataKey: 'stock', width: 18 },
-      { header: 'Min.', dataKey: 'min', width: 14 },
-      { header: 'Prix vente', dataKey: 'prix', width: 26 },
-      { header: 'Statut', dataKey: 'statut', width: 22 },
+      { header: t('export.colCode'), dataKey: 'code', width: 24 },
+      { header: t('export.colMedicament'), dataKey: 'nom', width: 44 },
+      { header: t('export.colForme'), dataKey: 'forme', width: 24 },
+      { header: t('export.colCategorie'), dataKey: 'categorie', width: 30 },
+      { header: t('export.colStock'), dataKey: 'stock', width: 18 },
+      { header: t('export.colMin'), dataKey: 'min', width: 14 },
+      { header: t('export.colPrixVente'), dataKey: 'prix', width: 26 },
+      { header: t('export.colStatut'), dataKey: 'statut', width: 22 },
     ],
     medicaments.map(m => ({
       code: m.code,
@@ -113,11 +118,11 @@ export default function PharmaciePage() {
       stock: m.stockActuel,
       min: m.stockMinimum,
       prix: `${(parseFloat(m.prixVente) || 0).toLocaleString('fr-FR')} F`,
-      statut: m.stockActuel <= 0 ? 'Rupture' : m.stockActuel <= m.stockMinimum ? 'Alerte' : 'En stock',
+      statut: exportStatut(m),
     })),
-    'Stock Pharmacie',
+    t('export.pdfTitle'),
     `pharmacie_stock_${new Date().toISOString().slice(0, 10)}`,
-    `${medicaments.length} médicament(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('export.pdfSubtitle', { count: medicaments.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
   const displayed = medicaments.filter(m => {
@@ -130,9 +135,9 @@ export default function PharmaciePage() {
   });
 
   const TABS = [
-    { id:'tous'    as const, label:'Tous',        count:medicaments.length, color:'#1D4ED8', bg:'#EFF6FF' },
-    { id:'rupture' as const, label:'Ruptures',    count:ruptures,           color:'#DC2626', bg:'#FEE2E2' },
-    { id:'alerte'  as const, label:'Alertes',     count:alertes,            color:'#C2410C', bg:'#FFF7ED' },
+    { id:'tous'    as const, label:t('list.tabTous'),     count:medicaments.length, color:'#1D4ED8', bg:'#EFF6FF' },
+    { id:'rupture' as const, label:t('list.tabRuptures'), count:ruptures,           color:'#DC2626', bg:'#FEE2E2' },
+    { id:'alerte'  as const, label:t('list.tabAlertes'),  count:alertes,            color:'#C2410C', bg:'#FFF7ED' },
   ];
 
   return (
@@ -158,11 +163,11 @@ export default function PharmaciePage() {
                 <Pill size={24} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Pharmacie — Stock</h1>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('list.heroTitle')}</h1>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
                   <span style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', display:'inline-block', animation:'pulse 2s infinite' }}/>
                   <span style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontWeight:600 }}>
-                    {loading?'Chargement…':`${medicaments.length} médicaments • Valeur stock : ${fmtXOF(valeurTotale)}`}
+                    {loading?t('list.loading'):t('list.summary', { count: medicaments.length, value: fmtXOF(valeurTotale) })}
                   </span>
                   {lastRefresh&&<span style={{ fontSize:10, color:'rgba(255,255,255,0.45)', marginLeft:4 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
                 </div>
@@ -175,13 +180,13 @@ export default function PharmaciePage() {
                 {ruptures>0&&(
                   <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(239,68,68,0.25)', border:'1px solid rgba(239,68,68,0.4)', borderRadius:8, padding:'5px 12px' }}>
                     <ShieldAlert size={12} color="#FCA5A5"/>
-                    <span style={{ fontSize:11, fontWeight:800, color:'#FCA5A5' }}>{ruptures} rupture{ruptures>1?'s':''}</span>
+                    <span style={{ fontSize:11, fontWeight:800, color:'#FCA5A5' }}>{t('list.ruptureBadge', { count: ruptures })}</span>
                   </div>
                 )}
                 {alertes>0&&(
                   <div style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(251,146,60,0.2)', border:'1px solid rgba(251,146,60,0.35)', borderRadius:8, padding:'5px 12px' }}>
                     <AlertTriangle size={12} color="#FCD34D"/>
-                    <span style={{ fontSize:11, fontWeight:800, color:'#FCD34D' }}>{alertes} alerte{alertes>1?'s':''} stock</span>
+                    <span style={{ fontSize:11, fontWeight:800, color:'#FCD34D' }}>{t('list.alerteBadge', { count: alertes })}</span>
                   </div>
                 )}
               </div>
@@ -203,7 +208,7 @@ export default function PharmaciePage() {
             </button>
             <button onClick={()=>router.push('/pharmacie/medicaments/nouveau')}
               style={{ padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', color:'#065F46', display:'flex', alignItems:'center', gap:8, fontSize:13, fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
-              <Plus size={14}/> Nouveau
+              <Plus size={14}/> {t('list.new')}
             </button>
           </div>
         </div>
@@ -211,10 +216,10 @@ export default function PharmaciePage() {
         {/* Mini KPI bar */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:16, position:'relative', zIndex:1 }}>
           {[
-            { label:'En stock',     val:enStock,      color:'#BBF7D0' },
-            { label:'Alertes',      val:alertes,      color:'#FCD34D' },
-            { label:'Ruptures',     val:ruptures,     color:'#FCA5A5' },
-            { label:'Valeur totale',val:fmtXOF(valeurTotale), color:'rgba(255,255,255,0.9)' },
+            { label:t('list.kpiEnStock'),       val:enStock,      color:'#BBF7D0' },
+            { label:t('list.kpiAlertes'),       val:alertes,      color:'#FCD34D' },
+            { label:t('list.kpiRuptures'),      val:ruptures,     color:'#FCA5A5' },
+            { label:t('list.kpiValeurTotale'),  val:fmtXOF(valeurTotale), color:'rgba(255,255,255,0.9)' },
           ].map((k,i)=>(
             <div key={i} style={{ background:'rgba(255,255,255,0.1)', borderRadius:12, padding:'10px 14px', border:'1px solid rgba(255,255,255,0.15)' }}>
               <div style={{ fontSize:9, color:'rgba(255,255,255,0.6)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>{k.label}</div>
@@ -237,10 +242,10 @@ export default function PharmaciePage() {
         </div>
         <div style={{ position:'relative', flex:1, minWidth:200 }}>
           <Search size={13} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom, DCI, code, nom commercial…"
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={t('list.searchPlaceholder')}
             style={{ width:'100%', padding:'9px 12px 9px 34px', borderRadius:10, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
         </div>
-        {!loading&&<span style={{ fontSize:11, color:'#90A4AE', fontWeight:600, whiteSpace:'nowrap' }}>{displayed.length} médicament{displayed.length>1?'s':''}</span>}
+        {!loading&&<span style={{ fontSize:11, color:'#90A4AE', fontWeight:600, whiteSpace:'nowrap' }}>{t('list.countLabel', { count: displayed.length })}</span>}
       </div>
 
       {/* ── TABLE ────────────────────────────────────────────────── */}
@@ -249,8 +254,8 @@ export default function PharmaciePage() {
           <table style={{ width:'100%', borderCollapse:'collapse', minWidth:700 }}>
             <thead>
               <tr style={{ background:'linear-gradient(135deg,#F0FDF4,#DCFCE7)' }}>
-                {['Code','Médicament','DCI / Forme','Catégorie','Stock','Min.','Prix vente','Statut',''].map(h=>(
-                  <th key={h} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#065F46', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
+                {[t('list.colCode'),t('list.colMedicament'),t('list.colDciForme'),t('list.colCategorie'),t('list.colStock'),t('list.colMin'),t('list.colPrixVente'),t('list.colStatut'),''].map((h,hi)=>(
+                  <th key={hi} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#065F46', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -264,7 +269,7 @@ export default function PharmaciePage() {
               )) : displayed.length===0 ? (
                 <tr><td colSpan={9} style={{ textAlign:'center', padding:'60px 20px', color:'#90A4AE' }}>
                   <Package size={38} style={{ display:'block', margin:'0 auto 12px', color:'#BBF7D0' }}/>
-                  <p style={{ margin:0, fontSize:13, fontWeight:600 }}>Aucun médicament trouvé</p>
+                  <p style={{ margin:0, fontSize:13, fontWeight:600 }}>{t('list.emptyTitle')}</p>
                 </td></tr>
               ) : displayed.map(m=>{
                 const st  = stockStatus(m);
@@ -312,7 +317,7 @@ export default function PharmaciePage() {
                     <td style={{ padding:'11px 14px' }}>
                       <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
                         <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block', animation:st!=='ok'?'pulse 2s infinite':'none' }}/>
-                        {cfg.label}
+                        {statutLabel(st)}
                       </span>
                     </td>
                     <td style={{ padding:'11px 14px' }}><ChevronRight size={14} color="#B0BEC5"/></td>

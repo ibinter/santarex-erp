@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { getCurrentUser, getUserInitials, getFullName } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
 import type { User } from '@/types';
@@ -8,6 +9,7 @@ import type { User } from '@/types';
 type Section = 'info' | 'security' | 'preferences';
 
 export default function ProfilPage() {
+  const t = useTranslations('profil');
   const [user, setUser] = useState<User | null>(null);
   const [saved, setSaved] = useState<Section | null>(null);
   const [saving, setSaving] = useState(false);
@@ -44,23 +46,23 @@ export default function ProfilPage() {
       await apiClient('/auth/me', { method: 'PATCH', body: { firstName: infoForm.firstName, lastName: infoForm.lastName } });
       showSaved('info');
     } catch (err: any) {
-      setSaveError(err?.message ?? 'Erreur lors de la sauvegarde');
+      setSaveError(err?.message ?? t('errors.save'));
     } finally { setSaving(false); }
   }
 
   async function handleSecSubmit(e: FormEvent) {
     e.preventDefault();
     setSecError(null);
-    if (!secForm.current || !secForm.next || !secForm.confirm) { setSecError('Veuillez remplir tous les champs.'); return; }
-    if (secForm.next !== secForm.confirm) { setSecError('Les mots de passe ne correspondent pas.'); return; }
-    if (secForm.next.length < 8) { setSecError('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+    if (!secForm.current || !secForm.next || !secForm.confirm) { setSecError(t('errors.allFields')); return; }
+    if (secForm.next !== secForm.confirm) { setSecError(t('errors.mismatch')); return; }
+    if (secForm.next.length < 8) { setSecError(t('errors.minLength')); return; }
     setSaving(true);
     try {
       await apiClient('/auth/change-password', { method: 'POST', body: { currentPassword: secForm.current, newPassword: secForm.next } });
       setSecForm({ current: '', next: '', confirm: '' });
       showSaved('security');
     } catch (err: any) {
-      setSecError(err?.message ?? 'Mot de passe actuel incorrect');
+      setSecError(err?.message ?? t('errors.currentWrong'));
     } finally { setSaving(false); }
   }
 
@@ -70,8 +72,8 @@ export default function ProfilPage() {
   }
 
   const initials = getUserInitials(user);
-  const fullName = getFullName(user) || 'Utilisateur';
-  const roleLabel = (user as unknown as Record<string, unknown>)?.role as string || 'Utilisateur';
+  const fullName = getFullName(user) || t('defaultUser');
+  const roleLabel = (user as unknown as Record<string, unknown>)?.role as string || t('defaultUser');
 
   const cardStyle: React.CSSProperties = {
     background: '#fff',
@@ -154,7 +156,7 @@ export default function ProfilPage() {
                 border: '1px solid #A5D6A7',
               }}
             >
-              Hôpital Central
+              {t('hopital')}
             </span>
           </div>
         </div>
@@ -163,37 +165,37 @@ export default function ProfilPage() {
       {/* Section Mes informations */}
       <div style={cardStyle}>
         <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#37474F', borderBottom: '2px solid #EFF6FF', paddingBottom: '12px' }}>
-          👤 Mes informations
+          👤 {t('info.title')}
         </h2>
         <form onSubmit={handleInfoSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
-              <label style={labelStyle}>Prénom</label>
+              <label style={labelStyle}>{t('info.firstName')}</label>
               <input
                 style={inputStyle}
                 value={infoForm.firstName}
                 onChange={(e) => setInfoForm((f) => ({ ...f, firstName: e.target.value }))}
-                placeholder="Prénom"
+                placeholder={t('info.firstNamePlaceholder')}
               />
             </div>
             <div>
-              <label style={labelStyle}>Nom</label>
+              <label style={labelStyle}>{t('info.lastName')}</label>
               <input
                 style={inputStyle}
                 value={infoForm.lastName}
                 onChange={(e) => setInfoForm((f) => ({ ...f, lastName: e.target.value }))}
-                placeholder="Nom de famille"
+                placeholder={t('info.lastNamePlaceholder')}
               />
             </div>
           </div>
           <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>Adresse email</label>
+            <label style={labelStyle}>{t('info.email')}</label>
             <input
               type="email"
               style={inputStyle}
               value={infoForm.email}
               onChange={(e) => setInfoForm((f) => ({ ...f, email: e.target.value }))}
-              placeholder="votre@email.com"
+              placeholder={t('info.emailPlaceholder')}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -210,10 +212,10 @@ export default function ProfilPage() {
                 cursor: 'pointer',
               }}
             >
-              Enregistrer
+              {t('info.save')}
             </button>
             {saved === 'info' && (
-              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ Informations sauvegardées</span>
+              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ {t('info.saved')}</span>
             )}
           </div>
         </form>
@@ -222,7 +224,7 @@ export default function ProfilPage() {
       {/* Section Sécurité */}
       <div style={cardStyle}>
         <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#37474F', borderBottom: '2px solid #EFF6FF', paddingBottom: '12px' }}>
-          🔒 Sécurité
+          🔒 {t('security.title')}
         </h2>
         <form onSubmit={handleSecSubmit}>
           {secError && (
@@ -232,7 +234,7 @@ export default function ProfilPage() {
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
             <div>
-              <label style={labelStyle}>Mot de passe actuel</label>
+              <label style={labelStyle}>{t('security.current')}</label>
               <input
                 type="password"
                 style={inputStyle}
@@ -242,7 +244,7 @@ export default function ProfilPage() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Nouveau mot de passe</label>
+              <label style={labelStyle}>{t('security.next')}</label>
               <input
                 type="password"
                 style={inputStyle}
@@ -252,7 +254,7 @@ export default function ProfilPage() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Confirmer le nouveau mot de passe</label>
+              <label style={labelStyle}>{t('security.confirm')}</label>
               <input
                 type="password"
                 style={inputStyle}
@@ -276,10 +278,10 @@ export default function ProfilPage() {
                 cursor: 'pointer',
               }}
             >
-              Changer le mot de passe
+              {t('security.submit')}
             </button>
             {saved === 'security' && (
-              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ Mot de passe mis à jour</span>
+              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ {t('security.saved')}</span>
             )}
           </div>
         </form>
@@ -288,29 +290,29 @@ export default function ProfilPage() {
       {/* Section Préférences */}
       <div style={cardStyle}>
         <h2 style={{ margin: '0 0 20px', fontSize: '16px', fontWeight: 700, color: '#37474F', borderBottom: '2px solid #EFF6FF', paddingBottom: '12px' }}>
-          ⚙️ Préférences
+          ⚙️ {t('prefs.title')}
         </h2>
         <form onSubmit={handlePrefSubmit}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
             {/* Langue */}
             <div>
-              <label style={labelStyle}>Langue de l'interface</label>
+              <label style={labelStyle}>{t('prefs.language')}</label>
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value as 'fr' | 'en')}
                 style={{ ...inputStyle, cursor: 'pointer' }}
               >
-                <option value="fr">Français</option>
-                <option value="en">English</option>
+                <option value="fr">{t('prefs.optFr')}</option>
+                <option value="en">{t('prefs.optEn')}</option>
               </select>
             </div>
 
             {/* Notifications email */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#37474F' }}>Notifications email</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#37474F' }}>{t('prefs.emailNotif')}</div>
                 <div style={{ fontSize: '12px', color: '#546E7A', marginTop: '2px' }}>
-                  Recevoir les alertes et résumés par email
+                  {t('prefs.emailNotifDesc')}
                 </div>
               </div>
               <button
@@ -326,7 +328,7 @@ export default function ProfilPage() {
                   position: 'relative',
                   transition: 'background 0.2s',
                 }}
-                aria-label="Toggle notifications email"
+                aria-label={t('prefs.toggleAria')}
               >
                 <span
                   style={{
@@ -359,10 +361,10 @@ export default function ProfilPage() {
                 cursor: 'pointer',
               }}
             >
-              Enregistrer les préférences
+              {t('prefs.submit')}
             </button>
             {saved === 'preferences' && (
-              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ Préférences sauvegardées</span>
+              <span style={{ color: '#2E7D32', fontSize: '13px', fontWeight: 500 }}>✓ {t('prefs.saved')}</span>
             )}
           </div>
         </form>

@@ -5,6 +5,7 @@ import type { PatientUrgence, CategorieManchester } from '@/types';
 import AdmissionUrgenceModal from '@/components/urgences/AdmissionUrgenceModal';
 import TriageModal from '@/components/urgences/TriageModal';
 import { apiClient } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 import { RefreshCw, Plus, Activity, Clock, AlertTriangle, Stethoscope, Heart } from 'lucide-react';
 
 const MAN_CFG: Record<CategorieManchester, { bg: string; border: string; text: string; badge: string; label: string; order: number; dot: string; headerBg: string }> = {
@@ -27,9 +28,9 @@ function tempsDepuis(h: string): string {
   if (d<60) return `${d}min`;
   return `${Math.floor(d/60)}h${(d%60).toString().padStart(2,'0')}`;
 }
-function nomPatient(p: PatientUrgence) {
+function nomPatient(p: PatientUrgence, inconnu: string) {
   if (p.patient) return `${p.patient.prenom} ${p.patient.nom}`;
-  return p.nomProvisoire||'Patient inconnu';
+  return p.nomProvisoire||inconnu;
 }
 function getInits(m?: PatientUrgence['medecin']) {
   if (!m) return '?';
@@ -39,8 +40,10 @@ function getInits(m?: PatientUrgence['medecin']) {
 function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge }: {
   patient: PatientUrgence; onTriage:()=>void; onDossier?:()=>void; onPriseEnCharge:()=>void|Promise<void>;
 }) {
+  const t = useTranslations('urgences');
   const cfg = MAN_CFG[patient.categorieManchester];
   const stt = STATUT_CFG[patient.statut]??{ label:patient.statut, color:'#546E7A', bg:'#ECEFF1' };
+  const sttLabel = STATUT_CFG[patient.statut] ? t(`statut.${patient.statut}`) : patient.statut;
   const temps = tempsDepuis(patient.heureArrivee);
   const tempsMin = Math.floor((Date.now()-new Date(patient.heureArrivee).getTime())/60000);
   const alerte = (patient.categorieManchester==='ROUGE' && tempsMin>15) ||
@@ -55,10 +58,10 @@ function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge
       <div style={{ background:cfg.headerBg, padding:'10px 14px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ background:'rgba(255,255,255,0.2)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:6, padding:'2px 8px', fontSize:10, fontWeight:900, color:'#fff', fontFamily:'monospace', letterSpacing:'.5px' }}>{patient.numero}</span>
-          <span style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.95)', textTransform:'uppercase', letterSpacing:'.5px' }}>{cfg.label}</span>
+          <span style={{ fontSize:11, fontWeight:800, color:'rgba(255,255,255,0.95)', textTransform:'uppercase', letterSpacing:'.5px' }}>{t(`manchester.${patient.categorieManchester}`)}</span>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-          {alerte&&<span style={{ fontSize:9, fontWeight:800, color:'#fff', background:'rgba(255,255,255,0.25)', padding:'2px 6px', borderRadius:10, animation:'pulse 1s infinite', textTransform:'uppercase' }}>⚠ DÉLAI</span>}
+          {alerte&&<span style={{ fontSize:9, fontWeight:800, color:'#fff', background:'rgba(255,255,255,0.25)', padding:'2px 6px', borderRadius:10, animation:'pulse 1s infinite', textTransform:'uppercase' }}>⚠ {t('delai')}</span>}
           <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.9)', fontFamily:'monospace', background:'rgba(0,0,0,0.2)', padding:'2px 8px', borderRadius:6 }}>⏱ {temps}</span>
         </div>
       </div>
@@ -67,10 +70,10 @@ function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge
       <div style={{ padding:'12px 14px', flex:1, display:'flex', flexDirection:'column', gap:8 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:8 }}>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:14, fontWeight:800, color:cfg.text, lineHeight:1.2 }}>{nomPatient(patient)}</div>
+            <div style={{ fontSize:14, fontWeight:800, color:cfg.text, lineHeight:1.2 }}>{nomPatient(patient, t('patientInconnu'))}</div>
             <div style={{ fontSize:11, color:'#6B7280', marginTop:3, lineHeight:1.4 }}>{patient.motif}</div>
           </div>
-          <span style={{ fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, background:stt.bg, color:stt.color, whiteSpace:'nowrap', flexShrink:0 }}>{stt.label}</span>
+          <span style={{ fontSize:10, fontWeight:700, padding:'3px 9px', borderRadius:20, background:stt.bg, color:stt.color, whiteSpace:'nowrap', flexShrink:0 }}>{sttLabel}</span>
         </div>
 
         {/* Constantes */}
@@ -93,17 +96,17 @@ function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge
                 <span style={{ fontSize:11, color:'#6B7280' }}>Dr. {patient.medecin.prenom} {patient.medecin.nom}</span>
               </>
             ) : (
-              <span style={{ fontSize:11, color:'#9CA3AF', fontStyle:'italic' }}>Non assigné</span>
+              <span style={{ fontSize:11, color:'#9CA3AF', fontStyle:'italic' }}>{t('nonAssigne')}</span>
             )}
           </div>
           <div style={{ display:'flex', gap:6 }}>
             <button onClick={onTriage}
               style={{ fontSize:11, padding:'5px 10px', borderRadius:8, border:`1.5px solid ${cfg.border}`, background:'rgba(255,255,255,0.7)', color:cfg.text, cursor:'pointer', fontWeight:700 }}>
-              Triage
+              {t('triage')}
             </button>
             <button onClick={onPriseEnCharge}
               style={{ fontSize:11, padding:'5px 11px', borderRadius:8, border:'none', background:cfg.badge, color:'#fff', cursor:'pointer', fontWeight:700 }}>
-              Prendre en charge
+              {t('prendreEnCharge')}
             </button>
           </div>
         </div>
@@ -113,6 +116,7 @@ function PatientCard({ patient, onTriage, onDossier: _onDossier, onPriseEnCharge
 }
 
 export default function UrgencesPage() {
+  const t = useTranslations('urgences');
   const [patients, setPatients]       = useState<PatientUrgence[]>([]);
   const [loading, setLoading]         = useState(true);
   const [heure, setHeure]             = useState(new Date());
@@ -181,8 +185,8 @@ export default function UrgencesPage() {
                 <AlertTriangle size={20} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin:0, fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'.5px', textTransform:'uppercase' }}>Urgences</h1>
-                <div style={{ fontSize:10, color:'rgba(255,255,255,0.65)', fontWeight:600, letterSpacing:'.5px' }}>Salle de triage — Temps réel</div>
+                <h1 style={{ margin:0, fontSize:18, fontWeight:900, color:'#fff', letterSpacing:'.5px', textTransform:'uppercase' }}>{t('title')}</h1>
+                <div style={{ fontSize:10, color:'rgba(255,255,255,0.65)', fontWeight:600, letterSpacing:'.5px' }}>{t('subtitle')}</div>
               </div>
             </div>
 
@@ -194,7 +198,7 @@ export default function UrgencesPage() {
               </span>
             </div>
             <span style={{ fontSize:10, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>
-              Actualisé {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+              {t('actualise',{time:lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})})}
             </span>
           </div>
 
@@ -205,7 +209,7 @@ export default function UrgencesPage() {
             </button>
             <button onClick={()=>setShowAdmission(true)}
               style={{ display:'flex', alignItems:'center', gap:8, background:'#fff', color:'#B91C1C', fontWeight:800, padding:'9px 18px', borderRadius:10, border:'none', cursor:'pointer', fontSize:13, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
-              <Plus size={14}/> Admettre
+              <Plus size={14}/> {t('admettre')}
             </button>
           </div>
         </div>
@@ -213,13 +217,13 @@ export default function UrgencesPage() {
         {/* Stats bar Manchester */}
         <div style={{ display:'flex', borderTop:'1px solid rgba(255,255,255,0.12)' }}>
           {[
-            { label:'Critiques', value:stats.rouge,  color:'#FCA5A5', dot:'#EF4444', man:'ROUGE'  as CategorieManchester },
-            { label:'Urgences',  value:stats.orange, color:'#FED7AA', dot:'#F97316', man:'ORANGE' as CategorieManchester },
-            { label:'Semi-urg.', value:stats.jaune,  color:'#FEF08A', dot:'#EAB308', man:'JAUNE'  as CategorieManchester },
-            { label:'Non urg.',  value:stats.vert,   color:'#BBF7D0', dot:'#22C55E', man:'VERT'   as CategorieManchester },
-            { label:'Total',     value:stats.total,  color:'rgba(255,255,255,0.9)', dot:'#fff', man:'TOUS' as any },
+            { label:t('statCritiques'), value:stats.rouge,  color:'#FCA5A5', dot:'#EF4444', man:'ROUGE'  as CategorieManchester },
+            { label:t('statUrgences'),  value:stats.orange, color:'#FED7AA', dot:'#F97316', man:'ORANGE' as CategorieManchester },
+            { label:t('statSemiUrg'), value:stats.jaune,  color:'#FEF08A', dot:'#EAB308', man:'JAUNE'  as CategorieManchester },
+            { label:t('statNonUrg'),  value:stats.vert,   color:'#BBF7D0', dot:'#22C55E', man:'VERT'   as CategorieManchester },
+            { label:t('statTotal'),     value:stats.total,  color:'rgba(255,255,255,0.9)', dot:'#fff', man:'TOUS' as any },
           ].map((s,i)=>(
-            <button key={i} className="urg-stat" title={`Filtrer : ${s.label}`} onClick={()=>setFiltreMan(filtreMan===s.man?'TOUS':s.man)}
+            <button key={i} className="urg-stat" title={t('filtrer',{label:s.label})} onClick={()=>setFiltreMan(filtreMan===s.man?'TOUS':s.man)}
               style={{ flex:1, padding:'10px 12px', display:'flex', alignItems:'center', gap:8, borderRight:i<4?'1px solid rgba(255,255,255,0.1)':'none', background:filtreMan===s.man?'rgba(255,255,255,0.15)':'transparent', border:'none', cursor:'pointer', transition:'background .15s' }}>
               <span style={{ width:10, height:10, borderRadius:'50%', background:s.dot, flexShrink:0, boxShadow:`0 0 6px ${s.dot}` }}/>
               <div style={{ textAlign:'left' }}>
@@ -244,16 +248,16 @@ export default function UrgencesPage() {
             <div style={{ width:80, height:80, borderRadius:24, background:'#E8F5E9', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
               <Heart size={40} color="#4ADE80"/>
             </div>
-            <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#374151' }}>Aucun patient en urgences</p>
-            <p style={{ margin:'6px 0 0', fontSize:13, color:'#9CA3AF' }}>La salle des urgences est calme</p>
+            <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#374151' }}>{t('aucunPatient')}</p>
+            <p style={{ margin:'6px 0 0', fontSize:13, color:'#9CA3AF' }}>{t('salleCalme')}</p>
           </div>
         ) : (
           <>
             {filtreMan!=='TOUS'&&(
               <div style={{ marginBottom:12, display:'flex', alignItems:'center', gap:8 }}>
-                <span style={{ fontSize:12, color:'#546E7A', fontWeight:600 }}>Filtre actif :</span>
-                <span style={{ fontSize:11, fontWeight:800, padding:'3px 12px', borderRadius:20, background:MAN_CFG[filtreMan].badge, color:'#fff' }}>{MAN_CFG[filtreMan].label}</span>
-                <button onClick={()=>setFiltreMan('TOUS')} style={{ fontSize:11, color:'#9CA3AF', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>Tout voir</button>
+                <span style={{ fontSize:12, color:'#546E7A', fontWeight:600 }}>{t('filtreActif')}</span>
+                <span style={{ fontSize:11, fontWeight:800, padding:'3px 12px', borderRadius:20, background:MAN_CFG[filtreMan].badge, color:'#fff' }}>{t(`manchester.${filtreMan}`)}</span>
+                <button onClick={()=>setFiltreMan('TOUS')} style={{ fontSize:11, color:'#9CA3AF', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>{t('toutVoir')}</button>
               </div>
             )}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:14 }}>

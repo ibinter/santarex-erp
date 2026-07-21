@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 
 type TicketStatut = 'ouvert' | 'en_cours' | 'resolu' | 'ferme';
@@ -18,18 +19,17 @@ interface Ticket {
   reponses: { auteurNom: string; estAdmin: boolean; message: string; createdAt: string }[];
 }
 
-const STATUT_BADGE: Record<TicketStatut, { label: string; color: string }> = {
-  ouvert:   { label: 'Ouvert',    color: '#1565C0' },
-  en_cours: { label: 'En cours',  color: '#E65100' },
-  resolu:   { label: 'Résolu',    color: '#2E7D32' },
-  ferme:    { label: 'Fermé',     color: '#616161' },
+const STATUT_BADGE: Record<TicketStatut, { color: string }> = {
+  ouvert:   { color: '#1565C0' },
+  en_cours: { color: '#E65100' },
+  resolu:   { color: '#2E7D32' },
+  ferme:    { color: '#616161' },
 };
 
-const CAT_LABEL: Record<TicketCategorie, string> = {
-  bug: 'Bug', question: 'Question', amelioration: 'Amélioration', facturation: 'Facturation', autre: 'Autre',
-};
+const CATEGORIES: TicketCategorie[] = ['bug', 'question', 'amelioration', 'facturation', 'autre'];
 
 export default function SupportPage() {
+  const t = useTranslations('support');
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selected, setSelected] = useState<Ticket | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -72,15 +72,15 @@ export default function SupportPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Support</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Ouvrez un ticket, notre équipe vous répond sous 24h</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('subtitle')}</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 rounded-xl text-white text-sm font-semibold shadow transition-opacity hover:opacity-90"
           style={{ background: 'linear-gradient(135deg, #0D47A1, #00838F)' }}
         >
-          + Nouveau ticket
+          {t('newTicket')}
         </button>
       </div>
 
@@ -89,29 +89,29 @@ export default function SupportPage() {
         <div className="space-y-2">
           {tickets.length === 0 && (
             <div className="text-center py-12 text-gray-400 text-sm">
-              Aucun ticket — cliquez sur "Nouveau ticket" pour commencer
+              {t('empty')}
             </div>
           )}
-          {tickets.map((t) => {
-            const s = STATUT_BADGE[t.statut];
+          {tickets.map((ticket) => {
+            const s = STATUT_BADGE[ticket.statut];
             return (
               <div
-                key={t.id}
-                onClick={() => setSelected(t)}
-                className={`bg-white rounded-xl p-4 cursor-pointer border-2 transition-all hover:shadow-md ${selected?.id === t.id ? 'border-blue-500' : 'border-transparent'}`}
+                key={ticket.id}
+                onClick={() => setSelected(ticket)}
+                className={`bg-white rounded-xl p-4 cursor-pointer border-2 transition-all hover:shadow-md ${selected?.id === ticket.id ? 'border-blue-500' : 'border-transparent'}`}
                 style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">{t.numero} · {CAT_LABEL[t.categorie]}</p>
-                    <p className="text-sm font-semibold text-gray-800 truncate">{t.sujet}</p>
+                    <p className="text-xs text-gray-400 mb-0.5">{ticket.numero} · {t(`categories.${ticket.categorie}`)}</p>
+                    <p className="text-sm font-semibold text-gray-800 truncate">{ticket.sujet}</p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(t.updatedAt).toLocaleDateString('fr-FR')} · {t.reponses?.length ?? 0} réponse(s)
+                      {new Date(ticket.updatedAt).toLocaleDateString('fr-FR')} · {t('replies', { n: ticket.reponses?.length ?? 0 })}
                     </p>
                   </div>
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
                     style={{ background: s.color + '18', color: s.color }}>
-                    {s.label}
+                    {t(`statut.${ticket.statut}`)}
                   </span>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function SupportPage() {
                   rows={2}
                   value={reponse}
                   onChange={(e) => setReponse(e.target.value)}
-                  placeholder="Votre réponse…"
+                  placeholder={t('replyPlaceholder')}
                   className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 resize-none"
                 />
                 <button
@@ -148,7 +148,7 @@ export default function SupportPage() {
                   className="px-3 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-40"
                   style={{ background: '#0D47A1' }}
                 >
-                  Envoyer
+                  {t('send')}
                 </button>
               </div>
             )}
@@ -160,45 +160,45 @@ export default function SupportPage() {
       {showForm && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="font-bold text-lg text-gray-900 mb-4">Nouveau ticket</h2>
+            <h2 className="font-bold text-lg text-gray-900 mb-4">{t('modal.title')}</h2>
             <form onSubmit={creer} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Catégorie</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('modal.category')}</label>
                 <select
                   value={form.categorie}
                   onChange={(e) => setForm((f) => ({ ...f, categorie: e.target.value as TicketCategorie }))}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
                 >
-                  {Object.entries(CAT_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  {CATEGORIES.map((v) => <option key={v} value={v}>{t(`categories.${v}`)}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Sujet</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('modal.subject')}</label>
                 <input
                   required value={form.sujet}
                   onChange={(e) => setForm((f) => ({ ...f, sujet: e.target.value }))}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
-                  placeholder="Décrivez brièvement votre problème"
+                  placeholder={t('modal.subjectPlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Message</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('modal.message')}</label>
                 <textarea
                   required rows={4} value={form.message}
                   onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 resize-none"
-                  placeholder="Détaillez votre demande…"
+                  placeholder={t('modal.messagePlaceholder')}
                 />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 px-4 py-2 rounded-xl border text-sm text-gray-600 hover:bg-gray-50">
-                  Annuler
+                  {t('modal.cancel')}
                 </button>
                 <button type="submit" disabled={loading}
                   className="flex-1 px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg, #0D47A1, #00838F)' }}>
-                  {loading ? 'Envoi…' : 'Envoyer'}
+                  {loading ? t('modal.sending') : t('modal.send')}
                 </button>
               </div>
             </form>

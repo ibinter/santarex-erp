@@ -3,12 +3,14 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { saveTokens, saveUser } from '@/lib/auth';
 import type { LoginResponse } from '@/types';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('login');
   const [form, setForm] = useState({ email: '', password: '', tenantId: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password || !form.tenantId) {
-      setError('Veuillez remplir tous les champs.');
+      setError(t('fillAllFields'));
       return;
     }
 
@@ -35,7 +37,7 @@ export default function LoginPage() {
       saveUser(res.user);
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError((err as Error).message || 'Identifiants incorrects. Veuillez réessayer.');
+      setError((err as Error).message || t('invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -52,17 +54,17 @@ export default function LoginPage() {
             className="h-28 w-auto mx-auto mb-2 object-contain"
           />
           <p className="text-sm text-text-secondary mt-1 font-medium">
-            La technologie au service de la santé
+            {t('tagline')}
           </p>
           <p className="text-xs text-text-secondary mt-0.5">
-            Gestion Hospitalière — IBIG SOFT
+            {t('brand')}
           </p>
         </div>
 
         {/* Formulaire */}
         <div className="bg-white rounded-card shadow-card p-8">
           <h2 className="text-lg font-semibold text-text-primary mb-6">
-            Connexion à votre espace
+            {t('heading')}
           </h2>
 
           {error && (
@@ -76,7 +78,7 @@ export default function LoginPage() {
             {/* Identifiant établissement */}
             <div>
               <label htmlFor="tenantId" className="label">
-                Identifiant établissement <span className="text-danger">*</span>
+                {t('tenantId')} <span className="text-danger">*</span>
               </label>
               <div className="relative">
                 <Building2
@@ -89,7 +91,7 @@ export default function LoginPage() {
                   type="text"
                   value={form.tenantId}
                   onChange={handleChange}
-                  placeholder="ex: HOPITAL-ABIDJAN-01"
+                  placeholder={t('tenantIdPlaceholder')}
                   className="input-field pl-9"
                   autoComplete="organization"
                   required
@@ -100,7 +102,7 @@ export default function LoginPage() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="label">
-                Adresse email <span className="text-danger">*</span>
+                {t('email')} <span className="text-danger">*</span>
               </label>
               <div className="relative">
                 <Mail
@@ -113,7 +115,7 @@ export default function LoginPage() {
                   type="email"
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="votre@email.com"
+                  placeholder={t('emailPlaceholder')}
                   className="input-field pl-9"
                   autoComplete="email"
                   required
@@ -124,7 +126,7 @@ export default function LoginPage() {
             {/* Mot de passe */}
             <div>
               <label htmlFor="password" className="label">
-                Mot de passe <span className="text-danger">*</span>
+                {t('password')} <span className="text-danger">*</span>
               </label>
               <div className="relative">
                 <Lock
@@ -137,7 +139,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   className="input-field pl-9 pr-10"
                   autoComplete="current-password"
                   required
@@ -146,7 +148,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
-                  aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                  aria-label={showPassword ? t('hide') : t('show')}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -159,7 +161,7 @@ export default function LoginPage() {
                 type="button"
                 className="text-xs text-primary hover:underline"
               >
-                Mot de passe oublié ?
+                {t('forgotPassword')}
               </button>
             </div>
 
@@ -172,10 +174,10 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Connexion en cours…
+                  {t('loadingButton')}
                 </>
               ) : (
-                'Se connecter'
+                t('submit')
               )}
             </button>
           </form>
@@ -183,7 +185,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-[11px] text-text-secondary mt-6">
-          © 2025 IBIG SOFT — Tous droits réservés
+          {t('copyright')}
         </p>
       </div>
     </div>

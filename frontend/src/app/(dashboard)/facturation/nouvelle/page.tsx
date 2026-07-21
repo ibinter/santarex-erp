@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, Plus, Trash2, Save, Receipt, AlertTriangle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
@@ -25,6 +26,7 @@ function newLigne(): LigneForm {
 function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
 
 export default function NouvelleFacturePage() {
+  const t = useTranslations('facturation');
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [pSearch, setPSearch] = useState('');
@@ -55,8 +57,8 @@ export default function NouvelleFacturePage() {
     setLignes(ls => ls.map(l => l.id === id ? { ...l, [key]: value } : l));
 
   const handleSubmit = async () => {
-    if (!selectedPatient) { setError('Veuillez sélectionner un patient.'); return; }
-    if (lignes.some(l => !l.libelle.trim())) { setError('Tous les libellés sont obligatoires.'); return; }
+    if (!selectedPatient) { setError(t('errPatient')); return; }
+    if (lignes.some(l => !l.libelle.trim())) { setError(t('errLibelles')); return; }
     setLoading(true); setError(null);
     try {
       const created = await apiClient<any>('/facturation', {
@@ -68,7 +70,7 @@ export default function NouvelleFacturePage() {
       });
       router.push(created?.id ? `/facturation/${created.id}` : '/facturation');
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création');
+      setError(e?.message ?? t('errCreation'));
     } finally { setLoading(false); }
   };
 
@@ -80,13 +82,13 @@ export default function NouvelleFacturePage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={() => router.push('/facturation')}
           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#546E7A', fontWeight: 600 }}>
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} /> {t('retour')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 9, background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Receipt size={18} color="#1565C0" />
           </div>
-          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>Nouvelle facture</h1>
+          <h1 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1A2332' }}>{t('nouvelleFacture')}</h1>
         </div>
       </div>
 
@@ -95,12 +97,12 @@ export default function NouvelleFacturePage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Patient */}
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
-            <h2 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Patient</h2>
+            <h2 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{t('patient')}</h2>
             {selectedPatient ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: '#EFF6FF', border: '2px solid #1565C0' }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{selectedPatient.prenom} {selectedPatient.nom}</div>
-                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{selectedPatient.ipp ?? '—'}{selectedPatient.assuranceTiersPayant && ` • ${selectedPatient.assuranceNom ?? 'Tiers payant'}`}</div>
+                  <div style={{ fontSize: 11, color: '#90A4AE' }}>{selectedPatient.ipp ?? '—'}{selectedPatient.assuranceTiersPayant && ` • ${selectedPatient.assuranceNom ?? t('tiersPayant')}`}</div>
                 </div>
                 <button onClick={() => setSelectedPatient(null)} style={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid #E0E0E0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#546E7A', fontSize: 14 }}>×</button>
               </div>
@@ -108,7 +110,7 @@ export default function NouvelleFacturePage() {
               <>
                 <div style={{ position: 'relative', marginBottom: 10 }}>
                   <Search size={13} style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE', pointerEvents: 'none' }} />
-                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder="Rechercher un patient…" style={{ ...inputStyle, paddingLeft: 28 }} />
+                  <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('rechercherPatient')} style={{ ...inputStyle, paddingLeft: 28 }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {patients.map(p => (
@@ -133,10 +135,10 @@ export default function NouvelleFacturePage() {
           {/* Lignes */}
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1A2332' }}>Prestations</h2>
+              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1A2332' }}>{t('prestations')}</h2>
               <button onClick={() => setLignes(ls => [...ls, newLigne()])}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, background: '#EFF6FF', border: 'none', cursor: 'pointer', color: '#1565C0', fontSize: 12, fontWeight: 700 }}>
-                <Plus size={13} /> Ajouter
+                <Plus size={13} /> {t('ajouter')}
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -144,21 +146,21 @@ export default function NouvelleFacturePage() {
                 <div key={l.id} style={{ padding: '12px 14px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E8EAED' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr 70px 110px 28px', gap: 8, alignItems: 'start' }}>
                     <div>
-                      {i === 0 && <label style={labelStyle}>Type</label>}
+                      {i === 0 && <label style={labelStyle}>{t('lblType')}</label>}
                       <select value={l.type} onChange={e => updLigne(l.id, 'type', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                        {TYPES_LIGNES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        {TYPES_LIGNES.map(opt => <option key={opt.value} value={opt.value}>{t(`typeLigne.${opt.value}`)}</option>)}
                       </select>
                     </div>
                     <div>
-                      {i === 0 && <label style={labelStyle}>Libellé *</label>}
-                      <input value={l.libelle} onChange={e => updLigne(l.id, 'libelle', e.target.value)} placeholder="Description…" style={inputStyle} />
+                      {i === 0 && <label style={labelStyle}>{t('lblLibelle')}</label>}
+                      <input value={l.libelle} onChange={e => updLigne(l.id, 'libelle', e.target.value)} placeholder={t('phDescription')} style={inputStyle} />
                     </div>
                     <div>
-                      {i === 0 && <label style={labelStyle}>Qté</label>}
+                      {i === 0 && <label style={labelStyle}>{t('lblQte')}</label>}
                       <input type="number" min={1} value={l.quantite} onChange={e => updLigne(l.id, 'quantite', Math.max(1, parseInt(e.target.value) || 1))} style={{ ...inputStyle, textAlign: 'right' }} />
                     </div>
                     <div>
-                      {i === 0 && <label style={labelStyle}>Prix unitaire</label>}
+                      {i === 0 && <label style={labelStyle}>{t('lblPrixUnitaire')}</label>}
                       <input type="number" min={0} value={l.prixUnitaire} onChange={e => updLigne(l.id, 'prixUnitaire', parseInt(e.target.value) || 0)} style={{ ...inputStyle, textAlign: 'right' }} />
                     </div>
                     <div style={{ paddingTop: i === 0 ? 22 : 0 }}>
@@ -180,9 +182,9 @@ export default function NouvelleFacturePage() {
         {/* Summary */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 76 }}>
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', padding: '18px 20px' }}>
-            <p style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</p>
+            <p style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, color: '#546E7A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('total')}</p>
             <div style={{ fontSize: 28, fontWeight: 900, color: '#0D47A1', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(total)}</div>
-            <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>{lignes.length} prestation(s)</div>
+            <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 4 }}>{t('nbPrestations', { count: lignes.length })}</div>
           </div>
 
           {error && (
@@ -193,7 +195,7 @@ export default function NouvelleFacturePage() {
 
           <button onClick={handleSubmit} disabled={loading || !selectedPatient}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', borderRadius: 10, background: (!selectedPatient || loading) ? '#E0E0E0' : '#1565C0', border: 'none', cursor: (!selectedPatient || loading) ? 'default' : 'pointer', fontSize: 14, color: '#fff', fontWeight: 700, opacity: loading ? 0.7 : 1 }}>
-            <Save size={15} /> {loading ? 'Création…' : 'Créer la facture'}
+            <Save size={15} /> {loading ? t('creation') : t('creerFacture')}
           </button>
         </div>
       </div>

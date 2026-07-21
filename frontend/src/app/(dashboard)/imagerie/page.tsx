@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Scan, RefreshCw, Plus, Clock, CheckCircle, FileImage, Zap, ChevronRight, X, Calendar, User, AlertTriangle, Search, Save, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -20,11 +21,11 @@ type Stats = { total?: number; enAttente?: number; enCours?: number; termines?: 
 type TypeExamen = { id: string; code?: string; nom: string; modalite?: string; regionAnatomique?: string; prixUnitaire?: number };
 type PatientLite = { id: string; ipp?: string; nom: string; prenom: string };
 
-const STATUT_CFG: Record<string,{ label:string; color:string; bg:string; border:string; dot:string; icon:React.ReactNode }> = {
-  EN_ATTENTE: { label:'En attente', color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', dot:'#F97316', icon:<Clock size={11}/> },
-  EN_COURS:   { label:'En cours',   color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', dot:'#3B82F6', icon:<RefreshCw size={11}/> },
-  TERMINE:    { label:'Terminé',    color:'#0F766E', bg:'#CCFBF1', border:'#99F6E4', dot:'#14B8A6', icon:<CheckCircle size={11}/> },
-  VALIDE:     { label:'Validé',     color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', dot:'#22C55E', icon:<CheckCircle size={11}/> },
+const STATUT_CFG: Record<string,{ color:string; bg:string; border:string; dot:string; icon:React.ReactNode }> = {
+  EN_ATTENTE: { color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', dot:'#F97316', icon:<Clock size={11}/> },
+  EN_COURS:   { color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', dot:'#3B82F6', icon:<RefreshCw size={11}/> },
+  TERMINE:    { color:'#0F766E', bg:'#CCFBF1', border:'#99F6E4', dot:'#14B8A6', icon:<CheckCircle size={11}/> },
+  VALIDE:     { color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', dot:'#22C55E', icon:<CheckCircle size={11}/> },
 };
 
 const TYPE_ICONS: Record<string,string> = {
@@ -56,6 +57,8 @@ function typeIcon(type: string) {
 }
 
 export default function ImagériePage() {
+  const t = useTranslations('imagerie');
+  const statutLabel = (s: string) => t(`statut.${s}` as any);
   const [examens, setExamens]   = useState<Examen[]>([]);
   const [stats, setStats]       = useState<Stats>({});
   const [loading, setLoading]   = useState(true);
@@ -131,10 +134,10 @@ export default function ImagériePage() {
   const openCreate = () => { resetCreate(); setShowCreate(true); searchPatients(''); };
 
   const submitCreate = async () => {
-    if (!selPatient) { setCreateErr('Sélectionnez un patient.'); return; }
-    if (!selTypeId)  { setCreateErr('Sélectionnez un type d\'examen.'); return; }
+    if (!selPatient) { setCreateErr(t('errors.selectPatient')); return; }
+    if (!selTypeId)  { setCreateErr(t('errors.selectType')); return; }
     const me = getCurrentUser();
-    if (!me?.id) { setCreateErr('Session invalide, reconnectez-vous.'); return; }
+    if (!me?.id) { setCreateErr(t('errors.invalidSession')); return; }
     setSaving(true); setCreateErr(null);
     try {
       await apiClient('/imagerie/demandes', {
@@ -151,7 +154,7 @@ export default function ImagériePage() {
       setShowCreate(false);
       await load();
     } catch (e: any) {
-      setCreateErr(e?.message ?? 'Erreur lors de la création');
+      setCreateErr(e?.message ?? t('errors.create'));
     } finally { setSaving(false); }
   };
 
@@ -166,7 +169,7 @@ export default function ImagériePage() {
 
   // Enregistrer le compte-rendu et valider
   const enregistrerCR = async (ex: Examen) => {
-    if (!crConclusion.trim() && !crCompteRendu.trim()) { setCrErr('Saisissez une conclusion ou un compte-rendu.'); return; }
+    if (!crConclusion.trim() && !crCompteRendu.trim()) { setCrErr(t('errors.crEmpty')); return; }
     setCrSaving(true); setCrErr(null);
     try {
       await apiClient(`/imagerie/demandes/${ex.id}/resultat`, {
@@ -177,7 +180,7 @@ export default function ImagériePage() {
       await load();
       setSelected(null);
     } catch (e: any) {
-      setCrErr(e?.message ?? 'Erreur lors de l\'enregistrement');
+      setCrErr(e?.message ?? t('errors.crSave'));
     } finally { setCrSaving(false); }
   };
 
@@ -189,10 +192,10 @@ export default function ImagériePage() {
   );
 
   const kpis = [
-    { label:'Total du jour', val:stats.total??examens.length, color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', filtre:'TOUS' },
-    { label:'En attente',    val:stats.enAttente??examens.filter(e=>e.statut==='EN_ATTENTE').length, color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', filtre:'EN_ATTENTE' },
-    { label:'En cours',      val:stats.enCours??examens.filter(e=>e.statut==='EN_COURS').length, color:'#1D4ED8', bg:'#EFF6FF', border:'#BFDBFE', filtre:'EN_COURS' },
-    { label:'Terminés',      val:stats.termines??examens.filter(e=>['TERMINE','VALIDE'].includes(e.statut)).length, color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', filtre:'TERMINE' },
+    { label:t('hero.kpiTotal'),     val:stats.total??examens.length, color:'#1D4ED8', bg:'#EFF6FF', border:'#93C5FD', filtre:'TOUS' },
+    { label:t('hero.kpiEnAttente'), val:stats.enAttente??examens.filter(e=>e.statut==='EN_ATTENTE').length, color:'#C2410C', bg:'#FFF7ED', border:'#FED7AA', filtre:'EN_ATTENTE' },
+    { label:t('hero.kpiEnCours'),   val:stats.enCours??examens.filter(e=>e.statut==='EN_COURS').length, color:'#1D4ED8', bg:'#EFF6FF', border:'#BFDBFE', filtre:'EN_COURS' },
+    { label:t('hero.kpiTermines'),  val:stats.termines??examens.filter(e=>['TERMINE','VALIDE'].includes(e.statut)).length, color:'#15803D', bg:'#DCFCE7', border:'#86EFAC', filtre:'TERMINE' },
   ];
 
   return (
@@ -220,11 +223,11 @@ export default function ImagériePage() {
                 <Scan size={24} color="#fff"/>
               </div>
               <div>
-                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>Imagerie Médicale</h1>
+                <h1 style={{ margin:0, fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.3px' }}>{t('hero.title')}</h1>
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
                   <span style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', display:'inline-block', animation:'pulse 2s infinite' }}/>
                   <span style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontWeight:600 }}>
-                    {loading?'Chargement…':`${filtered.length} examen(s) affiché(s)`}
+                    {loading?t('hero.loading'):t('hero.displayedCount', { count: filtered.length })}
                   </span>
                   {lastRefresh&&<span style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginLeft:4 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
                 </div>
@@ -236,7 +239,7 @@ export default function ImagériePage() {
               {kpis.map(k=>{
                 const active = filtre===k.filtre;
                 return (
-                <div key={k.label} className="img-kpi" title={`Filtrer : ${k.label}`}
+                <div key={k.label} className="img-kpi" title={t('hero.filterTitle', { label: k.label })}
                   onClick={()=>setFiltre(k.filtre)}
                   style={{ background:active?'rgba(255,255,255,0.24)':'rgba(255,255,255,0.12)', border:`1px solid ${active?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.2)'}`, borderRadius:10, padding:'6px 14px', display:'flex', alignItems:'center', gap:8 }}>
                   <span style={{ fontSize:18, fontWeight:900, color:'#fff' }}>{loading?'…':k.val}</span>
@@ -254,7 +257,7 @@ export default function ImagériePage() {
             </button>
             <button onClick={openCreate}
               style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 20px', borderRadius:10, border:'none', background:'#fff', cursor:'pointer', fontSize:13, color:'#004D40', fontWeight:800, boxShadow:'0 4px 14px rgba(0,0,0,0.2)' }}>
-              <Plus size={14}/> Nouvel examen
+              <Plus size={14}/> {t('hero.newExam')}
             </button>
           </div>
         </div>
@@ -264,7 +267,7 @@ export default function ImagériePage() {
       <div style={{ display:'flex', gap:10, marginBottom:14, flexWrap:'wrap', alignItems:'center' }}>
         <div style={{ position:'relative', flex:1, minWidth:200 }}>
           <Scan size={13} style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher patient, type d'examen…"
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={t('list.searchPlaceholder')}
             style={{ width:'100%', padding:'9px 12px 9px 32px', borderRadius:10, border:'1.5px solid #E0E8F0', background:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
         </div>
         <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
@@ -275,7 +278,7 @@ export default function ImagériePage() {
               <button key={f} onClick={()=>setFiltre(f)}
                 style={{ padding:'7px 14px', borderRadius:20, border:`1.5px solid ${active?(cfg?.border??'#00695C'):'#E0E8F0'}`, background:active?(cfg?.bg??'#CCFBF1'):'#fff', color:active?(cfg?.color??'#00695C'):'#546E7A', fontSize:11, fontWeight:active?800:500, cursor:'pointer', transition:'all .15s', display:'flex', alignItems:'center', gap:5 }}>
                 {cfg&&active&&<span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>}
-                {f==='TOUS'?'Tous':cfg?.label??f}
+                {f==='TOUS'?t('list.filterAll'):statutLabel(f)}
               </button>
             );
           })}
@@ -290,8 +293,8 @@ export default function ImagériePage() {
             <table style={{ width:'100%', borderCollapse:'collapse', minWidth:600 }}>
               <thead>
                 <tr style={{ background:'linear-gradient(135deg,#F0FFFE,#E6FAF7)' }}>
-                  {['N°','Patient','Type d\'examen','Région','Médecin','Urgence','Statut',''].map(h=>(
-                    <th key={h} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
+                  {[t('list.colNumero'),t('list.colPatient'),t('list.colType'),t('list.colRegion'),t('list.colMedecin'),t('list.colUrgence'),t('list.colStatut'),''].map((h,hi)=>(
+                    <th key={hi} style={{ padding:'11px 14px', textAlign:'left', fontSize:10, fontWeight:800, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px', whiteSpace:'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -305,7 +308,7 @@ export default function ImagériePage() {
                 )) : filtered.length===0 ? (
                   <tr><td colSpan={8} style={{ textAlign:'center', padding:'60px 20px', color:'#90A4AE' }}>
                     <FileImage size={36} style={{ display:'block', margin:'0 auto 12px', color:'#99F6E4' }}/>
-                    <p style={{ margin:0, fontSize:13, fontWeight:600 }}>Aucun examen</p>
+                    <p style={{ margin:0, fontSize:13, fontWeight:600 }}>{t('list.empty')}</p>
                   </td></tr>
                 ) : filtered.map(e=>{
                   const cfg=STATUT_CFG[e.statut]??STATUT_CFG.EN_ATTENTE;
@@ -339,19 +342,19 @@ export default function ImagériePage() {
                       </td>
                       <td style={{ padding:'11px 14px', fontSize:12, color:'#546E7A' }}>{regionLabel(e)}</td>
                       <td style={{ padding:'11px 14px', fontSize:12, color:'#546E7A', whiteSpace:'nowrap' }}>
-                        {e.medecin?<><span style={{ fontWeight:700 }}>Dr.</span> {e.medecin.prenom} {e.medecin.nom}</>:'—'}
+                        {e.medecin?<><span style={{ fontWeight:700 }}>{t('list.doctorPrefix')}</span> {e.medecin.prenom} {e.medecin.nom}</>:'—'}
                       </td>
                       <td style={{ padding:'11px 14px' }}>
                         {e.urgence&&(
                           <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:10, fontWeight:800, color:'#DC2626' }}>
-                            <Zap size={10} style={{ fill:'#DC2626' }}/> Urgent
+                            <Zap size={10} style={{ fill:'#DC2626' }}/> {t('list.urgent')}
                           </span>
                         )}
                       </td>
                       <td style={{ padding:'11px 14px' }}>
                         <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:10, fontWeight:800, padding:'4px 10px', borderRadius:20, background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.border}` }}>
                           <span style={{ width:5, height:5, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
-                          {cfg.label}
+                          {statutLabel(e.statut)}
                         </span>
                       </td>
                       <td style={{ padding:'11px 14px' }}><ChevronRight size={13} color={isSelected?'#1D4ED8':'#CBD5E1'}/></td>
@@ -374,7 +377,7 @@ export default function ImagériePage() {
               {/* Header détail */}
               <div style={{ background:'linear-gradient(135deg,#004D40,#00695C)', padding:'16px 18px', display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
                 <div>
-                  <div style={{ fontSize:10, color:'rgba(255,255,255,0.65)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>Détail examen</div>
+                  <div style={{ fontSize:10, color:'rgba(255,255,255,0.65)', fontWeight:700, textTransform:'uppercase', letterSpacing:'.5px', marginBottom:4 }}>{t('detail.title')}</div>
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <span style={{ fontSize:22 }}>{icon}</span>
                     <div style={{ fontSize:16, fontWeight:800, color:'#fff', lineHeight:1.2 }}>{typeLabel(selected)}</div>
@@ -395,16 +398,16 @@ export default function ImagériePage() {
                   <div style={{ width:36, height:36, borderRadius:10, background:ac, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff', flexShrink:0 }}>{inits(selected.patient)}</div>
                   <div>
                     <div style={{ fontSize:13, fontWeight:800, color:'#1A2332' }}>{nom}</div>
-                    <div style={{ fontSize:10, color:'#6B7280', display:'flex', alignItems:'center', gap:4 }}><User size={9}/> Patient</div>
+                    <div style={{ fontSize:10, color:'#6B7280', display:'flex', alignItems:'center', gap:4 }}><User size={9}/> {t('detail.patient')}</div>
                   </div>
                 </div>
 
                 {/* Infos */}
                 {[
-                  { label:'Région anatomique', val:regionLabel(selected) },
-                  { label:'Médecin prescripteur', val:selected.medecin?`Dr. ${selected.medecin.prenom} ${selected.medecin.nom}`:'—' },
-                  { label:'Date', val:fmtDate(selected.dateExamen??selected.date) },
-                  { label:'Urgence', val:selected.urgence?'Oui':'Non' },
+                  { label:t('detail.regionAnatomique'), val:regionLabel(selected) },
+                  { label:t('detail.medecinPrescripteur'), val:selected.medecin?`${t('detail.doctorPrefix')} ${selected.medecin.prenom} ${selected.medecin.nom}`:'—' },
+                  { label:t('detail.date'), val:fmtDate(selected.dateExamen??selected.date) },
+                  { label:t('detail.urgence'), val:selected.urgence?t('detail.yes'):t('detail.no') },
                 ].map(row=>(
                   <div key={row.label} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid #F0F4FA' }}>
                     <span style={{ fontSize:11, color:'#9CA3AF', fontWeight:600 }}>{row.label}</span>
@@ -414,10 +417,10 @@ export default function ImagériePage() {
 
                 {/* Statut */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 12px', background:cfg.bg, borderRadius:10, border:`1px solid ${cfg.border}` }}>
-                  <span style={{ fontSize:11, color:cfg.color, fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px' }}>Statut</span>
+                  <span style={{ fontSize:11, color:cfg.color, fontWeight:700, textTransform:'uppercase', letterSpacing:'.4px' }}>{t('detail.statut')}</span>
                   <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:800, color:cfg.color }}>
                     <span style={{ width:7, height:7, borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
-                    {cfg.label}
+                    {statutLabel(selected.statut)}
                   </span>
                 </div>
 
@@ -425,14 +428,14 @@ export default function ImagériePage() {
                 {selected.resultat ? (
                   <div style={{ padding:'12px 14px', background:'#F0FFFE', borderRadius:10, border:'1px solid #99F6E4', borderLeft:'4px solid #00695C' }}>
                     <div style={{ fontSize:10, fontWeight:800, color:'#00695C', textTransform:'uppercase', letterSpacing:'.5px', marginBottom:6, display:'flex', alignItems:'center', gap:5 }}>
-                      <CheckCircle size={11}/> Résultat
+                      <CheckCircle size={11}/> {t('detail.resultat')}
                     </div>
                     <p style={{ margin:0, fontSize:12, color:'#374151', lineHeight:1.6 }}>{selected.resultat}</p>
                   </div>
                 ) : (
                   <div style={{ padding:'12px 14px', background:'#FFF7ED', borderRadius:10, border:'1px solid #FED7AA', borderLeft:'4px solid #F97316', display:'flex', alignItems:'center', gap:8 }}>
                     <AlertTriangle size={14} color="#C2410C"/>
-                    <span style={{ fontSize:12, color:'#C2410C', fontWeight:600 }}>Résultat en attente</span>
+                    <span style={{ fontSize:12, color:'#C2410C', fontWeight:600 }}>{t('detail.resultatEnAttente')}</span>
                   </div>
                 )}
 
@@ -440,21 +443,21 @@ export default function ImagériePage() {
                 {selected.statut==='EN_ATTENTE' && (
                   <button onClick={()=>demarrer(selected)}
                     style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'11px', borderRadius:10, border:'none', background:'#1D4ED8', cursor:'pointer', fontSize:13, color:'#fff', fontWeight:700 }}>
-                    <Play size={14}/> Démarrer l'examen
+                    <Play size={14}/> {t('detail.demarrer')}
                   </button>
                 )}
 
                 {(selected.statut==='EN_COURS' || selected.statut==='TERMINE') && (
                   <div style={{ display:'flex', flexDirection:'column', gap:8, padding:'12px 14px', background:'#F8FAFC', borderRadius:10, border:'1px solid #E0E8F0' }}>
-                    <div style={{ fontSize:10, fontWeight:800, color:'#00695C', textTransform:'uppercase', letterSpacing:'.5px' }}>Compte-rendu radiologique</div>
-                    <textarea value={crCompteRendu} onChange={e=>setCrCompteRendu(e.target.value)} placeholder="Compte-rendu détaillé (technique, observations)…"
+                    <div style={{ fontSize:10, fontWeight:800, color:'#00695C', textTransform:'uppercase', letterSpacing:'.5px' }}>{t('detail.compteRendu')}</div>
+                    <textarea value={crCompteRendu} onChange={e=>setCrCompteRendu(e.target.value)} placeholder={t('detail.phCompteRendu')}
                       style={{ width:'100%', minHeight:70, padding:'9px 11px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:12, outline:'none', boxSizing:'border-box', color:'#1A2332', resize:'vertical', fontFamily:'inherit' }}/>
-                    <textarea value={crConclusion} onChange={e=>setCrConclusion(e.target.value)} placeholder="Conclusion / synthèse…"
+                    <textarea value={crConclusion} onChange={e=>setCrConclusion(e.target.value)} placeholder={t('detail.phConclusion')}
                       style={{ width:'100%', minHeight:50, padding:'9px 11px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:12, outline:'none', boxSizing:'border-box', color:'#1A2332', resize:'vertical', fontFamily:'inherit' }}/>
                     {crErr && <span style={{ fontSize:11, color:'#C2410C', fontWeight:600 }}>{crErr}</span>}
                     <button onClick={()=>enregistrerCR(selected)} disabled={crSaving}
                       style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', borderRadius:8, border:'none', background:crSaving?'#94A3B8':'#00695C', cursor:crSaving?'default':'pointer', fontSize:13, color:'#fff', fontWeight:700 }}>
-                      <Save size={14}/> {crSaving?'Enregistrement…':'Enregistrer et valider'}
+                      <Save size={14}/> {crSaving?t('detail.crSaving'):t('detail.crSave')}
                     </button>
                   </div>
                 )}
@@ -473,7 +476,7 @@ export default function ImagériePage() {
             <div style={{ background:'linear-gradient(135deg,#004D40,#00695C)', padding:'18px 22px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <Scan size={20} color="#fff"/>
-                <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:'#fff' }}>Nouvel examen d'imagerie</h2>
+                <h2 style={{ margin:0, fontSize:16, fontWeight:800, color:'#fff' }}>{t('modal.title')}</h2>
               </div>
               <button onClick={()=>setShowCreate(false)}
                 style={{ width:28, height:28, borderRadius:8, border:'1px solid rgba(255,255,255,0.25)', background:'rgba(255,255,255,0.15)', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -484,7 +487,7 @@ export default function ImagériePage() {
             <div style={{ padding:'18px 22px', display:'flex', flexDirection:'column', gap:14 }}>
               {/* Patient */}
               <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>Patient</label>
+                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>{t('modal.patient')}</label>
                 {selPatient ? (
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', borderRadius:10, background:'#EFF6FF', border:'1.5px solid #93C5FD' }}>
                     <div>
@@ -498,7 +501,7 @@ export default function ImagériePage() {
                   <>
                     <div style={{ position:'relative', marginBottom:6 }}>
                       <Search size={13} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'#90A4AE' }}/>
-                      <input value={pSearch} onChange={e=>setPSearch(e.target.value)} placeholder="Rechercher un patient…"
+                      <input value={pSearch} onChange={e=>setPSearch(e.target.value)} placeholder={t('modal.searchPatient')}
                         style={{ width:'100%', padding:'9px 11px 9px 30px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
                     </div>
                     <div style={{ display:'flex', flexDirection:'column', gap:4, maxHeight:180, overflowY:'auto' }}>
@@ -512,7 +515,7 @@ export default function ImagériePage() {
                           <span style={{ fontSize:11, color:'#90A4AE' }}>{p.ipp ?? ''}</span>
                         </div>
                       ))}
-                      {pResults.length===0 && <div style={{ fontSize:12, color:'#90A4AE', padding:'8px 4px' }}>Aucun patient trouvé.</div>}
+                      {pResults.length===0 && <div style={{ fontSize:12, color:'#90A4AE', padding:'8px 4px' }}>{t('modal.noPatient')}</div>}
                     </div>
                   </>
                 )}
@@ -520,28 +523,28 @@ export default function ImagériePage() {
 
               {/* Type d'examen */}
               <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>Type d'examen</label>
+                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>{t('modal.typeExamen')}</label>
                 <select value={selTypeId} onChange={e=>{
                     const id=e.target.value; setSelTypeId(id);
                     const t=types.find(x=>x.id===id); if(t&&!region) setRegion(t.regionAnatomique??'');
                   }}
                   style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332', background:'#fff' }}>
-                  <option value="">— Sélectionner —</option>
+                  <option value="">{t('modal.selectPlaceholder')}</option>
                   {types.map(t=>(<option key={t.id} value={t.id}>{t.nom}</option>))}
                 </select>
               </div>
 
               {/* Région */}
               <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>Région anatomique</label>
-                <input value={region} onChange={e=>setRegion(e.target.value)} placeholder="Ex : Thorax, Crâne…"
+                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>{t('modal.regionAnatomique')}</label>
+                <input value={region} onChange={e=>setRegion(e.target.value)} placeholder={t('modal.phRegion')}
                   style={{ width:'100%', padding:'9px 11px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332' }}/>
               </div>
 
               {/* Indication */}
               <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>Indication clinique</label>
-                <textarea value={indication} onChange={e=>setIndication(e.target.value)} placeholder="Motif / renseignements cliniques…"
+                <label style={{ fontSize:11, fontWeight:700, color:'#546E7A', display:'block', marginBottom:6 }}>{t('modal.indicationClinique')}</label>
+                <textarea value={indication} onChange={e=>setIndication(e.target.value)} placeholder={t('modal.phIndication')}
                   style={{ width:'100%', minHeight:56, padding:'9px 11px', borderRadius:8, border:'1.5px solid #E0E8F0', fontSize:13, outline:'none', boxSizing:'border-box', color:'#1A2332', resize:'vertical', fontFamily:'inherit' }}/>
               </div>
 
@@ -552,7 +555,7 @@ export default function ImagériePage() {
                   <span style={{ position:'absolute', top:3, left:urgent?23:3, width:18, height:18, borderRadius:'50%', background:'#fff', transition:'left .2s' }}/>
                 </button>
                 <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:13, fontWeight:600, color:urgent?'#DC2626':'#37474F' }}>
-                  <Zap size={13}/> Examen urgent
+                  <Zap size={13}/> {t('modal.examenUrgent')}
                 </span>
               </label>
 
@@ -565,11 +568,11 @@ export default function ImagériePage() {
               <div style={{ display:'flex', gap:10, marginTop:2 }}>
                 <button onClick={()=>setShowCreate(false)}
                   style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid #E0E8F0', background:'#fff', cursor:'pointer', fontSize:13, color:'#546E7A', fontWeight:700 }}>
-                  Annuler
+                  {t('modal.cancel')}
                 </button>
                 <button onClick={submitCreate} disabled={saving}
                   style={{ flex:2, display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'11px', borderRadius:10, border:'none', background:saving?'#94A3B8':'#00695C', cursor:saving?'default':'pointer', fontSize:13, color:'#fff', fontWeight:800 }}>
-                  <Save size={15}/> {saving?'Création…':'Créer la demande'}
+                  <Save size={15}/> {saving?t('modal.creating'):t('modal.create')}
                 </button>
               </div>
             </div>

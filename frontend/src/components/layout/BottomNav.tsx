@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Receipt, Siren, MoreHorizontal } from 'lucide-react';
 import { getCurrentUser } from '@/lib/auth';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { User } from '@/types';
 
 const MAIN_ITEMS = [
-  { href: '/dashboard', label: 'Accueil', icon: LayoutDashboard },
-  { href: '/patients', label: 'Patients', icon: Users },
-  { href: '/facturation', label: 'Facturation', icon: Receipt },
-  { href: '/urgences', label: 'Urgences', icon: Siren, alert: true },
+  { href: '/dashboard', key: 'home', icon: LayoutDashboard },
+  { href: '/patients', key: 'patients', icon: Users },
+  { href: '/facturation', key: 'facturation', icon: Receipt },
+  { href: '/urgences', key: 'urgences', icon: Siren, alert: true },
 ];
 
 interface BottomNavProps {
@@ -20,6 +21,8 @@ interface BottomNavProps {
 
 export default function BottomNav({ onMoreClick }: BottomNavProps) {
   const pathname = usePathname();
+  const t = useTranslations('nav');
+  const mainItems = MAIN_ITEMS.map(item => ({ ...item, label: t(item.key) }));
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => { setUser(getCurrentUser()); }, []);
@@ -29,7 +32,7 @@ export default function BottomNav({ onMoreClick }: BottomNavProps) {
     return pathname.startsWith(href);
   };
 
-  const isMoreActive = !MAIN_ITEMS.some(item => isActive(item.href));
+  const isMoreActive = !mainItems.some(item => isActive(item.href));
 
   return (
     <>
@@ -58,7 +61,7 @@ export default function BottomNav({ onMoreClick }: BottomNavProps) {
         alignItems: 'stretch',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        {MAIN_ITEMS.map(({ href, label, icon: Icon, alert }) => {
+        {mainItems.map(({ href, label, icon: Icon, alert }) => {
           const active = isActive(href);
           return (
             <Link
@@ -126,7 +129,7 @@ export default function BottomNav({ onMoreClick }: BottomNavProps) {
           }}
         >
           <MoreHorizontal size={22} />
-          <span style={{ fontSize: '10px', fontWeight: isMoreActive ? 700 : 500 }}>Plus</span>
+          <span style={{ fontSize: '10px', fontWeight: isMoreActive ? 700 : 500 }}>{t('more')}</span>
           {isMoreActive && (
             <span style={{
               position: 'absolute',
