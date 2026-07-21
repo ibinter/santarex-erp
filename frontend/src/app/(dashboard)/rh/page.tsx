@@ -83,15 +83,21 @@ function initials(nom: string, prenom: string) {
 }
 function num(v: number | string | null | undefined): number { return Number(v ?? 0) || 0; }
 function fmtXOF(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
-function ancienneteYears(d?: string | null): number | null {
-  if (!d) return null;
-  return Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 24 * 3600000));
+function anciennete(d?: string | null) {
+  if (!d) return '—';
+  const yrs = Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 24 * 3600000));
+  return yrs < 1 ? '< 1 an' : `${yrs} an${yrs > 1 ? 's' : ''}`;
 }
 function fullName(e: { nom: string; prenom: string }) { return `${e.prenom} ${e.nom}`.trim(); }
 
+const CONGE_TYPE_LABEL: Record<Conge['type'], string> = {
+  conge: 'Congé annuel', maladie: 'Congé maladie', maternite: 'Maternité',
+  formation: 'Formation', autre: 'Autre',
+};
+
 const TABS = [
   { key: 'personnel', label: 'Personnel', icon: '👥' },
-  { key: 'conges', label: 'Congés', icon: '🌴' },
+  { key: 'conges', label: 'Congés & Absences', icon: '🌴' },
   { key: 'paie', label: 'Paie', icon: '💳' },
 ] as const;
 
