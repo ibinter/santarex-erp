@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -157,12 +158,12 @@ export default function LoginPage() {
 
             {/* Lien mot de passe oublié */}
             <div className="text-right -mt-2">
-              <button
-                type="button"
+              <Link
+                href="/mot-de-passe-oublie"
                 className="text-xs text-primary hover:underline"
               >
                 {t('forgotPassword')}
-              </button>
+              </Link>
             </div>
 
             {/* Submit */}
@@ -180,6 +181,14 @@ export default function LoginPage() {
                 t('submit')
               )}
             </button>
+
+            {/* Lien inscription */}
+            <p className="text-center text-xs text-text-secondary mt-2">
+              Pas encore de compte ?{' '}
+              <Link href="/inscription" className="text-primary hover:underline font-medium">
+                Créer un établissement
+              </Link>
+            </p>
           </form>
         </div>
 
