@@ -18,6 +18,9 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -64,6 +67,58 @@ export class AuthController {
       });
       throw err;
     }
+  }
+
+  @Post('register')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Inscription self-service',
+    description:
+      'Crée un établissement, son compte administrateur, démarre un essai gratuit et retourne les tokens JWT',
+  })
+  @ApiResponse({ status: 201, description: 'Inscription réussie' })
+  @ApiResponse({ status: 409, description: 'Email ou établissement déjà existant' })
+  async register(@Body() registerDto: RegisterDto, @Req() req: Request) {
+    const result = await this.authService.register(registerDto);
+    this.auditLogsService.log({
+      action: AuditAction.CREATE,
+      ressource: 'auth',
+      userId: result.user.id,
+      userEmail: result.user.email,
+      userRole: result.user.role,
+      tenantId: result.user.tenantId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      contexte: { operation: 'register' },
+    });
+    return result;
+  }
+
+  @Post('forgot-password')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Mot de passe oublié',
+    description:
+      'Envoie un email de réinitialisation si un compte correspond. Réponse toujours générique.',
+  })
+  @ApiResponse({ status: 200, description: 'Réponse générique (compte non divulgué)' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Réinitialisation du mot de passe',
+    description: 'Définit un nouveau mot de passe à partir du token reçu par email',
+  })
+  @ApiResponse({ status: 200, description: 'Mot de passe réinitialisé' })
+  @ApiResponse({ status: 400, description: 'Lien invalide ou expiré' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @Post('refresh')

@@ -57,6 +57,12 @@ export class User {
   @Column({ nullable: true, select: false })
   refreshToken: string;
 
+  @Column({ nullable: true, select: false })
+  resetToken?: string;
+
+  @Column({ type: 'timestamptz', nullable: true, select: false })
+  resetTokenExpiry?: Date;
+
   @ApiProperty({ description: 'Date de création' })
   @CreateDateColumn()
   createdAt: Date;
