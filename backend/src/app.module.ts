@@ -10,6 +10,10 @@ import { OffresSaasModule } from './offres-saas/offres-saas.module';
 import { LicencesModule } from './licences/licences.module';
 import { PaymentsModule } from './payments/payments.module';
 import { EntitlementModule } from './common/entitlement.module';
+import { ComptabiliteModule } from './comptabilite/comptabilite.module';
+import { RhModule } from './rh/rh.module';
+import { BlocOperatoireModule } from './bloc-operatoire/bloc-operatoire.module';
+import { ImagerieModule } from './imagerie/imagerie.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -78,6 +82,10 @@ import { SeedModule } from './database/seed.module';
     PharmacieModule,
     LaboratoireModule,
     HospitalisationModule,
+    ComptabiliteModule,
+    RhModule,
+    BlocOperatoireModule,
+    ImagerieModule,
     SeedModule,
   ],
   providers: [
