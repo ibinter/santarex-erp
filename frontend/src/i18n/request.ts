@@ -1,4 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
+import type { AbstractIntlMessages } from 'next-intl';
 import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
@@ -42,5 +43,5 @@ export default getRequestConfig(async () => {
     /* dossier de namespaces absent → seules les clés de base sont chargées. */
   }
 
-  return { locale, messages };
+  return { locale, messages: messages as AbstractIntlMessages };
 });
