@@ -19,6 +19,9 @@ import { VerificationModule } from './verification/verification.module';
 import { CrmModule } from './crm/crm.module';
 import { OffresCommercialesModule } from './offres-commerciales/offres-commerciales.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AcademieModule } from './academie/academie.module';
+import { SauvegardesModule } from './sauvegardes/sauvegardes.module';
+import { HealthModule } from './health/health.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -96,6 +99,9 @@ import { SeedModule } from './database/seed.module';
     CrmModule,
     OffresCommercialesModule,
     AnalyticsModule,
+    AcademieModule,
+    SauvegardesModule,
+    HealthModule,
     SeedModule,
   ],
   providers: [

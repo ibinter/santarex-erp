@@ -8,6 +8,7 @@ import type { User } from '@/types';
 import {
   LayoutDashboard, Building2, CreditCard, Package, ScrollText,
   LogOut, ChevronRight, Shield, Menu, X, Users, FileText,
+  Bot, DatabaseBackup, Activity,
 } from 'lucide-react';
 
 const NAV = [
@@ -17,6 +18,9 @@ const NAV = [
   { href: '/superadmin/tenants', label: 'Établissements', icon: Building2 },
   { href: '/superadmin/licences', label: 'Licences', icon: CreditCard },
   { href: '/superadmin/offres', label: 'Offres SaaS', icon: Package },
+  { href: '/superadmin/ia', label: 'Assistant IA', icon: Bot },
+  { href: '/superadmin/sauvegardes', label: 'Sauvegardes', icon: DatabaseBackup },
+  { href: '/superadmin/sante', label: 'État du système', icon: Activity },
   { href: '/superadmin/audit-logs', label: 'Journal d\'audit', icon: ScrollText },
 ];
 

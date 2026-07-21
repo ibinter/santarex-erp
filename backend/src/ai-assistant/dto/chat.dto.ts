@@ -1,4 +1,15 @@
-import { IsString, IsArray, IsOptional, ValidateNested, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  ValidateNested,
+  IsEnum,
+  IsBoolean,
+  IsNumber,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { AiProvider } from '../entities/ai-config.entity';
 
@@ -33,4 +44,26 @@ export class UpdateAiConfigDto {
   @IsOptional()
   @IsString()
   systemPrompt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  estActif?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(2)
+  temperature?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(64)
+  @Max(8192)
+  maxTokens?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  quotaMessagesJour?: number;
 }

@@ -14,13 +14,20 @@ export class AiAssistantController {
 
   @Post('chat')
   async chat(@Body() dto: ChatDto, @Req() req: Request, @Res() res: Response) {
-    const tenantId = (req as any).user?.tenantId;
-    return this.service.chat(tenantId, dto, res);
+    const user = (req as any).user;
+    return this.service.chat(user?.tenantId, user?.userId ?? user?.id, dto, res);
   }
 
   @Get('config')
   getConfig(@Req() req: Request) {
     return this.service.getOrCreateConfig((req as any).user?.tenantId);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @Get('usage')
+  getUsage(@Req() req: Request) {
+    return this.service.getUsageSummary((req as any).user?.tenantId);
   }
 
   @UseGuards(RolesGuard)

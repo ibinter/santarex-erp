@@ -33,6 +33,10 @@ export class AiConfig {
   @Column({ type: 'int', default: 1024 })
   maxTokens: number;
 
+  /** Quota de messages IA autorisés par jour et par établissement (tenant). */
+  @Column({ type: 'int', default: 200 })
+  quotaMessagesJour: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -13,7 +13,7 @@ import {
   LayoutDashboard, Users, Stethoscope, Calendar, BookOpen,
   BedDouble, Scissors, Siren, Scan, FlaskConical, Pill,
   Receipt, CreditCard, Building2, UserCog, BarChart2,
-  MessageSquare, Settings, X,
+  MessageSquare, Settings, X, GraduationCap,
 } from 'lucide-react';
 
 const ALL_NAV = [
@@ -34,6 +34,7 @@ const ALL_NAV = [
   { label: 'RH', href: '/rh', icon: UserCog },
   { label: 'Reporting', href: '/reporting', icon: BarChart2 },
   { label: 'Support', href: '/support', icon: MessageSquare },
+  { label: 'Académie', href: '/academie', icon: GraduationCap },
   { label: 'Paramètres', href: '/parametres', icon: Settings },
 ];
 

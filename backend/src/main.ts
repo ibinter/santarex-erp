@@ -1,16 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Controller, Get } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import helmet from 'helmet';
-
-@Controller('health')
-class HealthController {
-  @Get()
-  check() { return { status: 'ok', timestamp: new Date().toISOString() }; }
-}
 
 async function bootstrap() {
   // rawBody: true — nécessaire à la vérification de signature HMAC des webhooks
@@ -21,11 +15,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
-  // Register health controller without global prefix interference
-  const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/api/v1/health', (_req: any, res: any) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  // Le health-check est désormais géré par HealthController (module health/),
+  // qui effectue de vraies sondes (DB/SMTP/IA/disque/mémoire) au lieu d'une
+  // réponse statique. Route publique : GET /api/v1/health.
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
