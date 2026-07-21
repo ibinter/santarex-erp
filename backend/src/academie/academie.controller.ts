@@ -12,6 +12,7 @@ import { ProgressionStatut } from './academie.enums';
 import { CreateParcoursDto, UpdateParcoursDto } from './dto/parcours.dto';
 import { CreateRessourceDto, UpdateRessourceDto } from './dto/ressource.dto';
 import { MarquerProgressionDto } from './dto/ressource.dto';
+import { SoumettreQuizDto } from './dto/quiz.dto';
 
 /** Utilisateur authentifié tel qu'exposé par la JwtStrategy. */
 interface AuthUser { id: string; userId: string; email: string; role: string; tenantId: string | null; }
@@ -73,6 +74,29 @@ export class AcademieController {
   @ApiOperation({ summary: 'Mettre à jour une ressource' })
   majRessource(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRessourceDto) {
     return this.academieService.majRessource(id, dto);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  QUIZ — utilisateur authentifié (passage & correction)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  @Get('quiz/:ressourceId')
+  @ApiOperation({ summary: 'Questions d\'un quiz (sans les bonnes réponses)' })
+  getQuiz(
+    @Param('ressourceId', ParseUUIDPipe) ressourceId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.academieService.getQuiz(ressourceId, user.tenantId ?? null);
+  }
+
+  @Post('quiz/:ressourceId/soumettre')
+  @ApiOperation({ summary: 'Soumettre un quiz : score, corrigé et progression' })
+  soumettreQuiz(
+    @Param('ressourceId', ParseUUIDPipe) ressourceId: string,
+    @Body() dto: SoumettreQuizDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.academieService.soumettreQuiz(user.id, user.tenantId ?? null, ressourceId, dto.reponses);
   }
 
   // ══════════════════════════════════════════════════════════════════════════

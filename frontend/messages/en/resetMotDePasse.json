@@ -1,0 +1,28 @@
+{
+  "resetMotDePasse": {
+    "tagline": "New password",
+    "brand": "SANTAREX ERP · IBIG Softwares",
+    "errorAllFields": "Please fill in all fields.",
+    "errorPasswordLength": "The password must contain at least 8 characters.",
+    "errorPasswordMismatch": "The passwords do not match.",
+    "errorInvalidLink": "This link is invalid or has expired. Please request a new link.",
+    "invalidTitle": "Invalid link",
+    "invalidText": "This reset link is invalid or incomplete. Please request a new link.",
+    "requestNewLink": "Request a new link",
+    "successTitle": "Password updated",
+    "successText": "Your password has been updated successfully. You can now sign in.",
+    "goToLogin": "Go to sign in",
+    "heading": "Choose a new password",
+    "intro": "Your new password must contain at least 8 characters.",
+    "labelPassword": "New password",
+    "placeholderPassword": "At least 8 characters",
+    "show": "Show",
+    "hide": "Hide",
+    "labelConfirmPassword": "Confirm password",
+    "placeholderConfirmPassword": "Repeat the password",
+    "submit": "Reset password",
+    "loadingButton": "Updating...",
+    "backToLogin": "Back to sign in",
+    "copyright": "© {year} SANTAREX ERP · IBIG Softwares"
+  }
+}

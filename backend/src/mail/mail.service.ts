@@ -158,4 +158,40 @@ export class MailService {
   }) {
     return this.send(opts.to, `Rapport mensuel SANTAREX — ${opts.mois} ${opts.annee}`, 'rapport-mensuel', opts);
   }
+
+  // ── Cycle d'emails commerciaux & relances ──────────────────────────────────
+
+  /** Relance automatique d'un prospect dont la date de relance est échue. */
+  async envoyerRelanceProspect(opts: {
+    to: string; prenom: string; entreprise: string; logiciel: string; urlContact: string;
+  }) {
+    return this.send(opts.to, `${opts.logiciel} — Reprenons contact`, 'relance-prospect', opts);
+  }
+
+  /** Relance automatique d'un devis (offre commerciale) envoyé mais non accepté. */
+  async envoyerRelanceDevis(opts: {
+    to: string; clientNom: string; numero: string; url: string; dateValidite?: string;
+  }) {
+    return this.send(opts.to, `Votre offre ${opts.numero} vous attend`, 'relance-devis', opts);
+  }
+
+  /** Confirmation au client de l'acceptation en ligne de son devis. */
+  async envoyerOffreAcceptee(opts: {
+    to: string; clientNom: string; numero: string; logiciel: string;
+    formule?: string; montantTTC: string; dateAcceptation: string;
+  }) {
+    return this.send(opts.to, `Offre ${opts.numero} acceptée — merci`, 'offre-acceptee', opts);
+  }
+
+  /**
+   * Notification interne à l'équipe commerciale (nouvelle demande de démo,
+   * acceptation d'un devis, etc.). Destinataire = boîte commerciale interne.
+   */
+  async envoyerNouvelleDemandeInterne(opts: {
+    to: string | string[]; titre: string; typeDemande: string; reference: string;
+    contactNom: string; contactEmail: string; telephone: string;
+    entreprise: string; pays: string; message: string;
+  }) {
+    return this.send(opts.to, `[Commercial] ${opts.titre}`, 'nouvelle-demande-interne', opts);
+  }
 }

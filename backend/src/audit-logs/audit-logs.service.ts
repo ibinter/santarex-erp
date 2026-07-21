@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditLog, AuditAction } from './entities/audit-log.entity';
@@ -21,6 +21,8 @@ export interface LogAuditOptions {
 
 @Injectable()
 export class AuditLogsService {
+  private readonly logger = new Logger(AuditLogsService.name);
+
   constructor(
     @InjectRepository(AuditLog)
     private readonly auditRepository: Repository<AuditLog>,
@@ -41,8 +43,15 @@ export class AuditLogsService {
       userAgent: opts.userAgent,
       contexteJson: opts.contexte ? JSON.stringify(opts.contexte) : null,
     });
-    // fire-and-forget — ne jamais bloquer la requête principale
-    this.auditRepository.save(entry).catch(() => {});
+    // fire-and-forget — ne jamais bloquer la requête principale, mais ne JAMAIS
+    // avaler silencieusement une perte de piste d'audit : on trace l'échec
+    // d'écriture (action + ressource) pour permettre l'investigation.
+    this.auditRepository.save(entry).catch((err) => {
+      this.logger.error(
+        `Échec d'écriture du journal d'audit [${opts.action} ${opts.ressource}` +
+          `${opts.ressourceId ? ' #' + opts.ressourceId : ''}]: ${err?.message ?? err}`,
+      );
+    });
   }
 
   async findAll(

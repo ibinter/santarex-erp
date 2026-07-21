@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { MailService } from '../mail/mail.service';
 import { Prospect } from './entities/prospect.entity';
 import { DemandeDemo } from './entities/demande-demo.entity';
@@ -24,7 +25,16 @@ export class CrmService {
     @InjectRepository(DemandeDemo)
     private readonly demandeRepo: Repository<DemandeDemo>,
     private readonly mailService: MailService,
+    private readonly config: ConfigService,
   ) {}
+
+  /** Boîte de l'équipe commerciale interne (SALES_EMAIL, fallback SMTP_FROM). */
+  private get salesEmail(): string {
+    return this.config.get<string>(
+      'SALES_EMAIL',
+      this.config.get<string>('SMTP_FROM', 'contact@ibigsoft.com'),
+    );
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   //  PROSPECTS (superadmin)
@@ -224,11 +234,25 @@ export class CrmService {
       this.logger.error(`Échec envoi email de confirmation démo → ${prospect.email}: ${(err as Error).message}`);
     }
 
-    // Notification interne de l'équipe commerciale (best-effort).
-    this.logger.warn(
-      `[CRM] Nouvelle demande de démo — ${prospect.nom} <${prospect.email}> ` +
-      `(${prospect.entreprise ?? 'n/a'}, ${prospect.pays ?? 'n/a'}) — demande ${demande.id}`,
-    );
+    // Notification interne réelle de l'équipe commerciale (best-effort).
+    try {
+      await this.mailService.envoyerNouvelleDemandeInterne({
+        to: this.salesEmail,
+        titre: `Nouvelle demande de démo — ${prospect.nom}`,
+        typeDemande: 'Demande de démonstration',
+        reference: demande.id,
+        contactNom: `${prospect.prenom ?? ''} ${prospect.nom}`.trim(),
+        contactEmail: prospect.email,
+        telephone: prospect.telephone ?? prospect.whatsapp ?? '—',
+        entreprise: prospect.entreprise ?? '—',
+        pays: prospect.pays ?? '—',
+        message: prospect.besoin ?? `Logiciel visé : ${prospect.logiciel ?? 'SANTAREX ERP'}`,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Échec notification interne demande démo ${demande.id}: ${(err as Error).message}`,
+      );
+    }
 
     return { prospectId: prospect.id, demandeId: demande.id };
   }

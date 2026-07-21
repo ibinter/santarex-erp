@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, User, Activity, Thermometer, Heart, Weight, Ruler, Wind, Pill, FlaskConical, FileText, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
-import { exportFichePDF } from '@/lib/export';
+import { exportFichePDF, exportFichePDFVerifiable } from '@/lib/export';
 
 type Consultation = {
   id: string; numero?: string; statut?: string;
@@ -96,6 +96,38 @@ export default function ConsultationDetailPage() {
         ]},
       ],
       `consultation-${consultation.numero ?? consultation.id.slice(0, 8)}`,
+    );
+  };
+
+  // Génère une ORDONNANCE PDF vérifiable (QR + URL de vérification en pied).
+  // Le document est enregistré dans le registre de vérification (type ordonnance).
+  const handleOrdonnancePDF = (ord: NonNullable<Consultation['ordonnances']>[number]) => {
+    if (!consultation) return;
+    const ref = ord.numero ?? ord.id;
+    const lignes = ord.lignes ?? [];
+    exportFichePDFVerifiable(
+      `Ordonnance ${ref}`,
+      [
+        { label: 'Ordonnance', fields: [
+          { key: 'Numéro', value: ref },
+          { key: 'Consultation', value: consultation.numero ?? consultation.id.slice(0, 8).toUpperCase() },
+          { key: 'Date', value: consultation.dateHeure ? new Date(consultation.dateHeure).toLocaleDateString('fr-FR') : '—' },
+          { key: 'Médecin', value: consultation.medecin ? `Dr. ${consultation.medecin.prenom} ${consultation.medecin.nom}` : '—' },
+          { key: 'Patient', value: consultation.patient ? `${consultation.patient.prenom} ${consultation.patient.nom}` : '—' },
+          { key: 'IPP', value: consultation.patient?.ipp ?? '—' },
+        ]},
+        { label: 'Prescriptions', fields: lignes.length > 0
+          ? lignes.map((l, i) => ({ key: `Ligne ${i + 1}`, value: l }))
+          : [{ key: 'Détail', value: '—' }] },
+      ],
+      `ordonnance-${ref}`,
+      {
+        typeDocument: 'ordonnance',
+        reference: ref,
+        // Empreinte canonique stable : type | référence | consultation | lignes.
+        contenu: `ordonnance|${ref}|${consultation.id}|${lignes.join(';')}`,
+        emisLe: consultation.dateHeure,
+      },
     );
   };
 
@@ -239,7 +271,13 @@ export default function ConsultationDetailPage() {
                   </p>
                   {consultation.ordonnances.map(ord => (
                     <div key={ord.id} style={{ padding: '10px 12px', background: '#F8FAFC', borderRadius: 8, marginBottom: 8, borderLeft: '3px solid #1565C0' }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1565C0', marginBottom: 6 }}>{ord.numero ?? ord.id}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#1565C0' }}>{ord.numero ?? ord.id}</div>
+                        <button onClick={() => handleOrdonnancePDF(ord)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 6, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 11, color: '#1565C0', fontWeight: 600 }}>
+                          <FileText size={12} /> {t('detail.fichePdf')}
+                        </button>
+                      </div>
                       {ord.lignes?.map((l, i) => <div key={i} style={{ fontSize: 12, color: '#37474F', padding: '3px 0', borderTop: i > 0 ? '1px solid #F0F0F0' : 'none' }}>• {l}</div>)}
                     </div>
                   ))}

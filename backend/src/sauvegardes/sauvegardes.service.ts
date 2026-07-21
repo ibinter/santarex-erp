@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { spawn } from 'child_process';
 import { createHash } from 'crypto';
 import { createReadStream } from 'fs';
@@ -18,6 +20,8 @@ import {
   StatutSauvegarde,
   TypeSauvegarde,
 } from './entities/sauvegarde.entity';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/entities/audit-log.entity';
 
 interface DbConfig {
   host: string;
@@ -37,9 +41,20 @@ export class SauvegardesService {
    */
   static readonly CONFIRMATION_TOKEN = 'RESTAURER-DEFINITIVEMENT';
 
+  /**
+   * Nombre de sauvegardes AUTOMATIQUES (planifiées) conservées par la purge de
+   * rétention. Configurable via BACKUP_RETENTION (défaut : 14 jours de dumps).
+   */
+  private getRetention(): number {
+    const raw = parseInt(process.env.BACKUP_RETENTION ?? '', 10);
+    return Number.isFinite(raw) && raw > 0 ? raw : 14;
+  }
+
   constructor(
     @InjectRepository(Sauvegarde)
     private readonly repo: Repository<Sauvegarde>,
+    private readonly config: ConfigService,
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   // ── Configuration ────────────────────────────────────────────────────────
@@ -59,13 +74,20 @@ export class SauvegardesService {
     return path.resolve(process.cwd(), 'storage', 'backups');
   }
 
+  /**
+   * Configuration DB pour pg_dump / pg_restore. Lue depuis la MÊME source que la
+   * configuration DB principale (namespace `database` de config/database.config.ts)
+   * afin de ne PAS dupliquer un mot de passe par défaut en dur. Le mot de passe
+   * n'a AUCUN fallback codé en clair ici : s'il est absent de la configuration,
+   * pg_dump/pg_restore échoueront proprement (aucun secret prévisible embarqué).
+   */
   private getDbConfig(): DbConfig {
     return {
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || '5432',
-      user: process.env.DB_USER || 'santarex',
-      password: process.env.DB_PASSWORD || 'santarex_secure_password',
-      name: process.env.DB_NAME || 'santarex_db',
+      host: this.config.get<string>('database.host') ?? 'localhost',
+      port: String(this.config.get<number | string>('database.port') ?? 5432),
+      user: this.config.get<string>('database.username') ?? 'santarex',
+      password: this.config.get<string>('database.password') ?? '',
+      name: this.config.get<string>('database.database') ?? 'santarex_db',
     };
   }
 
@@ -145,7 +167,23 @@ export class SauvegardesService {
       sauvegarde.tailleOctets = stat.size.toString();
       sauvegarde.checksum = checksum;
       sauvegarde.terminatedAt = new Date();
-      return await this.repo.save(sauvegarde);
+      const reussie = await this.repo.save(sauvegarde);
+
+      this.auditLogs.log({
+        action: AuditAction.CREATE,
+        ressource: 'Sauvegarde',
+        ressourceId: reussie.id,
+        userId: initiateurId ?? undefined,
+        contexte: {
+          type,
+          nomFichier: reussie.nomFichier,
+          tailleOctets: reussie.tailleOctets,
+          checksum: reussie.checksum,
+          statut: reussie.statut,
+        },
+      });
+
+      return reussie;
     } catch (err: any) {
       this.logger.error(`Échec sauvegarde ${sauvegarde.id}: ${err?.message}`);
       // Nettoyage d'un dump partiel éventuel.
@@ -155,6 +193,15 @@ export class SauvegardesService {
       sauvegarde.cheminFichier = null;
       sauvegarde.terminatedAt = new Date();
       await this.repo.save(sauvegarde);
+
+      this.auditLogs.log({
+        action: AuditAction.CREATE,
+        ressource: 'Sauvegarde',
+        ressourceId: sauvegarde.id,
+        userId: initiateurId ?? undefined,
+        contexte: { type, statut: sauvegarde.statut, erreur: sauvegarde.erreur },
+      });
+
       throw new InternalServerErrorException(
         `La sauvegarde a échoué : ${sauvegarde.erreur}`,
       );
@@ -262,8 +309,80 @@ export class SauvegardesService {
         this.logger.warn(`Suppression fichier dump ${id}: ${e?.message}`);
       }
     }
+    const supprimeId = s.id;
+    const supprimeNom = s.nomFichier;
     await this.repo.remove(s);
+
+    this.auditLogs.log({
+      action: AuditAction.DELETE,
+      ressource: 'Sauvegarde',
+      ressourceId: supprimeId,
+      contexte: { nomFichier: supprimeNom },
+    });
+
     return { supprime: true };
+  }
+
+  // ── Planification (Cron quotidien) & rétention ───────────────────────────
+
+  /**
+   * Sauvegarde AUTOMATIQUE quotidienne (03h00). Best-effort : ne lève jamais
+   * (une exception dans un @Cron ne doit pas faire tomber le process). Après un
+   * dump réussi, applique la purge de rétention pour ne conserver que les N
+   * dernières sauvegardes planifiées.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM, { name: 'sauvegarde-automatique-quotidienne' })
+  async sauvegardeAutomatique(): Promise<void> {
+    this.logger.log('Démarrage de la sauvegarde automatique quotidienne.');
+    try {
+      const stamp = new Date().toISOString().slice(0, 10);
+      await this.creerSauvegarde(
+        null,
+        `Sauvegarde automatique ${stamp}`,
+        TypeSauvegarde.PLANIFIEE,
+      );
+    } catch (err: any) {
+      // creerSauvegarde journalise déjà l'échec (audit + logger) ; on avale ici
+      // pour préserver le process planifié.
+      this.logger.error(
+        `Sauvegarde automatique échouée : ${err?.message ?? err}`,
+      );
+    }
+    // La purge s'exécute même si la sauvegarde du jour a échoué, pour éviter
+    // l'accumulation, mais reste best-effort.
+    await this.purgerRetention().catch((e) =>
+      this.logger.error(`Purge de rétention échouée : ${e?.message ?? e}`),
+    );
+  }
+
+  /**
+   * Purge de rétention : conserve les `garder` sauvegardes PLANIFIÉES les plus
+   * récentes et supprime les plus anciennes (ligne + fichier dump). Ne touche
+   * JAMAIS aux sauvegardes manuelles ni pré-restauration.
+   */
+  async purgerRetention(garder = this.getRetention()): Promise<{ purgees: number }> {
+    const planifiees = await this.repo.find({
+      where: { type: TypeSauvegarde.PLANIFIEE },
+      order: { createdAt: 'DESC' },
+    });
+    const aPurger = planifiees.slice(garder);
+    let purgees = 0;
+    for (const s of aPurger) {
+      try {
+        await this.supprimer(s.id);
+        purgees += 1;
+      } catch (e: any) {
+        this.logger.warn(
+          `Rétention : échec suppression sauvegarde ${s.id}: ${e?.message ?? e}`,
+        );
+      }
+    }
+    if (purgees > 0) {
+      this.logger.log(
+        `Rétention appliquée : ${purgees} ancienne(s) sauvegarde(s) planifiée(s) purgée(s) (conservées: ${garder}).`,
+      );
+    }
+    return { purgees };
   }
 
   // ── Restauration (DESTRUCTRICE) ──────────────────────────────────────────
@@ -326,6 +445,18 @@ export class SauvegardesService {
       this.logger.warn(
         `RESTAURATION non exécutée (ALLOW_DB_RESTORE désactivé). Plan prêt, base intacte.`,
       );
+      this.auditLogs.log({
+        action: AuditAction.UPDATE,
+        ressource: 'Sauvegarde',
+        ressourceId: id,
+        userId: initiateurId ?? undefined,
+        contexte: {
+          operation: 'RESTAURATION',
+          execute: false,
+          sauvegardePrealableId: prealable.id,
+          motif: 'ALLOW_DB_RESTORE désactivé — plan uniquement, base intacte',
+        },
+      });
       return {
         restauree: false,
         execute: false,
@@ -340,6 +471,17 @@ export class SauvegardesService {
     const db = this.getDbConfig();
     await this.runPgRestore(db, ciblePath);
     this.logger.warn(`RESTAURATION exécutée depuis la sauvegarde ${id}.`);
+    this.auditLogs.log({
+      action: AuditAction.UPDATE,
+      ressource: 'Sauvegarde',
+      ressourceId: id,
+      userId: initiateurId ?? undefined,
+      contexte: {
+        operation: 'RESTAURATION',
+        execute: true,
+        sauvegardePrealableId: prealable.id,
+      },
+    });
     return {
       restauree: true,
       execute: true,

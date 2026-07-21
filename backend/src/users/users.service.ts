@@ -1,15 +1,24 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In, Not } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
+import { Tenant } from '../tenants/entities/tenant.entity';
+import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Tenant)
+    private readonly tenantRepository: Repository<Tenant>,
+    private readonly mailService: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   async findByEmail(email: string, tenantId: string): Promise<User | null> {
@@ -24,7 +33,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(
+    dto: CreateUserDto,
+    createur?: { nom?: string },
+  ): Promise<User> {
     const existing = await this.userRepository.findOne({
       where: { email: dto.email, tenantId: dto.tenantId },
     });
@@ -39,7 +51,63 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return this.userRepository.save(user);
+    const saved = await this.userRepository.save(user);
+
+    // Notification best-effort aux administrateurs du tenant (n'altère pas le flux).
+    void this.notifierAdminsNouvelUtilisateur(saved, createur);
+
+    return saved;
+  }
+
+  /**
+   * Prévient les administrateurs du tenant qu'un nouveau compte a été créé.
+   * Best-effort : toute erreur est avalée. Câble le template
+   * `nouveau-utilisateur-admin` via MailService.
+   */
+  private async notifierAdminsNouvelUtilisateur(
+    nouvel: User,
+    createur?: { nom?: string },
+  ): Promise<void> {
+    try {
+      const [admins, tenant] = await Promise.all([
+        this.userRepository.find({
+          where: {
+            tenantId: nouvel.tenantId,
+            role: In([UserRole.ADMIN, UserRole.DIRECTEUR]),
+            isActive: true,
+            id: Not(nouvel.id),
+          },
+        }),
+        this.tenantRepository.findOne({ where: { slug: nouvel.tenantId } }),
+      ]);
+      if (admins.length === 0) return;
+
+      const front = this.config
+        .get<string>('FRONTEND_URL', 'https://santarex.ibigsoft.com')
+        .replace(/\/$/, '');
+
+      const commun = {
+        nomEtablissement: tenant?.nom ?? nouvel.tenantId,
+        nomUtilisateur: `${nouvel.firstName} ${nouvel.lastName}`,
+        emailUtilisateur: nouvel.email,
+        roleUtilisateur: nouvel.role,
+        creePar: createur?.nom ?? 'Un administrateur',
+        dateCreation: new Date(nouvel.createdAt ?? Date.now()).toLocaleDateString('fr-FR'),
+        urlGestionUtilisateurs: `${front}/parametres/utilisateurs`,
+      };
+
+      for (const admin of admins) {
+        await this.mailService.envoyerNouvelUtilisateurAdmin({
+          to: admin.email,
+          prenomAdmin: admin.firstName,
+          ...commun,
+        });
+      }
+    } catch (e) {
+      this.logger.error(
+        `Échec notification admins nouvel utilisateur ${nouvel.id}: ${(e as Error).message}`,
+      );
+    }
   }
 
   async updateRefreshToken(id: string, token: string | null): Promise<void> {

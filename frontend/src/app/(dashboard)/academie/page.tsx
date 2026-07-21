@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import QuizModal from './QuizModal';
 
 // ── Types alignés sur l'API backend (module academie) ─────────────────────────
 type RessourceType = 'video' | 'document' | 'quiz';
@@ -22,6 +23,7 @@ interface Ressource {
   moduleAssocie: string | null;
   langue: string;
   contenuDisponible: boolean;
+  quizNombreQuestions: number | null;
 }
 
 interface Parcours {
@@ -72,6 +74,7 @@ export default function AcademiePage() {
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [quizActif, setQuizActif] = useState<{ id: string; titre: string } | null>(null);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -108,6 +111,11 @@ export default function AcademiePage() {
     } finally {
       setBusy(null);
     }
+  }, []);
+
+  const onQuizComplete = useCallback(async (ressourceId: string, statut: 'en_cours' | 'termine') => {
+    setProgression(prev => ({ ...prev, [ressourceId]: statut }));
+    try { setStats(await apiClient<Stats>('/academie/stats')); } catch { /* silencieux */ }
   }, []);
 
   const totalRessources = useMemo(
@@ -226,7 +234,9 @@ export default function AcademiePage() {
                       const meta = TYPE_META[r.type];
                       const Icon = meta.icon;
                       const statut = progression[r.id] ?? 'non_commence';
-                      const dispo = r.contenuDisponible && !!r.url;
+                      // Un quiz est disponible dès qu'il a du contenu (pas d'URL requise) ;
+                      // les autres types requièrent une URL réelle.
+                      const dispo = r.type === 'quiz' ? r.contenuDisponible : (r.contenuDisponible && !!r.url);
                       return (
                         <div key={r.id} style={{
                           display: 'flex', alignItems: 'center', gap: 10,
@@ -247,6 +257,9 @@ export default function AcademiePage() {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, fontSize: 11, color: '#78909C' }}>
                               <span>{t(`type.${r.type}`)}</span>
+                              {r.type === 'quiz' && r.quizNombreQuestions != null && (
+                                <span>{t('quiz.questionsCount', { count: r.quizNombreQuestions })}</span>
+                              )}
                               {r.duree != null && (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                                   <Clock size={11} /> {r.duree} {t('minUnit')}
@@ -265,6 +278,20 @@ export default function AcademiePage() {
                             }}>
                               <Lock size={11} /> {t('soon')}
                             </span>
+                          ) : r.type === 'quiz' ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                              {statut === 'termine' && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 600, color: '#15803D' }}>
+                                  <CheckCircle2 size={14} />
+                                </span>
+                              )}
+                              <button
+                                onClick={() => setQuizActif({ id: r.id, titre: r.titre })}
+                                style={{ ...btnPrimaireSm }}
+                              >
+                                {statut === 'termine' ? t('quiz.retake') : t('quiz.take')}
+                              </button>
+                            </div>
                           ) : statut === 'termine' ? (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, fontSize: 11, fontWeight: 600, color: '#15803D' }}>
                               <CheckCircle2 size={14} /> {t('done')}
@@ -293,6 +320,16 @@ export default function AcademiePage() {
           </div>
         </section>
       ))}
+
+      {/* ── Modale de quiz ───────────────────────────────────────────────── */}
+      {quizActif && (
+        <QuizModal
+          ressourceId={quizActif.id}
+          titre={quizActif.titre}
+          onComplete={statut => onQuizComplete(quizActif.id, statut)}
+          onClose={() => setQuizActif(null)}
+        />
+      )}
 
       <style>{`
         .spin { animation: spin 1s linear infinite; }

@@ -1,10 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LicencesService } from '../licences.service';
 import { Licence, LicenceStatut } from '../entities/licence.entity';
+import { User } from '../../users/entities/user.entity';
 import { OffresSaasService } from '../../offres-saas/offres-saas.service';
 import { TenantsService } from '../../tenants/tenants.service';
+import { AuditLogsService } from '../../audit-logs/audit-logs.service';
+import { MailService } from '../../mail/mail.service';
 
 const mockLicence = {
   id: 'lic-uuid-1',
@@ -39,10 +43,15 @@ describe('LicencesService', () => {
       update: jest.fn().mockResolvedValue(undefined),
     };
 
+    const userRepo = {
+      count: jest.fn().mockResolvedValue(0),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LicencesService,
         { provide: getRepositoryToken(Licence), useValue: repo },
+        { provide: getRepositoryToken(User), useValue: userRepo },
         {
           provide: OffresSaasService,
           useValue: { findOne: jest.fn().mockResolvedValue(mockOffre) },
@@ -51,6 +60,9 @@ describe('LicencesService', () => {
           provide: TenantsService,
           useValue: { findOne: jest.fn().mockResolvedValue({ id: 'clinique-a', slug: 'clinique-a' }) },
         },
+        { provide: AuditLogsService, useValue: { log: jest.fn() } },
+        { provide: MailService, useValue: { envoyerAlerteSecurite: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(undefined) } },
       ],
     }).compile();
 

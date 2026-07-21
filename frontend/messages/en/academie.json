@@ -26,6 +26,27 @@
       "video": "Video",
       "document": "Document",
       "quiz": "Quiz"
+    },
+    "quiz": {
+      "take": "Take the quiz",
+      "retake": "Retake the quiz",
+      "questionsCount": "{count, plural, one {# question} other {# questions}}",
+      "passThreshold": "Pass ≥ {seuil}%",
+      "loading": "Loading the quiz…",
+      "loadError": "Unable to load the quiz",
+      "submitError": "Failed to submit answers",
+      "multipleHint": "Multiple answers possible",
+      "submit": "Submit my answers",
+      "submitting": "Submitting…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "retry": "Try again",
+      "passed": "Quiz passed!",
+      "failed": "Quiz not passed",
+      "scoreLine": "Score: {score}/{total} — {pourcentage}%",
+      "explanation": "Explanation:",
+      "correctTag": "Correct answer",
+      "yourAnswerTag": "Your answer"
     }
   }
 }

@@ -1,0 +1,21 @@
+{
+  "motDePasseOublie": {
+    "tagline": "Réinitialisation du mot de passe",
+    "brand": "SANTAREX ERP · IBIG Softwares",
+    "errorEmailRequired": "Veuillez saisir votre adresse email.",
+    "errorEmail": "Adresse email invalide.",
+    "successTitle": "Vérifiez votre boîte mail",
+    "successText": "Si un compte existe pour cette adresse, vous recevrez un email contenant les instructions pour réinitialiser votre mot de passe.",
+    "backToLogin": "Retour à la connexion",
+    "heading": "Mot de passe oublié ?",
+    "intro": "Saisissez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "labelEmail": "Email",
+    "placeholderEmail": "vous@etablissement.ci",
+    "labelTenantId": "Identifiant établissement",
+    "optional": "(optionnel)",
+    "placeholderTenantId": "clinique-les-palmiers",
+    "submit": "Envoyer le lien de réinitialisation",
+    "loadingButton": "Envoi en cours...",
+    "copyright": "© {year} SANTAREX ERP · IBIG Softwares"
+  }
+}

@@ -8,5 +8,5 @@
 //  équilibrée, header de continuation compact).
 // ════════════════════════════════════════════════════════════════════════════
 
-export { exportPDF, exportXLSX, exportFichePDF, exportDocument, exportCSVList } from './pdf';
-export type { PdfColumn, StatBox } from './pdf';
+export { exportPDF, exportXLSX, exportFichePDF, exportFichePDFVerifiable, exportDocument, exportCSVList } from './pdf';
+export type { PdfColumn, StatBox, VerifiableDocInput, VerifiableDocType } from './pdf';

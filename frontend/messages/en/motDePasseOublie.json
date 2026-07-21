@@ -1,0 +1,21 @@
+{
+  "motDePasseOublie": {
+    "tagline": "Password reset",
+    "brand": "SANTAREX ERP · IBIG Softwares",
+    "errorEmailRequired": "Please enter your email address.",
+    "errorEmail": "Invalid email address.",
+    "successTitle": "Check your inbox",
+    "successText": "If an account exists for this address, you will receive an email with instructions to reset your password.",
+    "backToLogin": "Back to sign in",
+    "heading": "Forgot your password?",
+    "intro": "Enter your email address and we will send you a link to reset your password.",
+    "labelEmail": "Email",
+    "placeholderEmail": "you@facility.ci",
+    "labelTenantId": "Facility ID",
+    "optional": "(optional)",
+    "placeholderTenantId": "les-palmiers-clinic",
+    "submit": "Send the reset link",
+    "loadingButton": "Sending...",
+    "copyright": "© {year} SANTAREX ERP · IBIG Softwares"
+  }
+}

@@ -40,7 +40,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Créer un utilisateur' })
   create(@Request() req, @Body() dto: CreateUserDto) {
     // Force tenant isolation
-    return this.usersService.create({ ...dto, tenantId: req.user.tenantId });
+    return this.usersService.create(
+      { ...dto, tenantId: req.user.tenantId },
+      { nom: req.user.email ?? 'Un administrateur' },
+    );
   }
 
   @Patch(':id')

@@ -84,6 +84,14 @@ export class Prospect {
   @Column({ type: 'timestamptz', nullable: true })
   dateRelance: Date | null;
 
+  // Date du dernier email de relance automatique envoyé (idempotence scheduler).
+  @Column({ type: 'timestamptz', nullable: true })
+  dateDerniereRelance: Date | null;
+
+  // Nombre de relances automatiques déjà envoyées (plafonné par le scheduler).
+  @Column({ type: 'int', default: 0 })
+  nbRelances: number;
+
   // Agent commercial responsable (id utilisateur superadmin).
   @Column({ nullable: true })
   agentAssigne: string | null;

@@ -63,14 +63,18 @@ export class LicencesController {
   @Patch(':id/suspendre')
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Suspendre une licence' })
-  suspendre(@Param('id') id: string) {
-    return this.licencesService.suspendre(id);
+  suspendre(@Param('id') id: string, @CurrentUser('userId') userId: string) {
+    return this.licencesService.suspendre(id, userId);
   }
 
   @Patch(':id/renouveler')
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Renouveler une licence (1 mois par défaut)' })
-  renouveler(@Param('id') id: string, @Query('mois') mois: number) {
-    return this.licencesService.renouveler(id, mois || 1);
+  renouveler(
+    @Param('id') id: string,
+    @Query('mois') mois: number,
+    @CurrentUser('userId') userId: string,
+  ) {
+    return this.licencesService.renouveler(id, mois || 1, userId);
   }
 }

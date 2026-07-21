@@ -582,6 +582,57 @@ export class OffresCommercialesService {
 
     offre.statut = OffreCommercialeStatut.ACCEPTEE;
     offre.acceptedAt = new Date();
-    return this.repo.save(offre);
+    const saved = await this.repo.save(offre);
+
+    const dateAcceptation = new Date(saved.acceptedAt).toLocaleDateString('fr-FR');
+    const montantTTC = this.fmt(saved.prixTTC, saved.devise ?? 'XOF');
+
+    // 1) Confirmation au client (best-effort — le MailService avale ses erreurs).
+    try {
+      await this.mail.envoyerOffreAcceptee({
+        to: saved.clientEmail,
+        clientNom: saved.clientNom,
+        numero: saved.numero,
+        logiciel: saved.logiciel ?? 'SANTAREX ERP',
+        formule: saved.formule,
+        montantTTC,
+        dateAcceptation,
+      });
+    } catch (e) {
+      this.logger.error(
+        `Échec email confirmation acceptation ${saved.numero}: ${(e as Error).message}`,
+      );
+    }
+
+    // 2) Notification interne de l'équipe commerciale (réutilise le template interne).
+    try {
+      const salesEmail = this.config.get<string>(
+        'SALES_EMAIL',
+        this.config.get<string>('SMTP_FROM', 'contact@ibigsoft.com'),
+      );
+      await (this.mail as any).envoyerNouvelleDemandeInterne?.({
+        to: salesEmail,
+        titre: `Devis accepté — ${saved.numero}`,
+        typeDemande: 'Acceptation de devis',
+        reference: saved.numero,
+        contactNom: saved.clientNom,
+        contactEmail: saved.clientEmail,
+        telephone: '—',
+        entreprise: saved.clientNom,
+        pays: '—',
+        message: `Devis ${saved.numero} accepté en ligne (${montantTTC}). Formule : ${saved.formule ?? '—'}.`,
+      });
+    } catch (e) {
+      this.logger.error(
+        `Échec notification interne acceptation ${saved.numero}: ${(e as Error).message}`,
+      );
+    }
+
+    // TODO (hors périmètre — module Licences) : déclencher ici le provisionnement
+    // automatique de la licence / du tenant à partir du devis accepté
+    // (création tenant, génération de la clé, email de bienvenue). Voir
+    // payments/licences pour le point d'entrée d'activation.
+
+    return saved;
   }
 }

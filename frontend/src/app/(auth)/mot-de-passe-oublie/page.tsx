@@ -3,11 +3,13 @@
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { Mail, Building2, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { API_URL } from '@/lib/api';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function MotDePasseOubliePage() {
+  const t = useTranslations('motDePasseOublie');
   const [form, setForm] = useState({ email: '', tenantId: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +24,11 @@ export default function MotDePasseOubliePage() {
     e.preventDefault();
 
     if (!form.email) {
-      setError('Veuillez saisir votre adresse email.');
+      setError(t('errorEmailRequired'));
       return;
     }
     if (!EMAIL_RE.test(form.email)) {
-      setError('Adresse email invalide.');
+      setError(t('errorEmail'));
       return;
     }
 
@@ -63,10 +65,10 @@ export default function MotDePasseOubliePage() {
             className="h-28 w-auto mx-auto mb-2 object-contain"
           />
           <p className="text-sm text-text-secondary mt-1 font-medium">
-            Réinitialisation du mot de passe
+            {t('tagline')}
           </p>
           <p className="text-xs text-text-secondary mt-0.5">
-            SANTAREX ERP · IBIG Softwares
+            {t('brand')}
           </p>
         </div>
 
@@ -78,28 +80,26 @@ export default function MotDePasseOubliePage() {
                 <CheckCircle2 size={48} className="text-emerald-500" />
               </div>
               <h2 className="text-lg font-semibold text-text-primary mb-2">
-                Vérifiez votre boîte mail
+                {t('successTitle')}
               </h2>
               <p className="text-sm text-text-secondary mb-6">
-                Si un compte existe pour cette adresse, vous recevrez un email
-                contenant les instructions pour réinitialiser votre mot de passe.
+                {t('successText')}
               </p>
               <Link
                 href="/login"
                 className="btn-primary w-full py-2.5 flex items-center justify-center gap-2"
               >
                 <ArrowLeft size={16} />
-                Retour à la connexion
+                {t('backToLogin')}
               </Link>
             </div>
           ) : (
             <>
               <h2 className="text-lg font-semibold text-text-primary mb-2">
-                Mot de passe oublié ?
+                {t('heading')}
               </h2>
               <p className="text-sm text-text-secondary mb-6">
-                Saisissez votre adresse email et nous vous enverrons un lien pour
-                réinitialiser votre mot de passe.
+                {t('intro')}
               </p>
 
               {error && (
@@ -113,7 +113,7 @@ export default function MotDePasseOubliePage() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="label">
-                    Email <span className="text-danger">*</span>
+                    {t('labelEmail')} <span className="text-danger">*</span>
                   </label>
                   <div className="relative">
                     <Mail
@@ -126,7 +126,7 @@ export default function MotDePasseOubliePage() {
                       type="email"
                       value={form.email}
                       onChange={handleChange}
-                      placeholder="vous@etablissement.ci"
+                      placeholder={t('placeholderEmail')}
                       className="input-field pl-9"
                       autoComplete="email"
                       required
@@ -137,7 +137,7 @@ export default function MotDePasseOubliePage() {
                 {/* Identifiant établissement (optionnel) */}
                 <div>
                   <label htmlFor="tenantId" className="label">
-                    Identifiant établissement <span className="text-text-secondary">(optionnel)</span>
+                    {t('labelTenantId')} <span className="text-text-secondary">{t('optional')}</span>
                   </label>
                   <div className="relative">
                     <Building2
@@ -150,7 +150,7 @@ export default function MotDePasseOubliePage() {
                       type="text"
                       value={form.tenantId}
                       onChange={handleChange}
-                      placeholder="clinique-les-palmiers"
+                      placeholder={t('placeholderTenantId')}
                       className="input-field pl-9"
                       autoComplete="organization"
                     />
@@ -166,10 +166,10 @@ export default function MotDePasseOubliePage() {
                   {loading ? (
                     <>
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Envoi en cours...
+                      {t('loadingButton')}
                     </>
                   ) : (
-                    'Envoyer le lien de réinitialisation'
+                    t('submit')
                   )}
                 </button>
 
@@ -177,7 +177,7 @@ export default function MotDePasseOubliePage() {
                 <p className="text-center text-xs text-text-secondary mt-2">
                   <Link href="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
                     <ArrowLeft size={12} />
-                    Retour à la connexion
+                    {t('backToLogin')}
                   </Link>
                 </p>
               </form>
@@ -187,7 +187,7 @@ export default function MotDePasseOubliePage() {
 
         {/* Footer */}
         <p className="text-center text-[11px] text-text-secondary mt-6">
-          © {new Date().getFullYear()} SANTAREX ERP · IBIG Softwares
+          {t('copyright', { year: String(new Date().getFullYear()) })}
         </p>
       </div>
     </div>

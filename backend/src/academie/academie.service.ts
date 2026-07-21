@@ -1,5 +1,5 @@
 import {
-  Injectable, Logger, NotFoundException, OnModuleInit,
+  Injectable, Logger, NotFoundException, BadRequestException, OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
@@ -12,6 +12,19 @@ import {
 } from './academie.enums';
 import { CreateParcoursDto, UpdateParcoursDto } from './dto/parcours.dto';
 import { CreateRessourceDto, UpdateRessourceDto } from './dto/ressource.dto';
+import { ReponseQuizDto } from './dto/quiz.dto';
+import {
+  QUIZ_SEEDS, QuizContenu, QuizPublic, QuizResultat, QuizCorrectionQuestion,
+} from './academie.quiz';
+
+/**
+ * Ressource « publique » exposée au client : identique à `RessourceFormation`
+ * mais SANS le contenu brut du quiz (`quizJson`, qui contient les bonnes
+ * réponses). Un simple compteur `quizNombreQuestions` est fourni à la place.
+ */
+export type RessourcePublique = Omit<RessourceFormation, 'quizJson'> & {
+  quizNombreQuestions: number | null;
+};
 
 /**
  * Service de l'Académie / Formation SANTAREX.
@@ -41,10 +54,27 @@ export class AcademieService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     try {
       await this.seedStructure();
+      await this.seedQuizzes();
     } catch (e) {
       // Le seed ne doit jamais empêcher le démarrage (ex. table absente en dev).
       this.logger.warn(`Seed Académie ignoré: ${(e as Error).message}`);
     }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  HELPERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Retire le contenu brut du quiz (`quizJson`, avec les bonnes réponses) avant
+   * exposition au client et ajoute un compteur `quizNombreQuestions`.
+   */
+  private sanitizeRessource(r: RessourceFormation): RessourcePublique {
+    const { quizJson, ...reste } = r;
+    return {
+      ...reste,
+      quizNombreQuestions: quizJson?.questions?.length ?? null,
+    };
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -175,6 +205,83 @@ export class AcademieService implements OnModuleInit {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  //  SEED — quiz RÉELS (contenu pédagogique authentique, autorisé)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Rattache le contenu RÉEL des quiz aux parcours globaux correspondants.
+   * Idempotent et robuste : pour chaque quiz défini dans `QUIZ_SEEDS`, on trouve
+   * le parcours global (tenantId NULL) de la catégorie, puis on crée ou complète
+   * la ressource quiz (par titre) avec ses questions. Un quiz étant du contenu
+   * réel (pas une vidéo/URL factice), `contenuDisponible = true` est légitime.
+   */
+  private async seedQuizzes(): Promise<void> {
+    let touched = 0;
+
+    for (const seed of QUIZ_SEEDS) {
+      // Parcours global de la catégorie (créé par seedStructure).
+      const parcours = await this.parcoursRepo.findOne({
+        where: {
+          titre: `Parcours ${PARCOURS_CATEGORIE_LABEL[seed.categorie as ParcoursCategorie]}`,
+          tenantId: IsNull(),
+        },
+      });
+      if (!parcours) continue;
+
+      const contenu: QuizContenu = {
+        seuilReussite: seed.seuilReussite,
+        questions: seed.questions,
+      };
+
+      // Ressource quiz existante (par titre + parcours) ?
+      let ressource = await this.ressourceRepo.findOne({
+        where: { parcoursId: parcours.id, titre: seed.ressourceTitre, type: RessourceType.QUIZ },
+      });
+
+      if (!ressource) {
+        // Ordre : à la suite des ressources existantes du parcours.
+        const count = await this.ressourceRepo.count({ where: { parcoursId: parcours.id } });
+        ressource = this.ressourceRepo.create({
+          parcoursId: parcours.id,
+          type: RessourceType.QUIZ,
+          titre: seed.ressourceTitre,
+          description: seed.description,
+          duree: seed.duree,
+          url: null,
+          miniatureUrl: null,
+          moduleAssocie: seed.moduleAssocie,
+          langue: 'fr',
+          versionCompatible: null,
+          ordre: count,
+          estPublie: true,
+          contenuDisponible: true,   // quiz réel => contenu disponible (pas une fausse URL)
+          quizJson: contenu,
+        });
+        await this.ressourceRepo.save(ressource);
+        touched += 1;
+        continue;
+      }
+
+      // Ressource déjà présente : ne compléter que si le quiz est vide.
+      const dejaRempli = !!ressource.quizJson?.questions?.length;
+      if (!dejaRempli) {
+        ressource.quizJson = contenu;
+        ressource.description = ressource.description ?? seed.description;
+        ressource.duree = ressource.duree ?? seed.duree;
+        ressource.moduleAssocie = ressource.moduleAssocie ?? seed.moduleAssocie;
+        ressource.estPublie = true;
+        ressource.contenuDisponible = true;
+        await this.ressourceRepo.save(ressource);
+        touched += 1;
+      }
+    }
+
+    if (touched > 0) {
+      this.logger.log(`Quiz Académie initialisés: ${touched} ressource(s) quiz avec contenu réel (contenuDisponible=true).`);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   //  LISTING PUBLIÉ (par catégorie) — global + tenant courant
   // ══════════════════════════════════════════════════════════════════════════
 
@@ -186,7 +293,7 @@ export class AcademieService implements OnModuleInit {
   async listerParcoursPublies(tenantId: string | null): Promise<Array<{
     categorie: ParcoursCategorie;
     label: string;
-    parcours: Array<ParcoursFormation & { ressources: RessourceFormation[] }>;
+    parcours: Array<ParcoursFormation & { ressources: RessourcePublique[] }>;
   }>> {
     const qb = this.parcoursRepo.createQueryBuilder('p')
       .where('p.estPublie = :pub', { pub: true })
@@ -205,14 +312,14 @@ export class AcademieService implements OnModuleInit {
           .getMany()
       : [];
 
-    const parRessourceParcours = new Map<string, RessourceFormation[]>();
+    const parRessourceParcours = new Map<string, RessourcePublique[]>();
     for (const r of ressources) {
       const arr = parRessourceParcours.get(r.parcoursId) ?? [];
-      arr.push(r);
+      arr.push(this.sanitizeRessource(r));
       parRessourceParcours.set(r.parcoursId, arr);
     }
 
-    const groupes = new Map<ParcoursCategorie, Array<ParcoursFormation & { ressources: RessourceFormation[] }>>();
+    const groupes = new Map<ParcoursCategorie, Array<ParcoursFormation & { ressources: RessourcePublique[] }>>();
     for (const p of parcours) {
       const enrichi = { ...p, ressources: parRessourceParcours.get(p.id) ?? [] };
       const arr = groupes.get(p.categorie) ?? [];
@@ -225,12 +332,12 @@ export class AcademieService implements OnModuleInit {
       .map(cat => ({
         categorie: cat,
         label: PARCOURS_CATEGORIE_LABEL[cat],
-        parcours: groupes.get(cat) as Array<ParcoursFormation & { ressources: RessourceFormation[] }>,
+        parcours: groupes.get(cat) as Array<ParcoursFormation & { ressources: RessourcePublique[] }>,
       }));
   }
 
   /** Détail d'un parcours publié + ses ressources publiées. */
-  async getParcoursPublie(id: string, tenantId: string | null): Promise<ParcoursFormation & { ressources: RessourceFormation[] }> {
+  async getParcoursPublie(id: string, tenantId: string | null): Promise<ParcoursFormation & { ressources: RessourcePublique[] }> {
     const parcours = await this.parcoursRepo.findOne({ where: { id } });
     if (!parcours || !parcours.estPublie
       || (parcours.tenantId !== null && parcours.tenantId !== tenantId)) {
@@ -240,7 +347,7 @@ export class AcademieService implements OnModuleInit {
       where: { parcoursId: id, estPublie: true },
       order: { ordre: 'ASC' },
     });
-    return { ...parcours, ressources };
+    return { ...parcours, ressources: ressources.map(r => this.sanitizeRessource(r)) };
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -360,6 +467,128 @@ export class AcademieService implements OnModuleInit {
       where: { userId },
       order: { consulteAt: 'DESC' },
     });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  QUIZ — moteur (questions sans réponses / soumission notée + progression)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Charge une ressource quiz accessible pour le tenant courant et renvoie son
+   * contenu. Vérifie : type quiz, ressource & parcours publiés, tenant autorisé,
+   * quiz non vide.
+   */
+  private async chargerQuizAccessible(
+    ressourceId: string,
+    tenantId: string | null,
+  ): Promise<{ ressource: RessourceFormation; contenu: QuizContenu }> {
+    const ressource = await this.ressourceRepo.findOne({ where: { id: ressourceId } });
+    if (!ressource || ressource.type !== RessourceType.QUIZ || !ressource.estPublie) {
+      throw new NotFoundException('Quiz introuvable');
+    }
+
+    const parcours = await this.parcoursRepo.findOne({ where: { id: ressource.parcoursId } });
+    if (!parcours || !parcours.estPublie
+      || (parcours.tenantId !== null && parcours.tenantId !== tenantId)) {
+      throw new NotFoundException('Quiz introuvable');
+    }
+
+    const contenu = ressource.quizJson;
+    if (!contenu || !Array.isArray(contenu.questions) || contenu.questions.length === 0) {
+      throw new NotFoundException('Ce quiz n\'a pas encore de questions');
+    }
+    return { ressource, contenu };
+  }
+
+  /**
+   * Renvoie les questions d'un quiz SANS révéler les bonnes réponses ni les
+   * explications (fournies uniquement dans le corrigé après soumission).
+   */
+  async getQuiz(ressourceId: string, tenantId: string | null): Promise<QuizPublic> {
+    const { ressource, contenu } = await this.chargerQuizAccessible(ressourceId, tenantId);
+    return {
+      ressourceId: ressource.id,
+      titre: ressource.titre,
+      description: ressource.description,
+      seuilReussite: contenu.seuilReussite,
+      nombreQuestions: contenu.questions.length,
+      questions: contenu.questions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        multiple: q.bonnesReponses.length > 1,
+      })),
+    };
+  }
+
+  /**
+   * Corrige les réponses soumises, calcule le score et enregistre la
+   * progression (`termine` si score ≥ seuil, sinon `en_cours`). Renvoie le
+   * corrigé complet (bonnes réponses + explications).
+   */
+  async soumettreQuiz(
+    userId: string,
+    tenantId: string | null,
+    ressourceId: string,
+    reponses: ReponseQuizDto[],
+  ): Promise<QuizResultat> {
+    const { ressource, contenu } = await this.chargerQuizAccessible(ressourceId, tenantId);
+
+    if (!Array.isArray(reponses)) {
+      throw new BadRequestException('Réponses invalides');
+    }
+
+    // Indexe les réponses de l'utilisateur par identifiant de question.
+    const parQuestion = new Map<string, number[]>();
+    for (const r of reponses) {
+      // Déduplique et ignore les indices hors bornes plus bas.
+      parQuestion.set(r.questionId, Array.from(new Set(r.options ?? [])));
+    }
+
+    const corrige: QuizCorrectionQuestion[] = [];
+    let score = 0;
+
+    for (const q of contenu.questions) {
+      const choisiesBrutes = parQuestion.get(q.id) ?? [];
+      const nbOptions = q.options.length;
+      const choisies = choisiesBrutes.filter(i => Number.isInteger(i) && i >= 0 && i < nbOptions);
+
+      const attendues = [...q.bonnesReponses].sort((a, b) => a - b);
+      const donnees = [...choisies].sort((a, b) => a - b);
+      const correct = attendues.length === donnees.length
+        && attendues.every((v, i) => v === donnees[i]);
+
+      if (correct) score += 1;
+
+      corrige.push({
+        questionId: q.id,
+        question: q.question,
+        options: q.options,
+        reponseUtilisateur: donnees,
+        bonnesReponses: attendues,
+        correct,
+        explication: q.explication,
+      });
+    }
+
+    const total = contenu.questions.length;
+    const pourcentage = total > 0 ? Math.round((score / total) * 100) : 0;
+    const reussi = pourcentage >= contenu.seuilReussite;
+    const statut = reussi ? ProgressionStatut.TERMINE : ProgressionStatut.EN_COURS;
+
+    // Enregistre la progression (réutilise la logique idempotente existante).
+    await this.marquerProgression(userId, tenantId, ressource.id, statut);
+
+    return {
+      ressourceId: ressource.id,
+      score,
+      total,
+      pourcentage,
+      seuilReussite: contenu.seuilReussite,
+      reussi,
+      statut,
+      corrige,
+    };
   }
 
   // ══════════════════════════════════════════════════════════════════════════

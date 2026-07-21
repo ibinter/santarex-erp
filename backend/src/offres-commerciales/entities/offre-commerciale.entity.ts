@@ -119,6 +119,14 @@ export class OffreCommerciale {
   @Column({ type: 'timestamptz', nullable: true })
   acceptedAt: Date;
 
+  /** Date de la dernière relance automatique (idempotence scheduler). */
+  @Column({ type: 'timestamptz', nullable: true })
+  dateDerniereRelance: Date;
+
+  /** Nombre de relances automatiques déjà envoyées (plafonné par le scheduler). */
+  @Column({ type: 'int', default: 0 })
+  nbRelances: number;
+
   @Column({ nullable: true })
   createdById: string;
 

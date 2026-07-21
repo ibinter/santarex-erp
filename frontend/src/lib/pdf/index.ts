@@ -15,6 +15,10 @@ import { listCandidates, selectBestLayout } from './layout';
 import { renderTableDocument, renderFiche } from './render';
 import { validateDocument } from './validate';
 import { exportXLSXAdaptive, exportCSV } from './xlsx';
+import { enregistrerDocumentVerifiable } from './verification';
+import type { VerifiableDocInput } from './verification';
+
+export type { VerifiableDocInput, VerifiableDocType } from './verification';
 
 // Crée un document jsPDF de mesure (les largeurs de texte sont indépendantes du format).
 async function newMeasureDoc() {
@@ -98,6 +102,32 @@ export async function exportFichePDF(
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
   registerFonts(doc);
   renderFiche(doc, title, sections);
+  doc.save(`${filename}.pdf`);
+}
+
+// exportFichePDFVerifiable(title, sections, filename, meta)
+// Comme exportFichePDF, mais câble la chaîne « QR vérifiable bout-en-bout » :
+// enregistre le document officiel dans le registre de vérification (token +
+// empreinte SHA-256), puis intègre le QR code + l'URL publique de vérification
+// en pied de document. Si l'enregistrement échoue (hors-ligne…), le PDF est
+// tout de même produit, sans QR — jamais bloquant.
+export async function exportFichePDFVerifiable(
+  title: string,
+  sections: FicheSection[],
+  filename: string,
+  meta: VerifiableDocInput,
+): Promise<void> {
+  const reg = await enregistrerDocumentVerifiable(meta);
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  registerFonts(doc);
+  renderFiche(
+    doc,
+    title,
+    sections,
+    meta.reference,
+    reg ? { url: reg.url, qrDataUrl: reg.qrDataUrl } : undefined,
+  );
   doc.save(`${filename}.pdf`);
 }
 

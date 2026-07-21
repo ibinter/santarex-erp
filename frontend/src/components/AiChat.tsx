@@ -1,11 +1,37 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+/**
+ * Détecte, à partir de la réponse de SARA, les cas où elle indique ne pas
+ * pouvoir répondre — afin de proposer l'ouverture d'un ticket de support.
+ */
+const UNKNOWN_PATTERNS = [
+  'je ne sais pas',
+  'je ne peux pas répondre',
+  'je ne suis pas en mesure',
+  'je ne dispose pas',
+  "je n'ai pas d'information",
+  "je n'ai pas cette information",
+  'contactez le support',
+  'contacter le support',
+  "i don't know",
+  'i cannot answer',
+  "i'm not able",
+  'i am not able',
+  'contact support',
+];
+
+function looksUnanswered(text: string): boolean {
+  const t = text.toLowerCase();
+  return UNKNOWN_PATTERNS.some((p) => t.includes(p));
 }
 
 const SARA_AVATAR = (
@@ -16,17 +42,24 @@ const SARA_AVATAR = (
 );
 
 export default function AiChat() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: 'Bonjour ! Je suis SARA, votre assistante SANTAREX. Comment puis-je vous aider ?' },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, showSupport]);
+
+  const openSupport = () => {
+    setOpen(false);
+    router.push('/support');
+  };
 
   const send = async () => {
     const q = input.trim();
@@ -35,6 +68,7 @@ export default function AiChat() {
     setMessages(history);
     setInput('');
     setLoading(true);
+    setShowSupport(false);
 
     const token = localStorage.getItem('access_token');
     let assistantMsg = '';
@@ -48,6 +82,34 @@ export default function AiChat() {
         },
         body: JSON.stringify({ messages: history }),
       });
+
+      // Erreurs renvoyées en JSON (hors flux SSE) : quota et service désactivé.
+      if (res.status === 429) {
+        const j = await res.json().catch(() => ({}));
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          content: j?.message || "Vous avez atteint le quota d'assistance IA pour aujourd'hui. Réessayez demain ou contactez votre administrateur.",
+        }]);
+        setShowSupport(true);
+        return;
+      }
+      if (res.status === 403) {
+        const j = await res.json().catch(() => ({}));
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          content: j?.message || "L'assistant IA est désactivé pour cet établissement. Contactez votre administrateur pour l'activer.",
+        }]);
+        setShowSupport(true);
+        return;
+      }
+      if (!res.ok) {
+        setMessages((prev) => [...prev, {
+          role: 'assistant',
+          content: 'Le service IA est momentanément indisponible. Réessayez dans un instant.',
+        }]);
+        setShowSupport(true);
+        return;
+      }
 
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -74,8 +136,14 @@ export default function AiChat() {
           } catch {}
         }
       }
+
+      // Si SARA ne sait pas répondre, proposer l'ouverture d'un ticket support.
+      if (!assistantMsg || looksUnanswered(assistantMsg)) {
+        setShowSupport(true);
+      }
     } catch {
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Erreur de connexion au service IA.' }]);
+      setShowSupport(true);
     } finally {
       setLoading(false);
     }
@@ -136,6 +204,22 @@ export default function AiChat() {
             )}
             <div ref={bottomRef} />
           </div>
+
+          {/* Action support — proposée quand SARA ne sait pas répondre */}
+          {showSupport && (
+            <div className="px-3 py-2 border-t bg-amber-50">
+              <button
+                onClick={openSupport}
+                className="w-full flex items-center justify-center gap-2 text-xs font-semibold rounded-lg px-3 py-2 text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #0D47A1, #00838F)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Ouvrir un ticket support
+              </button>
+            </div>
+          )}
 
           {/* Input */}
           <div className="flex items-center gap-2 p-3 border-t bg-white">

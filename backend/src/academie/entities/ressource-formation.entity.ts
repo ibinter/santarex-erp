@@ -2,6 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index,
 } from 'typeorm';
 import { RessourceType } from '../academie.enums';
+import { QuizContenu } from '../academie.quiz';
 
 /**
  * Une ressource pédagogique rattachée à un parcours (vidéo, document, quiz).
@@ -64,6 +65,12 @@ export class RessourceFormation {
   // false => affichage « Bientôt disponible », pas de lecture possible.
   @Column({ default: false })
   contenuDisponible: boolean;
+
+  // Contenu de quiz (uniquement pour les ressources de type `quiz`).
+  // Contient les questions, options, bonnes réponses et explications.
+  // NE JAMAIS renvoyer tel quel au client avant soumission (voir service).
+  @Column({ type: 'jsonb', nullable: true })
+  quizJson: QuizContenu | null;
 
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;

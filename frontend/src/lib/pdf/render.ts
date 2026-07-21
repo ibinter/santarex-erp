@@ -22,6 +22,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { LayoutDecision, DocumentDefinition, StatBox, FicheSection } from './types';
+import type { PdfVerification } from './verification';
 import { registerFonts, makeMeasurer, sanitizeText } from './fonts';
 import { abbreviateHeader } from './columns';
 
@@ -325,6 +326,72 @@ export async function renderTableDocument(
   // Pas de doc.save ici : l'orchestrateur (index.ts) déclenche le téléchargement.
 }
 
+// ─── Bloc de vérification (QR + URL publique) ────────────────────────────────
+// Carte claire : QR scannable à droite, mention « Document vérifiable » + URL
+// lisible à gauche. À poser en bas du document officiel (facture, ordonnance).
+// Ne révèle rien de confidentiel : le QR encode uniquement l'URL du portail.
+// Renvoie le Y après le bloc (avec respiration).
+export const VERIF_BLOCK_H = 30; // hauteur totale de la carte (mm).
+
+export function drawVerificationBlock(
+  doc: any,
+  decision: LayoutDecision,
+  startY: number,
+  v: PdfVerification,
+): number {
+  const pw = pageW(doc);
+  const mL = decision.margins.left;
+  const mR = decision.margins.right;
+  const boxW = pw - mL - mR;
+  const boxH = VERIF_BLOCK_H;
+  const qr = 24; // côté du QR (mm).
+
+  // Fond de carte + accent bleu à gauche.
+  doc.setFillColor(...CARD_BG);
+  doc.roundedRect(mL, startY, boxW, boxH, 2, 2, 'F');
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(mL, startY, boxW, boxH, 2, 2, 'S');
+  doc.setFillColor(...BLUE);
+  doc.roundedRect(mL, startY, 3, boxH, 1, 1, 'F');
+  doc.rect(mL + 1.5, startY, 1.5, boxH, 'F');
+
+  // QR à droite (centré verticalement dans la carte).
+  const qrX = pw - mR - qr - 5;
+  const qrY = startY + (boxH - qr) / 2;
+  try {
+    doc.addImage(v.qrDataUrl, 'PNG', qrX, qrY, qr, qr);
+  } catch {
+    /* data-URL invalide : on omet l'image, l'URL texte reste lisible. */
+  }
+
+  // Texte à gauche.
+  const tx = mL + 8;
+  const textMaxW = qrX - tx - 4;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...NAVY);
+  doc.text('Document verifiable en ligne', tx, startY + 8);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...SLATE_500);
+  doc.text(
+    "Scannez le QR code ou visitez l'adresse ci-dessous pour verifier l'authenticite de ce document :",
+    tx,
+    startY + 13.5,
+    { maxWidth: textMaxW },
+  );
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...BLUE);
+  doc.text(sanitizeText(v.url), tx, startY + 23, { maxWidth: textMaxW });
+
+  return startY + boxH + 4;
+}
+
 // ─── Rendu d'une fiche individuelle ──────────────────────────────────────────
 // Header 1ʳᵉ page, puis sections (bandeau + accent), champs sur 2 colonnes.
 // keepTogether : jamais un titre de section seul en bas de page.
@@ -333,6 +400,7 @@ export function renderFiche(
   title: string,
   sections: FicheSection[],
   ref?: string,
+  verification?: PdfVerification,
 ): void {
   registerFonts(doc);
 
@@ -415,6 +483,14 @@ export function renderFiche(
     }
 
     y += colCount * rowH + 8;
+  }
+
+  // Bloc de vérification (QR + URL) en fin de document, si fourni.
+  if (verification) {
+    if (y + VERIF_BLOCK_H + 4 > bottomLimit) {
+      newPage();
+    }
+    y = drawVerificationBlock(doc, decision, y, verification);
   }
 
   // Footer sur toutes les pages générées.

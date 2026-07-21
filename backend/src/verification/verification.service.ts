@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as QRCode from 'qrcode';
 
 import { DocumentVerifiable } from './entities/document-verifiable.entity';
 import { EnregistrerDocumentDto } from './dto/verification.dto';
@@ -22,6 +23,11 @@ export interface EnregistrementResult {
   token: string;
   url: string;
   hash: string;
+  /**
+   * QR code (data-URL PNG base64) encodant l'URL publique de vérification.
+   * Prêt à être intégré tel quel dans un PDF (`doc.addImage(...)`) ou un <img>.
+   */
+  qrDataUrl: string;
 }
 
 /**
@@ -67,6 +73,26 @@ export class VerificationService {
     return createHash('sha256').update(contenu, 'utf8').digest('hex');
   }
 
+  /** URL publique de vérification associée à un token. */
+  urlPublique(token: string): string {
+    return `${PUBLIC_VERIFY_BASE}/${token}`;
+  }
+
+  /**
+   * Génère un QR code (data-URL PNG base64) encodant l'URL PUBLIQUE de
+   * vérification d'un token. Aucune donnée confidentielle n'est encodée :
+   * uniquement l'URL du portail public. Prêt pour intégration PDF/web.
+   */
+  async genererQrCode(token: string): Promise<string> {
+    return QRCode.toDataURL(this.urlPublique(token), {
+      errorCorrectionLevel: 'M',
+      type: 'image/png',
+      margin: 1,
+      width: 320,
+      color: { dark: '#0a1730ff', light: '#ffffffff' },
+    });
+  }
+
   /**
    * Enregistre un document vérifiable pour le tenant courant.
    * Retourne le token et l'URL publique.
@@ -106,8 +132,9 @@ export class VerificationService {
 
     return {
       token,
-      url: `${PUBLIC_VERIFY_BASE}/${token}`,
+      url: this.urlPublique(token),
       hash,
+      qrDataUrl: await this.genererQrCode(token),
     };
   }
 

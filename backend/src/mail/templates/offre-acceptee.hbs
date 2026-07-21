@@ -1,0 +1,21 @@
+<h2>Merci ! Votre offre {{numero}} est acceptée</h2>
+<p>Bonjour <strong>{{clientNom}}</strong>, nous vous confirmons la bonne réception de votre acceptation de l'offre <strong>{{numero}}</strong> pour <strong>{{logiciel}}</strong>.</p>
+
+<div class="success-box">
+  <p>Votre demande est enregistrée. Notre équipe vous contacte très prochainement pour finaliser la mise en place et démarrer votre accompagnement.</p>
+</div>
+
+<table class="table">
+  <thead><tr><th>Récapitulatif</th><th>Valeur</th></tr></thead>
+  <tbody>
+    <tr><td>Offre</td><td><strong>{{numero}}</strong></td></tr>
+    <tr><td>Solution</td><td>{{logiciel}}{{#if formule}} — {{formule}}{{/if}}</td></tr>
+    <tr><td>Montant TTC</td><td><strong>{{montantTTC}}</strong></td></tr>
+    <tr><td>Acceptée le</td><td>{{dateAcceptation}}</td></tr>
+  </tbody>
+</table>
+
+<p>Un conseiller reviendra vers vous pour convenir des prochaines étapes (contractualisation, planification du déploiement et formation).</p>
+
+<div class="divider"></div>
+<p style="font-size:13px;color:#6B7280;">Une question ? Contactez-nous à <a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a> | +225 27 22 27 60 14</p>

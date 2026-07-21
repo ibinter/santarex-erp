@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Printer, CreditCard, RefreshCw, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { exportFichePDF } from '@/lib/export';
+import { exportFichePDFVerifiable } from '@/lib/export';
 
 type LigneFacture = { id: string; libelle?: string; type?: string; quantite?: number; prixUnitaire?: number; remise?: number; total?: number };
 type Paiement = { id: string; reference?: string; dateCreation?: string; modePaiement?: string; montant?: number; statut?: string; notes?: string };
@@ -124,7 +124,7 @@ export default function FactureDetailPage() {
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20, background: scfg.bg, color: scfg.color }}>
                   {scfg.icon} {t(`statut.${statutKey}`)}
                 </span>
-                <button onClick={() => exportFichePDF(
+                <button onClick={() => exportFichePDFVerifiable(
                   t('fpTitre', { ref: facture.numero ?? facture.reference ?? facture.id.slice(0,8) }),
                   [
                     { label: t('fpInformations'), fields: [
@@ -142,6 +142,13 @@ export default function FactureDetailPage() {
                     ]},
                   ],
                   `facture-${facture.numero ?? facture.id.slice(0,8)}`,
+                  {
+                    typeDocument: 'facture',
+                    reference: facture.numero ?? facture.reference ?? facture.id.slice(0,8),
+                    // Empreinte canonique stable : type | référence | montant | date.
+                    contenu: `facture|${facture.numero ?? facture.reference ?? facture.id}|${facture.total ?? facture.montantTotal ?? 0}|${facture.dateEmission ?? facture.dateCreation ?? ''}`,
+                    emisLe: facture.dateEmission ?? facture.dateCreation,
+                  },
                 )} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #90CAF9', cursor: 'pointer', fontSize: 12, color: '#1565C0', fontWeight: 600 }}>
                   <Download size={13} /> PDF
                 </button>

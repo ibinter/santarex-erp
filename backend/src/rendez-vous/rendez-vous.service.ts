@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
@@ -11,6 +12,8 @@ import {
 } from './entities/rendez-vous.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { User } from '../users/entities/user.entity';
+import { Tenant } from '../tenants/entities/tenant.entity';
+import { MailService } from '../mail/mail.service';
 import { CreateRdvDto } from './dto/create-rdv.dto';
 import { UpdateRdvDto } from './dto/update-rdv.dto';
 
@@ -28,6 +31,8 @@ export interface Pagination {
 
 @Injectable()
 export class RendezVousService {
+  private readonly logger = new Logger(RendezVousService.name);
+
   constructor(
     @InjectRepository(RendezVous)
     private rdvRepository: Repository<RendezVous>,
@@ -35,6 +40,9 @@ export class RendezVousService {
     private patientRepository: Repository<Patient>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Tenant)
+    private tenantRepository: Repository<Tenant>,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -91,7 +99,54 @@ export class RendezVousService {
       tenantId,
       createdById: userId,
     });
-    return this.rdvRepository.save(rdv);
+    const saved = await this.rdvRepository.save(rdv);
+
+    // Email de confirmation au patient (best-effort — n'altère jamais le flux).
+    void this.envoyerConfirmationRdvBestEffort(saved, tenantId);
+
+    return saved;
+  }
+
+  /**
+   * Envoi best-effort de l'email « rendez-vous confirmé » au patient.
+   * Ne lève jamais : toute erreur (patient sans email, SMTP, etc.) est avalée.
+   * Le template patient requiert une adresse email ; le schéma Patient n'en
+   * expose pas toujours une → on lit le champ de façon défensive et on ignore
+   * silencieusement si aucune adresse n'est disponible.
+   */
+  private async envoyerConfirmationRdvBestEffort(
+    rdv: RendezVous,
+    tenantId: string,
+  ): Promise<void> {
+    try {
+      const [patient, medecin, tenant] = await Promise.all([
+        this.patientRepository.findOne({ where: { id: rdv.patientId, tenantId } }),
+        this.userRepository.findOne({ where: { id: rdv.medecinId, tenantId } }),
+        this.tenantRepository.findOne({ where: { slug: tenantId } }),
+      ]);
+
+      const emailPatient = (patient as any)?.email as string | undefined;
+      if (!patient || !emailPatient) return; // pas d'adresse → rien à envoyer.
+
+      const date = new Date(rdv.dateHeure);
+      await this.mailService.envoyerConfirmationRdv({
+        to: emailPatient,
+        prenomPatient: patient.prenom ?? patient.nom,
+        nomEtablissement: tenant?.nom ?? 'votre établissement',
+        dateRdv: date.toLocaleDateString('fr-FR'),
+        heureRdv: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        nomMedecin: medecin ? `${medecin.firstName} ${medecin.lastName}` : '—',
+        specialite: medecin?.role ?? '—',
+        motif: rdv.motif ?? '—',
+        adresseEtablissement: tenant?.adresse ?? tenant?.ville ?? '—',
+        telephoneEtablissement: tenant?.telephone ?? '—',
+        emailEtablissement: tenant?.email ?? 'contact@ibigsoft.com',
+      });
+    } catch (e) {
+      this.logger.error(
+        `Échec email confirmation RDV ${rdv.id}: ${(e as Error).message}`,
+      );
+    }
   }
 
   async findAll(tenantId: string, filters: RdvFilters = {}, pagination: Pagination = {}) {
