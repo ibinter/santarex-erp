@@ -16,7 +16,8 @@ import { ModuleGuard } from './guards/module.guard';
  */
 @Global()
 @Module({
-  imports: [PaymentsModule],
+  imports: [PaymentsModule], // fournit LicenceLifecycleService (dépendance des guards)
+  providers: [LicenceGuard, ModuleGuard],
   exports: [LicenceGuard, ModuleGuard],
 })
 export class EntitlementModule {}
