@@ -6,6 +6,7 @@ import {
   TrendingUp, CheckCircle, XCircle, Download, Banknote, FileSpreadsheet,
   RefreshCw, X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
@@ -83,22 +84,17 @@ function initials(nom: string, prenom: string) {
 }
 function num(v: number | string | null | undefined): number { return Number(v ?? 0) || 0; }
 function fmtXOF(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
-function anciennete(d?: string | null) {
+function anciennete(tr: ReturnType<typeof useTranslations>, d?: string | null) {
   if (!d) return '—';
   const yrs = Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 24 * 3600000));
-  return yrs < 1 ? '< 1 an' : `${yrs} an${yrs > 1 ? 's' : ''}`;
+  return yrs < 1 ? tr('ancienneteMoins1An') : tr('ancienneteAns', { count: yrs });
 }
 function fullName(e: { nom: string; prenom: string }) { return `${e.prenom} ${e.nom}`.trim(); }
 
-const CONGE_TYPE_LABEL: Record<Conge['type'], string> = {
-  conge: 'Congé annuel', maladie: 'Congé maladie', maternite: 'Maternité',
-  formation: 'Formation', autre: 'Autre',
-};
-
 const TABS = [
-  { key: 'personnel', label: 'Personnel', icon: '👥' },
-  { key: 'conges', label: 'Congés & Absences', icon: '🌴' },
-  { key: 'paie', label: 'Paie', icon: '💳' },
+  { key: 'personnel', labelKey: 'tabPersonnel', icon: '👥' },
+  { key: 'conges', labelKey: 'tabConges', icon: '🌴' },
+  { key: 'paie', labelKey: 'tabPaie', icon: '💳' },
 ] as const;
 
 function currentMois() { return new Date().toISOString().slice(0, 7); }
@@ -107,6 +103,7 @@ const unwrap = (r: any): any[] =>
   Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
 
 export default function RHPage() {
+  const t = useTranslations('rh');
   const [tab, setTab] = useState<'personnel' | 'conges' | 'paie'>('personnel');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -163,7 +160,7 @@ export default function RHPage() {
       });
       setShowEmpModal(false);
       await load(mois);
-    } catch (e: any) { setError(e?.message || "Échec de l'ajout"); }
+    } catch (e: any) { setError(e?.message || t('errAjout')); }
     finally { setBusy(false); }
   };
 
@@ -182,7 +179,7 @@ export default function RHPage() {
       });
       setShowCongeModal(false);
       await load(mois);
-    } catch (e: any) { setError(e?.message || 'Échec de la demande'); }
+    } catch (e: any) { setError(e?.message || t('errDemande')); }
     finally { setBusy(false); }
   };
 
@@ -194,7 +191,7 @@ export default function RHPage() {
         body: { approuver },
       });
       await load(mois);
-    } catch (e: any) { setError(e?.message || 'Échec du traitement'); }
+    } catch (e: any) { setError(e?.message || t('errTraitement')); }
     finally { setBusy(false); }
   };
 
@@ -204,54 +201,59 @@ export default function RHPage() {
       await apiClient('/rh/paie', { method: 'POST', body: { mois } });
       await load(mois);
       setTab('paie');
-    } catch (e: any) { setError(e?.message || 'Échec de la génération'); }
+    } catch (e: any) { setError(e?.message || t('errGeneration')); }
     finally { setBusy(false); }
   };
 
   // ── Exports (données réelles) ────────────────────────────────────────────
+  const statutLabel = (e: Employe) =>
+    e.enConge ? t('statutEnConge')
+      : e.statut === 'actif' ? t('statutActif')
+      : e.statut === 'suspendu' ? t('statutSuspendu')
+      : t('statutParti');
   const handleExportXLSX = () => exportXLSX(
     employes.map(e => ({
-      'Matricule': e.matricule, 'Nom': fullName(e), 'Poste': e.poste,
-      'Département': e.departement ?? '', 'Type contrat': e.typeContrat,
-      'Statut': e.enConge ? 'En congé' : e.statut,
-      'Salaire (XOF)': num(e.salaireBase),
-      "Date d'embauche": e.dateEmbauche ? e.dateEmbauche.slice(0, 10) : '',
-      'Contact': e.telephone ?? '',
+      [t('expColMatricule')]: e.matricule, [t('expColNom')]: fullName(e), [t('expColPoste')]: e.poste,
+      [t('expColDepartement')]: e.departement ?? '', [t('expColTypeContrat')]: e.typeContrat,
+      [t('expColStatut')]: statutLabel(e),
+      [t('expColSalaireXof')]: num(e.salaireBase),
+      [t('expColDateEmbauche')]: e.dateEmbauche ? e.dateEmbauche.slice(0, 10) : '',
+      [t('expColContact')]: e.telephone ?? '',
     })),
-    `rh_personnel_${new Date().toISOString().slice(0, 10)}`, 'Personnel',
+    `rh_personnel_${new Date().toISOString().slice(0, 10)}`, t('expSheetPersonnel'),
   );
   const handleExportPDF = () => exportPDF(
     [
-      { header: 'Matricule', dataKey: 'matricule', width: 24 },
-      { header: 'Nom', dataKey: 'nom', width: 48 },
-      { header: 'Poste', dataKey: 'poste', width: 40 },
-      { header: 'Département', dataKey: 'departement', width: 34 },
-      { header: 'Contrat', dataKey: 'typeContrat', width: 18 },
-      { header: 'Statut', dataKey: 'statut', width: 20 },
-      { header: 'Salaire XOF', dataKey: 'salaire', width: 28 },
+      { header: t('expColMatricule'), dataKey: 'matricule', width: 24 },
+      { header: t('expColNom'), dataKey: 'nom', width: 48 },
+      { header: t('expColPoste'), dataKey: 'poste', width: 40 },
+      { header: t('expColDepartement'), dataKey: 'departement', width: 34 },
+      { header: t('expColContrat'), dataKey: 'typeContrat', width: 18 },
+      { header: t('expColStatut'), dataKey: 'statut', width: 20 },
+      { header: t('expColSalaireXofCourt'), dataKey: 'salaire', width: 28 },
     ],
     employes.map(e => ({
       matricule: e.matricule, nom: fullName(e), poste: e.poste,
       departement: e.departement ?? '', typeContrat: e.typeContrat,
-      statut: e.enConge ? 'En congé' : e.statut,
+      statut: statutLabel(e),
       salaire: num(e.salaireBase).toLocaleString('fr-FR'),
     })),
-    'Liste du Personnel — RH',
+    t('expTitrePersonnel'),
     `rh_personnel_${new Date().toISOString().slice(0, 10)}`,
-    `${employes.length} employé(s) — ${new Date().toLocaleDateString('fr-FR')}`,
+    t('expSousPersonnel', { count: employes.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
   const handleExportPaieXLSX = () => exportXLSX(
     bulletins.map(b => ({
-      'Employé': b.employe ? fullName(b.employe) : b.employeId,
-      'Mois': b.mois,
-      'Salaire base (XOF)': num(b.salaireBase),
-      'Primes (XOF)': num(b.primes),
-      'Retenues (XOF)': num(b.retenues),
-      'Cotisations (XOF)': num(b.cotisations),
-      'Net à payer (XOF)': num(b.netAPayer),
-      'Statut': b.statut,
+      [t('expColEmploye')]: b.employe ? fullName(b.employe) : b.employeId,
+      [t('expColMois')]: b.mois,
+      [t('expColSalaireBaseXof')]: num(b.salaireBase),
+      [t('expColPrimesXof')]: num(b.primes),
+      [t('expColRetenuesXof')]: num(b.retenues),
+      [t('expColCotisationsXof')]: num(b.cotisations),
+      [t('expColNetAPayerXof')]: num(b.netAPayer),
+      [t('expColStatut')]: b.statut,
     })),
-    `rh_paie_${mois}`, 'Paie',
+    `rh_paie_${mois}`, t('expSheetPaie'),
   );
 
   // ── Dérivés ──────────────────────────────────────────────────────────────
@@ -310,16 +312,16 @@ export default function RHPage() {
                 <UserCog size={26} color="#fff" />
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>Ressources Humaines</h1>
+                <h1 style={{ margin: 0, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{t('titre')}</h1>
                 <p style={{ margin: '3px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>
-                  {loading ? '…' : `${employes.length} employé(s)`}
+                  {loading ? '…' : t('nbEmployes', { count: employes.length })}
                   {lastRefresh && <span style={{ marginLeft: 8, opacity: 0.6 }}>• {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
                 </p>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button onClick={() => load(mois)} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
-                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> Actualiser
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} /> {t('actualiser')}
               </button>
               <button onClick={handleExportPDF} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '9px 13px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.25)', background: 'rgba(239,68,68,0.25)', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 700 }}>
                 <Download size={13} /> PDF
@@ -328,7 +330,7 @@ export default function RHPage() {
                 <FileSpreadsheet size={13} /> XLSX
               </button>
               <button onClick={() => { setError(null); setShowEmpModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', fontSize: 13, color: '#1C1917', fontWeight: 800 }}>
-                <Plus size={14} /> Nouvel employé
+                <Plus size={14} /> {t('nouvelEmploye')}
               </button>
             </div>
           </div>
@@ -336,10 +338,10 @@ export default function RHPage() {
           {/* KPI pills */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
             {[
-              { label: 'Effectif actif', val: loading ? '…' : effectif, icon: <Users size={11} /> },
-              { label: 'En congé', val: loading ? '…' : nbConge, icon: <Calendar size={11} /> },
-              { label: 'Congés en attente', val: loading ? '…' : nbAttente, icon: <Clock size={11} /> },
-              { label: 'Masse salariale', val: loading ? '…' : fmtXOF(masseSalariale), icon: <Banknote size={11} /> },
+              { label: t('kpiEffectifActif'), val: loading ? '…' : effectif, icon: <Users size={11} /> },
+              { label: t('kpiEnConge'), val: loading ? '…' : nbConge, icon: <Calendar size={11} /> },
+              { label: t('kpiCongesEnAttente'), val: loading ? '…' : nbAttente, icon: <Clock size={11} /> },
+              { label: t('kpiMasseSalariale'), val: loading ? '…' : fmtXOF(masseSalariale), icon: <Banknote size={11} /> },
             ].map((s, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', borderRadius: 8, padding: '5px 12px' }}>
                 <span style={{ color: 'rgba(255,255,255,0.65)' }}>{s.icon}</span>
@@ -354,12 +356,12 @@ export default function RHPage() {
       {/* ── KPI CARDS ─────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12, marginBottom: 18 }}>
         {[
-          { label: 'Effectif actif', value: loading ? '…' : effectif, sub: `${stats?.nbDepartements ?? '—'} département(s)`, color: '#374151', bg: '#F3F4F6', border: '#D1D5DB', icon: <Users size={20} color="#374151" />, tab: 'personnel' as const },
-          { label: 'En congé', value: loading ? '…' : nbConge, sub: `${nbAttente} en attente`, color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: <Calendar size={20} color="#92400E" />, tab: 'conges' as const },
-          { label: 'Bulletins générés', value: loading ? '…' : bulletins.length, sub: mois, color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD', icon: <Clock size={20} color="#1E40AF" />, tab: 'paie' as const },
-          { label: 'Masse salariale', value: loading ? '…' : fmtXOF(masseSalariale), sub: 'Employés actifs', color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', icon: <TrendingUp size={20} color="#065F46" />, tab: 'paie' as const },
+          { label: t('cardEffectifActif'), value: loading ? '…' : effectif, sub: stats?.nbDepartements != null ? t('subDepartements', { count: stats.nbDepartements }) : '—', color: '#374151', bg: '#F3F4F6', border: '#D1D5DB', icon: <Users size={20} color="#374151" />, tab: 'personnel' as const },
+          { label: t('cardEnConge'), value: loading ? '…' : nbConge, sub: t('subEnAttente', { count: nbAttente }), color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: <Calendar size={20} color="#92400E" />, tab: 'conges' as const },
+          { label: t('cardBulletins'), value: loading ? '…' : bulletins.length, sub: mois, color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD', icon: <Clock size={20} color="#1E40AF" />, tab: 'paie' as const },
+          { label: t('cardMasseSalariale'), value: loading ? '…' : fmtXOF(masseSalariale), sub: t('subEmployesActifs'), color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7', icon: <TrendingUp size={20} color="#065F46" />, tab: 'paie' as const },
         ].map((k, i) => (
-          <div key={i} className="rh-kpi" title={`Voir : ${k.label}`} onClick={() => setTab(k.tab)}
+          <div key={i} className="rh-kpi" title={t('voir', { label: k.label })} onClick={() => setTab(k.tab)}
             style={{ background: '#fff', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 8px rgba(0,0,0,0.08)', border: `1.5px solid ${k.border}`, display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ width: 44, height: 44, borderRadius: 12, background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{k.icon}</div>
             <div>
@@ -373,10 +375,10 @@ export default function RHPage() {
 
       {/* ── TABS ──────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 4, background: '#E8EEF8', padding: 4, borderRadius: 12, width: 'fit-content', marginBottom: 16 }}>
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, background: tab === t.key ? '#fff' : 'transparent', color: tab === t.key ? '#1C1917' : '#78909C', boxShadow: tab === t.key ? '0 1px 6px rgba(0,0,0,0.12)' : 'none', transition: 'all .15s' }}>
-            {t.icon} {t.label}
+        {TABS.map(tb => (
+          <button key={tb.key} onClick={() => setTab(tb.key)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700, background: tab === tb.key ? '#fff' : 'transparent', color: tab === tb.key ? '#1C1917' : '#78909C', boxShadow: tab === tb.key ? '0 1px 6px rgba(0,0,0,0.12)' : 'none', transition: 'all .15s' }}>
+            {tb.icon} {t(tb.labelKey)}
           </button>
         ))}
       </div>
@@ -387,10 +389,10 @@ export default function RHPage() {
           <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'center' }}>
             <div style={{ position: 'relative', flex: 1, maxWidth: 340 }}>
               <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Nom, département, poste, matricule…"
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('rechercher')}
                 style={{ width: '100%', padding: '10px 14px 10px 36px', borderRadius: 11, border: '1.5px solid #E0E8F0', background: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', color: '#1A2332' }} />
             </div>
-            <span style={{ fontSize: 12, color: '#90A4AE', fontWeight: 600 }}>{filtered.length} employé{filtered.length > 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 12, color: '#90A4AE', fontWeight: 600 }}>{t('nbEmployesFiltres', { count: filtered.length })}</span>
           </div>
 
           <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
@@ -398,14 +400,14 @@ export default function RHPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 680 }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC' }}>
-                    {['Employé', 'Poste', 'Département', 'Contrat', 'Statut', 'Salaire (XOF)', 'Ancienneté'].map(h => (
+                    {[t('thEmploye'), t('thPoste'), t('thDepartement'), t('thContrat'), t('thStatut'), t('thSalaireXof'), t('thAnciennete')].map(h => (
                       <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', whiteSpace: 'nowrap', borderBottom: '1.5px solid #EEF2F8' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {!loading && filtered.length === 0 && (
-                    <tr><td colSpan={7} style={{ padding: '28px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 13 }}>Aucun employé. Cliquez sur « Nouvel employé » pour commencer.</td></tr>
+                    <tr><td colSpan={7} style={{ padding: '28px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 13 }}>{t('personnelVide')}</td></tr>
                   )}
                   {filtered.map(e => {
                     const [ac, ab] = avatarColor(fullName(e));
@@ -438,13 +440,13 @@ export default function RHPage() {
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 20, background: e.enConge ? '#FEF3C7' : '#D1FAE5', color: e.enConge ? '#92400E' : '#065F46', border: `1px solid ${e.enConge ? '#FDE68A' : '#6EE7B7'}` }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: e.enConge ? '#F59E0B' : '#10B981', display: 'inline-block' }} />
-                            {e.enConge ? 'En congé' : (e.statut === 'actif' ? 'Actif' : e.statut === 'suspendu' ? 'Suspendu' : 'Parti')}
+                            {statutLabel(e)}
                           </span>
                         </td>
                         <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 800, color: '#1A2332', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                           {fmtXOF(num(e.salaireBase))}
                         </td>
-                        <td style={{ padding: '12px 16px', fontSize: 12, color: '#78909C' }}>{anciennete(e.dateEmbauche)}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 12, color: '#78909C' }}>{anciennete(t, e.dateEmbauche)}</td>
                       </tr>
                     );
                   })}
@@ -461,28 +463,28 @@ export default function RHPage() {
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
             <button onClick={() => { setError(null); setShowCongeModal(true); }} disabled={employes.length === 0}
               style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 10, border: 'none', background: '#1C1917', cursor: employes.length === 0 ? 'not-allowed' : 'pointer', fontSize: 13, color: '#fff', fontWeight: 800, opacity: employes.length === 0 ? 0.5 : 1 }}>
-              <Plus size={14} /> Demander un congé
+              <Plus size={14} /> {t('demanderConge')}
             </button>
           </div>
           <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
             <div style={{ padding: '14px 20px', borderBottom: '1.5px solid #EEF2F8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{conges.length} demande{conges.length > 1 ? 's' : ''}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{t('nbDemandes', { count: conges.length })}</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#92400E', background: '#FEF3C7', padding: '3px 12px', borderRadius: 20, border: '1px solid #FDE68A' }}>
-                {nbAttente} en attente
+                {t('enAttente', { count: nbAttente })}
               </span>
             </div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC' }}>
-                    {['Employé', 'Type', 'Du', 'Au', 'Jours', 'Statut', 'Actions'].map(h => (
+                    {[t('thEmploye'), t('thType'), t('thDu'), t('thAu'), t('thJours'), t('thStatut'), t('thActions')].map(h => (
                       <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', borderBottom: '1.5px solid #EEF2F8' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {!loading && conges.length === 0 && (
-                    <tr><td colSpan={7} style={{ padding: '28px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 13 }}>Aucune demande de congé.</td></tr>
+                    <tr><td colSpan={7} style={{ padding: '28px 16px', textAlign: 'center', color: '#90A4AE', fontSize: 13 }}>{t('congesVide')}</td></tr>
                   )}
                   {conges.map(c => {
                     const approuve = c.statut === 'approuve';
@@ -491,14 +493,14 @@ export default function RHPage() {
                     return (
                       <tr key={c.id} style={{ borderTop: '1px solid #F0F4FA', borderLeft: `3px solid ${approuve ? '#6EE7B7' : refuse ? '#FCA5A5' : '#FDE68A'}` }}>
                         <td style={{ padding: '13px 16px', fontWeight: 700, fontSize: 13, color: '#1A2332' }}>{c.employe ? fullName(c.employe) : c.employeId}</td>
-                        <td style={{ padding: '13px 16px', fontSize: 13, color: '#546E7A' }}>{CONGE_TYPE_LABEL[c.type] ?? c.type}</td>
+                        <td style={{ padding: '13px 16px', fontSize: 13, color: '#546E7A' }}>{t(`congeType.${c.type}`)}</td>
                         <td style={{ padding: '13px 16px', fontSize: 12, color: '#37474F', whiteSpace: 'nowrap' }}>{new Date(c.dateDebut).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</td>
                         <td style={{ padding: '13px 16px', fontSize: 12, color: '#37474F', whiteSpace: 'nowrap' }}>{new Date(c.dateFin).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</td>
-                        <td style={{ padding: '13px 16px', fontWeight: 800, fontSize: 13, color: '#1A2332' }}>{c.jours}j</td>
+                        <td style={{ padding: '13px 16px', fontWeight: 800, fontSize: 13, color: '#1A2332' }}>{c.jours}{t('joursSuffixe')}</td>
                         <td style={{ padding: '13px 16px' }}>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 20, background: approuve ? '#D1FAE5' : refuse ? '#FEE2E2' : '#FEF3C7', color: approuve ? '#065F46' : refuse ? '#991B1B' : '#92400E', border: `1px solid ${approuve ? '#6EE7B7' : refuse ? '#FCA5A5' : '#FDE68A'}` }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: approuve ? '#10B981' : refuse ? '#EF4444' : '#F59E0B', display: 'inline-block' }} />
-                            {approuve ? 'Approuvé' : refuse ? 'Refusé' : 'En attente'}
+                            {approuve ? t('congeApprouve') : refuse ? t('congeRefuse') : t('congeEnAttente')}
                           </span>
                         </td>
                         <td style={{ padding: '13px 16px' }}>
@@ -506,11 +508,11 @@ export default function RHPage() {
                             <div style={{ display: 'flex', gap: 6 }}>
                               <button onClick={() => handleApprouver(c.id, true)} disabled={busy}
                                 style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderRadius: 8, border: 'none', background: '#D1FAE5', color: '#065F46', fontSize: 11, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer' }}>
-                                <CheckCircle size={11} /> Approuver
+                                <CheckCircle size={11} /> {t('approuver')}
                               </button>
                               <button onClick={() => handleApprouver(c.id, false)} disabled={busy}
                                 style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderRadius: 8, border: 'none', background: '#FEE2E2', color: '#991B1B', fontSize: 11, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer' }}>
-                                <XCircle size={11} /> Refuser
+                                <XCircle size={11} /> {t('refuser')}
                               </button>
                             </div>
                           )}
@@ -531,24 +533,24 @@ export default function RHPage() {
           <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
             <div style={{ background: 'linear-gradient(135deg,#064E3B,#065F46)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
               <div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>Module de paie</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('moduleDePaie')}</div>
                 <input type="month" value={mois} onChange={e => setMois(e.target.value)}
                   style={{ marginTop: 6, padding: '6px 10px', borderRadius: 8, border: 'none', fontSize: 16, fontWeight: 900, color: '#064E3B', outline: 'none' }} />
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>Net à payer (généré)</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: 700 }}>{t('netAPayerGenere')}</div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{fmtXOF(masseBulletins)}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
-                  {bulletins.length} bulletin(s) • {effectif} actif(s)
+                  {t('nbBulletinsActifs', { bulletins: bulletins.length, actifs: effectif })}
                 </div>
               </div>
             </div>
 
             <div style={{ padding: '20px 24px' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14 }}>Répartition par département — {mois}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14 }}>{t('repartitionDepartement', { mois })}</div>
               {parDepartement.length === 0 ? (
                 <div style={{ padding: '20px 0', color: '#90A4AE', fontSize: 13 }}>
-                  Aucun bulletin pour ce mois. Cliquez sur « Générer les bulletins de paie ».
+                  {t('paieVide')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -572,11 +574,11 @@ export default function RHPage() {
               <div style={{ marginTop: 24, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button onClick={handleGenererPaie} disabled={busy || loading}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 11, background: 'linear-gradient(135deg,#064E3B,#065F46)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 800, cursor: busy ? 'not-allowed' : 'pointer', boxShadow: '0 4px 14px rgba(6,78,59,0.3)', opacity: busy ? 0.6 : 1 }}>
-                  <Banknote size={16} /> {busy ? 'Génération…' : 'Générer les bulletins de paie'}
+                  <Banknote size={16} /> {busy ? t('generation') : t('genererBulletins')}
                 </button>
                 <button onClick={handleExportPaieXLSX} disabled={bulletins.length === 0}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 18px', borderRadius: 11, background: '#fff', border: '1.5px solid #E0E8F0', color: '#374151', fontSize: 13, fontWeight: 700, cursor: bulletins.length === 0 ? 'not-allowed' : 'pointer', opacity: bulletins.length === 0 ? 0.5 : 1 }}>
-                  <Download size={14} /> Exporter XLSX
+                  <Download size={14} /> {t('exporterXlsx')}
                 </button>
               </div>
             </div>
@@ -586,7 +588,7 @@ export default function RHPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC' }}>
-                      {['Employé', 'Base', 'Primes', 'Retenues', 'Cotisations', 'Net à payer', 'Statut'].map(h => (
+                      {[t('thEmploye'), t('thBase'), t('thPrimes'), t('thRetenues'), t('thCotisations'), t('thNetAPayer'), t('thStatut')].map(h => (
                         <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#78909C', textTransform: 'uppercase', letterSpacing: '0.6px', whiteSpace: 'nowrap', borderBottom: '1.5px solid #EEF2F8' }}>{h}</th>
                       ))}
                     </tr>
@@ -641,31 +643,32 @@ function ModalHeader({ title, onClose }: { title: string; onClose: () => void })
 }
 
 function EmployeModal({ busy, onClose, onSubmit }: { busy: boolean; onClose: () => void; onSubmit: (f: Record<string, string>) => void }) {
+  const t = useTranslations('rh');
   const [f, setF] = useState<Record<string, string>>({ typeContrat: 'CDI' });
   const set = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
   const valid = f.nom && f.prenom && f.poste && f.salaireBase;
   return (
     <div style={overlay} onClick={onClose}>
       <div style={card} onClick={e => e.stopPropagation()}>
-        <ModalHeader title="Nouvel employé" onClose={onClose} />
+        <ModalHeader title={t('modalNouvelEmploye')} onClose={onClose} />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div><label style={labelS}>Prénom *</label><input style={inputS} value={f.prenom ?? ''} onChange={e => set('prenom', e.target.value)} /></div>
-          <div><label style={labelS}>Nom *</label><input style={inputS} value={f.nom ?? ''} onChange={e => set('nom', e.target.value)} /></div>
-          <div><label style={labelS}>Poste *</label><input style={inputS} value={f.poste ?? ''} onChange={e => set('poste', e.target.value)} /></div>
-          <div><label style={labelS}>Département</label><input style={inputS} value={f.departement ?? ''} onChange={e => set('departement', e.target.value)} /></div>
-          <div><label style={labelS}>Type contrat</label>
+          <div><label style={labelS}>{t('mPrenom')}</label><input style={inputS} value={f.prenom ?? ''} onChange={e => set('prenom', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mNom')}</label><input style={inputS} value={f.nom ?? ''} onChange={e => set('nom', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mPoste')}</label><input style={inputS} value={f.poste ?? ''} onChange={e => set('poste', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mDepartement')}</label><input style={inputS} value={f.departement ?? ''} onChange={e => set('departement', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mTypeContrat')}</label>
             <select style={inputS} value={f.typeContrat} onChange={e => set('typeContrat', e.target.value)}>
-              <option value="CDI">CDI</option><option value="CDD">CDD</option><option value="STAGE">Stage</option><option value="CONSULTANT">Consultant</option>
+              <option value="CDI">CDI</option><option value="CDD">CDD</option><option value="STAGE">{t('mContratStage')}</option><option value="CONSULTANT">{t('mContratConsultant')}</option>
             </select>
           </div>
-          <div><label style={labelS}>Salaire base (XOF) *</label><input style={inputS} type="number" value={f.salaireBase ?? ''} onChange={e => set('salaireBase', e.target.value)} /></div>
-          <div><label style={labelS}>Date embauche</label><input style={inputS} type="date" value={f.dateEmbauche ?? ''} onChange={e => set('dateEmbauche', e.target.value)} /></div>
-          <div><label style={labelS}>Téléphone</label><input style={inputS} value={f.telephone ?? ''} onChange={e => set('telephone', e.target.value)} /></div>
-          <div style={{ gridColumn: '1 / -1' }}><label style={labelS}>Email</label><input style={inputS} type="email" value={f.email ?? ''} onChange={e => set('email', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mSalaireBase')}</label><input style={inputS} type="number" value={f.salaireBase ?? ''} onChange={e => set('salaireBase', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mDateEmbauche')}</label><input style={inputS} type="date" value={f.dateEmbauche ?? ''} onChange={e => set('dateEmbauche', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mTelephone')}</label><input style={inputS} value={f.telephone ?? ''} onChange={e => set('telephone', e.target.value)} /></div>
+          <div style={{ gridColumn: '1 / -1' }}><label style={labelS}>{t('mEmail')}</label><input style={inputS} type="email" value={f.email ?? ''} onChange={e => set('email', e.target.value)} /></div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Annuler</button>
-          <button onClick={() => valid && onSubmit(f)} disabled={!valid || busy} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#1C1917', color: '#fff', fontSize: 13, fontWeight: 800, cursor: (!valid || busy) ? 'not-allowed' : 'pointer', opacity: (!valid || busy) ? 0.5 : 1 }}>{busy ? 'Ajout…' : 'Ajouter'}</button>
+          <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{t('annuler')}</button>
+          <button onClick={() => valid && onSubmit(f)} disabled={!valid || busy} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#1C1917', color: '#fff', fontSize: 13, fontWeight: 800, cursor: (!valid || busy) ? 'not-allowed' : 'pointer', opacity: (!valid || busy) ? 0.5 : 1 }}>{busy ? t('ajout') : t('ajouter')}</button>
         </div>
       </div>
     </div>
@@ -673,35 +676,36 @@ function EmployeModal({ busy, onClose, onSubmit }: { busy: boolean; onClose: () 
 }
 
 function CongeModal({ busy, employes, onClose, onSubmit }: { busy: boolean; employes: Employe[]; onClose: () => void; onSubmit: (f: Record<string, string>) => void }) {
+  const t = useTranslations('rh');
   const [f, setF] = useState<Record<string, string>>({ type: 'conge' });
   const set = (k: string, v: string) => setF(p => ({ ...p, [k]: v }));
   const valid = f.employeId && f.dateDebut && f.dateFin;
   return (
     <div style={overlay} onClick={onClose}>
       <div style={card} onClick={e => e.stopPropagation()}>
-        <ModalHeader title="Demande de congé" onClose={onClose} />
+        <ModalHeader title={t('modalDemandeConge')} onClose={onClose} />
         <div style={{ display: 'grid', gap: 12 }}>
-          <div><label style={labelS}>Employé *</label>
+          <div><label style={labelS}>{t('mEmploye')}</label>
             <select style={inputS} value={f.employeId ?? ''} onChange={e => set('employeId', e.target.value)}>
-              <option value="">— Sélectionner —</option>
+              <option value="">{t('mSelectionner')}</option>
               {employes.map(e => <option key={e.id} value={e.id}>{e.prenom} {e.nom} ({e.matricule})</option>)}
             </select>
           </div>
-          <div><label style={labelS}>Type</label>
+          <div><label style={labelS}>{t('mType')}</label>
             <select style={inputS} value={f.type} onChange={e => set('type', e.target.value)}>
-              <option value="conge">Congé annuel</option><option value="maladie">Congé maladie</option>
-              <option value="maternite">Maternité</option><option value="formation">Formation</option><option value="autre">Autre</option>
+              <option value="conge">{t('congeType.conge')}</option><option value="maladie">{t('congeType.maladie')}</option>
+              <option value="maternite">{t('congeType.maternite')}</option><option value="formation">{t('congeType.formation')}</option><option value="autre">{t('congeType.autre')}</option>
             </select>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div><label style={labelS}>Du *</label><input style={inputS} type="date" value={f.dateDebut ?? ''} onChange={e => set('dateDebut', e.target.value)} /></div>
-            <div><label style={labelS}>Au *</label><input style={inputS} type="date" value={f.dateFin ?? ''} onChange={e => set('dateFin', e.target.value)} /></div>
+            <div><label style={labelS}>{t('mDu')}</label><input style={inputS} type="date" value={f.dateDebut ?? ''} onChange={e => set('dateDebut', e.target.value)} /></div>
+            <div><label style={labelS}>{t('mAu')}</label><input style={inputS} type="date" value={f.dateFin ?? ''} onChange={e => set('dateFin', e.target.value)} /></div>
           </div>
-          <div><label style={labelS}>Motif</label><input style={inputS} value={f.motif ?? ''} onChange={e => set('motif', e.target.value)} /></div>
+          <div><label style={labelS}>{t('mMotif')}</label><input style={inputS} value={f.motif ?? ''} onChange={e => set('motif', e.target.value)} /></div>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Annuler</button>
-          <button onClick={() => valid && onSubmit(f)} disabled={!valid || busy} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#1C1917', color: '#fff', fontSize: 13, fontWeight: 800, cursor: (!valid || busy) ? 'not-allowed' : 'pointer', opacity: (!valid || busy) ? 0.5 : 1 }}>{busy ? 'Envoi…' : 'Envoyer'}</button>
+          <button onClick={onClose} style={{ padding: '10px 18px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>{t('annuler')}</button>
+          <button onClick={() => valid && onSubmit(f)} disabled={!valid || busy} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#1C1917', color: '#fff', fontSize: 13, fontWeight: 800, cursor: (!valid || busy) ? 'not-allowed' : 'pointer', opacity: (!valid || busy) ? 0.5 : 1 }}>{busy ? t('envoi') : t('envoyer')}</button>
         </div>
       </div>
     </div>
