@@ -1,15 +1,12 @@
 'use client';
-// ─────────────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
 //  Façade rétro-compatible vers le moteur universel d'export (src/lib/pdf).
-//  Conserve l'API historique (exportPDF, exportXLSX, exportFichePDF, PdfColumn,
-//  StatBox) pour les pages existantes ; toute la logique vit désormais dans
-//  le moteur adaptatif `./pdf`.
-// ─────────────────────────────────────────────────────────────────────────────
-export {
-  exportPDF,
-  exportXLSX,
-  exportFichePDF,
-  exportDocument,
-  exportCSVList,
-} from './pdf';
+//  L'ancienne API (exportPDF / exportXLSX / exportFichePDF) est conservée à
+//  l'identique ; toutes les pages en bénéficient automatiquement du nouveau
+//  moteur adaptatif (mesure du contenu, orientation/format auto, colonnes qui
+//  remplissent la page, headers non cassés, caractères sûrs, pagination
+//  équilibrée, header de continuation compact).
+// ════════════════════════════════════════════════════════════════════════════
+
+export { exportPDF, exportXLSX, exportFichePDF, exportDocument, exportCSVList } from './pdf';
 export type { PdfColumn, StatBox } from './pdf';
