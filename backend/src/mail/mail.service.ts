@@ -20,13 +20,17 @@ export class MailService {
     // Les templates EN ne sont pas encore fournis : le rendu reste FR pour l'instant.
     if (!('lang' in context)) context.lang = 'fr';
     try {
-      await this.mailerService.sendMail({
+      const info = await this.mailerService.sendMail({
         to,
         from: `"${this.fromName}" <${this.fromEmail}>`,
         subject,
         template,
         context,
       });
+      // Succès : on trace messageId + destinataires acceptés par le serveur SMTP
+      // (sinon les envois réussis sont muets et impossibles à auditer).
+      const accepted = Array.isArray(info?.accepted) ? info.accepted.join(', ') : to;
+      this.logger.log(`Email envoyé [${template}] → ${accepted} (id: ${info?.messageId ?? 'n/a'})`);
     } catch (err) {
       this.logger.error(`Échec envoi email [${template}] → ${to}: ${err.message}`);
     }
