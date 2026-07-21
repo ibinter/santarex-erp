@@ -16,6 +16,9 @@ export class MailService {
   }
 
   private async send(to: string | string[], subject: string, template: string, context: Record<string, any>): Promise<void> {
+    // `lang` (défaut 'fr') est propagé au contexte pour préparer le bilinguisme.
+    // Les templates EN ne sont pas encore fournis : le rendu reste FR pour l'instant.
+    if (!('lang' in context)) context.lang = 'fr';
     try {
       await this.mailerService.sendMail({
         to,
@@ -113,6 +116,30 @@ export class MailService {
     navigateur: string; tenantSlug: string; urlChangerMdp: string;
   }) {
     return this.send(opts.to, '🔐 Alerte sécurité — Connexion à votre compte SANTAREX', 'alerte-securite', opts);
+  }
+
+  async envoyerDemoRecue(opts: {
+    to: string; prenom: string; logiciel: string; lang?: 'fr' | 'en';
+  }) {
+    return this.send(opts.to, 'Votre demande de démonstration a été reçue', 'demo-recue', opts);
+  }
+
+  async envoyerOffreEnvoyee(opts: {
+    to: string; clientNom: string; numero: string; url: string; lang?: 'fr' | 'en';
+  }) {
+    return this.send(opts.to, 'Votre offre personnalisée est disponible', 'offre-envoyee', opts);
+  }
+
+  async envoyerTicketCree(opts: {
+    to: string; prenom: string; numero: string; objet: string; lang?: 'fr' | 'en';
+  }) {
+    return this.send(opts.to, `Votre demande a été enregistrée — ${opts.numero}`, 'ticket-cree', opts);
+  }
+
+  async envoyerTicketResolu(opts: {
+    to: string; prenom: string; numero: string; lang?: 'fr' | 'en';
+  }) {
+    return this.send(opts.to, `Votre demande a été traitée — ${opts.numero}`, 'ticket-resolu', opts);
   }
 
   async envoyerRapportMensuel(opts: {

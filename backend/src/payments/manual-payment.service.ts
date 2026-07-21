@@ -17,6 +17,7 @@ import { CreateTransactionDto } from './dto/client.dto';
 import { ProofStorageService, UploadedProofFile } from './proof-storage.service';
 import { OffresSaasService } from '../offres-saas/offres-saas.service';
 import { LicenceLifecycleService } from './licence-lifecycle.service';
+import { MailService } from '../mail/mail.service';
 
 /** Contexte du tenant/utilisateur appelant (dérivé de req.user). */
 export interface TenantContext {
@@ -52,6 +53,7 @@ export class ManualPaymentService {
     private readonly offres: OffresSaasService,
     private readonly proofStorage: ProofStorageService,
     private readonly licenceLifecycle: LicenceLifecycleService,
+    private readonly mailService: MailService,
     private readonly config: ConfigService,
   ) {}
 
@@ -232,7 +234,42 @@ export class ManualPaymentService {
     this.logger.log(
       `Transaction ${tx.reference} VALIDÉE par admin=${adminId} → licence activée (${licence?.id ?? 'n/a'})`,
     );
+
+    // Reçu de paiement — envoyé UNE seule fois (adminValidate refuse une tx déjà
+    // SUCCEEDED), best-effort, ne bloque jamais la validation.
+    if (tx.payerEmail) {
+      this.sendReceipt(tx).catch((err) =>
+        this.logger.error(`Email reçu paiement ${tx.reference} échoué: ${err.message}`),
+      );
+    }
+
     return tx;
+  }
+
+  /** Envoi (best-effort) du reçu de paiement au payeur après validation admin. */
+  private async sendReceipt(tx: PaymentTransaction): Promise<void> {
+    let offreNom = tx.offreCode;
+    try {
+      const offre = await this.offres.findByCode(tx.offreCode);
+      offreNom = offre?.nom ?? tx.offreCode;
+    } catch {
+      // offre introuvable → on garde le code comme libellé.
+    }
+
+    const prenom = (tx.payerName ?? '').trim().split(/\s+/)[0] || 'Cher client';
+    const montantFcfa = Math.round((tx.amountReceived ?? tx.amountExpected ?? 0) / 100);
+
+    await this.mailService.envoyerPaiementRecu({
+      to: tx.payerEmail as string,
+      prenom,
+      nomEtablissement: tx.tenantSlug || tx.tenantId,
+      refTransaction: tx.reference,
+      datePaiement: (tx.reviewedAt ?? new Date()).toLocaleDateString('fr-FR'),
+      montant: montantFcfa,
+      modePaiement: tx.methodType,
+      offreNom,
+      delaiActivation: 'quelques minutes',
+    });
   }
 
   async adminReject(txRef: string, adminId: string, reason: string): Promise<PaymentTransaction> {

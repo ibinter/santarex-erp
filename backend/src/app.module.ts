@@ -16,6 +16,9 @@ import { BlocOperatoireModule } from './bloc-operatoire/bloc-operatoire.module';
 import { ImagerieModule } from './imagerie/imagerie.module';
 import { ImportsModule } from './imports/imports.module';
 import { VerificationModule } from './verification/verification.module';
+import { CrmModule } from './crm/crm.module';
+import { OffresCommercialesModule } from './offres-commerciales/offres-commerciales.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
@@ -90,6 +93,9 @@ import { SeedModule } from './database/seed.module';
     ImagerieModule,
     ImportsModule,
     VerificationModule,
+    CrmModule,
+    OffresCommercialesModule,
+    AnalyticsModule,
     SeedModule,
   ],
   providers: [

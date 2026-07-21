@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import '@/app/landing.css';
+import { API_URL } from '@/lib/api';
+import { track } from '@/lib/analytics';
 
 /* ═══════════════════════════════════════════════════════
    ICÔNES
@@ -454,6 +456,73 @@ const PLANS = [
   },
 ];
 
+/* ── Tarifs dynamiques (BDD) ──────────────────────────────────────────────
+   Charge les offres publiques depuis l'API et les convertit dans la forme
+   attendue par les cartes tarifaires. Retombe silencieusement sur le tableau
+   PLANS codé en dur si l'API échoue, pour ne JAMAIS casser l'affichage. */
+type PlanCard = (typeof PLANS)[number];
+
+const fmtFcfa = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+function safeJsonArray(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.map(String);
+  if (typeof raw === 'string' && raw.trim()) {
+    try {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p.map(String) : [];
+    } catch { return []; }
+  }
+  return [];
+}
+
+function mapOffreToPlan(o: any): PlanCard {
+  const prixM = Number(o?.prix) || 0;
+  const prixA = prixM * 10; // 2 mois offerts, cohérent avec la grille historique
+  const unlimited = Number(o?.maxUtilisateurs) >= 9999;
+  const features = safeJsonArray(o?.fonctionnalites);
+  const users = unlimited
+    ? { fr: 'Utilisateurs illimités', en: 'Unlimited users' }
+    : { fr: `Jusqu'à ${o?.maxUtilisateurs} utilisateurs`, en: `Up to ${o?.maxUtilisateurs} users` };
+  return {
+    code: String(o?.nom ?? o?.code ?? ''),
+    eyebrow: { fr: String(o?.description ?? ''), en: String(o?.description ?? '') },
+    priceM: fmtFcfa(prixM), priceA: fmtFcfa(prixA),
+    cycleM: 'FCFA / mois', cycleA: 'FCFA / an',
+    users,
+    featured: Boolean(o?.estMisEnAvant),
+    badge: o?.estMisEnAvant ? { fr: 'Le plus populaire', en: 'Most popular' } : null,
+    features: { fr: features, en: features },
+    btnClass: o?.estMisEnAvant ? 'lp-plan-btn-fill' : 'lp-plan-btn-outline',
+    btnLabel: unlimited
+      ? { fr: 'Nous contacter', en: 'Contact us' }
+      : { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
+  } as PlanCard;
+}
+
+function usePlans(): PlanCard[] {
+  const [plans, setPlans] = useState<PlanCard[]>(PLANS);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}/offres-saas/public`);
+        if (!res.ok) return;
+        const json = await res.json().catch(() => null);
+        const list = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
+        const mapped = list
+          .filter((o: any) => o?.estVisible !== false)
+          .map(mapOffreToPlan)
+          .filter((p: PlanCard) => p.code && p.priceM);
+        if (alive && mapped.length) setPlans(mapped);
+      } catch {
+        /* fallback : on conserve PLANS codé en dur */
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+  return plans;
+}
+
 const ACTIVITES: { title: Record<Lang,string>; desc: Record<Lang,string>; tags: Record<Lang,string[]>; color: string; icon: React.ReactNode }[] = [
   { title: { fr: 'Hôpital & Clinique', en: 'Hospital & Clinic' }, desc: { fr: 'Gestion complète multi-services : urgences, consultations, pharmacie, labo, bloc opératoire, imagerie.', en: 'Full multi-department management: emergency, consultations, pharmacy, lab, operating room, imaging.' }, tags: { fr: ['DME','Urgences','Bloc op.','Imagerie'], en: ['EHR','Emergency','OR','Imaging'] }, color: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
   { title: { fr: 'Pharmacie autonome', en: 'Standalone Pharmacy' }, desc: { fr: 'Stocks, dispensation sur ordonnance, alertes péremption, facturation — sans module hospitalier.', en: 'Inventory, prescription dispensing, expiry alerts, billing — without the hospital module.' }, tags: { fr: ['Stocks','Dispensation','Alertes','Facturation'], en: ['Stock','Dispensing','Alerts','Billing'] }, color: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
@@ -676,31 +745,116 @@ function PwaBanner() {
    FORMULAIRE DÉMO
 ═══════════════════════════════════════════════════════ */
 function DemoForm({ lang }: { lang: Lang }) {
-  const [state, setState] = useState<'idle' | 'success' | 'error'>('idle');
-  const nomRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
+  const [state, setState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [form, setForm] = useState({
+    prenom: '', nom: '', entreprise: '', fonction: '',
+    email: '', telephone: '', whatsapp: '',
+    pays: '', secteur: '', taille: '',
+    besoin: '', dateSouhaitee: '', modeDemo: 'visio',
+    consentement: false,
+  });
   const tl = (k: keyof typeof T.fr) => T[lang][k];
-  function handleSubmit() {
-    const nom = nomRef.current?.value.trim() ?? '';
-    const email = emailRef.current?.value.trim() ?? '';
-    if (!nom || !email) { setState('error'); setTimeout(() => setState('idle'), 2500); return; }
-    setState('success');
+  const L = (fr: string, en: string) => (lang === 'fr' ? fr : en);
+  const locked = state === 'loading' || state === 'success';
+
+  const upd =
+    (k: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(f => ({
+        ...f,
+        [k]: e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
+          ? e.target.checked
+          : e.target.value,
+      }));
+
+  async function handleSubmit() {
+    if (locked) return;
+    if (!form.nom.trim() || !form.email.trim()) {
+      setErrorMsg(tl('form_err'));
+      setState('error');
+      setTimeout(() => setState('idle'), 3000);
+      return;
+    }
+    if (!form.consentement) {
+      setErrorMsg(L('Veuillez accepter le traitement de vos données.', 'Please accept the processing of your data.'));
+      setState('error');
+      setTimeout(() => setState('idle'), 3000);
+      return;
+    }
+    setState('loading');
+    setErrorMsg('');
+    track('demo_submit', { secteur: form.secteur, pays: form.pays, modeDemo: form.modeDemo });
+    try {
+      const res = await fetch(`${API_URL}/crm/demande-demo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nom: form.nom.trim(),
+          prenom: form.prenom.trim(),
+          entreprise: form.entreprise.trim(),
+          fonction: form.fonction.trim(),
+          pays: form.pays,
+          telephone: form.telephone.trim(),
+          whatsapp: form.whatsapp.trim(),
+          email: form.email.trim(),
+          taille: form.taille,
+          secteur: form.secteur,
+          besoin: form.besoin.trim(),
+          dateSouhaitee: form.dateSouhaitee || null,
+          modeDemo: form.modeDemo,
+          consentement: form.consentement,
+        }),
+      });
+      if (!res.ok) throw new Error('bad_status');
+      setState('success');
+    } catch {
+      setErrorMsg(L("Envoi impossible. Réessayez ou contactez-nous par WhatsApp.", 'Could not send. Please retry or contact us on WhatsApp.'));
+      setState('error');
+      setTimeout(() => setState('idle'), 5000);
+    }
   }
-  const btnLabel = state === 'success' ? tl('form_ok') : state === 'error' ? tl('form_err') : tl('form_btn');
+
+  const btnLabel =
+    state === 'loading' ? L('Envoi…', 'Sending…') :
+    state === 'success' ? tl('form_ok') :
+    state === 'error' ? (errorMsg || tl('form_err')) :
+    tl('form_btn');
+
   return (
     <div className="lp-demo-form">
       <div className="lp-form-title">{tl('form_title')}</div>
       <div className="lp-form-group">
+        <label className="lp-form-label">{L('Prénom', 'First name')}</label>
+        <input value={form.prenom} onChange={upd('prenom')} type="text" className="lp-form-input" placeholder={L('Jean', 'John')} disabled={locked} />
+      </div>
+      <div className="lp-form-group">
         <label className="lp-form-label">{tl('form_nom')}</label>
-        <input ref={nomRef} type="text" className="lp-form-input" placeholder="Dr. Jean Dupont" disabled={state === 'success'} />
+        <input value={form.nom} onChange={upd('nom')} type="text" className="lp-form-input" placeholder="Dr. Jean Dupont" disabled={locked} />
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L("Établissement", 'Facility name')}</label>
+        <input value={form.entreprise} onChange={upd('entreprise')} type="text" className="lp-form-input" placeholder={L('Clinique Sainte-Marie', 'Sainte-Marie Clinic')} disabled={locked} />
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('Fonction', 'Role')}</label>
+        <input value={form.fonction} onChange={upd('fonction')} type="text" className="lp-form-input" placeholder={L('Directeur médical', 'Medical director')} disabled={locked} />
       </div>
       <div className="lp-form-group">
         <label className="lp-form-label">{tl('form_email')}</label>
-        <input ref={emailRef} type="email" className="lp-form-input" placeholder="jean@clinique.ci" disabled={state === 'success'} />
+        <input value={form.email} onChange={upd('email')} type="email" className="lp-form-input" placeholder="jean@clinique.ci" disabled={locked} />
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('Téléphone', 'Phone')}</label>
+        <input value={form.telephone} onChange={upd('telephone')} type="tel" className="lp-form-input" placeholder="+225 07 00 00 00 00" disabled={locked} />
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('WhatsApp', 'WhatsApp')}</label>
+        <input value={form.whatsapp} onChange={upd('whatsapp')} type="tel" className="lp-form-input" placeholder="+225 07 00 00 00 00" disabled={locked} />
       </div>
       <div className="lp-form-group">
         <label className="lp-form-label">{tl('form_type')}</label>
-        <select className="lp-form-input lp-select" disabled={state === 'success'}>
+        <select value={form.secteur} onChange={upd('secteur')} className="lp-form-input lp-select" disabled={locked}>
           <option value="">{tl('form_select')}</option>
           {lang === 'fr' ? <>
             <option>Hôpital</option><option>Clinique privée</option><option>Polyclinique</option>
@@ -714,15 +868,45 @@ function DemoForm({ lang }: { lang: Lang }) {
         </select>
       </div>
       <div className="lp-form-group">
+        <label className="lp-form-label">{L("Taille de l'établissement", 'Facility size')}</label>
+        <select value={form.taille} onChange={upd('taille')} className="lp-form-input lp-select" disabled={locked}>
+          <option value="">{tl('form_select')}</option>
+          <option value="1-5">{L('1 à 5 employés', '1 to 5 staff')}</option>
+          <option value="6-20">{L('6 à 20 employés', '6 to 20 staff')}</option>
+          <option value="21-50">{L('21 à 50 employés', '21 to 50 staff')}</option>
+          <option value="50+">{L('Plus de 50 employés', 'More than 50 staff')}</option>
+        </select>
+      </div>
+      <div className="lp-form-group">
         <label className="lp-form-label">{tl('form_pays')}</label>
-        <select className="lp-form-input lp-select" disabled={state === 'success'}>
+        <select value={form.pays} onChange={upd('pays')} className="lp-form-input lp-select" disabled={locked}>
           <option value="">{tl('form_select')}</option>
           <option>Côte d&apos;Ivoire</option><option>Sénégal</option><option>Cameroun</option>
           <option>Mali</option><option>Burkina Faso</option><option>Guinée</option>
           <option>Togo</option><option>Congo</option><option>Gabon</option><option>Bénin</option><option>Autre</option>
         </select>
       </div>
-      <button className={`lp-form-btn ${state === 'success' ? 'success' : state === 'error' ? 'error-state' : ''}`} onClick={handleSubmit} disabled={state === 'success'}>{btnLabel}</button>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('Mode de démo', 'Demo mode')}</label>
+        <select value={form.modeDemo} onChange={upd('modeDemo')} className="lp-form-input lp-select" disabled={locked}>
+          <option value="visio">{L('Visioconférence', 'Video call')}</option>
+          <option value="presentiel">{L('Présentiel', 'On-site')}</option>
+          <option value="telephone">{L('Téléphone', 'Phone')}</option>
+        </select>
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('Date souhaitée', 'Preferred date')}</label>
+        <input value={form.dateSouhaitee} onChange={upd('dateSouhaitee')} type="date" className="lp-form-input" disabled={locked} />
+      </div>
+      <div className="lp-form-group">
+        <label className="lp-form-label">{L('Votre besoin', 'Your need')}</label>
+        <textarea value={form.besoin} onChange={upd('besoin')} className="lp-form-input" rows={3} placeholder={L('Décrivez brièvement votre besoin…', 'Briefly describe your need…')} disabled={locked} />
+      </div>
+      <label className="lp-form-consent" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '.8125rem', color: '#64748B', margin: '4px 0 14px', cursor: locked ? 'default' : 'pointer', lineHeight: 1.5 }}>
+        <input type="checkbox" checked={form.consentement} onChange={upd('consentement')} disabled={locked} style={{ marginTop: 2, flexShrink: 0 }} />
+        <span>{L("J'accepte que SANTAREX traite ces informations pour me recontacter au sujet de ma demande de démo.", 'I agree that SANTAREX may process this information to contact me about my demo request.')}</span>
+      </label>
+      <button className={`lp-form-btn ${state === 'success' ? 'success' : state === 'error' ? 'error-state' : ''}`} onClick={handleSubmit} disabled={locked}>{btnLabel}</button>
       <div className="lp-form-note">{tl('form_note')}</div>
     </div>
   );
@@ -755,6 +939,8 @@ export default function LandingPage() {
     }
   }, [mobileMenuOpen]);
   const t = (k: keyof typeof T.fr) => T[lang][k];
+  // Tarifs chargés depuis la BDD (fallback sur PLANS codé en dur)
+  const plans = usePlans();
 
   useEffect(() => {
     const nav = navRef.current;
@@ -1189,7 +1375,7 @@ export default function LandingPage() {
           )}
 
           <div className="lp-pricing-grid lp-pricing-5col">
-            {PLANS.map(p => {
+            {plans.map(p => {
               const price = annual ? p.priceA : p.priceM;
               const cycle = annual ? p.cycleA : p.cycleM;
               const badge = p.badge ? p.badge[lang] : null;
@@ -1216,7 +1402,7 @@ export default function LandingPage() {
                   <ul className="lp-plan-features">
                     {features.map(f => <li key={f}><div className="lp-feature-check"><CheckIcon /></div>{f}</li>)}
                   </ul>
-                  <a href="#contact" className={`lp-plan-btn ${p.btnClass}`}>{btnLabel}</a>
+                  <a href="#contact" className={`lp-plan-btn ${p.btnClass}`} onClick={() => track('pricing_click', { plan: p.code, annual })}>{btnLabel}</a>
                 </div>
               );
             })}

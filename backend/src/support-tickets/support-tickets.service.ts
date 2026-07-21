@@ -1,16 +1,26 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { SupportTicket, TicketStatut } from './entities/support-ticket.entity';
 import { CreateTicketDto, RepondreTicketDto, UpdateTicketStatutDto } from './dto/ticket.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class SupportTicketsService {
+  private readonly logger = new Logger(SupportTicketsService.name);
+
   constructor(
     @InjectRepository(SupportTicket)
     private readonly repo: Repository<SupportTicket>,
+    private readonly mailService: MailService,
   ) {}
+
+  /** Extrait un prénom exploitable depuis un nom complet « Prénom Nom ». */
+  private prenomFrom(nomComplet?: string | null): string {
+    const first = (nomComplet ?? '').trim().split(/\s+/)[0];
+    return first || 'Cher client';
+  }
 
   private genNumero(): string {
     const ts = Date.now().toString().slice(-6);
@@ -30,7 +40,23 @@ export class SupportTicketsService {
       priorite: dto.priorite,
       reponses: [],
     });
-    return this.repo.save(ticket);
+    const saved = await this.repo.save(ticket);
+
+    // Accusé de réception — best-effort, ne bloque jamais la création du ticket.
+    if (user.email) {
+      this.mailService
+        .envoyerTicketCree({
+          to: user.email,
+          prenom: user.prenom || this.prenomFrom(`${user.prenom} ${user.nom}`),
+          numero: saved.numero,
+          objet: saved.sujet,
+        })
+        .catch((err) =>
+          this.logger.error(`Email ticket créé ${saved.numero} échoué: ${err.message}`),
+        );
+    }
+
+    return saved;
   }
 
   async findAll(tenantId: string, isSuperAdmin = false): Promise<SupportTicket[]> {
@@ -69,8 +95,25 @@ export class SupportTicketsService {
     const ticket = await this.findOne(id, tenantId, true);
     const updates: Partial<SupportTicket> = { statut: dto.statut };
     if (dto.priorite) updates.priorite = dto.priorite;
+    const passeAResolu =
+      dto.statut === TicketStatut.RESOLU && ticket.statut !== TicketStatut.RESOLU;
     if (dto.statut === TicketStatut.RESOLU) updates.resoluAt = new Date();
     await this.repo.update(ticket.id, updates);
+
+    // Notification de résolution — envoyée UNE seule fois (transition → RESOLU),
+    // best-effort, ne bloque jamais la mise à jour du statut.
+    if (passeAResolu && ticket.auteurEmail) {
+      this.mailService
+        .envoyerTicketResolu({
+          to: ticket.auteurEmail,
+          prenom: this.prenomFrom(ticket.auteurNom),
+          numero: ticket.numero,
+        })
+        .catch((err) =>
+          this.logger.error(`Email ticket résolu ${ticket.numero} échoué: ${err.message}`),
+        );
+    }
+
     return this.repo.findOne({ where: { id } });
   }
 }
