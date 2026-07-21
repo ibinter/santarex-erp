@@ -30,7 +30,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body>
         <PwaRegister />
-        <Providers locale={locale} messages={messages as Record<string, unknown>}>
+        <Providers locale={locale} messages={messages}>
           {children}
         </Providers>
       </body>

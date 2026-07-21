@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
-import { NextIntlClientProvider } from 'next-intl';
+import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 
 export default function Providers({
   children,
@@ -10,7 +10,7 @@ export default function Providers({
   locale,
 }: {
   children: React.ReactNode;
-  messages: Record<string, unknown>;
+  messages: AbstractIntlMessages;
   locale: string;
 }) {
   const [queryClient] = useState(
