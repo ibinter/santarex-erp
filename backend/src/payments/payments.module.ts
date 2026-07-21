@@ -24,6 +24,12 @@ import { PaymentConfigService } from './payments-config.service';
 import { ManualPaymentService } from './manual-payment.service';
 import { ProofStorageService } from './proof-storage.service';
 import { GatewayService } from './gateway.service';
+import { MonerooGateway } from './gateways/moneroo.gateway';
+import { CinetpayGateway } from './gateways/cinetpay.gateway';
+import { PaystackGateway } from './gateways/paystack.gateway';
+import { FedapayGateway } from './gateways/fedapay.gateway';
+import { StripeGateway } from './gateways/stripe.gateway';
+import { PaypalGateway } from './gateways/paypal.gateway';
 import { VoucherService } from './voucher.service';
 import { LicenceLifecycleService } from './licence-lifecycle.service';
 import { LicenceSchedulerService } from './licence-scheduler.service';
@@ -79,6 +85,13 @@ import { VoucherController, VoucherClientController } from './voucher.controller
     ManualPaymentService,
     ProofStorageService,
     GatewayService,
+    // Adaptateurs de passerelle (injectés par GatewayService)
+    MonerooGateway,
+    CinetpayGateway,
+    PaystackGateway,
+    FedapayGateway,
+    StripeGateway,
+    PaypalGateway,
     VoucherService,
     LicenceLifecycleService,
     LicenceSchedulerService,
