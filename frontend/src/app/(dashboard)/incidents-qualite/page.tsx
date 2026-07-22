@@ -68,7 +68,7 @@ export default function IncidentsQualitePage() {
     try {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r?.items ?? []);
       const [listRes, statsRes] = await Promise.all([
-        apiClient<any>('/incidents-qualite?limit=200'),
+        apiClient<any>('/incidents-qualite?limit=100'),
         apiClient<any>('/incidents-qualite/stats'),
       ]);
       setIncidents(unwrap(listRes));

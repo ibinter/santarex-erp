@@ -59,7 +59,7 @@ export default function ConsentementsPage() {
     setLoading(true);
     try {
       const [listRes, statsRes] = await Promise.all([
-        apiClient<any>('/consentements?limit=200'),
+        apiClient<any>('/consentements?limit=100'),
         apiClient<any>('/consentements/stats'),
       ]);
       setItems(unwrap(listRes));

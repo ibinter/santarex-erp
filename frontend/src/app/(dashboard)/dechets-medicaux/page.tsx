@@ -85,8 +85,8 @@ export default function DechetsMedicauxPage() {
     setLoading(true);
     try {
       const [c, e, s] = await Promise.all([
-        apiClient<any>('/dechets-medicaux/collectes?limit=200'),
-        apiClient<any>('/dechets-medicaux/enlevements?limit=200'),
+        apiClient<any>('/dechets-medicaux/collectes?limit=100'),
+        apiClient<any>('/dechets-medicaux/enlevements?limit=100'),
         apiClient<any>('/dechets-medicaux/stats'),
       ]);
       setCollectes(unwrap(c));

@@ -107,7 +107,7 @@ export default function ComptabilitePage() {
     setError(null);
     try {
       const [ecrRes, compRes, balRes, statsRes, bilanRes] = await Promise.allSettled([
-        apiClient<any>('/comptabilite/ecritures?limit=200'),
+        apiClient<any>('/comptabilite/ecritures?limit=100'),
         apiClient<any>('/comptabilite/comptes'),
         apiClient<any>('/comptabilite/balance'),
         apiClient<Stats>('/comptabilite/stats'),

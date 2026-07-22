@@ -65,7 +65,7 @@ export default function MessagesSortantsPage() {
     setLoading(true);
     try {
       const [mR, tR, sR] = await Promise.allSettled([
-        apiClient<any>('/messages-sortants?limit=200'),
+        apiClient<any>('/messages-sortants?limit=100'),
         apiClient<any>('/messages-sortants/modeles'),
         apiClient<any>('/messages-sortants/stats'),
       ]);

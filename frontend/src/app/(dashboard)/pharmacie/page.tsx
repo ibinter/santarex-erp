@@ -68,7 +68,7 @@ export default function PharmaciePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient<any>('/pharmacie/medicaments?limit=200');
+      const d = await apiClient<any>('/pharmacie/medicaments?limit=100');
       setMedicaments(Array.isArray(d)?d:d?.items??d?.data??[]);
       setLastRefresh(new Date());
     } finally { setLoading(false); }

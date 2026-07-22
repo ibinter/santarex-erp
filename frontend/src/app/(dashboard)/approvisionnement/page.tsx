@@ -68,7 +68,7 @@ export default function ApprovisionnementPage() {
     try {
       const [f, b, s] = await Promise.all([
         apiClient<Fournisseur[]>('/approvisionnement/fournisseurs'),
-        apiClient<any>('/approvisionnement/commandes?limit=200'),
+        apiClient<any>('/approvisionnement/commandes?limit=100'),
         apiClient<Stats>('/approvisionnement/stats'),
       ]);
       setFournisseurs(Array.isArray(f) ? f : []);

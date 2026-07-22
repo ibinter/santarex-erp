@@ -76,7 +76,7 @@ export default function VaccinationPage() {
     try {
       const [vRes, pRes, rRes, sRes] = await Promise.all([
         apiClient<any>('/vaccination/vaccins'),
-        apiClient<any>('/patients?limit=200'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/vaccination/rappels'),
         apiClient<any>('/vaccination/stats'),
       ]);

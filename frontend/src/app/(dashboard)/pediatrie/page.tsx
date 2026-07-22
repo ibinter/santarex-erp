@@ -53,7 +53,7 @@ export default function PediatriePage() {
     setLoading(true);
     try {
       const [patRes, statRes] = await Promise.all([
-        apiClient<any>('/patients?limit=200'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/pediatrie/stats').catch(() => null),
       ]);
       setPatients(unwrap(patRes));

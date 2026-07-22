@@ -52,7 +52,7 @@ export default function DMEIndexPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient<any>('/patients?limit=200&statut=actif');
+      const d = await apiClient<any>('/patients?limit=100&statut=actif');
       setPatients(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
     } catch { setPatients([]); }
     finally { setLoading(false); }

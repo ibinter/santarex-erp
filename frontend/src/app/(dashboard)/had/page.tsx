@@ -96,7 +96,7 @@ export default function HadPage() {
     setLoading(true);
     try {
       const [pR, aR, sR] = await Promise.allSettled([
-        apiClient<any>('/had?limit=200'),
+        apiClient<any>('/had?limit=100'),
         apiClient<any>('/had/visites-jour'),
         apiClient<any>('/had/stats'),
       ]);

@@ -52,7 +52,7 @@ export default function NouvelleDeclarationPage() {
         if (list[0]) setMaladieId(list[0].id);
       } catch { /* référentiel optionnel */ }
       try {
-        const res = await apiClient<any>('/patients?limit=200');
+        const res = await apiClient<any>('/patients?limit=100');
         const list = Array.isArray(res) ? res : (res?.data?.data ?? res?.data ?? res?.items ?? []);
         setPatients(list);
       } catch { /* liste patients optionnelle */ }

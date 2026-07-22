@@ -79,8 +79,8 @@ export default function BanqueSangPage() {
     setLoading(true);
     try {
       const [p, tr, st] = await Promise.all([
-        apiClient<{ data: Poche[] }>('/banque-sang/poches?limit=200'),
-        apiClient<{ data: Transfusion[] }>('/banque-sang/transfusions?limit=200'),
+        apiClient<{ data: Poche[] }>('/banque-sang/poches?limit=100'),
+        apiClient<{ data: Transfusion[] }>('/banque-sang/transfusions?limit=100'),
         apiClient<Stats>('/banque-sang/stats'),
       ]);
       setPoches(p?.data ?? []);

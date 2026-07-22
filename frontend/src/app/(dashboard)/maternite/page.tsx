@@ -70,7 +70,7 @@ export default function MaternitePage() {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
       const [dosRes, patRes, statRes] = await Promise.all([
         apiClient<any>('/maternite/dossiers'),
-        apiClient<any>('/patients?limit=200'),
+        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/maternite/stats'),
       ]);
       setDossiers(unwrap(dosRes));

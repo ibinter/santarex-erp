@@ -72,7 +72,7 @@ export default function DeclarationsSanitairesPage() {
     try {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r?.items ?? []);
       const [listRes, statsRes] = await Promise.all([
-        apiClient<any>('/declarations-sanitaires?limit=200'),
+        apiClient<any>('/declarations-sanitaires?limit=100'),
         apiClient<any>('/declarations-sanitaires/stats'),
       ]);
       setItems(unwrap(listRes));

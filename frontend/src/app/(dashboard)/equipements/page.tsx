@@ -82,7 +82,7 @@ export default function EquipementsPage() {
     setLoading(true);
     try {
       const [eR, dR, sR] = await Promise.allSettled([
-        apiClient<any>('/equipements?limit=200'),
+        apiClient<any>('/equipements?limit=100'),
         apiClient<any>('/equipements/maintenances-dues'),
         apiClient<any>('/equipements/stats'),
       ]);

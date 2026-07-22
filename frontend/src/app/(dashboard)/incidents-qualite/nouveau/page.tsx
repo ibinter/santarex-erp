@@ -40,7 +40,7 @@ export default function NouvelIncidentPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await apiClient<any>('/patients?limit=200');
+        const res = await apiClient<any>('/patients?limit=100');
         const list = Array.isArray(res) ? res : (res?.data?.data ?? res?.data ?? res?.items ?? []);
         setPatients(list);
       } catch { /* liste patients optionnelle */ }

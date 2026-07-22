@@ -67,7 +67,7 @@ export default function RendezVousPage() {
       const fin = addDays(weekStart,6).toISOString().split('T')[0];
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
       const [rdvRes, patRes, usrRes] = await Promise.all([
-        apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=200`),
+        apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=100`),
         apiClient<any>('/patients?limit=100'),
         apiClient<any>('/users'),
       ]);
