@@ -1,0 +1,51 @@
+{
+  "planningsGardes": {
+    "titre": "On-call planning",
+    "sousTitre": "Scheduling of medical and paramedical on-call duties, standby and replacements",
+    "actualiser": "Refresh",
+    "planifier": "Schedule a shift",
+    "aujourdhui": "Today",
+    "tousServices": "All departments",
+    "kpiTotal": "Shifts this week",
+    "kpiPlanifiees": "Scheduled",
+    "kpiEffectuees": "Completed",
+    "kpiCouverture": "Coverage rate",
+    "gardesParService": "Shifts per department (week)",
+    "nGardes": "{count} shift(s)",
+    "marquerEffectuee": "Mark as completed",
+    "marquerAbsente": "Mark as absent",
+    "remplacer": "Replace",
+    "type": {
+      "garde_jour": "Day shift",
+      "garde_nuit": "Night shift",
+      "astreinte": "On-call standby",
+      "24h": "24h shift"
+    },
+    "statut": {
+      "planifiee": "Scheduled",
+      "effectuee": "Completed",
+      "absente": "Absent",
+      "remplacee": "Replaced"
+    },
+    "modalPlanifier": "Schedule a shift",
+    "modalRemplacer": "Manage a replacement",
+    "mPersonnel": "Staff member",
+    "mService": "Department / unit",
+    "mServicePlaceholder": "e.g. ER, ICU…",
+    "mTypeGarde": "Shift type",
+    "mDate": "Date",
+    "mDebut": "Start",
+    "mFin": "End",
+    "mNotes": "Notes",
+    "mSelectionner": "Select…",
+    "mRemplacant": "Replacement",
+    "alerteHoraire": "End time is before start time. Pick a night or 24h shift instead.",
+    "remplacerInfo": "Replacing {personne} for the shift on {date} ({debut}–{fin}).",
+    "confirmerRemplacement": "Confirm replacement",
+    "annuler": "Cancel",
+    "enregistrement": "Saving…",
+    "errCreate": "Unable to schedule the shift (possible conflict).",
+    "errStatut": "Unable to update the status.",
+    "errRemplacer": "Unable to save the replacement."
+  }
+}

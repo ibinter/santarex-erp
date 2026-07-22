@@ -1,0 +1,73 @@
+{
+  "indicateursQualite": {
+    "heroTitle": "Indicateurs qualité",
+    "heroSubtitle": "{total} indicateur(s) suivi(s) • pilotage qualité & accréditation",
+    "loading": "Chargement…",
+    "refresh": "Actualiser",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "tabs": {
+      "bord": "Tableau de bord",
+      "accreditation": "Accréditation"
+    },
+    "resume": {
+      "total": "Indicateurs",
+      "atteints": "Atteints",
+      "alerte": "En alerte",
+      "critiques": "Critiques",
+      "conformite": "Conformité"
+    },
+    "card": {
+      "cible": "Cible",
+      "seuil": "Seuil",
+      "addMesure": "Saisir une mesure"
+    },
+    "domaines": {
+      "hygiene": "Hygiène",
+      "securite_patient": "Sécurité du patient",
+      "delais": "Délais",
+      "satisfaction": "Satisfaction",
+      "mortalite": "Mortalité",
+      "infections": "Infections"
+    },
+    "unites": {
+      "pourcentage": "%",
+      "nombre": "nombre",
+      "jours": "jours"
+    },
+    "statutMesure": {
+      "atteint": "Atteint",
+      "alerte": "Alerte",
+      "critique": "Critique"
+    },
+    "statutConformite": {
+      "conforme": "Conforme",
+      "partiel": "Partiel",
+      "non_conforme": "Non conforme",
+      "na": "Non applicable"
+    },
+    "mesure": {
+      "title": "Nouvelle mesure",
+      "typePeriode": "Type de période",
+      "mois": "Mensuelle",
+      "trimestre": "Trimestrielle",
+      "periode": "Période",
+      "valeur": "Valeur",
+      "commentaire": "Commentaire",
+      "required": "Veuillez renseigner les champs obligatoires.",
+      "error": "Erreur lors de l'enregistrement."
+    },
+    "accreditation": {
+      "globalRate": "Taux de conformité global",
+      "newCritere": "Nouveau critère",
+      "referentiel": "Référentiel / norme",
+      "chapitre": "Chapitre",
+      "exigence": "Exigence",
+      "preuve": "Preuve"
+    },
+    "empty": {
+      "indicateurs": "Aucun indicateur défini pour le moment.",
+      "criteres": "Aucun critère d'accréditation enregistré."
+    }
+  }
+}

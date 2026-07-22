@@ -1,0 +1,92 @@
+{
+  "satisfaction": {
+    "heroTitle": "Patient satisfaction",
+    "heroSubtitle": "Surveys, feedback collection and perceived-quality analysis",
+    "loading": "Loading…",
+    "refresh": "Refresh",
+    "tabs": {
+      "analyse": "Analysis",
+      "questionnaires": "Questionnaires",
+      "collecte": "New response"
+    },
+    "kpi": {
+      "scoreMoyen": "Average score",
+      "nps": "NPS",
+      "tauxRecommandation": "Recommendation rate",
+      "totalReponses": "Responses",
+      "reponsesDuMois": "Responses this month",
+      "questionnairesActifs": "Active questionnaires"
+    },
+    "analyse": {
+      "title": "Analysis dashboard",
+      "byQuestion": "Average by question",
+      "byService": "By department",
+      "evolution": "Monthly trend",
+      "repartition": "Distribution",
+      "noData": "No responses to analyse yet.",
+      "colService": "Department",
+      "colScore": "Average score",
+      "colReponses": "Responses",
+      "colReco": "Recommendation",
+      "allQuestionnaires": "All questionnaires",
+      "npsHint": "Promoters − detractors, out of 100",
+      "responses": "{count} response(s)"
+    },
+    "questionnaires": {
+      "title": "Questionnaires",
+      "new": "New questionnaire",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this questionnaire?",
+      "active": "Active",
+      "inactive": "Inactive",
+      "questionsCount": "{count} question(s)",
+      "empty": "No questionnaire yet. Create one to start collecting.",
+      "form": {
+        "titre": "Title",
+        "description": "Description",
+        "echelleMax": "Display scale",
+        "actif": "Active questionnaire",
+        "questions": "Questions",
+        "addQuestion": "Add a question",
+        "libelle": "Label",
+        "type": "Type",
+        "options": "Options (comma-separated)",
+        "removeQuestion": "Remove",
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    },
+    "collecte": {
+      "title": "New response",
+      "selectQuestionnaire": "Choose a questionnaire",
+      "service": "Department",
+      "patientId": "Patient ID (optional)",
+      "anonyme": "Anonymous response",
+      "commentaire": "Free comment",
+      "recommande": "Would you recommend our facility?",
+      "oui": "Yes",
+      "non": "No",
+      "submit": "Save response",
+      "success": "Response saved. Thank you!",
+      "error": "Failed to save.",
+      "chooseFirst": "Select a questionnaire first.",
+      "noActive": "No active questionnaire available."
+    },
+    "questionType": {
+      "note_5": "Rating /5",
+      "note_10": "Rating /10",
+      "oui_non": "Yes / No",
+      "texte": "Free text",
+      "choix": "Multiple choice"
+    },
+    "reponses": {
+      "title": "Collected responses",
+      "colDate": "Date",
+      "colService": "Department",
+      "colScore": "Score",
+      "colReco": "Rec.",
+      "empty": "No responses collected."
+    }
+  }
+}

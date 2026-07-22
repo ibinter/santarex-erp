@@ -65,6 +65,12 @@ import { CaisseSessionsModule } from './caisse-sessions/caisse-sessions.module';
 import { TiersPayantModule } from './tiers-payant/tiers-payant.module';
 import { BudgetModule } from './budget/budget.module';
 import { HadModule } from './had/had.module';
+// Vague 5 — communication, qualité, RH
+import { MessagesSortantsModule } from './messages-sortants/messages-sortants.module';
+import { MessagerieModule } from './messagerie/messagerie.module';
+import { SatisfactionModule } from './satisfaction/satisfaction.module';
+import { PlanningsGardesModule } from './plannings-gardes/plannings-gardes.module';
+import { IndicateursQualiteModule } from './indicateurs-qualite/indicateurs-qualite.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -143,6 +149,11 @@ import { SeedModule } from './database/seed.module';
     TiersPayantModule,
     BudgetModule,
     HadModule,
+    MessagesSortantsModule,
+    MessagerieModule,
+    SatisfactionModule,
+    PlanningsGardesModule,
+    IndicateursQualiteModule,
     HealthModule,
     SeedModule,
   ],

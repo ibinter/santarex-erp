@@ -1,0 +1,51 @@
+{
+  "planningsGardes": {
+    "titre": "Gardes & astreintes",
+    "sousTitre": "Planification des gardes médicales et paramédicales, astreintes et remplacements",
+    "actualiser": "Actualiser",
+    "planifier": "Planifier une garde",
+    "aujourdhui": "Aujourd'hui",
+    "tousServices": "Tous les services",
+    "kpiTotal": "Gardes cette semaine",
+    "kpiPlanifiees": "Planifiées",
+    "kpiEffectuees": "Effectuées",
+    "kpiCouverture": "Taux de couverture",
+    "gardesParService": "Gardes par service (semaine)",
+    "nGardes": "{count} garde(s)",
+    "marquerEffectuee": "Marquer effectuée",
+    "marquerAbsente": "Marquer absente",
+    "remplacer": "Remplacer",
+    "type": {
+      "garde_jour": "Garde de jour",
+      "garde_nuit": "Garde de nuit",
+      "astreinte": "Astreinte",
+      "24h": "Garde 24h"
+    },
+    "statut": {
+      "planifiee": "Planifiée",
+      "effectuee": "Effectuée",
+      "absente": "Absente",
+      "remplacee": "Remplacée"
+    },
+    "modalPlanifier": "Planifier une garde",
+    "modalRemplacer": "Gérer un remplacement",
+    "mPersonnel": "Personnel",
+    "mService": "Service / unité",
+    "mServicePlaceholder": "Ex. Urgences, Réanimation…",
+    "mTypeGarde": "Type de garde",
+    "mDate": "Date",
+    "mDebut": "Début",
+    "mFin": "Fin",
+    "mNotes": "Notes",
+    "mSelectionner": "Sélectionner…",
+    "mRemplacant": "Remplaçant",
+    "alerteHoraire": "L'heure de fin est antérieure au début. Choisissez plutôt une garde de nuit ou 24h.",
+    "remplacerInfo": "Remplacement de {personne} pour la garde du {date} ({debut}–{fin}).",
+    "confirmerRemplacement": "Confirmer le remplacement",
+    "annuler": "Annuler",
+    "enregistrement": "Enregistrement…",
+    "errCreate": "Impossible de planifier la garde (conflit possible).",
+    "errStatut": "Impossible de mettre à jour le statut.",
+    "errRemplacer": "Impossible d'enregistrer le remplacement."
+  }
+}

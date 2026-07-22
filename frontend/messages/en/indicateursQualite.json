@@ -1,0 +1,73 @@
+{
+  "indicateursQualite": {
+    "heroTitle": "Quality indicators",
+    "heroSubtitle": "{total} indicator(s) tracked • quality & accreditation steering",
+    "loading": "Loading…",
+    "refresh": "Refresh",
+    "save": "Save",
+    "saving": "Saving…",
+    "tabs": {
+      "bord": "Dashboard",
+      "accreditation": "Accreditation"
+    },
+    "resume": {
+      "total": "Indicators",
+      "atteints": "On target",
+      "alerte": "At risk",
+      "critiques": "Critical",
+      "conformite": "Compliance"
+    },
+    "card": {
+      "cible": "Target",
+      "seuil": "Threshold",
+      "addMesure": "Add measurement"
+    },
+    "domaines": {
+      "hygiene": "Hygiene",
+      "securite_patient": "Patient safety",
+      "delais": "Wait times",
+      "satisfaction": "Satisfaction",
+      "mortalite": "Mortality",
+      "infections": "Infections"
+    },
+    "unites": {
+      "pourcentage": "%",
+      "nombre": "count",
+      "jours": "days"
+    },
+    "statutMesure": {
+      "atteint": "On target",
+      "alerte": "At risk",
+      "critique": "Critical"
+    },
+    "statutConformite": {
+      "conforme": "Compliant",
+      "partiel": "Partial",
+      "non_conforme": "Non-compliant",
+      "na": "Not applicable"
+    },
+    "mesure": {
+      "title": "New measurement",
+      "typePeriode": "Period type",
+      "mois": "Monthly",
+      "trimestre": "Quarterly",
+      "periode": "Period",
+      "valeur": "Value",
+      "commentaire": "Comment",
+      "required": "Please fill in the required fields.",
+      "error": "Error while saving."
+    },
+    "accreditation": {
+      "globalRate": "Overall compliance rate",
+      "newCritere": "New criterion",
+      "referentiel": "Standard / framework",
+      "chapitre": "Chapter",
+      "exigence": "Requirement",
+      "preuve": "Evidence"
+    },
+    "empty": {
+      "indicateurs": "No indicators defined yet.",
+      "criteres": "No accreditation criteria recorded."
+    }
+  }
+}

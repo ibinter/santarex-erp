@@ -1,0 +1,107 @@
+{
+  "messagesSortants": {
+    "hero": {
+      "title": "SMS / Rappels",
+      "subtitle": "Messages sortants SMS & WhatsApp",
+      "loading": "Chargement…",
+      "displayedCount": "{count} message(s) affiché(s)",
+      "refresh": "Actualiser",
+      "newMessage": "Nouveau message",
+      "kpiEnvoyes": "Envoyés",
+      "kpiSimules": "Simulés",
+      "kpiEchoues": "Échoués",
+      "kpiJour": "Aujourd'hui",
+      "kpiTotal": "Total"
+    },
+    "simuleBanner": {
+      "title": "Mode simulé actif",
+      "text": "Aucun fournisseur SMS/WhatsApp n'est configuré. Les messages sont composés et enregistrés avec le statut « simulé » (aucun envoi réel). Configurez un fournisseur (Twilio, Orange SMS, WhatsApp) pour activer l'envoi réel."
+    },
+    "tabs": {
+      "historique": "Historique",
+      "modeles": "Modèles"
+    },
+    "generateReminders": "Générer les rappels de RDV du lendemain",
+    "generatedCount": "{count} rappel(s) généré(s)",
+    "filters": {
+      "all": "Tous",
+      "searchPlaceholder": "Rechercher (numéro, contenu)…"
+    },
+    "canal": {
+      "sms": "SMS",
+      "whatsapp": "WhatsApp"
+    },
+    "statut": {
+      "en_attente": "En attente",
+      "envoye": "Envoyé",
+      "echoue": "Échoué",
+      "simule": "Simulé"
+    },
+    "code": {
+      "rappel_rdv": "Rappel de RDV",
+      "resultat_pret": "Résultat prêt",
+      "relance": "Relance",
+      "bienvenue": "Bienvenue"
+    },
+    "list": {
+      "colDestinataire": "Destinataire",
+      "colCanal": "Canal",
+      "colContenu": "Contenu",
+      "colModele": "Modèle",
+      "colStatut": "Statut",
+      "colDate": "Date",
+      "empty": "Aucun message pour l'instant"
+    },
+    "modeles": {
+      "title": "Modèles de messages",
+      "new": "Nouveau modèle",
+      "colLibelle": "Libellé",
+      "colCode": "Code",
+      "colCanal": "Canal",
+      "colActif": "Actif",
+      "colContenu": "Contenu",
+      "actif": "Actif",
+      "inactif": "Inactif",
+      "empty": "Aucun modèle",
+      "variablesHint": "Variables disponibles : {{nom}}, {{prenom}}, {{date}}, {{heure}}, {{motif}}"
+    },
+    "send": {
+      "title": "Envoyer un message",
+      "mode": "Mode",
+      "modeModele": "Depuis un modèle",
+      "modeLibre": "Texte libre",
+      "modele": "Modèle",
+      "canal": "Canal",
+      "patientId": "ID patient (optionnel)",
+      "phPatientId": "UUID du patient",
+      "destinataire": "Numéro destinataire",
+      "phDestinataire": "+225 07 00 00 00 00",
+      "contenu": "Contenu",
+      "phContenu": "Votre message…",
+      "hintPatient": "Si un patient est renseigné, son numéro et son nom sont utilisés automatiquement.",
+      "cancel": "Annuler",
+      "send": "Envoyer",
+      "sending": "Envoi…"
+    },
+    "modeleForm": {
+      "titleCreate": "Nouveau modèle",
+      "titleEdit": "Modifier le modèle",
+      "code": "Code",
+      "libelle": "Libellé",
+      "canal": "Canal",
+      "contenu": "Contenu",
+      "actif": "Actif",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "errors": {
+      "destinataireRequired": "Un destinataire (numéro ou patient) est requis.",
+      "contenuRequired": "Le contenu est requis.",
+      "libelleRequired": "Le libellé est requis.",
+      "send": "Échec de l'envoi.",
+      "save": "Échec de l'enregistrement.",
+      "generate": "Échec de la génération des rappels."
+    }
+  }
+}

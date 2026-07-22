@@ -1,0 +1,107 @@
+{
+  "messagesSortants": {
+    "hero": {
+      "title": "SMS / Reminders",
+      "subtitle": "Outgoing SMS & WhatsApp messages",
+      "loading": "Loading…",
+      "displayedCount": "{count} message(s) shown",
+      "refresh": "Refresh",
+      "newMessage": "New message",
+      "kpiEnvoyes": "Sent",
+      "kpiSimules": "Simulated",
+      "kpiEchoues": "Failed",
+      "kpiJour": "Today",
+      "kpiTotal": "Total"
+    },
+    "simuleBanner": {
+      "title": "Simulated mode active",
+      "text": "No SMS/WhatsApp provider is configured. Messages are composed and stored with the \"simulated\" status (no real send). Configure a provider (Twilio, Orange SMS, WhatsApp) to enable real delivery."
+    },
+    "tabs": {
+      "historique": "History",
+      "modeles": "Templates"
+    },
+    "generateReminders": "Generate tomorrow's appointment reminders",
+    "generatedCount": "{count} reminder(s) generated",
+    "filters": {
+      "all": "All",
+      "searchPlaceholder": "Search (number, content)…"
+    },
+    "canal": {
+      "sms": "SMS",
+      "whatsapp": "WhatsApp"
+    },
+    "statut": {
+      "en_attente": "Pending",
+      "envoye": "Sent",
+      "echoue": "Failed",
+      "simule": "Simulated"
+    },
+    "code": {
+      "rappel_rdv": "Appointment reminder",
+      "resultat_pret": "Result ready",
+      "relance": "Follow-up",
+      "bienvenue": "Welcome"
+    },
+    "list": {
+      "colDestinataire": "Recipient",
+      "colCanal": "Channel",
+      "colContenu": "Content",
+      "colModele": "Template",
+      "colStatut": "Status",
+      "colDate": "Date",
+      "empty": "No messages yet"
+    },
+    "modeles": {
+      "title": "Message templates",
+      "new": "New template",
+      "colLibelle": "Label",
+      "colCode": "Code",
+      "colCanal": "Channel",
+      "colActif": "Active",
+      "colContenu": "Content",
+      "actif": "Active",
+      "inactif": "Inactive",
+      "empty": "No templates",
+      "variablesHint": "Available variables: {{nom}}, {{prenom}}, {{date}}, {{heure}}, {{motif}}"
+    },
+    "send": {
+      "title": "Send a message",
+      "mode": "Mode",
+      "modeModele": "From a template",
+      "modeLibre": "Free text",
+      "modele": "Template",
+      "canal": "Channel",
+      "patientId": "Patient ID (optional)",
+      "phPatientId": "Patient UUID",
+      "destinataire": "Recipient number",
+      "phDestinataire": "+225 07 00 00 00 00",
+      "contenu": "Content",
+      "phContenu": "Your message…",
+      "hintPatient": "If a patient is provided, their number and name are used automatically.",
+      "cancel": "Cancel",
+      "send": "Send",
+      "sending": "Sending…"
+    },
+    "modeleForm": {
+      "titleCreate": "New template",
+      "titleEdit": "Edit template",
+      "code": "Code",
+      "libelle": "Label",
+      "canal": "Channel",
+      "contenu": "Content",
+      "actif": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "errors": {
+      "destinataireRequired": "A recipient (number or patient) is required.",
+      "contenuRequired": "Content is required.",
+      "libelleRequired": "Label is required.",
+      "send": "Failed to send.",
+      "save": "Failed to save.",
+      "generate": "Failed to generate reminders."
+    }
+  }
+}

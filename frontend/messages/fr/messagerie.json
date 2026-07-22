@@ -1,0 +1,26 @@
+{
+  "messagerie": {
+    "title": "Messagerie",
+    "subtitle": "Communication interne entre les services de soins",
+    "newConversation": "Nouvelle conversation",
+    "conversation": "Conversation",
+    "empty": "Aucune conversation. Démarrez-en une nouvelle.",
+    "noMessage": "Aucun message",
+    "selectConversation": "Sélectionnez une conversation pour afficher les messages",
+    "messagePlaceholder": "Écrivez un message…",
+    "send": "Envoyer",
+    "modal": {
+      "title": "Nouvelle conversation",
+      "recipients": "Destinataires",
+      "searchPlaceholder": "Rechercher un collègue…",
+      "noRecipient": "Aucun destinataire trouvé",
+      "subject": "Sujet (groupe)",
+      "subjectPlaceholder": "Objet de la conversation",
+      "message": "Message",
+      "messagePlaceholder": "Votre message…",
+      "cancel": "Annuler",
+      "create": "Créer",
+      "creating": "Création…"
+    }
+  }
+}

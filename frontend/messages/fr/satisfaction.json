@@ -1,0 +1,92 @@
+{
+  "satisfaction": {
+    "heroTitle": "Satisfaction patient",
+    "heroSubtitle": "Enquêtes, collecte des avis et analyse de la qualité perçue",
+    "loading": "Chargement…",
+    "refresh": "Actualiser",
+    "tabs": {
+      "analyse": "Analyse",
+      "questionnaires": "Questionnaires",
+      "collecte": "Saisir une réponse"
+    },
+    "kpi": {
+      "scoreMoyen": "Score moyen",
+      "nps": "NPS",
+      "tauxRecommandation": "Taux de recommandation",
+      "totalReponses": "Réponses",
+      "reponsesDuMois": "Réponses ce mois",
+      "questionnairesActifs": "Questionnaires actifs"
+    },
+    "analyse": {
+      "title": "Tableau de bord d'analyse",
+      "byQuestion": "Moyenne par question",
+      "byService": "Par service",
+      "evolution": "Évolution mensuelle",
+      "repartition": "Répartition",
+      "noData": "Aucune réponse à analyser pour l'instant.",
+      "colService": "Service",
+      "colScore": "Score moyen",
+      "colReponses": "Réponses",
+      "colReco": "Recommandation",
+      "allQuestionnaires": "Tous les questionnaires",
+      "npsHint": "Promoteurs − détracteurs, sur 100",
+      "responses": "{count} réponse(s)"
+    },
+    "questionnaires": {
+      "title": "Questionnaires",
+      "new": "Nouveau questionnaire",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "confirmDelete": "Supprimer ce questionnaire ?",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "questionsCount": "{count} question(s)",
+      "empty": "Aucun questionnaire. Créez-en un pour commencer la collecte.",
+      "form": {
+        "titre": "Titre",
+        "description": "Description",
+        "echelleMax": "Barème d'affichage",
+        "actif": "Questionnaire actif",
+        "questions": "Questions",
+        "addQuestion": "Ajouter une question",
+        "libelle": "Libellé",
+        "type": "Type",
+        "options": "Options (séparées par des virgules)",
+        "removeQuestion": "Retirer",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      }
+    },
+    "collecte": {
+      "title": "Saisir une réponse",
+      "selectQuestionnaire": "Choisir un questionnaire",
+      "service": "Service concerné",
+      "patientId": "Identifiant patient (optionnel)",
+      "anonyme": "Réponse anonyme",
+      "commentaire": "Commentaire libre",
+      "recommande": "Recommanderiez-vous notre établissement ?",
+      "oui": "Oui",
+      "non": "Non",
+      "submit": "Enregistrer la réponse",
+      "success": "Réponse enregistrée. Merci !",
+      "error": "Échec de l'enregistrement.",
+      "chooseFirst": "Sélectionnez d'abord un questionnaire.",
+      "noActive": "Aucun questionnaire actif disponible."
+    },
+    "questionType": {
+      "note_5": "Note /5",
+      "note_10": "Note /10",
+      "oui_non": "Oui / Non",
+      "texte": "Texte libre",
+      "choix": "Choix multiple"
+    },
+    "reponses": {
+      "title": "Réponses collectées",
+      "colDate": "Date",
+      "colService": "Service",
+      "colScore": "Score",
+      "colReco": "Reco.",
+      "empty": "Aucune réponse collectée."
+    }
+  }
+}

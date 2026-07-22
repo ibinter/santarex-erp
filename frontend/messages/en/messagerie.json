@@ -1,0 +1,26 @@
+{
+  "messagerie": {
+    "title": "Messaging",
+    "subtitle": "Internal communication between care services",
+    "newConversation": "New conversation",
+    "conversation": "Conversation",
+    "empty": "No conversations yet. Start a new one.",
+    "noMessage": "No message",
+    "selectConversation": "Select a conversation to view messages",
+    "messagePlaceholder": "Write a message…",
+    "send": "Send",
+    "modal": {
+      "title": "New conversation",
+      "recipients": "Recipients",
+      "searchPlaceholder": "Search a colleague…",
+      "noRecipient": "No recipient found",
+      "subject": "Subject (group)",
+      "subjectPlaceholder": "Conversation subject",
+      "message": "Message",
+      "messagePlaceholder": "Your message…",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating…"
+    }
+  }
+}
