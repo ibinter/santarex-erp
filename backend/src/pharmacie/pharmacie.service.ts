@@ -53,7 +53,7 @@ export class PharmacieService {
       .createQueryBuilder('m')
       .where('m.tenantId = :tenantId', { tenantId });
 
-    if (filters.categorie) {
+    if (filters.categorie && Object.values(MedicamentCategorie).includes(filters.categorie)) {
       qb.andWhere('m.categorie = :categorie', { categorie: filters.categorie });
     }
     if (filters.search) {

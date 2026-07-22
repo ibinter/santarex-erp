@@ -74,8 +74,8 @@ export class TransportService {
     filters: { statut?: StatutVehicule; type?: TypeVehicule } = {},
   ) {
     const where: Record<string, unknown> = { tenantId };
-    if (filters.statut) where.statut = filters.statut;
-    if (filters.type) where.type = filters.type;
+    if (filters.statut && Object.values(StatutVehicule).includes(filters.statut)) where.statut = filters.statut;
+    if (filters.type && Object.values(TypeVehicule).includes(filters.type)) where.type = filters.type;
     const vehicules = await this.vehiculeRepo.find({
       where,
       order: { immatriculation: 'ASC' },
@@ -218,7 +218,7 @@ export class TransportService {
       .createQueryBuilder('m')
       .where('m.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut)
+    if (filters.statut && Object.values(StatutMission).includes(filters.statut))
       qb.andWhere('m.statut = :statut', { statut: filters.statut });
     if (filters.vehiculeId)
       qb.andWhere('m.vehiculeId = :vehiculeId', {

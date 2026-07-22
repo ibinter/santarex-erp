@@ -60,8 +60,33 @@ export default function FactureDetailPage() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const data = await apiClient<Facture>(`/facturation/${params.id}`);
-      setFacture(data);
+      const data = await apiClient<any>(`/facturation/${params.id}`);
+      // L'API renvoie les montants en décimaux-chaînes (montantTTC/montantHT/…) et les
+      // lignes avec montantTotal/prixUnitaire en chaînes. On normalise en nombres et vers
+      // les noms lus par la page (total/resteAPayer/sousTotal/tva + ligne.total/remise).
+      const norm: Facture = {
+        ...data,
+        sousTotal: Number(data?.sousTotal ?? data?.montantHT) || 0,
+        tva: Number(data?.tva ?? data?.montantTVA) || 0,
+        total: Number(data?.total ?? data?.montantTTC ?? data?.montantTotal) || 0,
+        montantPaye: Number(data?.montantPaye) || 0,
+        resteAPayer: Number(data?.resteAPayer ?? data?.montantRestant) || 0,
+        partAssurance: data?.partAssurance != null ? Number(data.partAssurance) || 0 : undefined,
+        partPatient: data?.partPatient != null ? Number(data.partPatient) || 0 : undefined,
+        lignes: Array.isArray(data?.lignes) ? data.lignes.map((l: any) => ({
+          ...l,
+          quantite: Number(l?.quantite) || 0,
+          prixUnitaire: Number(l?.prixUnitaire) || 0,
+          remise: Number(l?.remise ?? l?.remisePourcent) || 0,
+          total: Number(l?.total ?? l?.montantTotal) || 0,
+        })) : [],
+        paiements: Array.isArray(data?.paiements) ? data.paiements.map((p: any) => ({
+          ...p,
+          montant: Number(p?.montant) || 0,
+          dateCreation: p?.dateCreation ?? p?.createdAt,
+        })) : [],
+      };
+      setFacture(norm);
     } catch (e: any) {
       setError(e?.message ?? t('errChargement'));
     } finally { setLoading(false); }

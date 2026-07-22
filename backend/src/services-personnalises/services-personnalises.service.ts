@@ -102,6 +102,9 @@ export class ServicesPersonnalisesService {
     tenantId: string,
     filters: { categorie?: CategorieService; actif?: boolean; search?: string } = {},
   ): Promise<ServicePersonnalise[]> {
+    if (filters.categorie && !Object.values(CategorieService).includes(filters.categorie)) {
+      throw new BadRequestException(`Catégorie invalide : ${filters.categorie}`);
+    }
     const qb = this.servicesRepo
       .createQueryBuilder('s')
       .where('s.tenantId = :tenantId', { tenantId });
@@ -273,6 +276,9 @@ export class ServicesPersonnalisesService {
   ): Promise<EnregistrementService[]> {
     // Garantit que le service appartient bien au tenant courant.
     await this.findOneService(servicePersonnaliseId, tenantId);
+    if (filters.statut && !Object.values(StatutEnregistrement).includes(filters.statut)) {
+      throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+    }
     const qb = this.enregistrementsRepo
       .createQueryBuilder('e')
       .where('e.tenantId = :tenantId', { tenantId })

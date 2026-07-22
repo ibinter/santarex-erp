@@ -220,6 +220,13 @@ export class MessagesSortantsService {
     pagination: { page?: number; limit?: number } = {},
   ): Promise<{ data: MessageSortant[]; total: number; page: number; limit: number }> {
     const { page = 1, limit = 30 } = pagination;
+    // Valide les filtres enum (sinon valeur inconnue → erreur Postgres → HTTP 500).
+    if (filters.statut && !Object.values(StatutMessageSortant).includes(filters.statut)) {
+      throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+    }
+    if (filters.canal && !Object.values(CanalMessage).includes(filters.canal)) {
+      throw new BadRequestException(`Canal invalide : ${filters.canal}`);
+    }
     const qb = this.messageRepo
       .createQueryBuilder('m')
       .where('m.tenantId = :tenantId', { tenantId });

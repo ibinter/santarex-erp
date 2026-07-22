@@ -75,8 +75,10 @@ export class EquipementsService {
 
     const qb = this.equipRepo.createQueryBuilder('e').where('e.tenantId = :tenantId', { tenantId });
 
-    if (filters.categorie) qb.andWhere('e.categorie = :categorie', { categorie: filters.categorie });
-    if (filters.statut) qb.andWhere('e.statut = :statut', { statut: filters.statut });
+    if (filters.categorie && Object.values(EquipementCategorie).includes(filters.categorie))
+      qb.andWhere('e.categorie = :categorie', { categorie: filters.categorie });
+    if (filters.statut && Object.values(EquipementStatut).includes(filters.statut))
+      qb.andWhere('e.statut = :statut', { statut: filters.statut });
     if (filters.search) {
       qb.andWhere(
         '(e.nom ILIKE :s OR e.code ILIKE :s OR e.marque ILIKE :s OR e.modele ILIKE :s OR e.numeroSerie ILIKE :s OR e.localisation ILIKE :s)',

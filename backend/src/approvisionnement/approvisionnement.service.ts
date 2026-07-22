@@ -43,7 +43,8 @@ export class ApprovisionnementService {
       .createQueryBuilder('f')
       .where('f.tenantId = :tenantId', { tenantId });
 
-    if (filters.type) qb.andWhere('f.type = :type', { type: filters.type });
+    if (filters.type && Object.values(TypeFournisseur).includes(filters.type))
+      qb.andWhere('f.type = :type', { type: filters.type });
     if (filters.actif !== undefined) qb.andWhere('f.actif = :actif', { actif: filters.actif });
     if (filters.search) {
       qb.andWhere('(f.nom ILIKE :s OR f.contact ILIKE :s OR f.ville ILIKE :s OR f.email ILIKE :s)', {
@@ -148,7 +149,8 @@ export class ApprovisionnementService {
     const skip = (page - 1) * limit;
 
     const qb = this.bonRepo.createQueryBuilder('b').where('b.tenantId = :tenantId', { tenantId });
-    if (filters.statut) qb.andWhere('b.statut = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutBonCommande).includes(filters.statut))
+      qb.andWhere('b.statut = :statut', { statut: filters.statut });
     if (filters.fournisseurId) qb.andWhere('b.fournisseurId = :fid', { fid: filters.fournisseurId });
     if (filters.search) qb.andWhere('b.numero ILIKE :s', { s: `%${filters.search}%` });
 

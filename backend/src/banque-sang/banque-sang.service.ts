@@ -92,11 +92,14 @@ export class BanqueSangService {
       .createQueryBuilder('p')
       .where('p.tenantId = :tenantId', { tenantId });
 
-    if (filters.groupe) qb.andWhere('p.groupe = :groupe', { groupe: filters.groupe });
-    if (filters.rhesus) qb.andWhere('p.rhesus = :rhesus', { rhesus: filters.rhesus });
-    if (filters.typeProduit)
+    if (filters.groupe && Object.values(GroupeABO).includes(filters.groupe))
+      qb.andWhere('p.groupe = :groupe', { groupe: filters.groupe });
+    if (filters.rhesus && Object.values(Rhesus).includes(filters.rhesus))
+      qb.andWhere('p.rhesus = :rhesus', { rhesus: filters.rhesus });
+    if (filters.typeProduit && Object.values(TypeProduitSanguin).includes(filters.typeProduit))
       qb.andWhere('p.typeProduit = :typeProduit', { typeProduit: filters.typeProduit });
-    if (filters.statut) qb.andWhere('p.statut = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutPoche).includes(filters.statut))
+      qb.andWhere('p.statut = :statut', { statut: filters.statut });
     if (filters.search)
       qb.andWhere('(p.numero ILIKE :s OR p.donneurRef ILIKE :s)', {
         s: `%${filters.search}%`,

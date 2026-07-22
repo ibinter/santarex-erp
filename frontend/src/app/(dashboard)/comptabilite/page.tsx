@@ -456,7 +456,7 @@ export default function ComptabilitePage() {
                 { titre: 'ACTIF', label: t('actif'), couleur: '#991B1B', bg: '#FEE2E2', accent: '#FECACA', postes: bilan.actif, total: bilan.totalActif },
                 { titre: 'PASSIF', label: t('passif'), couleur: '#065F46', bg: '#D1FAE5', accent: '#A7F3D0', postes: bilan.passif, total: bilan.totalPassif },
               ].map(side => {
-                const total = side.total || side.postes.reduce((s, p) => s + p.valeur, 0);
+                const total = (Number(side.total) || 0) || side.postes.reduce((s, p) => s + (Number(p.valeur) || 0), 0);
                 return (
                   <div key={side.titre} style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
                     <div style={{ background: `linear-gradient(135deg,${side.couleur},${side.bg})`, padding: '14px 20px' }}>

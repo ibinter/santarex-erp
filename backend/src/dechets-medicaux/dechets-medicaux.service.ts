@@ -93,7 +93,7 @@ export class DechetsMedicauxService {
     if (filters.categorie) {
       qb.andWhere('c.categorie = :categorie', { categorie: filters.categorie });
     }
-    if (filters.statut) {
+    if (filters.statut && Object.values(StatutCollecte).includes(filters.statut)) {
       qb.andWhere('c.statut = :statut', { statut: filters.statut });
     }
     if (filters.serviceProducteur) {
@@ -244,7 +244,7 @@ export class DechetsMedicauxService {
       .createQueryBuilder('e')
       .where('e.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) {
+    if (filters.statut && Object.values(StatutEnlevement).includes(filters.statut)) {
       qb.andWhere('e.statut = :statut', { statut: filters.statut });
     }
     if (filters.search) {

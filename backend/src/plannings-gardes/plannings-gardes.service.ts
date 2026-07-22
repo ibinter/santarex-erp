@@ -3,6 +3,7 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
@@ -138,6 +139,12 @@ export class PlanningsGardesService {
   }
 
   async findAll(tenantId: string, filters: GardeFilters = {}) {
+    if (filters.statut && !Object.values(StatutGarde).includes(filters.statut)) {
+      throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+    }
+    if (filters.typeGarde && !Object.values(TypeGarde).includes(filters.typeGarde)) {
+      throw new BadRequestException(`Type de garde invalide : ${filters.typeGarde}`);
+    }
     const where: any = { tenantId };
     if (filters.personnelRef) where.personnelRef = filters.personnelRef;
     if (filters.service) where.service = filters.service;

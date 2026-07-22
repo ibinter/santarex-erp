@@ -120,6 +120,9 @@ export class DeclarationsSanitairesService implements OnModuleInit {
     tenantId: string,
     filtres: { categorie?: CategorieMaladie; actif?: boolean; search?: string } = {},
   ): Promise<MaladieDeclarable[]> {
+    if (filtres.categorie && !Object.values(CategorieMaladie).includes(filtres.categorie)) {
+      throw new BadRequestException(`Catégorie invalide : ${filtres.categorie}`);
+    }
     const qb = this.maladieRepo
       .createQueryBuilder('m')
       .where('(m.tenantId = :tenantId OR m.tenantId IS NULL)', { tenantId });
@@ -283,6 +286,15 @@ export class DeclarationsSanitairesService implements OnModuleInit {
   }> {
     const { page = 1, limit = 50 } = pagination;
     const skip = (page - 1) * limit;
+
+    // Valide les filtres enum : une valeur inconnue déclencherait sinon une
+    // erreur Postgres « invalid input value for enum » remontée en HTTP 500.
+    if (filters.statut && !Object.values(StatutDeclaration).includes(filters.statut)) {
+      throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+    }
+    if (filters.gravite && !Object.values(GraviteDeclaration).includes(filters.gravite)) {
+      throw new BadRequestException(`Gravité invalide : ${filters.gravite}`);
+    }
 
     const qb = this.declRepo
       .createQueryBuilder('d')

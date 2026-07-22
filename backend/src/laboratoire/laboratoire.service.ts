@@ -165,7 +165,8 @@ export class LaboratoireService {
       .where('d.tenantId = :tenantId', { tenantId });
 
     if (filters.patientId) qb.andWhere('d.patientId = :patientId', { patientId: filters.patientId });
-    if (filters.statut) qb.andWhere('d.statutPrelevement = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutPrelevement).includes(filters.statut))
+      qb.andWhere('d.statutPrelevement = :statut', { statut: filters.statut });
     if (filters.urgence !== undefined) qb.andWhere('d.urgence = :urgence', { urgence: filters.urgence });
     if (filters.date) {
       const debut = new Date(filters.date);

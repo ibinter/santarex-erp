@@ -135,6 +135,19 @@ export class IncidentsQualiteService {
     const { page = 1, limit = 50 } = pagination;
     const skip = (page - 1) * limit;
 
+    // Valide les filtres enum AVANT de requêter : une valeur inconnue passée en
+    // query param provoquerait sinon une erreur Postgres « invalid input value
+    // for enum » remontée en HTTP 500. On la convertit en 400 explicite.
+    if (filters.statut && !Object.values(StatutIncident).includes(filters.statut)) {
+      throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+    }
+    if (filters.type && !Object.values(TypeIncident).includes(filters.type)) {
+      throw new BadRequestException(`Type invalide : ${filters.type}`);
+    }
+    if (filters.gravite && !Object.values(GraviteIncident).includes(filters.gravite)) {
+      throw new BadRequestException(`Gravité invalide : ${filters.gravite}`);
+    }
+
     const qb = this.repo
       .createQueryBuilder('i')
       .where('i.tenantId = :tenantId', { tenantId });

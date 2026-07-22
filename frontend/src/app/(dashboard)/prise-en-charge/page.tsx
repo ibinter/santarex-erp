@@ -123,7 +123,7 @@ export default function PriseEnChargePage() {
   const kpiTotal = stats?.totalBons ?? bons.length;
   const kpiEnAttente = stats?.parStatut?.demande_envoyee ?? bons.filter(b => b.statut === 'demande_envoyee').length;
   const kpiAcceptes = stats?.parStatut?.accepte ?? bons.filter(b => b.statut === 'accepte').length;
-  const kpiMontant = stats?.montantCouvertTotal ?? bons.filter(b => b.statut === 'accepte').reduce((a, b) => a + b.montantCouvert, 0);
+  const kpiMontant = stats?.montantCouvertTotal ?? bons.filter(b => b.statut === 'accepte').reduce((a, b) => a + (Number(b.montantCouvert) || 0), 0);
 
   return (
     <div style={{ padding: '18px', background: '#F4F6FA', minHeight: '100vh' }}>

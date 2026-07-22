@@ -21,7 +21,7 @@ export class LigneDevis {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column('uuid')
   @Index()
   devisId: string;
 
