@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  HousePlus, RefreshCw, Plus, X, ChevronRight, AlertTriangle, Save,
+  Home, RefreshCw, Plus, X, ChevronRight, AlertTriangle, Save,
   Calendar, MapPin, Phone, Stethoscope, ClipboardList, CheckCircle2,
   Clock, PauseCircle, PlayCircle, User,
 } from 'lucide-react';
@@ -149,7 +149,7 @@ export default function HadPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <HousePlus size={24} color="#fff" />
+                <Home size={24} color="#fff" />
               </div>
               <div>
                 <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{t('hero.title')}</h1>
@@ -247,7 +247,7 @@ export default function HadPage() {
                       </tr>
                     )) : filtered.length === 0 ? (
                       <tr><td colSpan={6} style={{ textAlign: 'center', padding: '60px 20px', color: '#90A4AE' }}>
-                        <HousePlus size={36} style={{ display: 'block', margin: '0 auto 12px', color: '#99F6E4' }} />
+                        <Home size={36} style={{ display: 'block', margin: '0 auto 12px', color: '#99F6E4' }} />
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{t('list.empty')}</p>
                       </td></tr>
                     ) : filtered.map(h => {
@@ -501,7 +501,7 @@ function AdmissionModal({ t, onClose, onSaved }: any) {
     <div style={overlay} onClick={() => !saving && onClose()}>
       <div style={modalBox} onClick={e => e.stopPropagation()}>
         <div style={modalHead}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><HousePlus size={20} color="#fff" /><h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#fff' }}>{t('admission.title')}</h2></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Home size={20} color="#fff" /><h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#fff' }}>{t('admission.title')}</h2></div>
           <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.15)', cursor: 'pointer', color: '#fff' }}><X size={14} /></button>
         </div>
         <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 12 }}>

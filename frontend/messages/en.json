@@ -13,14 +13,17 @@
     "dmeLong": "Medical Record (EMR)",
     "hospitalisation": "Hospitalization",
     "blocOperatoire": "Operating Room",
+    "morgue": "Mortuary",
     "urgences": "Emergency",
     "imagerie": "Imaging",
     "imagerieLong": "Medical Imaging",
     "laboratoire": "Laboratory",
+    "vaccination": "Vaccination",
     "pharmacie": "Pharmacy",
     "facturation": "Billing",
     "caisse": "Cash Desk",
     "comptabilite": "Accounting",
+    "budget": "Budget",
     "utilisateurs": "Users",
     "rh": "HR",
     "rhLong": "Human Resources",
@@ -45,7 +48,34 @@
     "expand": "Expand",
     "collapse": "Collapse",
     "closeMenu": "Close menu",
-    "logout": "Log out"
+    "logout": "Log out",
+    "groupOps": "Operations & Infrastructure",
+    "groupQualite": "Quality & Compliance",
+    "groupComm": "Communication",
+    "had": "Home care",
+    "maternite": "Maternity",
+    "pediatrie": "Pediatrics",
+    "soinsInfirmiers": "Nursing care",
+    "consentements": "Consents",
+    "banqueSang": "Blood bank",
+    "sterilisation": "Sterilization",
+    "approvisionnement": "Procurement",
+    "interactions": "Drug interactions",
+    "caisseSessions": "Cash sessions",
+    "devis": "Quotes",
+    "priseEnCharge": "Pre-authorizations",
+    "tiersPayant": "Insurance claims",
+    "equipements": "Equipment",
+    "transport": "Transport",
+    "dechetsMedicaux": "Medical waste",
+    "sites": "Sites / Network",
+    "incidentsQualite": "Quality incidents",
+    "indicateursQualite": "Quality indicators",
+    "satisfaction": "Satisfaction",
+    "declarationsSanitaires": "Notifiable diseases",
+    "messagerie": "Messaging",
+    "messagesSortants": "SMS / Reminders",
+    "planningsGardes": "On-call planning"
   },
   "hero": {
     "badge": "#1 Hospital SaaS Solution in West Africa",
@@ -201,20 +231,62 @@
     "qLabOrder": "+ Lab order",
     "qReports": "📊 Reports",
     "mod": {
-      "patients": { "title": "Patients", "desc": "Records & tracking" },
-      "consultations": { "title": "Consultations", "desc": "Medical visits" },
-      "rendezVous": { "title": "Appointments", "desc": "Calendar & schedules" },
-      "hospitalisation": { "title": "Hospitalization", "desc": "Stays & beds" },
-      "blocOperatoire": { "title": "Operating Room", "desc": "Procedures & rooms" },
-      "urgences": { "title": "Emergency", "desc": "Manchester triage" },
-      "imagerie": { "title": "Imaging", "desc": "X-ray, CT, MRI" },
-      "laboratoire": { "title": "Laboratory", "desc": "Tests & results" },
-      "pharmacie": { "title": "Pharmacy", "desc": "Stock & dispensing" },
-      "facturation": { "title": "Billing", "desc": "Invoices & receivables" },
-      "caisse": { "title": "Cash Desk", "desc": "Payments" },
-      "comptabilite": { "title": "Accounting", "desc": "Ledger & balance" },
-      "rh": { "title": "Human Resources", "desc": "Staff & leave" },
-      "reporting": { "title": "Reporting & BI", "desc": "Dashboards & analytics" }
+      "patients": {
+        "title": "Patients",
+        "desc": "Records & tracking"
+      },
+      "consultations": {
+        "title": "Consultations",
+        "desc": "Medical visits"
+      },
+      "rendezVous": {
+        "title": "Appointments",
+        "desc": "Calendar & schedules"
+      },
+      "hospitalisation": {
+        "title": "Hospitalization",
+        "desc": "Stays & beds"
+      },
+      "blocOperatoire": {
+        "title": "Operating Room",
+        "desc": "Procedures & rooms"
+      },
+      "urgences": {
+        "title": "Emergency",
+        "desc": "Manchester triage"
+      },
+      "imagerie": {
+        "title": "Imaging",
+        "desc": "X-ray, CT, MRI"
+      },
+      "laboratoire": {
+        "title": "Laboratory",
+        "desc": "Tests & results"
+      },
+      "pharmacie": {
+        "title": "Pharmacy",
+        "desc": "Stock & dispensing"
+      },
+      "facturation": {
+        "title": "Billing",
+        "desc": "Invoices & receivables"
+      },
+      "caisse": {
+        "title": "Cash Desk",
+        "desc": "Payments"
+      },
+      "comptabilite": {
+        "title": "Accounting",
+        "desc": "Ledger & balance"
+      },
+      "rh": {
+        "title": "Human Resources",
+        "desc": "Staff & leave"
+      },
+      "reporting": {
+        "title": "Reporting & BI",
+        "desc": "Dashboards & analytics"
+      }
     }
   },
   "common": {

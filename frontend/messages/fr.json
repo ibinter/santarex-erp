@@ -13,14 +13,17 @@
     "dmeLong": "Dossier Médical (DME)",
     "hospitalisation": "Hospitalisation",
     "blocOperatoire": "Bloc Opératoire",
+    "morgue": "Morgue",
     "urgences": "Urgences",
     "imagerie": "Imagerie",
     "imagerieLong": "Imagerie Médicale",
     "laboratoire": "Laboratoire",
+    "vaccination": "Vaccination",
     "pharmacie": "Pharmacie",
     "facturation": "Facturation",
     "caisse": "Caisse",
     "comptabilite": "Comptabilité",
+    "budget": "Budget",
     "utilisateurs": "Utilisateurs",
     "rh": "RH",
     "rhLong": "Ressources Humaines",
@@ -45,7 +48,34 @@
     "expand": "Développer",
     "collapse": "Réduire",
     "closeMenu": "Fermer le menu",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "groupOps": "Opérations & Infrastructure",
+    "groupQualite": "Qualité & Conformité",
+    "groupComm": "Communication",
+    "had": "Hospit. à domicile",
+    "maternite": "Maternité",
+    "pediatrie": "Pédiatrie",
+    "soinsInfirmiers": "Soins infirmiers",
+    "consentements": "Consentements",
+    "banqueSang": "Banque de sang",
+    "sterilisation": "Stérilisation",
+    "approvisionnement": "Approvisionnement",
+    "interactions": "Interactions médic.",
+    "caisseSessions": "Sessions caisse",
+    "devis": "Devis",
+    "priseEnCharge": "Prise en charge",
+    "tiersPayant": "Tiers-payant",
+    "equipements": "Équipements",
+    "transport": "Transport",
+    "dechetsMedicaux": "Déchets médicaux",
+    "sites": "Sites / Réseau",
+    "incidentsQualite": "Incidents qualité",
+    "indicateursQualite": "Indicateurs qualité",
+    "satisfaction": "Satisfaction",
+    "declarationsSanitaires": "Déclarations sanitaires",
+    "messagerie": "Messagerie",
+    "messagesSortants": "SMS / Rappels",
+    "planningsGardes": "Gardes & astreintes"
   },
   "hero": {
     "badge": "Solution SaaS Hospitalière #1 en Afrique de l'Ouest",
@@ -201,20 +231,62 @@
     "qLabOrder": "+ Ordonnance labo",
     "qReports": "📊 Rapports",
     "mod": {
-      "patients": { "title": "Patients", "desc": "Dossiers & suivi" },
-      "consultations": { "title": "Consultations", "desc": "Visites médicales" },
-      "rendezVous": { "title": "Rendez-vous", "desc": "Agenda & plannings" },
-      "hospitalisation": { "title": "Hospitalisation", "desc": "Séjours & lits" },
-      "blocOperatoire": { "title": "Bloc Opératoire", "desc": "Interventions & salles" },
-      "urgences": { "title": "Urgences", "desc": "Triage Manchester" },
-      "imagerie": { "title": "Imagerie", "desc": "Radio, scanner, IRM" },
-      "laboratoire": { "title": "Laboratoire", "desc": "Analyses & résultats" },
-      "pharmacie": { "title": "Pharmacie", "desc": "Stock & dispensation" },
-      "facturation": { "title": "Facturation", "desc": "Factures & créances" },
-      "caisse": { "title": "Caisse", "desc": "Encaissements" },
-      "comptabilite": { "title": "Comptabilité", "desc": "Journal & bilan" },
-      "rh": { "title": "Ressources Humaines", "desc": "Personnel & congés" },
-      "reporting": { "title": "Reporting & BI", "desc": "Tableaux & analyses" }
+      "patients": {
+        "title": "Patients",
+        "desc": "Dossiers & suivi"
+      },
+      "consultations": {
+        "title": "Consultations",
+        "desc": "Visites médicales"
+      },
+      "rendezVous": {
+        "title": "Rendez-vous",
+        "desc": "Agenda & plannings"
+      },
+      "hospitalisation": {
+        "title": "Hospitalisation",
+        "desc": "Séjours & lits"
+      },
+      "blocOperatoire": {
+        "title": "Bloc Opératoire",
+        "desc": "Interventions & salles"
+      },
+      "urgences": {
+        "title": "Urgences",
+        "desc": "Triage Manchester"
+      },
+      "imagerie": {
+        "title": "Imagerie",
+        "desc": "Radio, scanner, IRM"
+      },
+      "laboratoire": {
+        "title": "Laboratoire",
+        "desc": "Analyses & résultats"
+      },
+      "pharmacie": {
+        "title": "Pharmacie",
+        "desc": "Stock & dispensation"
+      },
+      "facturation": {
+        "title": "Facturation",
+        "desc": "Factures & créances"
+      },
+      "caisse": {
+        "title": "Caisse",
+        "desc": "Encaissements"
+      },
+      "comptabilite": {
+        "title": "Comptabilité",
+        "desc": "Journal & bilan"
+      },
+      "rh": {
+        "title": "Ressources Humaines",
+        "desc": "Personnel & congés"
+      },
+      "reporting": {
+        "title": "Reporting & BI",
+        "desc": "Tableaux & analyses"
+      }
     }
   },
   "common": {

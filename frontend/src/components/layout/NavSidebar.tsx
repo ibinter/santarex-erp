@@ -8,6 +8,10 @@ import {
   CreditCard, BarChart2, Settings, UserCog, Siren, BedDouble,
   Scissors, Scan, Building2, BookOpen, MessageSquare, ChevronLeft,
   ChevronRight, LogOut, Receipt, X, HelpCircle, ShieldCheck, Award,
+  Baby, Activity, Syringe, HeartPulse, FileSignature, Home, Droplets,
+  Biohazard, Truck, ShieldAlert, Calculator, Wallet, FileSpreadsheet,
+  PiggyBank, Wrench, Ambulance, Trash2, Snowflake, Network, AlertTriangle,
+  Gauge, SmilePlus, FileWarning, MessageCircle, CalendarClock,
 } from 'lucide-react';
 import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -54,9 +58,15 @@ const navGroups: NavGroup[] = [
     key: 'groupSoins',
     items: [
       { key: 'hospitalisation', href: '/hospitalisation', icon: <BedDouble size={18} />, roles: CLINICAL },
+      { key: 'had', href: '/had', icon: <Home size={18} />, roles: CLINICAL },
       { key: 'blocOperatoire', href: '/bloc-operatoire', icon: <Scissors size={18} />, roles: ['superadmin','admin','medecin'] },
       { key: 'urgences', href: '/urgences', icon: <Siren size={18} />, alert: true, roles: CLINICAL },
       { key: 'imagerieLong', href: '/imagerie', icon: <Scan size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
+      { key: 'maternite', href: '/maternite', icon: <Baby size={18} />, roles: CLINICAL },
+      { key: 'pediatrie', href: '/pediatrie', icon: <Activity size={18} />, roles: CLINICAL },
+      { key: 'vaccination', href: '/vaccination', icon: <Syringe size={18} />, roles: ['superadmin','admin','medecin','infirmier','laborantin'] },
+      { key: 'soinsInfirmiers', href: '/soins-infirmiers', icon: <HeartPulse size={18} />, roles: CLINICAL },
+      { key: 'consentements', href: '/consentements', icon: <FileSignature size={18} />, roles: CLINICAL },
     ],
   },
   {
@@ -64,6 +74,10 @@ const navGroups: NavGroup[] = [
     items: [
       { key: 'laboratoire', href: '/laboratoire', icon: <FlaskConical size={18} />, roles: ['superadmin','admin','medecin','laborantin'] },
       { key: 'pharmacie', href: '/pharmacie', icon: <Pill size={18} />, roles: ['superadmin','admin','pharmacien','medecin'] },
+      { key: 'banqueSang', href: '/banque-sang', icon: <Droplets size={18} />, roles: ['superadmin','admin','medecin','infirmier','laborantin','directeur'] },
+      { key: 'sterilisation', href: '/sterilisation', icon: <Biohazard size={18} />, roles: ['superadmin','admin','medecin','infirmier'] },
+      { key: 'approvisionnement', href: '/approvisionnement', icon: <Truck size={18} />, roles: ['superadmin','admin','pharmacien','directeur'] },
+      { key: 'interactions', href: '/interactions', icon: <ShieldAlert size={18} />, roles: ['superadmin','admin','medecin','pharmacien'] },
     ],
   },
   {
@@ -71,7 +85,38 @@ const navGroups: NavGroup[] = [
     items: [
       { key: 'facturation', href: '/facturation', icon: <Receipt size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
       { key: 'caisse', href: '/caisse', icon: <CreditCard size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'caisseSessions', href: '/caisse-sessions', icon: <Wallet size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'devis', href: '/devis', icon: <Calculator size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'priseEnCharge', href: '/prise-en-charge', icon: <ShieldCheck size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
+      { key: 'tiersPayant', href: '/tiers-payant', icon: <FileSpreadsheet size={18} />, roles: ['superadmin','admin','caissier','directeur'] },
       { key: 'comptabilite', href: '/comptabilite', icon: <Building2 size={18} />, roles: ADMIN_DIR },
+      { key: 'budget', href: '/budget', icon: <PiggyBank size={18} />, roles: ADMIN_DIR },
+    ],
+  },
+  {
+    key: 'groupOps',
+    items: [
+      { key: 'equipements', href: '/equipements', icon: <Wrench size={18} />, roles: ADMIN_DIR },
+      { key: 'transport', href: '/transport', icon: <Ambulance size={18} />, roles: ['superadmin','admin','directeur','medecin','infirmier'] },
+      { key: 'dechetsMedicaux', href: '/dechets-medicaux', icon: <Trash2 size={18} />, roles: ADMIN_DIR },
+      { key: 'morgue', href: '/morgue', icon: <Snowflake size={18} />, roles: CLINICAL },
+      { key: 'sites', href: '/sites', icon: <Network size={18} />, roles: ADMIN_DIR },
+    ],
+  },
+  {
+    key: 'groupQualite',
+    items: [
+      { key: 'incidentsQualite', href: '/incidents-qualite', icon: <AlertTriangle size={18} />, roles: ADMIN_DIR },
+      { key: 'indicateursQualite', href: '/indicateurs-qualite', icon: <Gauge size={18} />, roles: ['superadmin','admin','directeur','medecin'] },
+      { key: 'satisfaction', href: '/satisfaction', icon: <SmilePlus size={18} />, roles: ADMIN_DIR },
+      { key: 'declarationsSanitaires', href: '/declarations-sanitaires', icon: <FileWarning size={18} />, roles: CLINICAL },
+    ],
+  },
+  {
+    key: 'groupComm',
+    items: [
+      { key: 'messagerie', href: '/messagerie', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
+      { key: 'messagesSortants', href: '/messages-sortants', icon: <MessageCircle size={18} />, roles: ['superadmin','admin','caissier','directeur','infirmier'] },
     ],
   },
   {
@@ -79,6 +124,7 @@ const navGroups: NavGroup[] = [
     items: [
       { key: 'utilisateurs', href: '/utilisateurs', icon: <UserCog size={18} />, roles: ADMIN_ONLY },
       { key: 'rhLong', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
+      { key: 'planningsGardes', href: '/plannings-gardes', icon: <CalendarClock size={18} />, roles: ['superadmin','admin','drh','directeur','medecin'] },
       { key: 'reportingLong', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
       { key: 'auditLogs', href: '/audit-logs', icon: <ShieldCheck size={18} />, roles: ADMIN_DIR },
       { key: 'licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
