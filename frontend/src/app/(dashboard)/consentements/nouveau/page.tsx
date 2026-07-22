@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileSignature, ArrowLeft, Search, User } from 'lucide-react';
+import { FileSignature, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { apiClient, api } from '@/lib/api';
+import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type Modele = { id: string; type: string; titre: string; texteModele: string; actif: boolean };
-type PatientLite = { id: string; nom?: string; prenom?: string; ipp?: string };
 
 const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r?.items ?? []);
 
@@ -22,8 +22,6 @@ export default function NouveauConsentementPage() {
   const [mineur, setMineur] = useState(false);
   const [observations, setObservations] = useState('');
 
-  const [patientQuery, setPatientQuery] = useState('');
-  const [patientResults, setPatientResults] = useState<PatientLite[]>([]);
   const [patient, setPatient] = useState<PatientLite | null>(null);
 
   const [saving, setSaving] = useState(false);
@@ -33,15 +31,6 @@ export default function NouveauConsentementPage() {
     apiClient<any>('/consentements/modeles?actif=true')
       .then(r => setModeles(unwrap(r).filter((m: Modele) => m.actif)))
       .catch(() => setModeles([]));
-  }, []);
-
-  const searchPatient = useCallback(async (q: string) => {
-    setPatientQuery(q);
-    if (q.trim().length < 2) { setPatientResults([]); return; }
-    try {
-      const r = await api.searchPatients(q) as any;
-      setPatientResults(unwrap(r));
-    } catch { setPatientResults([]); }
   }, []);
 
   const selected = modeles.find(m => m.id === modeleId) || null;
@@ -97,32 +86,9 @@ export default function NouveauConsentementPage() {
         <div style={{ background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
           {/* Patient */}
           <label style={label}>{t('create.patient')}</label>
-          {patient ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, background: '#EEF2FF', marginBottom: 16 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#3730A3' }}>
-                <User size={15} /> {patient.nom} {patient.prenom} {patient.ipp ? `• ${patient.ipp}` : ''}
-              </span>
-              <button onClick={() => { setPatient(null); setPatientQuery(''); }} style={{ background: 'none', border: 'none', color: '#6366F1', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>✕</button>
-            </div>
-          ) : (
-            <div style={{ position: 'relative', marginBottom: 16 }}>
-              <Search size={13} style={{ position: 'absolute', left: 12, top: 13, color: '#90A4AE' }} />
-              <input value={patientQuery} onChange={e => searchPatient(e.target.value)} placeholder={t('create.patientPlaceholder')}
-                style={{ ...inputStyle, paddingLeft: 34 }} />
-              {patientResults.length > 0 && (
-                <div style={{ position: 'absolute', zIndex: 5, top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #E0E8F0', borderRadius: 10, marginTop: 4, boxShadow: '0 6px 20px rgba(0,0,0,0.1)', maxHeight: 220, overflowY: 'auto' }}>
-                  {patientResults.map(p => (
-                    <div key={p.id} onClick={() => { setPatient(p); setPatientResults([]); }}
-                      style={{ padding: '9px 12px', fontSize: 13, cursor: 'pointer', color: '#37474F', borderBottom: '1px solid #F1F5F9' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#F5F7FF')}
-                      onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
-                      {p.nom} {p.prenom} {p.ipp ? <span style={{ color: '#90A4AE' }}>• {p.ipp}</span> : ''}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div style={{ marginBottom: 16 }}>
+            <PatientSearch selected={patient} onSelect={(p) => setPatient(p)} accent="#4F46E5" placeholder={t('create.patientPlaceholder')} />
+          </div>
 
           {/* Modele */}
           <label style={label}>{t('create.modele')}</label>

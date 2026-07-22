@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 // ── Types ──────────────────────────────────────────────────────────
 type QType = 'note_5' | 'note_10' | 'oui_non' | 'texte' | 'choix';
@@ -360,6 +361,7 @@ function CollecteView({ questionnaires, reload }: { questionnaires: Questionnair
   const [values, setValues] = useState<Record<string, number | string | boolean>>({});
   const [service, setService] = useState('');
   const [patientId, setPatientId] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [commentaire, setCommentaire] = useState('');
   const [recommande, setRecommande] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
@@ -387,7 +389,7 @@ function CollecteView({ questionnaires, reload }: { questionnaires: Questionnair
         },
       });
       setMsg({ ok: true, text: t('collecte.success') });
-      setValues({}); setService(''); setPatientId(''); setCommentaire(''); setRecommande(null); setQId('');
+      setValues({}); setService(''); setPatientId(''); setPatient(null); setCommentaire(''); setRecommande(null); setQId('');
       reload();
     } catch {
       setMsg({ ok: false, text: t('collecte.error') });
@@ -411,7 +413,14 @@ function CollecteView({ questionnaires, reload }: { questionnaires: Questionnair
           <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div><label style={lbl}>{t('collecte.service')}</label><input style={inp} value={service} onChange={e => setService(e.target.value)} /></div>
-              <div><label style={lbl}>{t('collecte.patientId')}</label><input style={inp} value={patientId} onChange={e => setPatientId(e.target.value)} placeholder={t('collecte.anonyme')} /></div>
+              <div><label style={lbl}>{t('collecte.patientId')}</label>
+                <PatientSearch
+                  selected={patient}
+                  onSelect={(p) => { setPatient(p); setPatientId(p?.id ?? ''); }}
+                  accent={ACCENT}
+                  placeholder={t('collecte.anonyme')}
+                />
+              </div>
             </div>
 
             {questionnaire.questions.map(q => (

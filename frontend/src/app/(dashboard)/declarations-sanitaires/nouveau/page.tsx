@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { FileWarning, ArrowLeft, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type Gravite = 'benin' | 'modere' | 'severe' | 'critique';
 type Sexe = 'm' | 'f' | 'inconnu';
 type Evolution = 'en_cours' | 'gueri' | 'deces';
-type Patient = { id: string; nom: string; prenom: string; ipp?: string };
 type Maladie = { id: string; nom: string; codeCIM10?: string | null; categorie: string; delaiDeclarationHeures: number };
 
 const GRAVITES: Gravite[] = ['benin', 'modere', 'severe', 'critique'];
@@ -28,9 +28,8 @@ export default function NouvelleDeclarationPage() {
   const t = useTranslations('declarationsSanitaires');
 
   const [maladies, setMaladies] = useState<Maladie[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [maladieId, setMaladieId] = useState('');
-  const [patientId, setPatientId] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [patientNom, setPatientNom] = useState('');
   const [patientAge, setPatientAge] = useState('');
   const [patientSexe, setPatientSexe] = useState<Sexe>('inconnu');
@@ -51,11 +50,6 @@ export default function NouvelleDeclarationPage() {
         setMaladies(list);
         if (list[0]) setMaladieId(list[0].id);
       } catch { /* référentiel optionnel */ }
-      try {
-        const res = await apiClient<any>('/patients?limit=100');
-        const list = Array.isArray(res) ? res : (res?.data?.data ?? res?.data ?? res?.items ?? []);
-        setPatients(list);
-      } catch { /* liste patients optionnelle */ }
     })();
   }, []);
 
@@ -70,7 +64,7 @@ export default function NouvelleDeclarationPage() {
         method: 'POST',
         body: {
           maladieId,
-          patientId: patientId || undefined,
+          patientId: patient?.id || undefined,
           patientNom: patientNom.trim() || undefined,
           patientAge: patientAge ? Number(patientAge) : undefined,
           patientSexe,
@@ -128,12 +122,7 @@ export default function NouvelleDeclarationPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>{t('form.patient')}</label>
-              <select value={patientId} onChange={e => setPatientId(e.target.value)} style={inputStyle}>
-                <option value="">{t('form.patientNone')}</option>
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` — ${p.ipp}` : ''}</option>
-                ))}
-              </select>
+              <PatientSearch selected={patient} onSelect={(p) => setPatient(p)} accent="#0D9488" placeholder={t('form.patientNone')} />
             </div>
             <div>
               <label style={labelStyle}>{t('form.dateDiagnostic')}</label>

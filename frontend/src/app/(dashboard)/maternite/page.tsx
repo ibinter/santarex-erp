@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch from '@/components/PatientSearch';
 
 type Statut = 'en_cours' | 'terminee';
 type Dossier = {
@@ -53,7 +54,6 @@ export default function MaternitePage() {
   const router = useRouter();
   const t = useTranslations('maternite');
   const [dossiers, setDossiers] = useState<Dossier[]>([]);
-  const [patients, setPatients] = useState<PatientLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [risqueOnly, setRisqueOnly] = useState(false);
@@ -68,13 +68,11 @@ export default function MaternitePage() {
     setLoading(true);
     try {
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
-      const [dosRes, patRes, statRes] = await Promise.all([
+      const [dosRes, statRes] = await Promise.all([
         apiClient<any>('/maternite/dossiers'),
-        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/maternite/stats'),
       ]);
       setDossiers(unwrap(dosRes));
-      setPatients(unwrap(patRes).map((p: any) => ({ id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp })));
       setStats(statRes?.data ?? statRes ?? null);
       setLastRefresh(new Date());
     } finally { setLoading(false); }
@@ -267,7 +265,6 @@ export default function MaternitePage() {
 
       {showModal && (
         <CreateDossierModal
-          patients={patients}
           onClose={() => setShowModal(false)}
           onCreated={(id) => { setShowModal(false); router.push(`/maternite/${id}`); }}
         />
@@ -279,12 +276,12 @@ export default function MaternitePage() {
 // ─────────────────────────────────────────────────────────────────────
 // Modale de création d'un dossier de grossesse
 // ─────────────────────────────────────────────────────────────────────
-function CreateDossierModal({ patients, onClose, onCreated }: {
-  patients: PatientLite[];
+function CreateDossierModal({ onClose, onCreated }: {
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
   const t = useTranslations('maternite');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [form, setForm] = useState({
     patientId: '', ddr: '', gestite: 1, parite: 0, avortements: 0,
     groupeSanguin: '', rhesus: '', antecedents: '',
@@ -338,10 +335,8 @@ function CreateDossierModal({ patients, onClose, onCreated }: {
         <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label style={lbl}>{t('form.patiente')} *</label>
-            <select value={form.patientId} onChange={e => set('patientId', e.target.value)} style={inp}>
-              <option value="">{t('form.selectPatiente')}</option>
-              {patients.map(p => <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` — ${p.ipp}` : ''}</option>)}
-            </select>
+            <PatientSearch selected={patient} accent="#9D174D" placeholder={t('form.selectPatiente')}
+              onSelect={(p) => { setPatient(p); set('patientId', p ? p.id : ''); }} />
           </div>
           <div>
             <label style={lbl}>{t('form.ddr')} *</label>

@@ -71,6 +71,7 @@
     },
 
     "modalDecesTitre": "Record a death",
+    "labelPatient": "Patient (optional)",
     "labelNom": "Last name",
     "labelPrenom": "First name(s)",
     "labelSexe": "Sex",

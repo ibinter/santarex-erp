@@ -7,6 +7,7 @@ import {
   XCircle, Clock, FileText, Building2, TrendingUp, X,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type StatutBon = 'brouillon' | 'demande_envoyee' | 'accepte' | 'refuse' | 'expire';
 type TypeAssureur = 'mutuelle' | 'assurance_privee' | 'cmu' | 'cnam';
@@ -63,7 +64,6 @@ export default function PriseEnChargePage() {
   const [tab, setTab] = useState<'bons' | 'assureurs'>('bons');
   const [bons, setBons] = useState<Bon[]>([]);
   const [assureurs, setAssureurs] = useState<Assureur[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -76,10 +76,9 @@ export default function PriseEnChargePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [bonsRes, assurRes, patRes, statsRes] = await Promise.allSettled([
+      const [bonsRes, assurRes, statsRes] = await Promise.allSettled([
         apiClient<any>('/prise-en-charge/bons?limit=100'),
         apiClient<any>('/prise-en-charge/assureurs'),
-        apiClient<any>('/patients?limit=100'),
         apiClient<Stats>('/prise-en-charge/stats'),
       ]);
       if (bonsRes.status === 'fulfilled') {
@@ -97,7 +96,6 @@ export default function PriseEnChargePage() {
           plafond: a.plafond != null ? Number(a.plafond) : undefined,
         })));
       }
-      if (patRes.status === 'fulfilled') setPatients(unwrap(patRes.value));
       if (statsRes.status === 'fulfilled') setStats(statsRes.value);
     } finally { setLoading(false); }
   }, []);
@@ -231,7 +229,7 @@ export default function PriseEnChargePage() {
       </div>
 
       {showBonForm && (
-        <BonForm t={t} patients={patients} assureurs={assureurs}
+        <BonForm t={t} assureurs={assureurs}
           onClose={() => setShowBonForm(false)}
           onSaved={() => { setShowBonForm(false); load(); }}/>
       )}
@@ -416,8 +414,9 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWe
 const inputStyle: React.CSSProperties = { width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid #E0E8F0', fontSize: 13, outline: 'none', boxSizing: 'border-box', color: '#1A2332', background: '#fff' };
 const fieldWrap: React.CSSProperties = { marginBottom: 14 };
 
-function BonForm({ t, patients, assureurs, onClose, onSaved }: any) {
+function BonForm({ t, assureurs, onClose, onSaved }: any) {
   const [form, setForm] = useState<any>({ patientId: '', assureurId: '', numeroAssure: '', prestation: '', description: '', montantEstime: '', tauxCouverture: '', notes: '' });
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [saving, setSaving] = useState(false);
   const selAssureur = assureurs.find((a: Assureur) => a.id === form.assureurId);
   const taux = form.tauxCouverture !== '' ? Number(form.tauxCouverture) : (selAssureur ? selAssureur.tauxCouvertureDefaut : 0);
@@ -445,10 +444,11 @@ function BonForm({ t, patients, assureurs, onClose, onSaved }: any) {
     <Modal title={t('formBonTitre')} onClose={onClose}>
       <div style={fieldWrap}>
         <label style={labelStyle}>{t('champPatient')} *</label>
-        <select value={form.patientId} onChange={e => setForm({ ...form, patientId: e.target.value })} style={inputStyle}>
-          <option value="">{t('selectionner')}</option>
-          {patients.map((p: Patient) => <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` (${p.ipp})` : ''}</option>)}
-        </select>
+        <PatientSearch
+          selected={patient}
+          onSelect={(p) => { setPatient(p); setForm((f: any) => ({ ...f, patientId: p?.id ?? '' })); }}
+          accent="#6A1B9A"
+        />
       </div>
       <div style={fieldWrap}>
         <label style={labelStyle}>{t('champAssureur')} *</label>

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useTranslations } from 'next-intl';
+import PatientSearch from '@/components/PatientSearch';
 
 // ── Types ────────────────────────────────────────────────────────────────
 type Patient = { id: string; nom: string; prenom: string; ipp?: string };
@@ -66,10 +67,7 @@ const card: React.CSSProperties = { background: '#fff', borderRadius: 14, boxSha
 export default function SoinsInfirmiersPage() {
   const t = useTranslations('soinsInfirmiers');
 
-  const [pSearch, setPSearch] = useState('');
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
-  const pTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const [tab, setTab] = useState<Tab>('transmissions');
   const [stats, setStats] = useState<Stats | null>(null);
@@ -78,14 +76,6 @@ export default function SoinsInfirmiersPage() {
   const [actes, setActes] = useState<Acte[]>([]);
   const [douleurs, setDouleurs] = useState<Douleur[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // ── Patient search ──────────────────────────────────────────────────────
-  const searchPatients = useCallback(async (q: string) => {
-    try { const d = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`); setPatients(arr<Patient>(d)); }
-    catch { setPatients([]); }
-  }, []);
-  useEffect(() => { clearTimeout(pTimer.current); pTimer.current = setTimeout(() => searchPatients(pSearch), 300); }, [pSearch, searchPatients]);
-  useEffect(() => { searchPatients(''); }, [searchPatients]);
 
   const loadStats = useCallback(async () => {
     try { setStats(await apiClient<Stats>('/soins-infirmiers/stats')); } catch { /* noop */ }
@@ -160,44 +150,12 @@ export default function SoinsInfirmiersPage() {
 
       {/* PATIENT SELECTOR */}
       <div style={{ ...card, marginBottom: 18 }}>
-        {patient ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg,#EDE7F6,#7B1FA222)', border: '1.5px solid #7B1FA233', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#7B1FA2' }}>{inits(patient)}</div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#1A2332' }}>{patient.prenom} {patient.nom}</div>
-                {patient.ipp && <div style={{ fontSize: 11, color: '#90A4AE', fontFamily: 'monospace' }}>{t('ipp', { ipp: patient.ipp })}</div>}
-              </div>
-            </div>
-            <button onClick={() => setPatient(null)} className="tab-btn"
-              style={{ padding: '8px 14px', borderRadius: 9, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-              {t('changerPatient')}
-            </button>
-          </div>
-        ) : (
-          <div>
-            <label style={labelStyle}>{t('selectionnerPatient')}</label>
-            <div style={{ position: 'relative', marginBottom: 10 }}>
-              <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-              <input value={pSearch} onChange={e => setPSearch(e.target.value)} placeholder={t('rechercherPatient')}
-                style={{ ...inputStyle, paddingLeft: 32 }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 260, overflowY: 'auto' }}>
-              {patients.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 20, color: '#90A4AE', fontSize: 13 }}>{t('aucunPatient')}</div>
-              ) : patients.map(p => (
-                <div key={p.id} className="pat-row" onClick={() => setPatient(p)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', borderRadius: 9, cursor: 'pointer', border: '1px solid #F0F4FA' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: '#EDE7F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#7B1FA2' }}>{inits(p)}</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{p.prenom} {p.nom}</div>
-                    {p.ipp && <div style={{ fontSize: 10, color: '#90A4AE', fontFamily: 'monospace' }}>{p.ipp}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {!patient && <label style={labelStyle}>{t('selectionnerPatient')}</label>}
+        <PatientSearch
+          selected={patient}
+          onSelect={(p) => setPatient(p)}
+          accent="#7B1FA2"
+        />
       </div>
 
       {!patient ? (

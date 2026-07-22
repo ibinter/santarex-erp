@@ -71,6 +71,7 @@
     },
 
     "modalDecesTitre": "Enregistrer un décès",
+    "labelPatient": "Patient (optionnel)",
     "labelNom": "Nom",
     "labelPrenom": "Prénom(s)",
     "labelSexe": "Sexe",

@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type TypeInc = 'erreur_medicamenteuse' | 'chute' | 'infection_nosocomiale' | 'erreur_identite' | 'materiel_defectueux' | 'autre';
 type Gravite = 'mineure' | 'moderee' | 'grave' | 'critique';
-type Patient = { id: string; nom: string; prenom: string; ipp?: string };
-
 const TYPES: TypeInc[] = ['erreur_medicamenteuse', 'chute', 'infection_nosocomiale', 'erreur_identite', 'materiel_defectueux', 'autre'];
 const GRAVITES: Gravite[] = ['mineure', 'moderee', 'grave', 'critique'];
 
@@ -28,24 +27,13 @@ export default function NouvelIncidentPage() {
   const [gravite, setGravite] = useState<Gravite>('moderee');
   const [dateSurvenue, setDateSurvenue] = useState(() => new Date().toISOString().slice(0, 16));
   const [serviceConcerne, setServiceConcerne] = useState('');
-  const [patientId, setPatientId] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [description, setDescription] = useState('');
   const [causes, setCauses] = useState('');
   const [mesures, setMesures] = useState('');
 
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await apiClient<any>('/patients?limit=100');
-        const list = Array.isArray(res) ? res : (res?.data?.data ?? res?.data ?? res?.items ?? []);
-        setPatients(list);
-      } catch { /* liste patients optionnelle */ }
-    })();
-  }, []);
 
   const submit = async () => {
     setError('');
@@ -62,7 +50,7 @@ export default function NouvelIncidentPage() {
           gravite,
           dateSurvenue: new Date(dateSurvenue).toISOString(),
           serviceConcerne: serviceConcerne.trim(),
-          patientId: patientId || undefined,
+          patientId: patient?.id || undefined,
           description: description.trim(),
           causesIdentifiees: causes.trim() || undefined,
           mesuresCorrectives: mesures.trim() || undefined,
@@ -132,12 +120,7 @@ export default function NouvelIncidentPage() {
             </div>
             <div>
               <label style={labelStyle}>{t('form.patient')}</label>
-              <select value={patientId} onChange={e => setPatientId(e.target.value)} style={inputStyle}>
-                <option value="">{t('form.patientNone')}</option>
-                {patients.map(p => (
-                  <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` — ${p.ipp}` : ''}</option>
-                ))}
-              </select>
+              <PatientSearch selected={patient} onSelect={(p) => setPatient(p)} accent="#B91C1C" placeholder={t('form.patientNone')} />
             </div>
           </div>
 

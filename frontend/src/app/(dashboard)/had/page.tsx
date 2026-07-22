@@ -9,6 +9,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type StatutHAD = 'active' | 'suspendue' | 'terminee' | string;
 type TypeVisite = 'infirmier' | 'medical' | 'kine' | 'autre' | string;
@@ -464,7 +465,8 @@ function ErrBox({ msg }: { msg: string }) {
 
 function AdmissionModal({ t, onClose, onSaved }: any) {
   const me = getCurrentUser();
-  const [patientId, setPatientId] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
+  const patientId = patient?.id ?? '';
   const [adresseDomicile, setAdresse] = useState('');
   const [ville, setVille] = useState('');
   const [telephoneContact, setTel] = useState('');
@@ -505,7 +507,7 @@ function AdmissionModal({ t, onClose, onSaved }: any) {
           <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.15)', cursor: 'pointer', color: '#fff' }}><X size={14} /></button>
         </div>
         <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Field label={t('admission.patientId')}><input style={inp} value={patientId} onChange={e => setPatientId(e.target.value)} placeholder={t('admission.phPatientId')} /></Field>
+          <Field label={t('admission.patientId')}><PatientSearch selected={patient} onSelect={(p) => setPatient(p)} accent="#155E63" /></Field>
           <Field label={t('admission.adresseDomicile')}><input style={inp} value={adresseDomicile} onChange={e => setAdresse(e.target.value)} /></Field>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Field label={t('admission.ville')}><input style={inp} value={ville} onChange={e => setVille(e.target.value)} /></Field>

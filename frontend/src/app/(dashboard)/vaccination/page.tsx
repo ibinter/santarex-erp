@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type Cible = 'enfant' | 'adulte' | 'tous';
 type Vaccin = {
@@ -49,7 +50,6 @@ export default function VaccinationPage() {
   const [tab, setTab] = useState<'rappels' | 'carnet' | 'referentiel'>('rappels');
 
   const [vaccins, setVaccins] = useState<Vaccin[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [rappels, setRappels] = useState<{ enRetard: Vaccination[]; aVenir: Vaccination[] }>({ enRetard: [], aVenir: [] });
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,10 +60,10 @@ export default function VaccinationPage() {
   const [patientSel, setPatientSel] = useState<Patient | null>(null);
   const [carnet, setCarnet] = useState<Vaccination[]>([]);
   const [carnetLoading, setCarnetLoading] = useState(false);
-  const [patientQuery, setPatientQuery] = useState('');
 
   // Modal enregistrement
   const [showForm, setShowForm] = useState(false);
+  const [formPatient, setFormPatient] = useState<PatientLite | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     patientId: '', vaccinId: '', doseNumero: 1, lot: '', voie: '',
@@ -74,14 +74,12 @@ export default function VaccinationPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [vRes, pRes, rRes, sRes] = await Promise.all([
+      const [vRes, rRes, sRes] = await Promise.all([
         apiClient<any>('/vaccination/vaccins'),
-        apiClient<any>('/patients?limit=100'),
         apiClient<any>('/vaccination/rappels'),
         apiClient<any>('/vaccination/stats'),
       ]);
       setVaccins(unwrap(vRes));
-      setPatients(unwrap(pRes));
       setRappels({ enRetard: rRes?.enRetard ?? [], aVenir: rRes?.aVenir ?? [] });
       setStats(sRes ?? null);
     } finally { setLoading(false); }
@@ -130,11 +128,6 @@ export default function VaccinationPage() {
     return matchQ && matchC;
   });
 
-  const patientsFiltered = patients.filter(p => {
-    const q = patientQuery.toLowerCase();
-    return !q || `${p.prenom} ${p.nom}`.toLowerCase().includes(q) || (p.ipp ?? '').toLowerCase().includes(q);
-  });
-
   return (
     <div style={{ padding: '18px', background: '#F4F6FA', minHeight: '100vh' }}>
       <style>{`
@@ -160,7 +153,7 @@ export default function VaccinationPage() {
             <button onClick={load} disabled={loading} style={{ padding: '10px 14px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.12)', cursor: 'pointer', color: '#fff' }}>
               <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
             </button>
-            <button onClick={() => setShowForm(true)} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', color: '#047857', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}>
+            <button onClick={() => { setFormPatient(null); setForm(f => ({ ...f, patientId: '' })); setShowForm(true); }} style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: '#fff', cursor: 'pointer', color: '#047857', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }}>
               <Plus size={14} /> {t('newRecord')}
             </button>
           </div>
@@ -209,21 +202,11 @@ export default function VaccinationPage() {
       {tab === 'carnet' && (
         <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, animation: 'fadeUp .25s ease' }}>
           <div style={{ background: '#fff', borderRadius: 14, padding: 12, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', maxHeight: 560, overflowY: 'auto' }}>
-            <div style={{ position: 'relative', marginBottom: 10 }}>
-              <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-              <input value={patientQuery} onChange={e => setPatientQuery(e.target.value)} placeholder={t('searchPatient')}
-                style={{ width: '100%', padding: '8px 10px 8px 32px', borderRadius: 9, border: '1.5px solid #E0E8F0', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
-            </div>
-            {patientsFiltered.slice(0, 60).map(p => (
-              <button key={p.id} onClick={() => loadCarnet(p)}
-                style={{ width: '100%', textAlign: 'left', padding: '9px 10px', borderRadius: 9, border: 'none', background: patientSel?.id === p.id ? '#DCFCE7' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 9, marginBottom: 2 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: '#D1FAE5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{inits(p)}</div>
-                <div style={{ overflow: 'hidden' }}>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1A2332', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.prenom} {p.nom}</div>
-                  {p.ipp && <div style={{ fontSize: 10, color: '#90A4AE', fontFamily: 'monospace' }}>{p.ipp}</div>}
-                </div>
-              </button>
-            ))}
+            <PatientSearch
+              selected={patientSel}
+              onSelect={(p) => { if (p) loadCarnet(p); else { setPatientSel(null); setCarnet([]); } }}
+              accent="#047857"
+            />
           </div>
 
           <div style={{ background: '#fff', borderRadius: 14, padding: 18, boxShadow: '0 1px 6px rgba(0,0,0,0.07)' }}>
@@ -239,7 +222,7 @@ export default function VaccinationPage() {
                     <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1A2332' }}>{patientSel.prenom} {patientSel.nom}</h2>
                     {patientSel.ipp && <div style={{ fontSize: 11, color: '#90A4AE', fontFamily: 'monospace' }}>{t('ippLabel')} {patientSel.ipp}</div>}
                   </div>
-                  <button onClick={() => { setForm({ ...form, patientId: patientSel.id }); setShowForm(true); }}
+                  <button onClick={() => { setFormPatient(patientSel); setForm({ ...form, patientId: patientSel.id }); setShowForm(true); }}
                     style={{ padding: '8px 14px', borderRadius: 9, border: 'none', background: '#047857', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Plus size={13} /> {t('newRecord')}
                   </button>
@@ -360,10 +343,11 @@ export default function VaccinationPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <Field label={t('fieldPatient')}>
-                <select value={form.patientId} onChange={e => setForm({ ...form, patientId: e.target.value })} style={selStyle}>
-                  <option value="">{t('selectPlaceholder')}</option>
-                  {patients.map(p => <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` (${p.ipp})` : ''}</option>)}
-                </select>
+                <PatientSearch
+                  selected={formPatient}
+                  onSelect={(p) => { setFormPatient(p); setForm(f => ({ ...f, patientId: p ? p.id : '' })); }}
+                  accent="#047857"
+                />
               </Field>
               <Field label={t('fieldVaccine')}>
                 <select value={form.vaccinId} onChange={e => { const v = vaccins.find(x => x.id === e.target.value); setForm({ ...form, vaccinId: e.target.value, doseNumero: 1 }); }} style={selStyle}>

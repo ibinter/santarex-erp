@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useTranslations } from 'next-intl';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 // ── Types (miroir des entités backend) ──────────────────────────────────────
 type Sexe = 'M' | 'F' | 'indetermine';
@@ -371,6 +372,8 @@ function DecesModal({ onClose, onDone }: { onClose: () => void; onDone: () => vo
   const t = useTranslations('morgue');
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
+  const [patientId, setPatientId] = useState('');
   const [sexe, setSexe] = useState<Sexe>('indetermine');
   const [age, setAge] = useState('');
   const [dateHeure, setDateHeure] = useState('');
@@ -390,6 +393,7 @@ function DecesModal({ onClose, onDone }: { onClose: () => void; onDone: () => vo
       await apiClient('/morgue/deces', {
         method: 'POST',
         body: {
+          patientId: patientId || undefined,
           defuntNom: nom.trim(),
           defuntPrenom: prenom.trim(),
           defuntSexe: sexe,
@@ -415,6 +419,18 @@ function DecesModal({ onClose, onDone }: { onClose: () => void; onDone: () => vo
         </button>
       </>}>
       {err && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', padding: '10px 14px', borderRadius: 9, fontSize: 12, fontWeight: 600 }}>{err}</div>}
+      <div>
+        <label style={lblSt}>{t('labelPatient')}</label>
+        <PatientSearch
+          selected={patient}
+          onSelect={(p) => {
+            setPatient(p);
+            setPatientId(p?.id ?? '');
+            if (p) { if (!nom.trim()) setNom(p.nom ?? ''); if (!prenom.trim()) setPrenom(p.prenom ?? ''); }
+          }}
+          accent="#2B6CB0"
+        />
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div><label style={lblSt}>{t('labelNom')} *</label><input style={inpSt} value={nom} onChange={e => setNom(e.target.value)} /></div>
         <div><label style={lblSt}>{t('labelPrenom')} *</label><input style={inpSt} value={prenom} onChange={e => setPrenom(e.target.value)} /></div>

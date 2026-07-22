@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
-type Patient = { id: string; nom: string; prenom: string; ipp?: string; dateNaissance?: string };
+type Patient = PatientLite;
 type Mesure = {
   id: string; dateMesure: string; ageMois?: number | null;
   poidsKg?: number | null; tailleCm?: number | null; perimetreCranienCm?: number | null; imc?: number | null;
@@ -42,34 +43,20 @@ const STATUT_CFG: Record<Vaccin['statut'], { bg: string; color: string; border: 
 export default function PediatriePage() {
   const t = useTranslations('pediatrie');
 
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Patient | null>(null);
   const [tab, setTab] = useState<'croissance' | 'vaccinal' | 'posologie'>('croissance');
 
   const loadBase = useCallback(async () => {
     setLoading(true);
     try {
-      const [patRes, statRes] = await Promise.all([
-        apiClient<any>('/patients?limit=100'),
-        apiClient<any>('/pediatrie/stats').catch(() => null),
-      ]);
-      setPatients(unwrap(patRes));
+      const statRes = await apiClient<any>('/pediatrie/stats').catch(() => null);
       if (statRes) setStats(statRes);
     } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { loadBase(); }, [loadBase]);
-
-  const displayed = useMemo(() => {
-    const q = search.toLowerCase();
-    return patients.filter((p) => {
-      const nom = `${p.prenom} ${p.nom}`.toLowerCase();
-      return !q || nom.includes(q) || (p.ipp ?? '').toLowerCase().includes(q);
-    }).slice(0, 40);
-  }, [patients, search]);
 
   const ageLabel = (dob?: string) => {
     const m = ageMonths(dob);
@@ -120,32 +107,10 @@ export default function PediatriePage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, alignItems: 'start' }}>
-        {/* PATIENT LIST */}
-        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
-          <div style={{ padding: 12, borderBottom: '1px solid #F1F5F9' }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: '#0F766E', marginBottom: 8 }}>{t('patient.select')}</div>
-            <div style={{ position: 'relative' }}>
-              <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#90A4AE' }} />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('patient.searchPlaceholder')}
-                style={{ width: '100%', padding: '8px 10px 8px 30px', borderRadius: 9, border: '1.5px solid #E0E8F0', fontSize: 12, outline: 'none', boxSizing: 'border-box', color: '#1A2332' }} />
-            </div>
-          </div>
-          <div style={{ maxHeight: 460, overflowY: 'auto' }}>
-            {displayed.map((p) => {
-              const active = selected?.id === p.id;
-              return (
-                <div key={p.id} className="ped-pat" onClick={() => setSelected(p)}
-                  style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #F5F7FA', background: active ? '#CCFBF1' : '#fff', transition: 'background .1s' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#1A2332' }}>{p.prenom} {p.nom}</div>
-                  <div style={{ fontSize: 10, color: '#90A4AE', display: 'flex', gap: 8, marginTop: 2 }}>
-                    {p.ipp && <span style={{ fontFamily: 'monospace' }}>{t('patient.ipp')} {p.ipp}</span>}
-                    <span>{ageLabel(p.dateNaissance)}</span>
-                  </div>
-                </div>
-              );
-            })}
-            {displayed.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#90A4AE', fontSize: 12 }}>—</div>}
-          </div>
+        {/* PATIENT SEARCH */}
+        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 6px rgba(0,0,0,0.07)', overflow: 'visible', padding: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#0F766E', marginBottom: 8 }}>{t('patient.select')}</div>
+          <PatientSearch selected={selected} onSelect={(p) => setSelected(p)} accent="#0F766E" placeholder={t('patient.searchPlaceholder')} />
         </div>
 
         {/* MAIN */}

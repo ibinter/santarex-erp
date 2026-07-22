@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 // ── Types ──────────────────────────────────────────────────────────
 type GroupeABO = 'A' | 'B' | 'AB' | 'O';
@@ -302,6 +303,7 @@ function TransfusionModal({ t, poches, onClose, onDone }: { t: any; poches: Poch
     patientId: '', groupePatient: 'O', rhesusPatient: '+', pocheId: '',
     medecin: '', indication: '', observations: '', forcer: false,
   });
+  const [patient, setPatient] = useState<PatientLite | null>(null);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -327,7 +329,13 @@ function TransfusionModal({ t, poches, onClose, onDone }: { t: any; poches: Poch
 
   return (
     <Modal title={t('actions.nouvelleTransfusion')} onClose={onClose}>
-      <Field label={t('transfusion.patientId')}><Input value={f.patientId} onChange={v => setF({ ...f, patientId: v })} /></Field>
+      <Field label={t('transfusion.patient')}>
+        <PatientSearch
+          selected={patient}
+          onSelect={(p) => { setPatient(p); setF((prev: any) => ({ ...prev, patientId: p?.id ?? '' })); }}
+          accent="#DC2626"
+        />
+      </Field>
       <Row>
         <Field label={t('transfusion.groupePatient')}><Select value={f.groupePatient} onChange={v => setF({ ...f, groupePatient: v })} options={GROUPES} /></Field>
         <Field label={t('transfusion.rhesusPatient')}><Select value={f.rhesusPatient} onChange={v => setF({ ...f, rhesusPatient: v })} options={RHESUS} /></Field>

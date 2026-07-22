@@ -7,6 +7,7 @@ import {
   Trash2, TrendingUp, Clock, Percent, CheckCircle,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type StatutDevis = 'brouillon' | 'envoye' | 'accepte' | 'refuse' | 'expire' | 'facture';
 type TypeLigne = 'consultation' | 'acte' | 'medicament' | 'hospitalisation' | 'autre';
@@ -283,7 +284,6 @@ export default function DevisPage() {
 
       {showForm && (
         <DevisForm
-          patients={patients}
           onClose={() => setShowForm(false)}
           onSaved={async () => { setShowForm(false); await load(); }}
         />
@@ -295,13 +295,13 @@ export default function DevisPage() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Formulaire de création (modal) avec lignes + total live
 // ─────────────────────────────────────────────────────────────────────────────
-function DevisForm({ patients, onClose, onSaved }: {
-  patients: Patient[];
+function DevisForm({ onClose, onSaved }: {
   onClose: () => void;
   onSaved: () => void;
 }) {
   const t = useTranslations('devis');
-  const [patientId, setPatientId] = useState('');
+  const [patient, setPatient] = useState<PatientLite | null>(null);
+  const patientId = patient?.id ?? '';
   const [objet, setObjet] = useState('');
   const [dateValidite, setDateValidite] = useState('');
   const [remisePourcent, setRemisePourcent] = useState(0);
@@ -358,13 +358,10 @@ function DevisForm({ patients, onClose, onSaved }: {
 
         <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <label style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ flex: 1, minWidth: 220 }}>
               <div style={lblStyle}>{t('form.patient')}</div>
-              <select value={patientId} onChange={e => setPatientId(e.target.value)} style={inputStyle}>
-                <option value="">{t('form.choisirPatient')}</option>
-                {patients.map(p => <option key={p.id} value={p.id}>{p.prenom} {p.nom}{p.ipp ? ` (${p.ipp})` : ''}</option>)}
-              </select>
-            </label>
+              <PatientSearch selected={patient} onSelect={(p) => setPatient(p)} accent="#1565C0" placeholder={t('form.choisirPatient')} />
+            </div>
             <label style={{ width: 160 }}>
               <div style={lblStyle}>{t('form.dateValidite')}</div>
               <input type="date" value={dateValidite} onChange={e => setDateValidite(e.target.value)} style={inputStyle} />
