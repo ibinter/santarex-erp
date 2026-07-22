@@ -12,6 +12,11 @@ import {
   UserCog, BarChart2, Stethoscope, TrendingUp, TrendingDown,
   AlertTriangle, ArrowRight, RefreshCw, Activity, Heart,
   Clock, CheckCircle, ChevronRight,
+  ClipboardList, Baby, SmilePlus, Syringe, HeartPulse, FileSignature,
+  Home, Droplets, ShieldCheck, Truck, Wrench, Biohazard, Snowflake,
+  Ambulance, Network, FileSpreadsheet, Wallet, PiggyBank, Calculator,
+  MessageSquare, MessageCircle, FileWarning, Gauge, ShieldAlert,
+  CalendarClock, Puzzle, Plug,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -41,6 +46,50 @@ const MODULES: ModuleDef[] = [
   { id: 'comptabilite',   tkey: 'comptabilite',    icon: Building2,    color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/comptabilite' },
   { id: 'rh',             tkey: 'rh',              icon: UserCog,      color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/rh' },
   { id: 'reporting',      tkey: 'reporting',       icon: BarChart2,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/reporting' },
+
+  // ── Soins ──
+  { id: 'maternite',       tkey: 'maternite',        icon: Baby,         color: '#AD1457', bg: 'linear-gradient(135deg,#FCE4EC,#F8BBD0)', href: '/maternite' },
+  { id: 'pediatrie',       tkey: 'pediatrie',        icon: SmilePlus,    color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/pediatrie' },
+  { id: 'vaccination',     tkey: 'vaccination',      icon: Syringe,      color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/vaccination' },
+  { id: 'soins-infirmiers',tkey: 'soinsInfirmiers',  icon: HeartPulse,   color: '#C2185B', bg: 'linear-gradient(135deg,#FCE4EC,#F8BBD0)', href: '/soins-infirmiers' },
+  { id: 'consentements',   tkey: 'consentements',    icon: FileSignature,color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/consentements' },
+  { id: 'interactions',    tkey: 'interactions',     icon: AlertTriangle,color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/interactions' },
+  { id: 'had',             tkey: 'had',              icon: Home,         color: '#00695C', bg: 'linear-gradient(135deg,#E0F2F1,#B2DFDB)', href: '/had' },
+  { id: 'dme',             tkey: 'dme',              icon: ClipboardList,color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/dme' },
+
+  // ── Pharmacie & plateau technique ──
+  { id: 'banque-sang',     tkey: 'banqueSang',       icon: Droplets,     color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/banque-sang' },
+  { id: 'sterilisation',   tkey: 'sterilisation',    icon: ShieldCheck,  color: '#0288D1', bg: 'linear-gradient(135deg,#E1F5FE,#B3E5FC)', href: '/sterilisation' },
+  { id: 'approvisionnement',tkey: 'approvisionnement',icon: Truck,       color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/approvisionnement' },
+
+  // ── Opérations ──
+  { id: 'equipements',     tkey: 'equipements',      icon: Wrench,       color: '#546E7A', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/equipements' },
+  { id: 'dechets-medicaux',tkey: 'dechetsMedicaux',  icon: Biohazard,    color: '#558B2F', bg: 'linear-gradient(135deg,#F1F8E9,#DCEDC8)', href: '/dechets-medicaux' },
+  { id: 'morgue',          tkey: 'morgue',           icon: Snowflake,    color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/morgue' },
+  { id: 'transport',       tkey: 'transport',        icon: Ambulance,    color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/transport' },
+  { id: 'sites',           tkey: 'sites',            icon: Network,      color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/sites' },
+
+  // ── Finances ──
+  { id: 'devis',           tkey: 'devis',            icon: FileSpreadsheet,color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/devis' },
+  { id: 'caisse-sessions', tkey: 'caisseSessions',   icon: Wallet,       color: '#2E7D32', bg: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', href: '/caisse-sessions' },
+  { id: 'prise-en-charge', tkey: 'priseEnCharge',    icon: ShieldCheck,  color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/prise-en-charge' },
+  { id: 'tiers-payant',    tkey: 'tiersPayant',      icon: PiggyBank,    color: '#6A1B9A', bg: 'linear-gradient(135deg,#F3E5F5,#E1BEE7)', href: '/tiers-payant' },
+  { id: 'budget',          tkey: 'budget',           icon: Calculator,   color: '#0D47A1', bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', href: '/budget' },
+
+  // ── Communication ──
+  { id: 'messagerie',      tkey: 'messagerie',       icon: MessageSquare,color: '#0288D1', bg: 'linear-gradient(135deg,#E1F5FE,#B3E5FC)', href: '/messagerie' },
+  { id: 'messages-sortants',tkey: 'messagesSortants',icon: MessageCircle,color: '#00838F', bg: 'linear-gradient(135deg,#E0F7FA,#B2EBF2)', href: '/messages-sortants' },
+
+  // ── Qualité ──
+  { id: 'incidents-qualite',tkey: 'incidentsQualite',icon: FileWarning,  color: '#E65100', bg: 'linear-gradient(135deg,#FFF3E0,#FFE0B2)', href: '/incidents-qualite' },
+  { id: 'indicateurs-qualite',tkey: 'indicateursQualite',icon: Gauge,    color: '#1565C0', bg: 'linear-gradient(135deg,#E3F2FD,#BBDEFB)', href: '/indicateurs-qualite' },
+  { id: 'declarations-sanitaires',tkey: 'declarationsSanitaires',icon: ShieldAlert,color: '#C62828', bg: 'linear-gradient(135deg,#FFEBEE,#FFCDD2)', href: '/declarations-sanitaires' },
+  { id: 'satisfaction',    tkey: 'satisfaction',     icon: Heart,        color: '#F9A825', bg: 'linear-gradient(135deg,#FFFDE7,#FFF9C4)', href: '/satisfaction' },
+
+  // ── Administration ──
+  { id: 'plannings-gardes',tkey: 'planningsGardes',  icon: CalendarClock,color: '#6A1B9A', bg: 'linear-gradient(135deg,#F3E5F5,#E1BEE7)', href: '/plannings-gardes' },
+  { id: 'services-personnalises',tkey: 'servicesPersonnalises',icon: Puzzle,color: '#00695C', bg: 'linear-gradient(135deg,#E0F2F1,#B2DFDB)', href: '/services-personnalises' },
+  { id: 'interoperabilite',tkey: 'interoperabilite',  icon: Plug,        color: '#37474F', bg: 'linear-gradient(135deg,#ECEFF1,#CFD8DC)', href: '/interoperabilite' },
 ];
 
 // ── mini sparkline SVG ────────────────────────────────────────────────────────
@@ -395,11 +444,11 @@ export default function DashboardPage() {
           </div>
           <div style={{ marginTop:14 }}>
             <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
-              {[...Array(14)].map((_,i) => (
-                <div key={i} style={{ width:8, height:8, borderRadius:2, background: i < 14 ? '#4ADE80' : 'rgba(255,255,255,0.2)' }}/>
+              {[...Array(MODULES.length)].map((_,i) => (
+                <div key={i} style={{ width:8, height:8, borderRadius:2, background: '#4ADE80' }}/>
               ))}
             </div>
-            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>{t('modulesOnline')}</div>
+            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>{t('modulesOnline', { n: MODULES.length })}</div>
           </div>
         </div>
 

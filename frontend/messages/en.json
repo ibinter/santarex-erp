@@ -205,7 +205,7 @@
     "noStockout": "✓ No stockout detected",
     "kpiModules": "Active modules",
     "systemOperational": "System operational",
-    "modulesOnline": "14/14 modules online",
+    "modulesOnline": "{n}/{n} modules online",
     "criticalPatients": "{n} critical patient(s) in emergency",
     "medsOutOfStock": "{n} medication(s) out of stock",
     "realtimeSync": "Real-time sync active — all data is up to date",
@@ -288,6 +288,126 @@
       "reporting": {
         "title": "Reporting & BI",
         "desc": "Dashboards & analytics"
+      },
+      "maternite": {
+        "title": "Maternity",
+        "desc": "Deliveries & follow-up"
+      },
+      "pediatrie": {
+        "title": "Pediatrics",
+        "desc": "Child growth & follow-up"
+      },
+      "vaccination": {
+        "title": "Vaccination",
+        "desc": "Immunization schedule"
+      },
+      "soinsInfirmiers": {
+        "title": "Nursing Care",
+        "desc": "Care plans & acts"
+      },
+      "consentements": {
+        "title": "Consents",
+        "desc": "Informed consents"
+      },
+      "interactions": {
+        "title": "Interactions",
+        "desc": "Drug interactions"
+      },
+      "had": {
+        "title": "Home Care",
+        "desc": "Home hospitalization"
+      },
+      "dme": {
+        "title": "Medical Record",
+        "desc": "Electronic health record"
+      },
+      "banqueSang": {
+        "title": "Blood Bank",
+        "desc": "Units & transfusions"
+      },
+      "sterilisation": {
+        "title": "Sterilization",
+        "desc": "Cycles & traceability"
+      },
+      "approvisionnement": {
+        "title": "Procurement",
+        "desc": "Orders & suppliers"
+      },
+      "equipements": {
+        "title": "Equipment",
+        "desc": "Biomedical maintenance"
+      },
+      "dechetsMedicaux": {
+        "title": "Medical Waste",
+        "desc": "Collection & disposal"
+      },
+      "morgue": {
+        "title": "Mortuary",
+        "desc": "Funeral chamber"
+      },
+      "transport": {
+        "title": "Transport",
+        "desc": "Ambulances & stretchers"
+      },
+      "sites": {
+        "title": "Sites",
+        "desc": "Multi-site facilities"
+      },
+      "devis": {
+        "title": "Quotes",
+        "desc": "Estimates & proposals"
+      },
+      "caisseSessions": {
+        "title": "Cash Sessions",
+        "desc": "Openings & closings"
+      },
+      "priseEnCharge": {
+        "title": "Coverage",
+        "desc": "Insurance & guarantees"
+      },
+      "tiersPayant": {
+        "title": "Third-Party Payer",
+        "desc": "Agreements & reimbursements"
+      },
+      "budget": {
+        "title": "Budget",
+        "desc": "Forecasts & budget tracking"
+      },
+      "messagerie": {
+        "title": "Messaging",
+        "desc": "Internal messaging"
+      },
+      "messagesSortants": {
+        "title": "Outbound Messages",
+        "desc": "Patient SMS & emails"
+      },
+      "incidentsQualite": {
+        "title": "Quality Incidents",
+        "desc": "Reports & events"
+      },
+      "indicateursQualite": {
+        "title": "Quality Indicators",
+        "desc": "KPIs & dashboards"
+      },
+      "declarationsSanitaires": {
+        "title": "Health Declarations",
+        "desc": "Notifiable diseases"
+      },
+      "satisfaction": {
+        "title": "Satisfaction",
+        "desc": "Patient surveys"
+      },
+      "planningsGardes": {
+        "title": "Schedules & On-Call",
+        "desc": "Shifts & rotations"
+      },
+      "servicesPersonnalises": {
+        "title": "Custom Services",
+        "desc": "Tailored offerings"
+      },
+      "interoperabilite": {
+        "title": "Interoperability",
+        "desc": "HL7 & FHIR exchanges"
       }
     }
   },

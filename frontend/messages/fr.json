@@ -205,7 +205,7 @@
     "noStockout": "✓ Aucune rupture détectée",
     "kpiModules": "Modules actifs",
     "systemOperational": "Système opérationnel",
-    "modulesOnline": "14/14 modules en ligne",
+    "modulesOnline": "{n}/{n} modules en ligne",
     "criticalPatients": "{n} patient(s) critique(s) aux urgences",
     "medsOutOfStock": "{n} médicament(s) en rupture de stock",
     "realtimeSync": "Synchronisation temps réel active — toutes les données sont à jour",
@@ -288,6 +288,126 @@
       "reporting": {
         "title": "Reporting & BI",
         "desc": "Tableaux & analyses"
+      },
+      "maternite": {
+        "title": "Maternité",
+        "desc": "Accouchements & suivi"
+      },
+      "pediatrie": {
+        "title": "Pédiatrie",
+        "desc": "Suivi enfants & croissance"
+      },
+      "vaccination": {
+        "title": "Vaccination",
+        "desc": "Calendrier vaccinal"
+      },
+      "soinsInfirmiers": {
+        "title": "Soins infirmiers",
+        "desc": "Plans & actes de soins"
+      },
+      "consentements": {
+        "title": "Consentements",
+        "desc": "Consentements éclairés"
+      },
+      "interactions": {
+        "title": "Interactions",
+        "desc": "Interactions médicamenteuses"
+      },
+      "had": {
+        "title": "Hospitalisation à domicile",
+        "desc": "Soins à domicile"
+      },
+      "dme": {
+        "title": "Dossier médical",
+        "desc": "Dossier médical électronique"
+      },
+      "banqueSang": {
+        "title": "Banque de sang",
+        "desc": "Poches & transfusions"
+      },
+      "sterilisation": {
+        "title": "Stérilisation",
+        "desc": "Cycles & traçabilité"
+      },
+      "approvisionnement": {
+        "title": "Approvisionnement",
+        "desc": "Commandes & fournisseurs"
+      },
+      "equipements": {
+        "title": "Équipements",
+        "desc": "Maintenance biomédicale"
+      },
+      "dechetsMedicaux": {
+        "title": "Déchets médicaux",
+        "desc": "Collecte & filières DASRI"
+      },
+      "morgue": {
+        "title": "Morgue",
+        "desc": "Chambre funéraire"
+      },
+      "transport": {
+        "title": "Transport",
+        "desc": "Ambulances & brancardage"
+      },
+      "sites": {
+        "title": "Sites",
+        "desc": "Établissements multi-sites"
+      },
+      "devis": {
+        "title": "Devis",
+        "desc": "Estimations & propositions"
+      },
+      "caisseSessions": {
+        "title": "Sessions de caisse",
+        "desc": "Ouvertures & clôtures"
+      },
+      "priseEnCharge": {
+        "title": "Prise en charge",
+        "desc": "Assurances & garanties"
+      },
+      "tiersPayant": {
+        "title": "Tiers payant",
+        "desc": "Conventions & remboursements"
+      },
+      "budget": {
+        "title": "Budget",
+        "desc": "Prévisions & suivi budgétaire"
+      },
+      "messagerie": {
+        "title": "Messagerie",
+        "desc": "Messagerie interne"
+      },
+      "messagesSortants": {
+        "title": "Messages sortants",
+        "desc": "SMS & emails patients"
+      },
+      "incidentsQualite": {
+        "title": "Incidents qualité",
+        "desc": "Signalements & événements"
+      },
+      "indicateursQualite": {
+        "title": "Indicateurs qualité",
+        "desc": "KPI & tableaux de bord"
+      },
+      "declarationsSanitaires": {
+        "title": "Déclarations sanitaires",
+        "desc": "Maladies à déclaration"
+      },
+      "satisfaction": {
+        "title": "Satisfaction",
+        "desc": "Enquêtes patients"
+      },
+      "planningsGardes": {
+        "title": "Plannings & gardes",
+        "desc": "Astreintes & rotations"
+      },
+      "servicesPersonnalises": {
+        "title": "Services personnalisés",
+        "desc": "Prestations sur mesure"
+      },
+      "interoperabilite": {
+        "title": "Interopérabilité",
+        "desc": "Échanges HL7 & FHIR"
       }
     }
   },

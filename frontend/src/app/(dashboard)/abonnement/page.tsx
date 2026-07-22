@@ -6,7 +6,10 @@ import {
   Ticket, Truck, ShieldCheck, Upload, Loader2, CheckCircle2, AlertCircle,
   Lock, RefreshCw, ExternalLink, FileText,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { apiClient, API_URL } from '@/lib/api';
+
+type TFunc = ReturnType<typeof useTranslations>;
 
 // ── Types (miroir de ClientPaymentMethod côté backend) ───────────────────────
 type PaymentMethodType =
@@ -56,17 +59,18 @@ const METHOD_ICON: Record<PaymentMethodType, React.ReactNode> = {
   cash_on_delivery:<Truck size={18} />,
 };
 
-const REFERENCE_LABEL: Partial<Record<PaymentMethodType, string>> = {
-  money_transfer: 'Code MTCN / numéro de transfert',
-  crypto: 'Hash de la transaction (TxID)',
-};
+function referenceLabel(t: TFunc, type: PaymentMethodType): string {
+  if (type === 'money_transfer') return t('refMtcn');
+  if (type === 'crypto') return t('refTxid');
+  return t('refDefault');
+}
 
 function fmtXOF(v?: number) {
   return typeof v === 'number' ? v.toLocaleString('fr-FR') + ' XOF' : '—';
 }
 
 // ── Bandeau de sécurité OBLIGATOIRE (présent sur toutes les vues) ─────────────
-function SecurityBanner() {
+function SecurityBanner({ t }: { t: TFunc }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
@@ -75,12 +79,13 @@ function SecurityBanner() {
       marginBottom: 16,
     }}>
       <Lock size={18} style={{ flexShrink: 0 }} />
-      <span><strong>Sécurité :</strong> Nous ne vous demanderons jamais votre code secret ou mot de passe.</span>
+      <span><strong>{t('securityLabel')}</strong> {t('securityText')}</span>
     </div>
   );
 }
 
 export default function AbonnementPage() {
+  const t = useTranslations('abonnement');
   const [methods, setMethods] = useState<ClientPaymentMethod[]>([]);
   const [offres, setOffres] = useState<Offre[]>([]);
   const [offerCode, setOfferCode] = useState('');
@@ -95,7 +100,7 @@ export default function AbonnementPage() {
       const list = await apiClient<ClientPaymentMethod[]>('/payments/methods');
       setMethods(Array.isArray(list) ? [...list].sort((a, b) => a.displayOrder - b.displayOrder) : []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Impossible de charger les moyens de paiement.');
+      setError(e instanceof Error ? e.message : t('loadError'));
     } finally {
       setLoading(false);
     }
@@ -107,7 +112,7 @@ export default function AbonnementPage() {
         setOfferCode((prev) => prev || off[0].code);
       }
     } catch { /* silencieux : l'utilisateur pourra saisir le code offre */ }
-  }, []);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -115,19 +120,19 @@ export default function AbonnementPage() {
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '16px 14px 48px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
         <ShieldCheck size={22} color="#4F46E5" />
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: '#111827' }}>Abonnement & paiement</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, color: '#111827' }}>{t('title')}</h1>
       </div>
       <p style={{ color: '#6B7280', fontSize: 13, margin: '0 0 16px' }}>
-        Choisissez un moyen de paiement pour activer ou renouveler votre licence.
+        {t('subtitle')}
       </p>
 
       {/* Bandeau obligatoire, toujours affiché */}
-      <SecurityBanner />
+      <SecurityBanner t={t} />
 
       {/* Sélecteur d'offre (utilisé par la plupart des méthodes) */}
       <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-          Forfait à régler
+          {t('planLabel')}
         </label>
         {offres.length > 0 ? (
           <select
@@ -145,7 +150,7 @@ export default function AbonnementPage() {
           <input
             value={offerCode}
             onChange={(e) => setOfferCode(e.target.value)}
-            placeholder="Code du forfait (ex : starter, pro)"
+            placeholder={t('planPlaceholder')}
             style={inputStyle}
           />
         )}
@@ -153,7 +158,7 @@ export default function AbonnementPage() {
 
       {loading && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6B7280', padding: 24, justifyContent: 'center' }}>
-          <Loader2 size={18} className="spin" /> Chargement des moyens de paiement…
+          <Loader2 size={18} className="spin" /> {t('loading')}
         </div>
       )}
 
@@ -161,13 +166,13 @@ export default function AbonnementPage() {
         <div style={{ ...noticeStyle, background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
           <AlertCircle size={18} />
           <span style={{ flex: 1 }}>{error}</span>
-          <button onClick={load} style={ghostBtnStyle}><RefreshCw size={14} /> Réessayer</button>
+          <button onClick={load} style={ghostBtnStyle}><RefreshCw size={14} /> {t('retry')}</button>
         </div>
       )}
 
       {!loading && !error && methods.length === 0 && (
         <div style={{ ...noticeStyle, background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-          Aucun moyen de paiement n'est activé pour le moment. Contactez le support.
+          {t('noMethods')}
         </div>
       )}
 
@@ -196,6 +201,7 @@ function MethodCard(props: {
   onToggle: () => void;
 }) {
   const { method, offerCode, open, onToggle } = props;
+  const t = useTranslations('abonnement');
   const kind = formKindFor(method.type);
 
   return (
@@ -219,7 +225,7 @@ function MethodCard(props: {
             {method.label || method.key}
           </span>
           <span style={{ display: 'block', fontSize: 12, color: '#6B7280' }}>
-            {method.sandbox ? 'Mode test • ' : ''}{humanType(method.type)}
+            {method.sandbox ? `${t('testMode')} • ` : ''}{t(`type.${method.type}`)}
           </span>
         </span>
         <span style={{ color: '#9CA3AF', fontSize: 20, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform .15s' }}>+</span>
@@ -260,6 +266,7 @@ function PublicConfigList({ config }: { config: Record<string, unknown> }) {
 
 // ── Formulaire adapté au type ────────────────────────────────────────────────
 function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: ClientPaymentMethod; offerCode: string }) {
+  const t = useTranslations('abonnement');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [ref, setRef] = useState<string | null>(null);
@@ -276,7 +283,7 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
       method: 'POST',
       body: { offerCode, methodKey: method.key },
     });
-    if (!tx?.reference) throw new Error('Réponse serveur invalide (référence absente).');
+    if (!tx?.reference) throw new Error(t('msg.invalidResponse'));
     setRef(tx.reference);
     return tx.reference;
   }
@@ -289,9 +296,9 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
         body: { offerCode, methodKey: method.key },
       });
       if (tx?.paymentUrl) { window.location.href = tx.paymentUrl; return; }
-      setMsg({ ok: true, text: `Commande ${tx?.reference ?? ''} créée. Redirection vers la passerelle en attente d'activation.` });
+      setMsg({ ok: true, text: t('msg.orderCreatedGateway', { ref: tx?.reference ?? '' }) });
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Erreur lors de l\'initiation du paiement.' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.gatewayError') });
     } finally { setBusy(false); }
   }
 
@@ -299,37 +306,37 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
     setBusy(true); setMsg(null);
     try {
       const code = voucherCode.trim();
-      if (!code) throw new Error('Saisissez un code prépayé.');
+      if (!code) throw new Error(t('msg.enterVoucher'));
       await apiClient('/payments/vouchers/redeem', { method: 'POST', body: { code } });
-      setMsg({ ok: true, text: 'Code validé : votre licence a été activée.' });
+      setMsg({ ok: true, text: t('msg.voucherOk') });
       setVoucherCode('');
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Code invalide ou déjà utilisé.' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.voucherInvalid') });
     } finally { setBusy(false); }
   }
 
   async function handleReference() {
     setBusy(true); setMsg(null);
     try {
-      if (!offerCode) throw new Error('Sélectionnez d\'abord un forfait.');
-      if (!clientRef.trim()) throw new Error('Saisissez la référence demandée.');
+      if (!offerCode) throw new Error(t('msg.selectPlanFirst'));
+      if (!clientRef.trim()) throw new Error(t('msg.enterReference'));
       const r = ref ?? (await createTransaction());
       await apiClient(`/payments/transactions/${encodeURIComponent(r)}/reference`, {
         method: 'POST',
         body: { clientReference: clientRef.trim() },
       });
-      setMsg({ ok: true, text: `Référence enregistrée (commande ${r}). En attente de validation par nos équipes.` });
+      setMsg({ ok: true, text: t('msg.referenceSaved', { ref: r }) });
       setClientRef('');
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Impossible d\'enregistrer la référence.' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.referenceError') });
     } finally { setBusy(false); }
   }
 
   async function handleProof() {
     setBusy(true); setMsg(null);
     try {
-      if (!offerCode) throw new Error('Sélectionnez d\'abord un forfait.');
-      if (!file) throw new Error('Ajoutez une preuve (image ou PDF).');
+      if (!offerCode) throw new Error(t('msg.selectPlanFirst'));
+      if (!file) throw new Error(t('msg.addProof'));
       const r = ref ?? (await createTransaction());
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
       const fd = new FormData();
@@ -340,11 +347,11 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
         body: fd,
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error?.message || json?.message || 'Échec du téléversement de la preuve.');
-      setMsg({ ok: true, text: `Preuve envoyée (commande ${r}). En attente de validation par nos équipes.` });
+      if (!res.ok) throw new Error(json?.error?.message || json?.message || t('msg.proofUploadError'));
+      setMsg({ ok: true, text: t('msg.proofSent', { ref: r }) });
       setFile(null);
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Impossible d\'envoyer la preuve.' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.proofError') });
     } finally { setBusy(false); }
   }
 
@@ -352,9 +359,9 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
     setBusy(true); setMsg(null);
     try {
       const r = await createTransaction();
-      setMsg({ ok: true, text: `Commande ${r} enregistrée. Le paiement sera collecté à la livraison.` });
+      setMsg({ ok: true, text: t('msg.orderRegistered', { ref: r }) });
     } catch (e) {
-      setMsg({ ok: false, text: e instanceof Error ? e.message : 'Impossible de créer la commande.' });
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.orderError') });
     } finally { setBusy(false); }
   }
 
@@ -362,13 +369,13 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
     <div>
       {needOffer && !offerCode && (
         <p style={{ fontSize: 12, color: '#B45309', margin: '0 0 10px' }}>
-          Sélectionnez un forfait en haut de page avant de continuer.
+          {t('selectPlanFirst')}
         </p>
       )}
 
       {kind === 'gateway' && (
         <button onClick={handleGateway} disabled={busy || !offerCode} style={primaryBtnStyle(busy || !offerCode)}>
-          {busy ? <Loader2 size={16} className="spin" /> : <ExternalLink size={16} />} Payer en ligne
+          {busy ? <Loader2 size={16} className="spin" /> : <ExternalLink size={16} />} {t('payOnline')}
         </button>
       )}
 
@@ -382,29 +389,29 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
             style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', letterSpacing: 1 }}
           />
           <button onClick={handleVoucher} disabled={busy} style={primaryBtnStyle(busy)}>
-            {busy ? <Loader2 size={16} className="spin" /> : <Ticket size={16} />} Activer le code
+            {busy ? <Loader2 size={16} className="spin" /> : <Ticket size={16} />} {t('activateCode')}
           </button>
         </div>
       )}
 
       {kind === 'reference' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <label style={labelStyle}>{REFERENCE_LABEL[method.type] ?? 'Référence de paiement'}</label>
+          <label style={labelStyle}>{referenceLabel(t, method.type)}</label>
           <input
             value={clientRef}
             onChange={(e) => setClientRef(e.target.value)}
-            placeholder={REFERENCE_LABEL[method.type] ?? 'Référence'}
+            placeholder={t('refPlaceholder')}
             style={inputStyle}
           />
           <button onClick={handleReference} disabled={busy || !offerCode} style={primaryBtnStyle(busy || !offerCode)}>
-            {busy ? <Loader2 size={16} className="spin" /> : <Send size={16} />} Envoyer la référence
+            {busy ? <Loader2 size={16} className="spin" /> : <Send size={16} />} {t('sendReference')}
           </button>
         </div>
       )}
 
       {kind === 'proof' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <label style={labelStyle}>Preuve de paiement (image ou PDF, max 5 Mo)</label>
+          <label style={labelStyle}>{t('proofLabel')}</label>
           <input
             type="file"
             accept="image/*,application/pdf"
@@ -412,14 +419,14 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
             style={{ ...inputStyle, padding: 8 }}
           />
           <button onClick={handleProof} disabled={busy || !offerCode} style={primaryBtnStyle(busy || !offerCode)}>
-            {busy ? <Loader2 size={16} className="spin" /> : <Upload size={16} />} Envoyer la preuve
+            {busy ? <Loader2 size={16} className="spin" /> : <Upload size={16} />} {t('sendProof')}
           </button>
         </div>
       )}
 
       {kind === 'order' && (
         <button onClick={handleOrder} disabled={busy} style={primaryBtnStyle(busy)}>
-          {busy ? <Loader2 size={16} className="spin" /> : <Truck size={16} />} Confirmer la commande
+          {busy ? <Loader2 size={16} className="spin" /> : <Truck size={16} />} {t('confirmOrder')}
         </button>
       )}
 
@@ -437,15 +444,6 @@ function MethodForm({ kind, method, offerCode }: { kind: FormKind; method: Clien
       )}
     </div>
   );
-}
-
-function humanType(t: PaymentMethodType): string {
-  const map: Record<PaymentMethodType, string> = {
-    mobile_money: 'Mobile Money', gateway: 'Paiement en ligne', bank_transfer: 'Virement bancaire',
-    intl_transfer: 'Virement international', money_transfer: 'Transfert d\'argent', cash_agency: 'Espèces en agence',
-    cheque: 'Chèque', crypto: 'Cryptomonnaie', voucher: 'Code prépayé', cash_on_delivery: 'Paiement à la livraison',
-  };
-  return map[t] ?? t;
 }
 
 // ── Styles partagés ──────────────────────────────────────────────────────────
