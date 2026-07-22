@@ -5,6 +5,7 @@
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -55,7 +56,7 @@ export class PaiementsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.paiementsService.findOne(id, req.user.tenantId);
   }
 

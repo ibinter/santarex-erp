@@ -5,6 +5,7 @@
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -53,7 +54,7 @@ export class UrgencesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.urgencesService.findOne(id, req.user.tenantId);
   }
 
