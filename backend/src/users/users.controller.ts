@@ -1,12 +1,13 @@
 import {
   Controller, Get, Post, Patch, Body, Param, Request,
-  UseGuards, BadRequestException,
+  UseGuards, BadRequestException, ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UsersService } from './users.service';
+import { LicencesService } from '../licences/licences.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRole } from './entities/user.entity';
 import { IsString, IsNotEmpty, IsEnum, IsOptional, MinLength } from 'class-validator';
@@ -26,7 +27,10 @@ class ChangePasswordDto {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly licencesService: LicencesService,
+  ) {}
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
@@ -38,7 +42,19 @@ export class UsersController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Créer un utilisateur' })
-  create(@Request() req, @Body() dto: CreateUserDto) {
+  async create(@Request() req, @Body() dto: CreateUserDto) {
+    // Anti-fuite de licence : on applique le plafond `maxUtilisateurs` de la
+    // licence du tenant (le superadmin plateforme est exempté). Empêche un
+    // établissement de créer plus d'utilisateurs qu'il n'en a payé.
+    if (req.user.role !== UserRole.SUPERADMIN) {
+      const quota = await this.licencesService.verifierQuotaUtilisateurs(req.user.tenantId);
+      if (!quota.autorise) {
+        throw new ForbiddenException(
+          quota.message ||
+            `Plafond d'utilisateurs atteint (${quota.actuel}/${quota.max}). Mettez à niveau votre licence pour ajouter des utilisateurs.`,
+        );
+      }
+    }
     // Force tenant isolation
     return this.usersService.create(
       { ...dto, tenantId: req.user.tenantId },
