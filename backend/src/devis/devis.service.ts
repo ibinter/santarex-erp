@@ -9,6 +9,7 @@ import { DevisPatient, StatutDevis } from './entities/devis-patient.entity';
 import { LigneDevis, TypeLigneDevis } from './entities/ligne-devis.entity';
 import { CreateDevisDto, CreateLigneDevisDto } from './dto/create-devis.dto';
 import { UpdateDevisDto } from './dto/update-devis.dto';
+import { FacturationService } from '../facturation/facturation.service';
 
 @Injectable()
 export class DevisService {
@@ -17,6 +18,7 @@ export class DevisService {
     private devisRepo: Repository<DevisPatient>,
     @InjectRepository(LigneDevis)
     private ligneRepo: Repository<LigneDevis>,
+    private readonly facturationService: FacturationService,
   ) {}
 
   private round(v: number): number {
@@ -192,8 +194,8 @@ export class DevisService {
   async convertirEnFacture(
     id: string,
     tenantId: string,
-    factureId?: string,
-  ): Promise<{ devis: DevisPatient; factureAReprendre: any }> {
+    userId: string,
+  ): Promise<{ devis: DevisPatient; facture: any }> {
     const devis = await this.findOne(id, tenantId);
     if (devis.statut !== StatutDevis.ACCEPTE) {
       throw new BadRequestException('Seul un devis accepté peut être converti en facture');
@@ -202,7 +204,7 @@ export class DevisService {
       throw new BadRequestException('Ce devis a déjà été converti en facture');
     }
 
-    // Mapping type de ligne devis -> type de ligne facture (à reprendre par FacturationService).
+    // Mapping type de ligne devis -> type de ligne facture.
     const mapType: Record<TypeLigneDevis, string> = {
       [TypeLigneDevis.CONSULTATION]: 'consultation',
       [TypeLigneDevis.ACTE]: 'acte_chirurgical',
@@ -211,11 +213,10 @@ export class DevisService {
       [TypeLigneDevis.AUTRE]: 'autre',
     };
 
-    // Payload prêt à passer à FacturationService.createFacture (structure CreateFactureDto).
-    const factureAReprendre = {
+    const facturePayload: any = {
       patientId: devis.patientId,
       devise: devis.devise,
-      notes: `Devis ${devis.numero} — ${devis.objet}`,
+      notes: `Issu du devis ${devis.numero} — ${devis.objet}`,
       lignes: (devis.lignes ?? []).map((l) => ({
         type: mapType[l.type] ?? 'autre',
         libelle: l.designation,
@@ -225,13 +226,21 @@ export class DevisService {
       })),
     };
 
+    // Création RÉELLE de la facture dans le module Facturation (elle apparaît
+    // désormais dans /facturation), puis on lie le devis à cette facture.
+    const facture = await this.facturationService.createFacture(
+      facturePayload,
+      tenantId,
+      userId,
+    );
+
     await this.devisRepo.update(id, {
       statut: StatutDevis.FACTURE,
-      factureId: factureId ?? null,
+      factureId: facture.id,
     });
 
     const updated = await this.findOne(id, tenantId);
-    return { devis: updated, factureAReprendre };
+    return { devis: updated, facture };
   }
 
   async findAll(

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   Calculator, Plus, Search, RefreshCw, Send, Check, X, FileText,
@@ -114,6 +115,8 @@ export default function DevisPage() {
   const montantEnAttente = n(stats?.montantEnAttente);
   const nbAcceptes = (n(stats?.parStatut?.accepte?.count) + n(stats?.parStatut?.facture?.count));
 
+  const router = useRouter();
+
   async function act(fn: () => Promise<any>, key: string) {
     setBusy(key);
     try { await fn(); await load(); }
@@ -127,9 +130,20 @@ export default function DevisPage() {
     const motif = window.prompt(t('dialog.refusMotif')) ?? undefined;
     return act(() => apiClient(`/devis/${d.id}/repondre`, { method: 'PATCH', body: { reponse: 'refuse', motifRefus: motif } }), d.id);
   };
-  const convertir = (d: Devis) => {
+  const convertir = async (d: Devis) => {
     if (!window.confirm(t('dialog.convertirConfirme'))) return;
-    return act(() => apiClient(`/devis/${d.id}/convertir-facture`, { method: 'PATCH', body: {} }), d.id);
+    setBusy(d.id);
+    try {
+      const res: any = await apiClient(`/devis/${d.id}/convertir-facture`, { method: 'PATCH', body: {} });
+      await load();
+      // La facture est réellement créée dans le module Facturation : on y redirige.
+      const factureId = res?.data?.facture?.id ?? res?.facture?.id;
+      if (factureId) router.push(`/facturation/${factureId}`);
+    } catch {
+      alert(t('toast.erreur'));
+    } finally {
+      setBusy(null);
+    }
   };
   const supprimer = (d: Devis) => {
     if (!window.confirm(t('dialog.supprimerConfirme'))) return;

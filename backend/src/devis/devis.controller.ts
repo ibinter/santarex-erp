@@ -98,10 +98,9 @@ export class DevisController {
   @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
   convertirFacture(
     @Param('id') id: string,
-    @Body() body: { factureId?: string },
     @Request() req,
   ) {
-    return this.devisService.convertirEnFacture(id, req.user.tenantId, body?.factureId);
+    return this.devisService.convertirEnFacture(id, req.user.tenantId, req.user.id);
   }
 
   @Delete(':id')

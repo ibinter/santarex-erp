@@ -4,9 +4,10 @@ import { DevisPatient } from './entities/devis-patient.entity';
 import { LigneDevis } from './entities/ligne-devis.entity';
 import { DevisService } from './devis.service';
 import { DevisController } from './devis.controller';
+import { FacturationModule } from '../facturation/facturation.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DevisPatient, LigneDevis])],
+  imports: [TypeOrmModule.forFeature([DevisPatient, LigneDevis]), FacturationModule],
   providers: [DevisService],
   controllers: [DevisController],
   exports: [DevisService],
