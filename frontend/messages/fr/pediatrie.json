@@ -1,0 +1,93 @@
+{
+  "pediatrie": {
+    "heroTitle": "Pédiatrie",
+    "heroSubtitle": "Croissance, carnet vaccinal et aide à la posologie",
+    "loading": "Chargement…",
+    "refresh": "Actualiser",
+    "kpi": {
+      "enfantsSuivis": "Enfants suivis",
+      "mesures": "Mesures",
+      "vaccinsFaits": "Vaccins faits",
+      "vaccinsEnRetard": "Vaccins en retard"
+    },
+    "patient": {
+      "select": "Sélectionner un enfant",
+      "searchPlaceholder": "Rechercher un patient (nom, IPP)…",
+      "none": "Aucun patient sélectionné",
+      "chooseHint": "Choisissez un enfant pour afficher son suivi.",
+      "ageLabel": "Âge",
+      "ipp": "IPP",
+      "months": "{count} mois",
+      "years": "{count} ans"
+    },
+    "tabs": {
+      "croissance": "Croissance",
+      "vaccinal": "Carnet vaccinal",
+      "posologie": "Posologie"
+    },
+    "croissance": {
+      "title": "Mesures de croissance",
+      "add": "Nouvelle mesure",
+      "date": "Date",
+      "age": "Âge (mois)",
+      "poids": "Poids (kg)",
+      "taille": "Taille (cm)",
+      "pc": "P. crânien (cm)",
+      "imc": "IMC",
+      "observations": "Observations",
+      "empty": "Aucune mesure enregistrée pour cet enfant.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "saving": "Enregistrement…",
+      "curveTitle": "Courbe de croissance",
+      "curvePoids": "Poids (kg)",
+      "curveTaille": "Taille (cm)",
+      "curvePc": "Périmètre crânien (cm)",
+      "curveEmpty": "Ajoutez au moins deux mesures pour tracer la courbe."
+    },
+    "vaccinal": {
+      "title": "Carnet vaccinal",
+      "vaccin": "Vaccin",
+      "agePrevu": "Âge recommandé",
+      "datePrevue": "Date prévue",
+      "dateAdmin": "Administré le",
+      "lot": "Lot",
+      "statut": "Statut",
+      "action": "Action",
+      "markDone": "Marquer administré",
+      "done": "Administré",
+      "empty": "Aucun vaccin. Le carnet se génère automatiquement selon l'âge.",
+      "statutValues": {
+        "a_faire": "À faire",
+        "fait": "Fait",
+        "en_retard": "En retard"
+      },
+      "markTitle": "Marquer le vaccin administré",
+      "lotPlaceholder": "N° de lot (facultatif)",
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    },
+    "posologie": {
+      "title": "Calculateur de posologie",
+      "subtitle": "Dose selon le poids de l'enfant",
+      "medicament": "Médicament (facultatif)",
+      "medicamentPlaceholder": "Ex. Paracétamol",
+      "poids": "Poids (kg)",
+      "mgKgJour": "mg / kg / jour",
+      "nbPrises": "Nombre de prises / jour",
+      "doseMax": "Dose max / jour (mg, facultatif)",
+      "compute": "Calculer",
+      "resultTitle": "Résultat",
+      "doseJour": "Dose journalière",
+      "doseParPrise": "Dose par prise",
+      "prisesLabel": "en {count} prises",
+      "plafonnee": "Dose plafonnée à la dose maximale journalière.",
+      "fillHint": "Renseignez le poids et la posologie pour calculer.",
+      "mg": "mg"
+    },
+    "errors": {
+      "generic": "Une erreur est survenue.",
+      "loadPatients": "Impossible de charger les patients."
+    }
+  }
+}

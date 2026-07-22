@@ -1,0 +1,93 @@
+{
+  "pediatrie": {
+    "heroTitle": "Pediatrics",
+    "heroSubtitle": "Growth, immunization record and dosage assistance",
+    "loading": "Loading…",
+    "refresh": "Refresh",
+    "kpi": {
+      "enfantsSuivis": "Children followed",
+      "mesures": "Measurements",
+      "vaccinsFaits": "Vaccines given",
+      "vaccinsEnRetard": "Overdue vaccines"
+    },
+    "patient": {
+      "select": "Select a child",
+      "searchPlaceholder": "Search a patient (name, MRN)…",
+      "none": "No patient selected",
+      "chooseHint": "Choose a child to display their follow-up.",
+      "ageLabel": "Age",
+      "ipp": "MRN",
+      "months": "{count} months",
+      "years": "{count} years"
+    },
+    "tabs": {
+      "croissance": "Growth",
+      "vaccinal": "Immunization",
+      "posologie": "Dosage"
+    },
+    "croissance": {
+      "title": "Growth measurements",
+      "add": "New measurement",
+      "date": "Date",
+      "age": "Age (months)",
+      "poids": "Weight (kg)",
+      "taille": "Height (cm)",
+      "pc": "Head circ. (cm)",
+      "imc": "BMI",
+      "observations": "Notes",
+      "empty": "No measurement recorded for this child.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "curveTitle": "Growth curve",
+      "curvePoids": "Weight (kg)",
+      "curveTaille": "Height (cm)",
+      "curvePc": "Head circumference (cm)",
+      "curveEmpty": "Add at least two measurements to draw the curve."
+    },
+    "vaccinal": {
+      "title": "Immunization record",
+      "vaccin": "Vaccine",
+      "agePrevu": "Recommended age",
+      "datePrevue": "Due date",
+      "dateAdmin": "Given on",
+      "lot": "Batch",
+      "statut": "Status",
+      "action": "Action",
+      "markDone": "Mark as given",
+      "done": "Given",
+      "empty": "No vaccine. The record is generated automatically based on age.",
+      "statutValues": {
+        "a_faire": "To do",
+        "fait": "Done",
+        "en_retard": "Overdue"
+      },
+      "markTitle": "Mark vaccine as given",
+      "lotPlaceholder": "Batch no. (optional)",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "posologie": {
+      "title": "Dosage calculator",
+      "subtitle": "Dose based on the child's weight",
+      "medicament": "Drug (optional)",
+      "medicamentPlaceholder": "e.g. Paracetamol",
+      "poids": "Weight (kg)",
+      "mgKgJour": "mg / kg / day",
+      "nbPrises": "Doses per day",
+      "doseMax": "Max dose / day (mg, optional)",
+      "compute": "Compute",
+      "resultTitle": "Result",
+      "doseJour": "Daily dose",
+      "doseParPrise": "Dose per intake",
+      "prisesLabel": "in {count} intakes",
+      "plafonnee": "Dose capped at the maximum daily dose.",
+      "fillHint": "Enter weight and dosage to compute.",
+      "mg": "mg"
+    },
+    "errors": {
+      "generic": "An error occurred.",
+      "loadPatients": "Unable to load patients."
+    }
+  }
+}

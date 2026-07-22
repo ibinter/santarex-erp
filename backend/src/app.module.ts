@@ -47,6 +47,12 @@ import { PriseEnChargeModule } from './prise-en-charge/prise-en-charge.module';
 import { ApprovisionnementModule } from './approvisionnement/approvisionnement.module';
 import { InteractionsModule } from './interactions-medicamenteuses/interactions.module';
 import { IncidentsQualiteModule } from './incidents-qualite/incidents-qualite.module';
+// Vague 2 — nouveaux modules hospitaliers
+import { PediatrieModule } from './pediatrie/pediatrie.module';
+import { BanqueSangModule } from './banque-sang/banque-sang.module';
+import { SterilisationModule } from './sterilisation/sterilisation.module';
+import { ConsentementsModule } from './consentements/consentements.module';
+import { SoinsInfirmiersModule } from './soins-infirmiers/soins-infirmiers.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -110,6 +116,11 @@ import { SeedModule } from './database/seed.module';
     ApprovisionnementModule,
     InteractionsModule,
     IncidentsQualiteModule,
+    PediatrieModule,
+    BanqueSangModule,
+    SterilisationModule,
+    ConsentementsModule,
+    SoinsInfirmiersModule,
     HealthModule,
     SeedModule,
   ],

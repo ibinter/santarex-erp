@@ -1,0 +1,95 @@
+{
+  "soinsInfirmiers": {
+    "titre": "Soins infirmiers",
+    "sousTitre": "Dossier de soins — transmissions, plan, feuille de soins, douleur",
+    "rechercherPatient": "Rechercher un patient (nom, IPP)…",
+    "selectionnerPatient": "Sélectionnez un patient",
+    "selectionnerPatientInvite": "Recherchez et sélectionnez un patient pour ouvrir son dossier de soins.",
+    "aucunPatient": "Aucun patient trouvé",
+    "changerPatient": "Changer",
+    "ipp": "IPP : {ipp}",
+    "actualiser": "Actualiser",
+    "chargement": "Chargement…",
+    "enregistrer": "Enregistrer",
+    "annuler": "Annuler",
+    "ajouter": "Ajouter",
+    "par": "par",
+    "aucuneDonnee": "Aucune donnée",
+
+    "statTransmissionsJour": "Transmissions du jour",
+    "statPlansActifs": "Plans actifs",
+    "statActesEnAttente": "Actes en attente",
+    "statDouleursNonReevaluees": "Douleurs à réévaluer",
+
+    "tabTransmissions": "Transmissions ciblées",
+    "tabPlans": "Plan de soins",
+    "tabActes": "Feuille de soins",
+    "tabDouleur": "Douleur",
+
+    "transmissions": {
+      "titre": "Transmissions ciblées (DAR)",
+      "cible": "Cible / problème",
+      "donnees": "Données (D)",
+      "actions": "Actions (A)",
+      "resultats": "Résultats (R)",
+      "nouvelle": "Nouvelle transmission",
+      "aucune": "Aucune transmission ciblée",
+      "cibleRequise": "La cible est requise"
+    },
+
+    "plans": {
+      "titre": "Plan de soins",
+      "diagnostic": "Diagnostic infirmier",
+      "objectif": "Objectif",
+      "interventions": "Interventions",
+      "echeance": "Échéance",
+      "statut": "Statut",
+      "nouveau": "Nouveau plan",
+      "aucun": "Aucun plan de soins",
+      "statutActif": "Actif",
+      "statutAtteint": "Atteint",
+      "statutArrete": "Arrêté",
+      "marquerAtteint": "Marquer atteint",
+      "marquerArrete": "Arrêter",
+      "champsRequis": "Diagnostic et objectif sont requis"
+    },
+
+    "actes": {
+      "titre": "Feuille de soins",
+      "type": "Type",
+      "description": "Description",
+      "realise": "Réalisé",
+      "planifie": "Planifié",
+      "nouvel": "Nouvel acte",
+      "aucun": "Aucun acte de soin",
+      "marquerRealise": "Marquer réalisé",
+      "descriptionRequise": "La description est requise",
+      "types": {
+        "pansement": "Pansement",
+        "injection": "Injection",
+        "perfusion": "Perfusion",
+        "toilette": "Toilette",
+        "prelevement": "Prélèvement",
+        "surveillance": "Surveillance",
+        "autre": "Autre"
+      }
+    },
+
+    "douleur": {
+      "titre": "Évaluation de la douleur",
+      "echelle": "Échelle",
+      "score": "Score",
+      "localisation": "Localisation",
+      "traitement": "Traitement administré",
+      "reevaluation": "Réévaluation",
+      "nouvelle": "Nouvelle évaluation",
+      "aucune": "Aucune évaluation de douleur",
+      "niveau": "Niveau",
+      "niveauAucune": "Aucune",
+      "niveauLegere": "Légère",
+      "niveauModeree": "Modérée",
+      "niveauIntense": "Intense",
+      "scoreInvalide": "Score invalide"
+    }
+  }
+}

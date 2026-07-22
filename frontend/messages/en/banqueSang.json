@@ -1,0 +1,88 @@
+{
+  "banqueSang": {
+    "titre": "Blood bank",
+    "sousTitre": "Bag stock, compatibility and transfusion traceability",
+    "onglets": {
+      "inventaire": "Inventory",
+      "transfusions": "Transfusions"
+    },
+    "actions": {
+      "nouvellePoche": "New bag",
+      "nouvelleTransfusion": "Record a transfusion",
+      "rafraichir": "Refresh",
+      "enregistrer": "Save",
+      "annuler": "Cancel",
+      "detruire": "Discard",
+      "reserver": "Reserve"
+    },
+    "stats": {
+      "totalDisponible": "Available bags",
+      "prochesPeremption": "Expiring soon",
+      "perimees": "Expired",
+      "transfusions": "Transfusions"
+    },
+    "poche": {
+      "numero": "Bag no.",
+      "groupe": "Group",
+      "rhesus": "Rhesus",
+      "typeProduit": "Product",
+      "volumeMl": "Volume (ml)",
+      "datePrelevement": "Collection",
+      "datePeremption": "Expiry",
+      "statut": "Status",
+      "donneurRef": "Donor ref.",
+      "provenance": "Source",
+      "localisation": "Location"
+    },
+    "typeProduit": {
+      "sang_total": "Whole blood",
+      "CGR": "Red cells (RBC)",
+      "plasma": "Plasma",
+      "plaquettes": "Platelets"
+    },
+    "statut": {
+      "disponible": "Available",
+      "reservee": "Reserved",
+      "transfusee": "Transfused",
+      "perimee": "Expired",
+      "detruite": "Discarded"
+    },
+    "transfusion": {
+      "patient": "Patient",
+      "patientId": "Patient ID",
+      "poche": "Bag",
+      "groupePatient": "Patient group",
+      "rhesusPatient": "Patient rhesus",
+      "medecin": "Physician",
+      "indication": "Indication",
+      "observations": "Notes",
+      "date": "Date",
+      "compatibilite": "Compatibility",
+      "reaction": "Transfusion reaction",
+      "verifierCompatibilite": "Check compatibility",
+      "forcer": "Override despite incompatibility"
+    },
+    "compat": {
+      "compatible": "Compatible",
+      "incompatible": "Incompatible",
+      "verifiee": "Verified",
+      "nonVerifiee": "Not verified",
+      "choisirGroupe": "Select the patient's group to check",
+      "aucunePocheCompatible": "No compatible bag available"
+    },
+    "peremption": {
+      "expiree": "Expired",
+      "urgent": "Expiring soon",
+      "jours": "{n} d"
+    },
+    "vide": {
+      "poches": "No bags in stock",
+      "transfusions": "No transfusion recorded"
+    },
+    "messages": {
+      "pocheCreee": "Bag saved",
+      "transfusionEnregistree": "Transfusion recorded",
+      "erreur": "An error occurred"
+    }
+  }
+}

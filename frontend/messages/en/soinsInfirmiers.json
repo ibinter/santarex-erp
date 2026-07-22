@@ -1,0 +1,95 @@
+{
+  "soinsInfirmiers": {
+    "titre": "Nursing care",
+    "sousTitre": "Care record — transmissions, plan, care sheet, pain",
+    "rechercherPatient": "Search a patient (name, MRN)…",
+    "selectionnerPatient": "Select a patient",
+    "selectionnerPatientInvite": "Search and select a patient to open their care record.",
+    "aucunPatient": "No patient found",
+    "changerPatient": "Change",
+    "ipp": "MRN: {ipp}",
+    "actualiser": "Refresh",
+    "chargement": "Loading…",
+    "enregistrer": "Save",
+    "annuler": "Cancel",
+    "ajouter": "Add",
+    "par": "by",
+    "aucuneDonnee": "No data",
+
+    "statTransmissionsJour": "Today's transmissions",
+    "statPlansActifs": "Active plans",
+    "statActesEnAttente": "Pending acts",
+    "statDouleursNonReevaluees": "Pain to reassess",
+
+    "tabTransmissions": "Focus charting",
+    "tabPlans": "Care plan",
+    "tabActes": "Care sheet",
+    "tabDouleur": "Pain",
+
+    "transmissions": {
+      "titre": "Focus charting (DAR)",
+      "cible": "Focus / problem",
+      "donnees": "Data (D)",
+      "actions": "Action (A)",
+      "resultats": "Response (R)",
+      "nouvelle": "New transmission",
+      "aucune": "No focus charting",
+      "cibleRequise": "Focus is required"
+    },
+
+    "plans": {
+      "titre": "Care plan",
+      "diagnostic": "Nursing diagnosis",
+      "objectif": "Goal",
+      "interventions": "Interventions",
+      "echeance": "Due date",
+      "statut": "Status",
+      "nouveau": "New plan",
+      "aucun": "No care plan",
+      "statutActif": "Active",
+      "statutAtteint": "Achieved",
+      "statutArrete": "Stopped",
+      "marquerAtteint": "Mark achieved",
+      "marquerArrete": "Stop",
+      "champsRequis": "Diagnosis and goal are required"
+    },
+
+    "actes": {
+      "titre": "Care sheet",
+      "type": "Type",
+      "description": "Description",
+      "realise": "Done",
+      "planifie": "Planned",
+      "nouvel": "New act",
+      "aucun": "No care act",
+      "marquerRealise": "Mark done",
+      "descriptionRequise": "Description is required",
+      "types": {
+        "pansement": "Dressing",
+        "injection": "Injection",
+        "perfusion": "Infusion",
+        "toilette": "Hygiene",
+        "prelevement": "Sampling",
+        "surveillance": "Monitoring",
+        "autre": "Other"
+      }
+    },
+
+    "douleur": {
+      "titre": "Pain assessment",
+      "echelle": "Scale",
+      "score": "Score",
+      "localisation": "Location",
+      "traitement": "Treatment given",
+      "reevaluation": "Reassessment",
+      "nouvelle": "New assessment",
+      "aucune": "No pain assessment",
+      "niveau": "Level",
+      "niveauAucune": "None",
+      "niveauLegere": "Mild",
+      "niveauModeree": "Moderate",
+      "niveauIntense": "Severe",
+      "scoreInvalide": "Invalid score"
+    }
+  }
+}

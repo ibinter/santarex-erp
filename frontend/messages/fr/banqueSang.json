@@ -1,0 +1,88 @@
+{
+  "banqueSang": {
+    "titre": "Banque de sang",
+    "sousTitre": "Stock de poches, compatibilité et traçabilité des transfusions",
+    "onglets": {
+      "inventaire": "Inventaire",
+      "transfusions": "Transfusions"
+    },
+    "actions": {
+      "nouvellePoche": "Nouvelle poche",
+      "nouvelleTransfusion": "Enregistrer une transfusion",
+      "rafraichir": "Rafraîchir",
+      "enregistrer": "Enregistrer",
+      "annuler": "Annuler",
+      "detruire": "Détruire",
+      "reserver": "Réserver"
+    },
+    "stats": {
+      "totalDisponible": "Poches disponibles",
+      "prochesPeremption": "Proches péremption",
+      "perimees": "Périmées",
+      "transfusions": "Transfusions"
+    },
+    "poche": {
+      "numero": "N° poche",
+      "groupe": "Groupe",
+      "rhesus": "Rhésus",
+      "typeProduit": "Produit",
+      "volumeMl": "Volume (ml)",
+      "datePrelevement": "Prélèvement",
+      "datePeremption": "Péremption",
+      "statut": "Statut",
+      "donneurRef": "Réf. donneur",
+      "provenance": "Provenance",
+      "localisation": "Emplacement"
+    },
+    "typeProduit": {
+      "sang_total": "Sang total",
+      "CGR": "CGR",
+      "plasma": "Plasma",
+      "plaquettes": "Plaquettes"
+    },
+    "statut": {
+      "disponible": "Disponible",
+      "reservee": "Réservée",
+      "transfusee": "Transfusée",
+      "perimee": "Périmée",
+      "detruite": "Détruite"
+    },
+    "transfusion": {
+      "patient": "Patient",
+      "patientId": "Identifiant patient",
+      "poche": "Poche",
+      "groupePatient": "Groupe patient",
+      "rhesusPatient": "Rhésus patient",
+      "medecin": "Médecin",
+      "indication": "Indication",
+      "observations": "Observations",
+      "date": "Date",
+      "compatibilite": "Compatibilité",
+      "reaction": "Réaction transfusionnelle",
+      "verifierCompatibilite": "Vérifier la compatibilité",
+      "forcer": "Forcer malgré l'incompatibilité"
+    },
+    "compat": {
+      "compatible": "Compatible",
+      "incompatible": "Incompatible",
+      "verifiee": "Vérifiée",
+      "nonVerifiee": "Non vérifiée",
+      "choisirGroupe": "Sélectionnez le groupe du patient pour vérifier",
+      "aucunePocheCompatible": "Aucune poche compatible disponible"
+    },
+    "peremption": {
+      "expiree": "Expirée",
+      "urgent": "Expire bientôt",
+      "jours": "{n} j"
+    },
+    "vide": {
+      "poches": "Aucune poche en stock",
+      "transfusions": "Aucune transfusion enregistrée"
+    },
+    "messages": {
+      "pocheCreee": "Poche enregistrée",
+      "transfusionEnregistree": "Transfusion enregistrée",
+      "erreur": "Une erreur est survenue"
+    }
+  }
+}
