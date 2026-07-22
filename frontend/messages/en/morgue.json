@@ -1,0 +1,103 @@
+{
+  "morgue": {
+    "title": "Mortuary",
+    "subtitle": "Death records, cold storage and body release management",
+    "nouveauDeces": "Record a death",
+    "nouveauCasier": "New unit",
+    "actualiser": "Refresh",
+    "chargement": "Loading…",
+    "erreurChargement": "Unable to load mortuary data",
+    "actionImpossible": "Action not possible",
+    "creationImpossible": "Unable to save",
+    "annuler": "Cancel",
+    "enregistrer": "Save",
+    "creer": "Create",
+    "creation": "Saving…",
+    "ans": "yrs",
+    "jour": "day",
+
+    "kpiCorpsPresents": "Bodies present",
+    "kpiCasiersLibres": "Free units",
+    "kpiDecesMois": "Deaths this month",
+    "kpiOccupation": "Occupancy rate",
+
+    "tabDeces": "Deaths ({count})",
+    "tabCasiers": "Units ({count})",
+    "tabSejours": "Cold storage ({count})",
+
+    "aucunDeces": "No death recorded",
+    "aucunCasier": "No storage unit configured",
+    "aucunSejour": "No body in cold storage",
+    "aucunCasierLibre": "No free unit available — release a unit or create a new one.",
+
+    "thNumero": "Death No.",
+    "thDefunt": "Deceased",
+    "thDeces": "Date of death",
+    "thLieu": "Place",
+    "thCertificat": "Certificate",
+    "thActions": "Actions",
+    "thCasier": "Unit",
+    "thEntree": "Entry",
+    "thSortie": "Exit",
+    "thStatutSejour": "Status",
+    "thFrais": "Fees",
+
+    "certificatNonEmis": "Not issued",
+    "emettreCertificat": "Certificate",
+    "confirmCertificat": "Issue the death certificate for {numero}?",
+    "placer": "Place in storage",
+    "enChambre": "In cold storage",
+    "remettre": "Release body",
+
+    "sexe": {
+      "M": "Male",
+      "F": "Female",
+      "indetermine": "Unspecified"
+    },
+    "lieu": {
+      "service": "Death in ward",
+      "domicile": "Death at home",
+      "arrivee": "Dead on arrival",
+      "autre": "Other"
+    },
+    "statutCasier": {
+      "libre": "Free",
+      "occupe": "Occupied",
+      "maintenance": "Maintenance"
+    },
+    "statutSejour": {
+      "en_chambre": "In cold storage",
+      "remis": "Body released"
+    },
+
+    "modalDecesTitre": "Record a death",
+    "labelNom": "Last name",
+    "labelPrenom": "First name(s)",
+    "labelSexe": "Sex",
+    "labelAge": "Age",
+    "labelDateDeces": "Date and time of death",
+    "labelLieu": "Place of death",
+    "labelCause": "Cause of death",
+    "labelMedecin": "Certifying physician",
+    "labelEmettreCertificat": "Issue the death certificate",
+
+    "modalCasierTitre": "New storage unit",
+    "labelNumeroCasier": "Unit number",
+    "labelDescription": "Description",
+
+    "modalEntreeTitre": "Place in storage: {defunt}",
+    "labelCasier": "Unit",
+    "choisirCasier": "Choose a free unit…",
+    "labelDateEntree": "Entry date and time",
+    "labelTarifJournalier": "Daily storage fee (FCFA)",
+
+    "modalRemiseTitre": "Body release",
+    "remiseInfo": "Deceased: {defunt} — Unit {casier}",
+    "confirmerRemise": "Confirm release",
+    "labelPersonneNom": "Person receiving the body",
+    "labelLien": "Relationship to the deceased",
+    "placeholderLien": "e.g. Spouse, Son…",
+    "labelPiece": "ID document",
+    "labelAgent": "Agent performing the release"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "equipements": {
+    "statut": {
+      "en_service": "In service",
+      "en_panne": "Out of order",
+      "en_maintenance": "Under maintenance",
+      "reforme": "Decommissioned"
+    },
+    "categorie": {
+      "imagerie": "Imaging",
+      "laboratoire": "Laboratory",
+      "monitoring": "Monitoring",
+      "bloc": "Operating room",
+      "autre": "Other"
+    },
+    "typeInter": {
+      "preventive": "Preventive",
+      "curative": "Corrective",
+      "etalonnage": "Calibration"
+    },
+    "statutInter": {
+      "planifiee": "Planned",
+      "en_cours": "In progress",
+      "terminee": "Completed"
+    },
+    "hero": {
+      "title": "Equipment & Maintenance",
+      "loading": "Loading…",
+      "displayedCount": "{count, plural, one {# item shown} other {# items shown}}",
+      "kpiTotal": "Total fleet",
+      "kpiEnService": "In service",
+      "kpiEnPanne": "Out of order",
+      "kpiMaintenancesDues": "Maintenance due",
+      "kpiDisponibilite": "Availability",
+      "filterTitle": "Filter: {label}",
+      "newEquip": "New equipment"
+    },
+    "list": {
+      "searchPlaceholder": "Search name, code, brand, serial…",
+      "filterAll": "All",
+      "colCode": "Code",
+      "colNom": "Equipment",
+      "colCategorie": "Category",
+      "colLocalisation": "Location",
+      "colProchaine": "Next maint.",
+      "colStatut": "Status",
+      "empty": "No equipment"
+    },
+    "tabs": {
+      "inventaire": "Inventory",
+      "maintenancesDues": "Maintenance due"
+    },
+    "due": {
+      "title": "Preventive maintenance due",
+      "empty": "No maintenance due",
+      "colEquip": "Equipment",
+      "colLocalisation": "Location",
+      "colEcheance": "Due date",
+      "overdue": "Overdue",
+      "today": "Today",
+      "inDays": "In {count, plural, one {# day} other {# days}}"
+    },
+    "detail": {
+      "title": "Equipment record",
+      "marque": "Brand",
+      "modele": "Model",
+      "numeroSerie": "Serial no.",
+      "localisation": "Location",
+      "categorie": "Category",
+      "statut": "Status",
+      "dateAcquisition": "Acquisition date",
+      "valeurAcquisition": "Acquisition value",
+      "periodicite": "Maintenance interval",
+      "prochaineMaintenance": "Next maintenance",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "none": "—",
+      "history": "Maintenance history",
+      "historyEmpty": "No intervention recorded",
+      "addIntervention": "Record an intervention",
+      "declarePanne": "Report a fault",
+      "cost": "Cost"
+    },
+    "form": {
+      "titleCreate": "New equipment",
+      "nom": "Equipment name",
+      "phNom": "e.g. CT Scanner 64 slices",
+      "categorie": "Category",
+      "marque": "Brand",
+      "modele": "Model",
+      "numeroSerie": "Serial number",
+      "localisation": "Department / Location",
+      "dateAcquisition": "Acquisition date",
+      "valeurAcquisition": "Acquisition value (XOF)",
+      "periodicite": "Maintenance interval (days)",
+      "notes": "Notes",
+      "selectPlaceholder": "Select…",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "interForm": {
+      "title": "Maintenance intervention",
+      "type": "Type",
+      "date": "Date",
+      "description": "Description",
+      "phDescription": "Nature of the intervention…",
+      "technicien": "Technician (internal)",
+      "prestataire": "Provider (external)",
+      "cout": "Cost (XOF)",
+      "dureeIndispo": "Downtime (h)",
+      "resultat": "Result",
+      "phResultat": "Result / observations…",
+      "statut": "Status",
+      "prochaineDate": "Next due date",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "panneModal": {
+      "title": "Report a fault",
+      "description": "Fault description",
+      "phDescription": "Observed symptoms…",
+      "cancel": "Cancel",
+      "confirm": "Report fault",
+      "saving": "Saving…"
+    },
+    "errors": {
+      "nomRequired": "Name is required",
+      "create": "Failed to save",
+      "interSave": "Failed to save the intervention",
+      "invalidSession": "Invalid session"
+    }
+  }
+}

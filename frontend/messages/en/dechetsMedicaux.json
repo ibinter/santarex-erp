@@ -1,0 +1,98 @@
+{
+  "dechetsMedicaux": {
+    "title": "Medical waste",
+    "subtitle": "Traceability of healthcare activity waste (DASRI and similar)",
+    "tabs": {
+      "collectes": "Collections",
+      "enlevements": "Removals",
+      "stats": "Statistics"
+    },
+    "actions": {
+      "newCollecte": "New collection",
+      "newEnlevement": "New removal",
+      "refresh": "Refresh",
+      "search": "Search…",
+      "create": "Save",
+      "cancel": "Cancel",
+      "traiter": "Record certificate",
+      "close": "Close",
+      "delete": "Delete"
+    },
+    "categorie": {
+      "label": "Category",
+      "dasri": "Infectious (DASRI)",
+      "anatomique": "Anatomical",
+      "chimique": "Chemical",
+      "pharmaceutique": "Pharmaceutical",
+      "radioactif": "Radioactive",
+      "menager_assimile": "General assimilated"
+    },
+    "conditionnement": {
+      "label": "Packaging",
+      "carton": "Box",
+      "fut": "Drum",
+      "boite_opct": "Sharps box"
+    },
+    "statutCollecte": {
+      "label": "Status",
+      "collecte": "Collected",
+      "en_stockage": "In storage",
+      "enleve": "Removed",
+      "incinere": "Incinerated"
+    },
+    "modeTraitement": {
+      "label": "Treatment mode",
+      "incineration": "Incineration",
+      "banalisation": "Sterilization",
+      "enfouissement": "Landfill"
+    },
+    "statutEnlevement": {
+      "label": "Status",
+      "planifie": "Planned",
+      "enleve": "Removed",
+      "traite": "Treated"
+    },
+    "fields": {
+      "numero": "Number",
+      "serviceProducteur": "Producing unit",
+      "uniteProducteur": "Sub-unit",
+      "poidsKg": "Weight (kg)",
+      "dateCollecte": "Collection date",
+      "agentRef": "Agent",
+      "observations": "Notes",
+      "bordereauNumero": "Slip no.",
+      "prestataire": "Contractor",
+      "dateEnlevement": "Removal date",
+      "poidsTotal": "Total weight (kg)",
+      "certificatDestruction": "Destruction certificate",
+      "dateTraitement": "Treatment date",
+      "collectesLiees": "Grouped collections"
+    },
+    "stats": {
+      "totalCollectes": "Total collections",
+      "poidsTotal": "Total weight (kg)",
+      "enAttente": "Awaiting removal",
+      "poidsEnAttente": "Weight awaiting (kg)",
+      "stockageProlonge": "Prolonged storage",
+      "enlevementsTotal": "Removals",
+      "enlevementsATraiter": "To treat",
+      "poidsParCategorie": "Weight by category",
+      "poidsParMois": "Weight by month",
+      "parStatut": "Breakdown by status"
+    },
+    "alerts": {
+      "stockageProlonge": "Collections stored for over 7 days — pending removal."
+    },
+    "empty": {
+      "collectes": "No collection recorded",
+      "enlevements": "No removal recorded",
+      "selectCollectes": "Select at least one pending collection"
+    },
+    "form": {
+      "createCollecteTitle": "Record a collection",
+      "createEnlevementTitle": "Create a removal / slip",
+      "selectCollectes": "Collections to group",
+      "traiterTitle": "Destruction certificate"
+    }
+  }
+}

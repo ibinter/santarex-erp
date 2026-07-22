@@ -1,0 +1,92 @@
+{
+  "transport": {
+    "title": "Transport & Ambulances",
+    "subtitle": "Parc de véhicules et missions d'ambulance",
+    "tabs": {
+      "parc": "Parc véhicules",
+      "missions": "Missions"
+    },
+    "stats": {
+      "vehicules": "Véhicules",
+      "disponibles": "Disponibles",
+      "missionsJour": "Missions du jour",
+      "enCours": "En cours",
+      "kmMois": "Km ce mois",
+      "entretien": "Entretien requis"
+    },
+    "actions": {
+      "actualiser": "Actualiser",
+      "nouveauVehicule": "Nouveau véhicule",
+      "planifierMission": "Planifier une mission",
+      "demarrer": "Démarrer",
+      "terminer": "Clôturer",
+      "annuler": "Annuler",
+      "modifier": "Modifier",
+      "supprimer": "Supprimer",
+      "enregistrer": "Enregistrer",
+      "fermer": "Fermer"
+    },
+    "vehicule": {
+      "immatriculation": "Immatriculation",
+      "type": "Type",
+      "marque": "Marque",
+      "modele": "Modèle",
+      "statut": "Statut",
+      "kilometrage": "Kilométrage",
+      "seuilEntretienKm": "Seuil entretien (km)",
+      "dateProchainEntretien": "Prochain entretien",
+      "notes": "Notes",
+      "entretienRequis": "Entretien requis",
+      "aucun": "Aucun véhicule enregistré"
+    },
+    "typeVehicule": {
+      "ambulance": "Ambulance",
+      "vsl": "VSL",
+      "utilitaire": "Utilitaire"
+    },
+    "statutVehicule": {
+      "disponible": "Disponible",
+      "en_mission": "En mission",
+      "maintenance": "Maintenance",
+      "hors_service": "Hors service"
+    },
+    "mission": {
+      "numero": "N° mission",
+      "vehicule": "Véhicule",
+      "type": "Type",
+      "patient": "Patient",
+      "origine": "Origine",
+      "destination": "Destination",
+      "dateDepart": "Départ",
+      "dateArrivee": "Arrivée",
+      "chauffeur": "Chauffeur",
+      "accompagnantMedical": "Accompagnant médical",
+      "distanceKm": "Distance (km)",
+      "cout": "Coût",
+      "duree": "Durée",
+      "statut": "Statut",
+      "notes": "Notes",
+      "aucune": "Aucune mission",
+      "kilometrageArrivee": "Kilométrage à l'arrivée"
+    },
+    "typeMission": {
+      "transfert": "Transfert",
+      "evacuation": "Évacuation",
+      "consultation": "Consultation",
+      "retour_domicile": "Retour domicile"
+    },
+    "statutMission": {
+      "planifiee": "Planifiée",
+      "en_cours": "En cours",
+      "terminee": "Terminée",
+      "annulee": "Annulée"
+    },
+    "form": {
+      "titreVehicule": "Nouveau véhicule",
+      "titreMission": "Planifier une mission",
+      "choisirVehicule": "Choisir un véhicule disponible",
+      "requis": "Champ requis",
+      "aucunDispo": "Aucun véhicule disponible"
+    }
+  }
+}

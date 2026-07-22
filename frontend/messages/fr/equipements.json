@@ -1,0 +1,134 @@
+{
+  "equipements": {
+    "statut": {
+      "en_service": "En service",
+      "en_panne": "En panne",
+      "en_maintenance": "En maintenance",
+      "reforme": "Réformé"
+    },
+    "categorie": {
+      "imagerie": "Imagerie",
+      "laboratoire": "Laboratoire",
+      "monitoring": "Monitoring",
+      "bloc": "Bloc opératoire",
+      "autre": "Autre"
+    },
+    "typeInter": {
+      "preventive": "Préventive",
+      "curative": "Curative",
+      "etalonnage": "Étalonnage"
+    },
+    "statutInter": {
+      "planifiee": "Planifiée",
+      "en_cours": "En cours",
+      "terminee": "Terminée"
+    },
+    "hero": {
+      "title": "Équipements & Maintenance",
+      "loading": "Chargement…",
+      "displayedCount": "{count, plural, one {# équipement affiché} other {# équipements affichés}}",
+      "kpiTotal": "Parc total",
+      "kpiEnService": "En service",
+      "kpiEnPanne": "En panne",
+      "kpiMaintenancesDues": "Maintenances dues",
+      "kpiDisponibilite": "Disponibilité",
+      "filterTitle": "Filtrer : {label}",
+      "newEquip": "Nouvel équipement"
+    },
+    "list": {
+      "searchPlaceholder": "Rechercher nom, code, marque, série…",
+      "filterAll": "Tous",
+      "colCode": "Code",
+      "colNom": "Équipement",
+      "colCategorie": "Catégorie",
+      "colLocalisation": "Localisation",
+      "colProchaine": "Prochaine maint.",
+      "colStatut": "Statut",
+      "empty": "Aucun équipement"
+    },
+    "tabs": {
+      "inventaire": "Inventaire",
+      "maintenancesDues": "Maintenances dues"
+    },
+    "due": {
+      "title": "Maintenances préventives dues",
+      "empty": "Aucune maintenance due",
+      "colEquip": "Équipement",
+      "colLocalisation": "Localisation",
+      "colEcheance": "Échéance",
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "inDays": "Dans {count, plural, one {# jour} other {# jours}}"
+    },
+    "detail": {
+      "title": "Fiche équipement",
+      "marque": "Marque",
+      "modele": "Modèle",
+      "numeroSerie": "N° de série",
+      "localisation": "Localisation",
+      "categorie": "Catégorie",
+      "statut": "Statut",
+      "dateAcquisition": "Date d'acquisition",
+      "valeurAcquisition": "Valeur d'acquisition",
+      "periodicite": "Périodicité maintenance",
+      "prochaineMaintenance": "Prochaine maintenance",
+      "days": "{count, plural, one {# jour} other {# jours}}",
+      "none": "—",
+      "history": "Historique de maintenance",
+      "historyEmpty": "Aucune intervention enregistrée",
+      "addIntervention": "Enregistrer une intervention",
+      "declarePanne": "Déclarer une panne",
+      "cost": "Coût"
+    },
+    "form": {
+      "titleCreate": "Nouvel équipement",
+      "nom": "Nom de l'équipement",
+      "phNom": "Ex. Scanner CT 64 barrettes",
+      "categorie": "Catégorie",
+      "marque": "Marque",
+      "modele": "Modèle",
+      "numeroSerie": "Numéro de série",
+      "localisation": "Service / Localisation",
+      "dateAcquisition": "Date d'acquisition",
+      "valeurAcquisition": "Valeur d'acquisition (XOF)",
+      "periodicite": "Périodicité maintenance (jours)",
+      "notes": "Notes",
+      "selectPlaceholder": "Sélectionner…",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "interForm": {
+      "title": "Intervention de maintenance",
+      "type": "Type",
+      "date": "Date",
+      "description": "Description",
+      "phDescription": "Nature de l'intervention…",
+      "technicien": "Technicien (interne)",
+      "prestataire": "Prestataire (externe)",
+      "cout": "Coût (XOF)",
+      "dureeIndispo": "Durée d'indisponibilité (h)",
+      "resultat": "Résultat",
+      "phResultat": "Résultat / observations…",
+      "statut": "Statut",
+      "prochaineDate": "Prochaine échéance",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "panneModal": {
+      "title": "Déclarer une panne",
+      "description": "Description de la panne",
+      "phDescription": "Symptômes constatés…",
+      "cancel": "Annuler",
+      "confirm": "Déclarer la panne",
+      "saving": "Enregistrement…"
+    },
+    "errors": {
+      "nomRequired": "Le nom est requis",
+      "create": "Échec de l'enregistrement",
+      "interSave": "Échec de l'enregistrement de l'intervention",
+      "invalidSession": "Session invalide"
+    }
+  }
+}

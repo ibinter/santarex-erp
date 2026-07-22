@@ -1,0 +1,92 @@
+{
+  "transport": {
+    "title": "Transport & Ambulances",
+    "subtitle": "Vehicle fleet and ambulance missions",
+    "tabs": {
+      "parc": "Fleet",
+      "missions": "Missions"
+    },
+    "stats": {
+      "vehicules": "Vehicles",
+      "disponibles": "Available",
+      "missionsJour": "Missions today",
+      "enCours": "In progress",
+      "kmMois": "Km this month",
+      "entretien": "Service due"
+    },
+    "actions": {
+      "actualiser": "Refresh",
+      "nouveauVehicule": "New vehicle",
+      "planifierMission": "Plan a mission",
+      "demarrer": "Start",
+      "terminer": "Close",
+      "annuler": "Cancel",
+      "modifier": "Edit",
+      "supprimer": "Delete",
+      "enregistrer": "Save",
+      "fermer": "Close"
+    },
+    "vehicule": {
+      "immatriculation": "License plate",
+      "type": "Type",
+      "marque": "Make",
+      "modele": "Model",
+      "statut": "Status",
+      "kilometrage": "Mileage",
+      "seuilEntretienKm": "Service threshold (km)",
+      "dateProchainEntretien": "Next service",
+      "notes": "Notes",
+      "entretienRequis": "Service due",
+      "aucun": "No vehicle registered"
+    },
+    "typeVehicule": {
+      "ambulance": "Ambulance",
+      "vsl": "Medical light vehicle",
+      "utilitaire": "Utility"
+    },
+    "statutVehicule": {
+      "disponible": "Available",
+      "en_mission": "On mission",
+      "maintenance": "Maintenance",
+      "hors_service": "Out of service"
+    },
+    "mission": {
+      "numero": "Mission no.",
+      "vehicule": "Vehicle",
+      "type": "Type",
+      "patient": "Patient",
+      "origine": "Origin",
+      "destination": "Destination",
+      "dateDepart": "Departure",
+      "dateArrivee": "Arrival",
+      "chauffeur": "Driver",
+      "accompagnantMedical": "Medical escort",
+      "distanceKm": "Distance (km)",
+      "cout": "Cost",
+      "duree": "Duration",
+      "statut": "Status",
+      "notes": "Notes",
+      "aucune": "No mission",
+      "kilometrageArrivee": "Mileage on arrival"
+    },
+    "typeMission": {
+      "transfert": "Transfer",
+      "evacuation": "Evacuation",
+      "consultation": "Consultation",
+      "retour_domicile": "Return home"
+    },
+    "statutMission": {
+      "planifiee": "Planned",
+      "en_cours": "In progress",
+      "terminee": "Completed",
+      "annulee": "Cancelled"
+    },
+    "form": {
+      "titreVehicule": "New vehicle",
+      "titreMission": "Plan a mission",
+      "choisirVehicule": "Choose an available vehicle",
+      "requis": "Required field",
+      "aucunDispo": "No vehicle available"
+    }
+  }
+}

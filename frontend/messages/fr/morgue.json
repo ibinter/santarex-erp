@@ -1,0 +1,103 @@
+{
+  "morgue": {
+    "title": "Morgue",
+    "subtitle": "Gestion des décès, de la chambre froide et de la remise des corps",
+    "nouveauDeces": "Enregistrer un décès",
+    "nouveauCasier": "Nouveau casier",
+    "actualiser": "Actualiser",
+    "chargement": "Chargement…",
+    "erreurChargement": "Impossible de charger les données de la morgue",
+    "actionImpossible": "Action impossible",
+    "creationImpossible": "Enregistrement impossible",
+    "annuler": "Annuler",
+    "enregistrer": "Enregistrer",
+    "creer": "Créer",
+    "creation": "Enregistrement…",
+    "ans": "ans",
+    "jour": "jour",
+
+    "kpiCorpsPresents": "Corps présents",
+    "kpiCasiersLibres": "Casiers libres",
+    "kpiDecesMois": "Décès du mois",
+    "kpiOccupation": "Taux d'occupation",
+
+    "tabDeces": "Décès ({count})",
+    "tabCasiers": "Casiers ({count})",
+    "tabSejours": "Chambre froide ({count})",
+
+    "aucunDeces": "Aucun décès enregistré",
+    "aucunCasier": "Aucun casier configuré",
+    "aucunSejour": "Aucun séjour en chambre froide",
+    "aucunCasierLibre": "Aucun casier libre disponible — libérez un casier ou créez-en un nouveau.",
+
+    "thNumero": "N° décès",
+    "thDefunt": "Défunt",
+    "thDeces": "Date du décès",
+    "thLieu": "Lieu",
+    "thCertificat": "Certificat",
+    "thActions": "Actions",
+    "thCasier": "Casier",
+    "thEntree": "Entrée",
+    "thSortie": "Sortie",
+    "thStatutSejour": "Statut",
+    "thFrais": "Frais",
+
+    "certificatNonEmis": "Non émis",
+    "emettreCertificat": "Certificat",
+    "confirmCertificat": "Émettre le certificat de décès pour {numero} ?",
+    "placer": "Placer en chambre",
+    "enChambre": "En chambre froide",
+    "remettre": "Remettre le corps",
+
+    "sexe": {
+      "M": "Masculin",
+      "F": "Féminin",
+      "indetermine": "Non précisé"
+    },
+    "lieu": {
+      "service": "Décès en service",
+      "domicile": "Décès à domicile",
+      "arrivee": "Décédé à l'arrivée",
+      "autre": "Autre"
+    },
+    "statutCasier": {
+      "libre": "Libre",
+      "occupe": "Occupé",
+      "maintenance": "Maintenance"
+    },
+    "statutSejour": {
+      "en_chambre": "En chambre froide",
+      "remis": "Corps remis"
+    },
+
+    "modalDecesTitre": "Enregistrer un décès",
+    "labelNom": "Nom",
+    "labelPrenom": "Prénom(s)",
+    "labelSexe": "Sexe",
+    "labelAge": "Âge",
+    "labelDateDeces": "Date et heure du décès",
+    "labelLieu": "Lieu du décès",
+    "labelCause": "Cause du décès",
+    "labelMedecin": "Médecin constatant",
+    "labelEmettreCertificat": "Émettre le certificat de décès",
+
+    "modalCasierTitre": "Nouveau casier",
+    "labelNumeroCasier": "Numéro du casier",
+    "labelDescription": "Description",
+
+    "modalEntreeTitre": "Placer en chambre : {defunt}",
+    "labelCasier": "Casier",
+    "choisirCasier": "Choisir un casier libre…",
+    "labelDateEntree": "Date et heure d'entrée",
+    "labelTarifJournalier": "Tarif journalier de conservation (FCFA)",
+
+    "modalRemiseTitre": "Remise du corps",
+    "remiseInfo": "Défunt : {defunt} — Casier {casier}",
+    "confirmerRemise": "Confirmer la remise",
+    "labelPersonneNom": "Personne recevant le corps",
+    "labelLien": "Lien avec le défunt",
+    "placeholderLien": "Ex : Époux, Fils…",
+    "labelPiece": "Pièce d'identité",
+    "labelAgent": "Agent effectuant la remise"
+  }
+}

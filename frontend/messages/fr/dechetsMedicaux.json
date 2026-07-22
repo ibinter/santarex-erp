@@ -1,0 +1,98 @@
+{
+  "dechetsMedicaux": {
+    "title": "Déchets médicaux",
+    "subtitle": "Traçabilité des déchets d'activités de soins (DASRI et assimilés)",
+    "tabs": {
+      "collectes": "Collectes",
+      "enlevements": "Enlèvements",
+      "stats": "Statistiques"
+    },
+    "actions": {
+      "newCollecte": "Nouvelle collecte",
+      "newEnlevement": "Nouvel enlèvement",
+      "refresh": "Actualiser",
+      "search": "Rechercher…",
+      "create": "Enregistrer",
+      "cancel": "Annuler",
+      "traiter": "Enregistrer le certificat",
+      "close": "Fermer",
+      "delete": "Supprimer"
+    },
+    "categorie": {
+      "label": "Catégorie",
+      "dasri": "DASRI",
+      "anatomique": "Anatomique",
+      "chimique": "Chimique",
+      "pharmaceutique": "Pharmaceutique",
+      "radioactif": "Radioactif",
+      "menager_assimile": "Ménager assimilé"
+    },
+    "conditionnement": {
+      "label": "Conditionnement",
+      "carton": "Carton",
+      "fut": "Fût",
+      "boite_opct": "Boîte OPCT"
+    },
+    "statutCollecte": {
+      "label": "Statut",
+      "collecte": "Collectée",
+      "en_stockage": "En stockage",
+      "enleve": "Enlevée",
+      "incinere": "Incinérée"
+    },
+    "modeTraitement": {
+      "label": "Mode de traitement",
+      "incineration": "Incinération",
+      "banalisation": "Banalisation",
+      "enfouissement": "Enfouissement"
+    },
+    "statutEnlevement": {
+      "label": "Statut",
+      "planifie": "Planifié",
+      "enleve": "Enlevé",
+      "traite": "Traité"
+    },
+    "fields": {
+      "numero": "Numéro",
+      "serviceProducteur": "Service producteur",
+      "uniteProducteur": "Unité",
+      "poidsKg": "Poids (kg)",
+      "dateCollecte": "Date de collecte",
+      "agentRef": "Agent",
+      "observations": "Observations",
+      "bordereauNumero": "N° bordereau",
+      "prestataire": "Prestataire",
+      "dateEnlevement": "Date d'enlèvement",
+      "poidsTotal": "Poids total (kg)",
+      "certificatDestruction": "Certificat de destruction",
+      "dateTraitement": "Date de traitement",
+      "collectesLiees": "Collectes regroupées"
+    },
+    "stats": {
+      "totalCollectes": "Collectes totales",
+      "poidsTotal": "Poids total (kg)",
+      "enAttente": "En attente d'enlèvement",
+      "poidsEnAttente": "Poids en attente (kg)",
+      "stockageProlonge": "Stockage prolongé",
+      "enlevementsTotal": "Enlèvements",
+      "enlevementsATraiter": "À traiter",
+      "poidsParCategorie": "Poids par catégorie",
+      "poidsParMois": "Poids par mois",
+      "parStatut": "Répartition par statut"
+    },
+    "alerts": {
+      "stockageProlonge": "Collectes stockées depuis plus de 7 jours — à enlever."
+    },
+    "empty": {
+      "collectes": "Aucune collecte enregistrée",
+      "enlevements": "Aucun enlèvement enregistré",
+      "selectCollectes": "Sélectionnez au moins une collecte en attente"
+    },
+    "form": {
+      "createCollecteTitle": "Enregistrer une collecte",
+      "createEnlevementTitle": "Créer un enlèvement / bordereau",
+      "selectCollectes": "Collectes à regrouper",
+      "traiterTitle": "Certificat de destruction"
+    }
+  }
+}

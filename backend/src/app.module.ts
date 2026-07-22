@@ -53,6 +53,12 @@ import { BanqueSangModule } from './banque-sang/banque-sang.module';
 import { SterilisationModule } from './sterilisation/sterilisation.module';
 import { ConsentementsModule } from './consentements/consentements.module';
 import { SoinsInfirmiersModule } from './soins-infirmiers/soins-infirmiers.module';
+// Vague 3 — nouveaux modules hospitaliers
+import { VaccinationModule } from './vaccination/vaccination.module';
+import { DechetsMedicauxModule } from './dechets-medicaux/dechets-medicaux.module';
+import { MorgueModule } from './morgue/morgue.module';
+import { TransportModule } from './transport/transport.module';
+import { EquipementsModule } from './equipements/equipements.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -121,6 +127,11 @@ import { SeedModule } from './database/seed.module';
     SterilisationModule,
     ConsentementsModule,
     SoinsInfirmiersModule,
+    VaccinationModule,
+    DechetsMedicauxModule,
+    MorgueModule,
+    TransportModule,
+    EquipementsModule,
     HealthModule,
     SeedModule,
   ],
