@@ -1,0 +1,131 @@
+{
+  "had": {
+    "statut": {
+      "active": "Active",
+      "suspendue": "Suspendue",
+      "terminee": "Terminée"
+    },
+    "typeVisite": {
+      "infirmier": "Infirmier",
+      "medical": "Médical",
+      "kine": "Kinésithérapie",
+      "autre": "Autre"
+    },
+    "statutVisite": {
+      "planifiee": "Planifiée",
+      "effectuee": "Effectuée",
+      "annulee": "Annulée",
+      "reportee": "Reportée"
+    },
+    "hero": {
+      "title": "Hospitalisation à domicile",
+      "loading": "Chargement…",
+      "displayedCount": "{count, plural, one {# patient affiché} other {# patients affichés}}",
+      "kpiActives": "Patients actifs",
+      "kpiSuspendues": "Suspendues",
+      "kpiTotal": "Total",
+      "kpiVisitesJour": "Visites du jour",
+      "kpiEnRetard": "Visites en retard",
+      "filterTitle": "Filtrer : {label}",
+      "newAdmission": "Nouvelle admission"
+    },
+    "tabs": {
+      "patients": "Patients HAD",
+      "agenda": "Agenda du jour"
+    },
+    "list": {
+      "searchPlaceholder": "Rechercher patient, numéro, motif…",
+      "filterAll": "Tous",
+      "colNumero": "Numéro",
+      "colPatient": "Patient",
+      "colMotif": "Motif",
+      "colDebut": "Début",
+      "colStatut": "Statut",
+      "empty": "Aucune prise en charge HAD"
+    },
+    "detail": {
+      "title": "Prise en charge",
+      "patient": "Patient",
+      "medecin": "Médecin référent",
+      "adresse": "Adresse domicile",
+      "ville": "Ville",
+      "telephone": "Téléphone",
+      "motif": "Motif / pathologie",
+      "dateDebut": "Date de début",
+      "dateFinPrevue": "Fin prévue",
+      "dateFinReelle": "Fin réelle",
+      "frequence": "Fréquence des visites",
+      "protocole": "Plan de soins / protocole",
+      "statut": "Statut",
+      "planSoins": "Plan de soins à domicile",
+      "aucunProtocole": "Aucun protocole renseigné",
+      "visites": "Planning des visites",
+      "visitesEmpty": "Aucune visite planifiée",
+      "planifier": "Planifier une visite",
+      "enregistrer": "Enregistrer",
+      "suspendre": "Suspendre",
+      "reactiver": "Réactiver",
+      "cloturer": "Clôturer",
+      "prochaine": "Prochaine visite"
+    },
+    "agenda": {
+      "title": "Visites planifiées aujourd'hui",
+      "empty": "Aucune visite planifiée aujourd'hui",
+      "colHeure": "Heure",
+      "colPatient": "Patient",
+      "colType": "Type",
+      "colStatut": "Statut"
+    },
+    "admission": {
+      "title": "Admettre un patient en HAD",
+      "patientId": "Patient (UUID)",
+      "phPatientId": "UUID du patient",
+      "adresseDomicile": "Adresse du domicile",
+      "ville": "Ville / commune",
+      "telephoneContact": "Téléphone de contact",
+      "motif": "Motif / pathologie",
+      "medecinReferentRef": "Médecin référent (UUID)",
+      "dateDebut": "Date de début",
+      "dateFinPrevue": "Date de fin prévue",
+      "frequenceVisites": "Fréquence des visites",
+      "phFrequence": "Ex. quotidienne, 3x/semaine",
+      "protocoleSoins": "Plan de soins / protocole",
+      "cancel": "Annuler",
+      "save": "Admettre",
+      "saving": "Enregistrement…"
+    },
+    "visiteForm": {
+      "titleCreate": "Planifier une visite",
+      "titleEdit": "Enregistrer la visite",
+      "dateVisite": "Date et heure",
+      "type": "Type de visite",
+      "intervenantRef": "Intervenant (UUID)",
+      "statut": "Statut",
+      "observations": "Observations",
+      "phObservations": "Observations cliniques…",
+      "actesRealises": "Actes réalisés",
+      "phActes": "Actes de soins réalisés…",
+      "prochaineVisite": "Prochaine visite",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "cloture": {
+      "title": "Clôturer la prise en charge",
+      "motif": "Motif de clôture",
+      "phMotif": "Motif de fin de prise en charge…",
+      "cancel": "Annuler",
+      "confirm": "Clôturer",
+      "saving": "Enregistrement…"
+    },
+    "errors": {
+      "patientRequired": "Le patient est requis",
+      "adresseRequired": "L'adresse est requise",
+      "motifRequired": "Le motif est requis",
+      "medecinRequired": "Le médecin référent est requis",
+      "create": "Échec de l'enregistrement",
+      "visiteSave": "Échec de l'enregistrement de la visite",
+      "statutSave": "Échec du changement de statut"
+    }
+  }
+}

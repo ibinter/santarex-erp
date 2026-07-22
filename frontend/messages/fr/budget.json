@@ -1,0 +1,72 @@
+{
+  "title": "Budget & Contrôle de gestion",
+  "subtitle": "Budgets prévisionnels, suivi du réalisé et analyse des écarts",
+  "tabs": {
+    "tableauBord": "Tableau de bord",
+    "budgets": "Budgets"
+  },
+  "exercice": "Exercice",
+  "tousExercices": "Tous les exercices",
+  "nouveauBudget": "Nouveau budget",
+  "aucunBudget": "Aucun budget pour cet exercice",
+  "chargement": "Chargement…",
+  "erreur": "Une erreur est survenue",
+  "type": {
+    "label": "Type",
+    "recettes": "Recettes",
+    "depenses": "Dépenses"
+  },
+  "statut": {
+    "label": "Statut",
+    "brouillon": "Brouillon",
+    "valide": "Validé",
+    "cloture": "Clôturé"
+  },
+  "champs": {
+    "libelle": "Libellé",
+    "service": "Service",
+    "poste": "Poste / rubrique",
+    "categorie": "Catégorie",
+    "devise": "Devise",
+    "notes": "Notes",
+    "montantPrevu": "Prévu",
+    "montantRealise": "Réalisé",
+    "ecart": "Écart",
+    "tauxRealisation": "Taux",
+    "mois": "Mois"
+  },
+  "actions": {
+    "creer": "Créer",
+    "enregistrer": "Enregistrer",
+    "annuler": "Annuler",
+    "valider": "Valider",
+    "cloturer": "Clôturer",
+    "supprimer": "Supprimer",
+    "ajouterLigne": "Ajouter une ligne",
+    "saisirRealise": "Saisir le réalisé",
+    "voirDetail": "Voir le détail",
+    "retour": "Retour"
+  },
+  "tableauBord": {
+    "titre": "Synthèse de l'exercice",
+    "nbBudgets": "Budgets",
+    "recettes": "Recettes",
+    "depenses": "Dépenses",
+    "resultatPrevu": "Résultat prévu",
+    "resultatRealise": "Résultat réalisé",
+    "prevuVsRealise": "Prévu vs Réalisé",
+    "parService": "Consolidation par service",
+    "topEcarts": "Principaux écarts",
+    "aucunEcart": "Aucun écart significatif",
+    "tauxGlobal": "Taux global de réalisation",
+    "depassements": "Dépassements"
+  },
+  "detail": {
+    "lignes": "Lignes budgétaires",
+    "aucuneLigne": "Aucune ligne. Ajoutez une première rubrique budgétaire.",
+    "totalPrevu": "Total prévu",
+    "totalRealise": "Total réalisé",
+    "alerteDepassement": "Dépassement budgétaire"
+  },
+  "confirmSuppression": "Confirmer la suppression ?"
+}

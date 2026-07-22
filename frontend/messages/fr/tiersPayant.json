@@ -1,0 +1,101 @@
+{
+  "tiersPayant": {
+    "titre": "Tiers-payant",
+    "sousTitre": "Bordereaux de remboursement assureurs",
+    "description": "Regroupez les actes couverts par assureur, émettez les bordereaux et suivez les paiements.",
+    "nouveauBordereau": "Nouveau bordereau",
+    "rechercher": "Rechercher un bordereau, un assureur…",
+    "actualiser": "Actualiser",
+    "aucunBordereau": "Aucun bordereau",
+    "aucunBordereauDesc": "Créez un premier bordereau pour un assureur sur une période.",
+    "chargement": "Chargement…",
+
+    "kpiTotal": "Bordereaux",
+    "kpiImpayes": "Impayés",
+    "kpiEnAttente": "En attente",
+    "kpiEncaisse": "Encaissé",
+
+    "colNumero": "Numéro",
+    "colAssureur": "Assureur",
+    "colPeriode": "Période",
+    "colActes": "Actes",
+    "colCouvert": "Montant couvert",
+    "colPaye": "Payé",
+    "colEcart": "Écart",
+    "colStatut": "Statut",
+    "colActions": "Actions",
+
+    "statut": {
+      "brouillon": "Brouillon",
+      "emis": "Émis",
+      "envoye": "Envoyé",
+      "paye_partiel": "Payé partiel",
+      "paye": "Payé",
+      "rejete": "Rejeté"
+    },
+
+    "onglets": {
+      "bordereaux": "Bordereaux",
+      "creances": "Créances par assureur"
+    },
+
+    "creancesTitre": "Créances par assureur",
+    "creancesVide": "Aucune créance en attente",
+    "colNbBordereaux": "Bordereaux",
+    "colEnAttente": "Reste dû",
+
+    "detailTitre": "Détail du bordereau",
+    "lignes": "Lignes (actes couverts)",
+    "ajouterLigne": "Ajouter une ligne",
+    "aucuneLigne": "Aucune ligne. Ajoutez les actes couverts.",
+    "colPatient": "Patient",
+    "colActe": "Acte",
+    "colDateActe": "Date",
+    "colMontantTotal": "Montant total",
+    "colTaux": "Taux",
+    "colBPC": "N° BPC",
+    "supprimer": "Supprimer",
+
+    "form": {
+      "assureur": "Assureur",
+      "choisirAssureur": "Choisir un assureur",
+      "periodeDebut": "Début de période",
+      "periodeFin": "Fin de période",
+      "notes": "Notes",
+      "patientNom": "Nom du patient",
+      "acte": "Acte / prestation",
+      "dateActe": "Date de l'acte",
+      "montantTotal": "Montant total (XOF)",
+      "tauxCouverture": "Taux de couverture (%)",
+      "factureRef": "Référence facture",
+      "numeroBPC": "N° bon de prise en charge",
+      "montantCouvert": "Montant couvert",
+      "annuler": "Annuler",
+      "enregistrer": "Enregistrer",
+      "creer": "Créer"
+    },
+
+    "paiement": {
+      "titre": "Enregistrer un paiement assureur",
+      "montant": "Montant payé (XOF)",
+      "reference": "Référence de virement",
+      "datePaiement": "Date du paiement",
+      "increment": "Ajouter au montant déjà payé",
+      "valider": "Valider le paiement"
+    },
+
+    "actions": {
+      "voir": "Voir",
+      "emettre": "Émettre",
+      "envoyer": "Marquer envoyé",
+      "paiement": "Paiement",
+      "rejeter": "Rejeter"
+    },
+
+    "erreurChargement": "Erreur de chargement",
+    "erreurEnregistrement": "Erreur lors de l'enregistrement",
+    "confirmSuppression": "Supprimer ce bordereau ?",
+    "confirmSuppressionLigne": "Supprimer cette ligne ?",
+    "motifRejet": "Motif du rejet"
+  }
+}

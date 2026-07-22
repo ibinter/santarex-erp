@@ -1,0 +1,82 @@
+{
+  "caisseSessions": {
+    "titre": "Sessions de caisse",
+    "sousTitre": "Ouverture, clôture et reçus d'encaissement",
+    "actualiser": "Actualiser",
+
+    "kpiSessionsJour": "Sessions du jour",
+    "kpiOuvertes": "Ouvertes",
+    "kpiEncaisseJour": "Encaissé du jour",
+    "kpiEcarts": "Écarts cumulés",
+    "kpiRecusJour": "Reçus du jour",
+
+    "sessionEnCours": "Session en cours",
+    "aucuneSession": "Aucune session ouverte",
+    "aucuneSessionDesc": "Ouvrez une caisse pour commencer à encaisser et émettre des reçus.",
+    "ouvrirCaisse": "Ouvrir la caisse",
+    "fondInitial": "Fond de caisse initial",
+    "fondInitialAide": "Montant en espèces présent dans la caisse à l'ouverture",
+    "notesOptionnel": "Notes (optionnel)",
+    "confirmerOuverture": "Confirmer l'ouverture",
+    "annuler": "Annuler",
+
+    "numero": "N°",
+    "caissier": "Caissier",
+    "ouvertLe": "Ouverte le",
+    "clotureeLe": "Clôturée le",
+    "fond": "Fond initial",
+    "theorique": "Théorique espèces",
+    "compte": "Compté espèces",
+    "ecart": "Écart",
+    "totalEncaisse": "Total encaissé",
+    "statut": "Statut",
+    "statutOuverte": "Ouverte",
+    "statutCloturee": "Clôturée",
+
+    "repartition": "Répartition par mode",
+    "recusEmis": "Reçus émis",
+    "nouveauRecu": "Nouveau reçu",
+    "aucunRecu": "Aucun reçu émis pour cette session",
+
+    "cloturer": "Clôturer la caisse",
+    "comptageEspeces": "Comptage des espèces",
+    "montantCompte": "Montant compté (espèces)",
+    "montantCompteAide": "Espèces réellement présentes dans la caisse",
+    "confirmerCloture": "Confirmer la clôture",
+    "ecartPositif": "Excédent",
+    "ecartNegatif": "Manquant",
+    "ecartNul": "Caisse juste",
+
+    "historique": "Historique des sessions",
+    "voirDetail": "Détail",
+    "aucuneHistorique": "Aucune session enregistrée",
+
+    "recuTitre": "Émettre un reçu",
+    "recuObjet": "Objet / libellé",
+    "recuMontant": "Montant",
+    "recuMode": "Mode de paiement",
+    "recuPatient": "Réf. patient (optionnel)",
+    "recuFacture": "Réf. facture (optionnel)",
+    "emettre": "Émettre le reçu",
+    "imprimer": "Imprimer",
+    "apercuRecu": "Aperçu du reçu",
+    "recuNumero": "Reçu N°",
+    "recuDate": "Date",
+    "recuEmisPar": "Émis par",
+    "recuMerci": "Merci de votre confiance",
+    "fermer": "Fermer",
+
+    "mode": {
+      "especes": "Espèces",
+      "carte_bancaire": "Carte bancaire",
+      "mobile_money": "Mobile Money",
+      "virement": "Virement",
+      "cheque": "Chèque",
+      "assurance": "Assurance",
+      "autre": "Autre"
+    },
+
+    "erreurChargement": "Erreur de chargement",
+    "erreurAction": "Action impossible"
+  }
+}

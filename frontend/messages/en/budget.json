@@ -1,0 +1,72 @@
+{
+  "title": "Budget & Management Control",
+  "subtitle": "Forecast budgets, actuals tracking and variance analysis",
+  "tabs": {
+    "tableauBord": "Dashboard",
+    "budgets": "Budgets"
+  },
+  "exercice": "Fiscal year",
+  "tousExercices": "All fiscal years",
+  "nouveauBudget": "New budget",
+  "aucunBudget": "No budget for this fiscal year",
+  "chargement": "Loading…",
+  "erreur": "An error occurred",
+  "type": {
+    "label": "Type",
+    "recettes": "Revenue",
+    "depenses": "Expenses"
+  },
+  "statut": {
+    "label": "Status",
+    "brouillon": "Draft",
+    "valide": "Approved",
+    "cloture": "Closed"
+  },
+  "champs": {
+    "libelle": "Label",
+    "service": "Department",
+    "poste": "Line / item",
+    "categorie": "Category",
+    "devise": "Currency",
+    "notes": "Notes",
+    "montantPrevu": "Budgeted",
+    "montantRealise": "Actual",
+    "ecart": "Variance",
+    "tauxRealisation": "Rate",
+    "mois": "Month"
+  },
+  "actions": {
+    "creer": "Create",
+    "enregistrer": "Save",
+    "annuler": "Cancel",
+    "valider": "Approve",
+    "cloturer": "Close",
+    "supprimer": "Delete",
+    "ajouterLigne": "Add line",
+    "saisirRealise": "Enter actual",
+    "voirDetail": "View detail",
+    "retour": "Back"
+  },
+  "tableauBord": {
+    "titre": "Fiscal year summary",
+    "nbBudgets": "Budgets",
+    "recettes": "Revenue",
+    "depenses": "Expenses",
+    "resultatPrevu": "Budgeted result",
+    "resultatRealise": "Actual result",
+    "prevuVsRealise": "Budgeted vs Actual",
+    "parService": "Consolidation by department",
+    "topEcarts": "Top variances",
+    "aucunEcart": "No significant variance",
+    "tauxGlobal": "Overall realization rate",
+    "depassements": "Overruns"
+  },
+  "detail": {
+    "lignes": "Budget lines",
+    "aucuneLigne": "No line yet. Add a first budget item.",
+    "totalPrevu": "Total budgeted",
+    "totalRealise": "Total actual",
+    "alerteDepassement": "Budget overrun"
+  },
+  "confirmSuppression": "Confirm deletion?"
+}

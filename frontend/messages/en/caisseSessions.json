@@ -1,0 +1,82 @@
+{
+  "caisseSessions": {
+    "titre": "Cash sessions",
+    "sousTitre": "Opening, closing and payment receipts",
+    "actualiser": "Refresh",
+
+    "kpiSessionsJour": "Today's sessions",
+    "kpiOuvertes": "Open",
+    "kpiEncaisseJour": "Collected today",
+    "kpiEcarts": "Cumulated variances",
+    "kpiRecusJour": "Today's receipts",
+
+    "sessionEnCours": "Current session",
+    "aucuneSession": "No open session",
+    "aucuneSessionDesc": "Open a cash drawer to start collecting payments and issuing receipts.",
+    "ouvrirCaisse": "Open cash drawer",
+    "fondInitial": "Initial cash float",
+    "fondInitialAide": "Cash amount present in the drawer at opening",
+    "notesOptionnel": "Notes (optional)",
+    "confirmerOuverture": "Confirm opening",
+    "annuler": "Cancel",
+
+    "numero": "No.",
+    "caissier": "Cashier",
+    "ouvertLe": "Opened on",
+    "clotureeLe": "Closed on",
+    "fond": "Initial float",
+    "theorique": "Theoretical cash",
+    "compte": "Counted cash",
+    "ecart": "Variance",
+    "totalEncaisse": "Total collected",
+    "statut": "Status",
+    "statutOuverte": "Open",
+    "statutCloturee": "Closed",
+
+    "repartition": "Breakdown by method",
+    "recusEmis": "Issued receipts",
+    "nouveauRecu": "New receipt",
+    "aucunRecu": "No receipt issued for this session",
+
+    "cloturer": "Close cash drawer",
+    "comptageEspeces": "Cash count",
+    "montantCompte": "Counted amount (cash)",
+    "montantCompteAide": "Cash actually present in the drawer",
+    "confirmerCloture": "Confirm closing",
+    "ecartPositif": "Overage",
+    "ecartNegatif": "Shortage",
+    "ecartNul": "Balanced",
+
+    "historique": "Session history",
+    "voirDetail": "Details",
+    "aucuneHistorique": "No session recorded",
+
+    "recuTitre": "Issue a receipt",
+    "recuObjet": "Purpose / label",
+    "recuMontant": "Amount",
+    "recuMode": "Payment method",
+    "recuPatient": "Patient ref. (optional)",
+    "recuFacture": "Invoice ref. (optional)",
+    "emettre": "Issue receipt",
+    "imprimer": "Print",
+    "apercuRecu": "Receipt preview",
+    "recuNumero": "Receipt No.",
+    "recuDate": "Date",
+    "recuEmisPar": "Issued by",
+    "recuMerci": "Thank you for your trust",
+    "fermer": "Close",
+
+    "mode": {
+      "especes": "Cash",
+      "carte_bancaire": "Bank card",
+      "mobile_money": "Mobile Money",
+      "virement": "Bank transfer",
+      "cheque": "Cheque",
+      "assurance": "Insurance",
+      "autre": "Other"
+    },
+
+    "erreurChargement": "Loading error",
+    "erreurAction": "Action failed"
+  }
+}

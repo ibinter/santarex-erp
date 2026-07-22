@@ -1,0 +1,131 @@
+{
+  "had": {
+    "statut": {
+      "active": "Active",
+      "suspendue": "Suspended",
+      "terminee": "Closed"
+    },
+    "typeVisite": {
+      "infirmier": "Nursing",
+      "medical": "Medical",
+      "kine": "Physiotherapy",
+      "autre": "Other"
+    },
+    "statutVisite": {
+      "planifiee": "Scheduled",
+      "effectuee": "Completed",
+      "annulee": "Cancelled",
+      "reportee": "Postponed"
+    },
+    "hero": {
+      "title": "Home care",
+      "loading": "Loading…",
+      "displayedCount": "{count, plural, one {# patient shown} other {# patients shown}}",
+      "kpiActives": "Active patients",
+      "kpiSuspendues": "Suspended",
+      "kpiTotal": "Total",
+      "kpiVisitesJour": "Today's visits",
+      "kpiEnRetard": "Overdue visits",
+      "filterTitle": "Filter: {label}",
+      "newAdmission": "New admission"
+    },
+    "tabs": {
+      "patients": "Home care patients",
+      "agenda": "Today's schedule"
+    },
+    "list": {
+      "searchPlaceholder": "Search patient, number, reason…",
+      "filterAll": "All",
+      "colNumero": "Number",
+      "colPatient": "Patient",
+      "colMotif": "Reason",
+      "colDebut": "Start",
+      "colStatut": "Status",
+      "empty": "No home care episodes"
+    },
+    "detail": {
+      "title": "Care episode",
+      "patient": "Patient",
+      "medecin": "Referring physician",
+      "adresse": "Home address",
+      "ville": "City",
+      "telephone": "Phone",
+      "motif": "Reason / condition",
+      "dateDebut": "Start date",
+      "dateFinPrevue": "Planned end",
+      "dateFinReelle": "Actual end",
+      "frequence": "Visit frequency",
+      "protocole": "Care plan / protocol",
+      "statut": "Status",
+      "planSoins": "Home care plan",
+      "aucunProtocole": "No protocol provided",
+      "visites": "Visit schedule",
+      "visitesEmpty": "No visits scheduled",
+      "planifier": "Schedule a visit",
+      "enregistrer": "Record",
+      "suspendre": "Suspend",
+      "reactiver": "Reactivate",
+      "cloturer": "Close",
+      "prochaine": "Next visit"
+    },
+    "agenda": {
+      "title": "Visits scheduled today",
+      "empty": "No visits scheduled today",
+      "colHeure": "Time",
+      "colPatient": "Patient",
+      "colType": "Type",
+      "colStatut": "Status"
+    },
+    "admission": {
+      "title": "Admit a patient to home care",
+      "patientId": "Patient (UUID)",
+      "phPatientId": "Patient UUID",
+      "adresseDomicile": "Home address",
+      "ville": "City / town",
+      "telephoneContact": "Contact phone",
+      "motif": "Reason / condition",
+      "medecinReferentRef": "Referring physician (UUID)",
+      "dateDebut": "Start date",
+      "dateFinPrevue": "Planned end date",
+      "frequenceVisites": "Visit frequency",
+      "phFrequence": "e.g. daily, 3x/week",
+      "protocoleSoins": "Care plan / protocol",
+      "cancel": "Cancel",
+      "save": "Admit",
+      "saving": "Saving…"
+    },
+    "visiteForm": {
+      "titleCreate": "Schedule a visit",
+      "titleEdit": "Record the visit",
+      "dateVisite": "Date and time",
+      "type": "Visit type",
+      "intervenantRef": "Caregiver (UUID)",
+      "statut": "Status",
+      "observations": "Observations",
+      "phObservations": "Clinical observations…",
+      "actesRealises": "Procedures performed",
+      "phActes": "Care procedures performed…",
+      "prochaineVisite": "Next visit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "cloture": {
+      "title": "Close the care episode",
+      "motif": "Closure reason",
+      "phMotif": "Reason for ending care…",
+      "cancel": "Cancel",
+      "confirm": "Close",
+      "saving": "Saving…"
+    },
+    "errors": {
+      "patientRequired": "Patient is required",
+      "adresseRequired": "Address is required",
+      "motifRequired": "Reason is required",
+      "medecinRequired": "Referring physician is required",
+      "create": "Failed to save",
+      "visiteSave": "Failed to save the visit",
+      "statutSave": "Failed to change status"
+    }
+  }
+}

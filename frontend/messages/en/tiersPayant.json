@@ -1,0 +1,101 @@
+{
+  "tiersPayant": {
+    "titre": "Insurance claims",
+    "sousTitre": "Insurer reimbursement statements",
+    "description": "Group covered acts by insurer, issue statements and track payments.",
+    "nouveauBordereau": "New statement",
+    "rechercher": "Search a statement, an insurer…",
+    "actualiser": "Refresh",
+    "aucunBordereau": "No statement",
+    "aucunBordereauDesc": "Create a first statement for an insurer over a period.",
+    "chargement": "Loading…",
+
+    "kpiTotal": "Statements",
+    "kpiImpayes": "Unpaid",
+    "kpiEnAttente": "Outstanding",
+    "kpiEncaisse": "Collected",
+
+    "colNumero": "Number",
+    "colAssureur": "Insurer",
+    "colPeriode": "Period",
+    "colActes": "Acts",
+    "colCouvert": "Covered amount",
+    "colPaye": "Paid",
+    "colEcart": "Gap",
+    "colStatut": "Status",
+    "colActions": "Actions",
+
+    "statut": {
+      "brouillon": "Draft",
+      "emis": "Issued",
+      "envoye": "Sent",
+      "paye_partiel": "Partly paid",
+      "paye": "Paid",
+      "rejete": "Rejected"
+    },
+
+    "onglets": {
+      "bordereaux": "Statements",
+      "creances": "Receivables by insurer"
+    },
+
+    "creancesTitre": "Receivables by insurer",
+    "creancesVide": "No outstanding receivable",
+    "colNbBordereaux": "Statements",
+    "colEnAttente": "Remaining due",
+
+    "detailTitre": "Statement detail",
+    "lignes": "Lines (covered acts)",
+    "ajouterLigne": "Add a line",
+    "aucuneLigne": "No line yet. Add the covered acts.",
+    "colPatient": "Patient",
+    "colActe": "Act",
+    "colDateActe": "Date",
+    "colMontantTotal": "Total amount",
+    "colTaux": "Rate",
+    "colBPC": "Auth. no.",
+    "supprimer": "Delete",
+
+    "form": {
+      "assureur": "Insurer",
+      "choisirAssureur": "Choose an insurer",
+      "periodeDebut": "Period start",
+      "periodeFin": "Period end",
+      "notes": "Notes",
+      "patientNom": "Patient name",
+      "acte": "Act / service",
+      "dateActe": "Act date",
+      "montantTotal": "Total amount (XOF)",
+      "tauxCouverture": "Coverage rate (%)",
+      "factureRef": "Invoice reference",
+      "numeroBPC": "Pre-authorization no.",
+      "montantCouvert": "Covered amount",
+      "annuler": "Cancel",
+      "enregistrer": "Save",
+      "creer": "Create"
+    },
+
+    "paiement": {
+      "titre": "Record an insurer payment",
+      "montant": "Amount paid (XOF)",
+      "reference": "Transfer reference",
+      "datePaiement": "Payment date",
+      "increment": "Add to amount already paid",
+      "valider": "Confirm payment"
+    },
+
+    "actions": {
+      "voir": "View",
+      "emettre": "Issue",
+      "envoyer": "Mark sent",
+      "paiement": "Payment",
+      "rejeter": "Reject"
+    },
+
+    "erreurChargement": "Loading error",
+    "erreurEnregistrement": "Error while saving",
+    "confirmSuppression": "Delete this statement?",
+    "confirmSuppressionLigne": "Delete this line?",
+    "motifRejet": "Rejection reason"
+  }
+}

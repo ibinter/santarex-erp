@@ -59,6 +59,12 @@ import { DechetsMedicauxModule } from './dechets-medicaux/dechets-medicaux.modul
 import { MorgueModule } from './morgue/morgue.module';
 import { TransportModule } from './transport/transport.module';
 import { EquipementsModule } from './equipements/equipements.module';
+// Vague 4 — finances & prise en charge
+import { DevisModule } from './devis/devis.module';
+import { CaisseSessionsModule } from './caisse-sessions/caisse-sessions.module';
+import { TiersPayantModule } from './tiers-payant/tiers-payant.module';
+import { BudgetModule } from './budget/budget.module';
+import { HadModule } from './had/had.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -132,6 +138,11 @@ import { SeedModule } from './database/seed.module';
     MorgueModule,
     TransportModule,
     EquipementsModule,
+    DevisModule,
+    CaisseSessionsModule,
+    TiersPayantModule,
+    BudgetModule,
+    HadModule,
     HealthModule,
     SeedModule,
   ],
