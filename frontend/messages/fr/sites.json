@@ -1,0 +1,62 @@
+{
+  "title": "Sites / Réseau",
+  "subtitle": "Gérez les antennes et cliniques de votre établissement et l'affectation du personnel",
+  "tabs": {
+    "reseau": "Tableau de bord réseau",
+    "sites": "Sites",
+    "affectations": "Affectations"
+  },
+  "chargement": "Chargement…",
+  "erreur": "Une erreur est survenue",
+  "actualiser": "Actualiser",
+  "nouveauSite": "Nouveau site",
+  "modifierSite": "Modifier le site",
+  "aucunSite": "Aucun site pour le moment",
+  "aucuneAffectation": "Aucune affectation sur ce site",
+  "principal": "Principal",
+  "enregistrer": "Enregistrer",
+  "annuler": "Annuler",
+  "supprimer": "Supprimer",
+  "confirmerSuppression": "Confirmer la suppression de ce site ?",
+  "confirmerSuppressionAffectation": "Retirer cette affectation ?",
+  "champs": {
+    "code": "Code",
+    "nom": "Nom du site",
+    "type": "Type",
+    "adresse": "Adresse",
+    "ville": "Ville",
+    "telephone": "Téléphone",
+    "responsableRef": "Responsable (référence)",
+    "capaciteLits": "Capacité (lits)",
+    "statut": "Statut",
+    "estPrincipal": "Site principal"
+  },
+  "type": {
+    "siege": "Siège",
+    "antenne": "Antenne",
+    "clinique": "Clinique",
+    "pharmacie": "Pharmacie",
+    "laboratoire": "Laboratoire"
+  },
+  "statut": {
+    "actif": "Actif",
+    "inactif": "Inactif"
+  },
+  "stats": {
+    "nbSites": "Sites",
+    "sitesActifs": "Sites actifs",
+    "litsTotal": "Lits (total réseau)",
+    "personnelTotal": "Personnel affecté"
+  },
+  "affectations": {
+    "titre": "Affectations du personnel",
+    "ajouter": "Affecter du personnel",
+    "userId": "Membre du personnel (ID / matricule)",
+    "fonction": "Fonction sur le site",
+    "dateDebut": "Date de début",
+    "dateFin": "Date de fin",
+    "enCours": "En cours",
+    "personnelActif": "Personnel actif",
+    "choisirSite": "Choisir un site"
+  }
+}

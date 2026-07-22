@@ -1,0 +1,68 @@
+{
+  "portail": {
+    "brand": "SANTAREX — Portail patient",
+    "loginTitle": "Espace patient",
+    "loginSubtitle": "Consultez vos rendez-vous, résultats et ordonnances",
+    "tenantSlug": "Identifiant de l'établissement",
+    "tenantSlugPlaceholder": "ex. clinique-saint-joseph",
+    "identifiant": "Identifiant / code d'accès",
+    "identifiantPlaceholder": "Votre code d'accès",
+    "motDePasse": "Mot de passe",
+    "motDePassePlaceholder": "Votre mot de passe",
+    "seConnecter": "Se connecter",
+    "connexionEnCours": "Connexion…",
+    "champsRequis": "Veuillez renseigner tous les champs",
+    "identifiantsIncorrects": "Identifiants incorrects",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "dashboardTitle": "Mon espace patient",
+    "deconnexion": "Déconnexion",
+    "onglets": {
+      "rendezVous": "Mes rendez-vous",
+      "resultats": "Mes résultats",
+      "ordonnances": "Mes ordonnances",
+      "profil": "Mon profil"
+    },
+    "chargement": "Chargement…",
+    "aucunRendezVous": "Aucun rendez-vous",
+    "aucunResultat": "Aucun résultat disponible",
+    "aucuneOrdonnance": "Aucune ordonnance",
+    "rdv": {
+      "motif": "Motif",
+      "type": "Type",
+      "statut": "Statut",
+      "salle": "Salle",
+      "duree": "Durée"
+    },
+    "resultat": {
+      "valideLe": "Validé le",
+      "critique": "Résultat critique — contactez votre médecin",
+      "parametre": "Paramètre",
+      "valeur": "Valeur",
+      "normes": "Normes",
+      "interpretation": "Interprétation"
+    },
+    "ordonnance": {
+      "emiseLe": "Émise le",
+      "expireLe": "Expire le",
+      "statut": "Statut",
+      "medicament": "Médicament",
+      "posologie": "Posologie",
+      "duree": "Durée",
+      "quantite": "Quantité",
+      "instructions": "Instructions"
+    },
+    "profil": {
+      "ipp": "N° dossier (IPP)",
+      "nom": "Nom",
+      "prenom": "Prénom",
+      "dateNaissance": "Date de naissance",
+      "sexe": "Sexe",
+      "telephone": "Téléphone",
+      "ville": "Ville",
+      "groupeSanguin": "Groupe sanguin"
+    },
+    "erreurChargement": "Erreur lors du chargement des données",
+    "sessionExpiree": "Session expirée, veuillez vous reconnecter"
+  }
+}

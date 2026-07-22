@@ -1,0 +1,113 @@
+{
+  "declarationsSanitaires": {
+    "list": {
+      "heroTitle": "Déclarations sanitaires",
+      "loading": "Chargement…",
+      "summary": "{total} déclaration(s) • {aTransmettre} à transmettre",
+      "newDeclaration": "Déclarer un cas",
+      "searchPlaceholder": "Rechercher un n°, une maladie, une localité…",
+      "filterAll": "Toutes",
+      "displayedCount": "{count} déclaration(s) affichée(s)",
+      "alertRetard": "{count} déclaration(s) en retard de transmission — délai réglementaire dépassé.",
+      "badgeUrgent": "Urgent",
+      "badgeRetard": "En retard",
+      "emptyTitle": "Aucune déclaration",
+      "emptySubtitle": "Cliquez sur « Déclarer un cas » pour commencer.",
+      "kpiTotal": "Total",
+      "kpiMois": "Ce mois",
+      "kpiEnRetard": "En retard",
+      "kpiDeces": "Décès",
+      "byMaladie": "Cas par maladie",
+      "byStatut": "Par statut",
+      "byLocalite": "Par localité",
+      "colNumero": "N°",
+      "colMaladie": "Maladie",
+      "colGravite": "Gravité",
+      "colLocalite": "Localité",
+      "colDate": "Diagnostic",
+      "colStatut": "Statut"
+    },
+    "form": {
+      "title": "Nouvelle déclaration",
+      "subtitle": "Notification d'une maladie à déclaration obligatoire",
+      "maladie": "Maladie à déclaration obligatoire",
+      "maladieSelect": "Sélectionner une MDO…",
+      "delaiInfo": "Délai réglementaire : {heures} h • Catégorie : {categorie}",
+      "patient": "Patient (dossier)",
+      "patientNone": "Non rattaché à un dossier",
+      "dateDiagnostic": "Date de diagnostic",
+      "patientNom": "Identité du cas",
+      "patientNomPlaceholder": "Nom / prénom (si non enregistré)",
+      "patientAge": "Âge",
+      "patientSexe": "Sexe",
+      "localite": "Localité / zone",
+      "localitePlaceholder": "Ex. Abidjan, Cocody",
+      "gravite": "Gravité",
+      "evolution": "Évolution",
+      "mesuresPrises": "Mesures prises",
+      "mesuresPlaceholder": "Isolement, prélèvements, prophylaxie…",
+      "required": "Veuillez sélectionner une maladie et renseigner la date de diagnostic.",
+      "cancel": "Annuler",
+      "submit": "Enregistrer la déclaration",
+      "submitting": "Enregistrement…",
+      "error": "Une erreur est survenue."
+    },
+    "detail": {
+      "back": "Retour",
+      "loading": "Chargement…",
+      "notFound": "Déclaration introuvable.",
+      "error": "Une erreur est survenue.",
+      "patient": "Cas",
+      "patientLie": "Patient du dossier",
+      "ageSexe": "Âge / sexe",
+      "localite": "Localité",
+      "gravite": "Gravité",
+      "evolution": "Évolution",
+      "dateDiagnostic": "Diagnostic",
+      "dateDeclaration": "Déclaration",
+      "delai": "Délai réglementaire",
+      "delaiValue": "{heures} h",
+      "mesuresPrises": "Mesures prises",
+      "echeanceDepassee": "Délai de déclaration dépassé (échéance {date}) — transmission urgente.",
+      "echeanceProche": "Échéance de déclaration imminente ({date}).",
+      "transmettreTitle": "Transmettre à l'autorité sanitaire",
+      "autoritePlaceholder": "Autorité destinataire (ex. district sanitaire)",
+      "referencePlaceholder": "Référence de transmission (optionnel)",
+      "autoriteRequired": "Veuillez indiquer l'autorité destinataire.",
+      "transmettreBtn": "Marquer transmise",
+      "transmiseTitle": "Déclaration transmise",
+      "transmiseA": "Transmise à {autorite}",
+      "reference": "Réf",
+      "changerStatut": "Changer le statut",
+      "patientLabel": "Patient"
+    },
+    "statut": {
+      "a_declarer": "À déclarer",
+      "declaree": "Déclarée",
+      "transmise": "Transmise",
+      "confirmee": "Confirmée",
+      "classee": "Classée"
+    },
+    "gravite": {
+      "benin": "Bénin",
+      "modere": "Modéré",
+      "severe": "Sévère",
+      "critique": "Critique"
+    },
+    "evolution": {
+      "en_cours": "En cours",
+      "gueri": "Guéri",
+      "deces": "Décès"
+    },
+    "sexe": {
+      "m": "Masculin",
+      "f": "Féminin",
+      "inconnu": "Inconnu"
+    },
+    "categorie": {
+      "epidemique": "Épidémique",
+      "endemique": "Endémique",
+      "autre": "Autre"
+    }
+  }
+}

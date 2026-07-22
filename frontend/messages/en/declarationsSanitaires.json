@@ -1,0 +1,113 @@
+{
+  "declarationsSanitaires": {
+    "list": {
+      "heroTitle": "Notifiable diseases",
+      "loading": "Loading…",
+      "summary": "{total} notification(s) • {aTransmettre} to transmit",
+      "newDeclaration": "Report a case",
+      "searchPlaceholder": "Search a no., disease, locality…",
+      "filterAll": "All",
+      "displayedCount": "{count} notification(s) shown",
+      "alertRetard": "{count} notification(s) overdue — regulatory deadline passed.",
+      "badgeUrgent": "Urgent",
+      "badgeRetard": "Overdue",
+      "emptyTitle": "No notification",
+      "emptySubtitle": "Click “Report a case” to get started.",
+      "kpiTotal": "Total",
+      "kpiMois": "This month",
+      "kpiEnRetard": "Overdue",
+      "kpiDeces": "Deaths",
+      "byMaladie": "Cases by disease",
+      "byStatut": "By status",
+      "byLocalite": "By locality",
+      "colNumero": "No.",
+      "colMaladie": "Disease",
+      "colGravite": "Severity",
+      "colLocalite": "Locality",
+      "colDate": "Diagnosis",
+      "colStatut": "Status"
+    },
+    "form": {
+      "title": "New notification",
+      "subtitle": "Reporting a notifiable disease",
+      "maladie": "Notifiable disease",
+      "maladieSelect": "Select a disease…",
+      "delaiInfo": "Regulatory deadline: {heures} h • Category: {categorie}",
+      "patient": "Patient (record)",
+      "patientNone": "Not linked to a record",
+      "dateDiagnostic": "Date of diagnosis",
+      "patientNom": "Case identity",
+      "patientNomPlaceholder": "Name (if not registered)",
+      "patientAge": "Age",
+      "patientSexe": "Sex",
+      "localite": "Locality / area",
+      "localitePlaceholder": "e.g. Abidjan, Cocody",
+      "gravite": "Severity",
+      "evolution": "Outcome",
+      "mesuresPrises": "Measures taken",
+      "mesuresPlaceholder": "Isolation, sampling, prophylaxis…",
+      "required": "Please select a disease and provide the diagnosis date.",
+      "cancel": "Cancel",
+      "submit": "Save notification",
+      "submitting": "Saving…",
+      "error": "An error occurred."
+    },
+    "detail": {
+      "back": "Back",
+      "loading": "Loading…",
+      "notFound": "Notification not found.",
+      "error": "An error occurred.",
+      "patient": "Case",
+      "patientLie": "Record patient",
+      "ageSexe": "Age / sex",
+      "localite": "Locality",
+      "gravite": "Severity",
+      "evolution": "Outcome",
+      "dateDiagnostic": "Diagnosis",
+      "dateDeclaration": "Notified",
+      "delai": "Regulatory deadline",
+      "delaiValue": "{heures} h",
+      "mesuresPrises": "Measures taken",
+      "echeanceDepassee": "Notification deadline passed (due {date}) — urgent transmission.",
+      "echeanceProche": "Notification deadline imminent ({date}).",
+      "transmettreTitle": "Transmit to health authority",
+      "autoritePlaceholder": "Recipient authority (e.g. health district)",
+      "referencePlaceholder": "Transmission reference (optional)",
+      "autoriteRequired": "Please provide the recipient authority.",
+      "transmettreBtn": "Mark transmitted",
+      "transmiseTitle": "Notification transmitted",
+      "transmiseA": "Transmitted to {autorite}",
+      "reference": "Ref",
+      "changerStatut": "Change status",
+      "patientLabel": "Patient"
+    },
+    "statut": {
+      "a_declarer": "To report",
+      "declaree": "Reported",
+      "transmise": "Transmitted",
+      "confirmee": "Confirmed",
+      "classee": "Closed"
+    },
+    "gravite": {
+      "benin": "Mild",
+      "modere": "Moderate",
+      "severe": "Severe",
+      "critique": "Critical"
+    },
+    "evolution": {
+      "en_cours": "Ongoing",
+      "gueri": "Recovered",
+      "deces": "Death"
+    },
+    "sexe": {
+      "m": "Male",
+      "f": "Female",
+      "inconnu": "Unknown"
+    },
+    "categorie": {
+      "epidemique": "Epidemic",
+      "endemique": "Endemic",
+      "autre": "Other"
+    }
+  }
+}

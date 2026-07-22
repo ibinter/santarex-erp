@@ -71,6 +71,10 @@ import { MessagerieModule } from './messagerie/messagerie.module';
 import { SatisfactionModule } from './satisfaction/satisfaction.module';
 import { PlanningsGardesModule } from './plannings-gardes/plannings-gardes.module';
 import { IndicateursQualiteModule } from './indicateurs-qualite/indicateurs-qualite.module';
+// Vague 6 — portail, déclarations, réseau
+import { PortailPatientModule } from './portail-patient/portail-patient.module';
+import { DeclarationsSanitairesModule } from './declarations-sanitaires/declarations-sanitaires.module';
+import { SitesModule } from './sites/sites.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -154,6 +158,9 @@ import { SeedModule } from './database/seed.module';
     SatisfactionModule,
     PlanningsGardesModule,
     IndicateursQualiteModule,
+    PortailPatientModule,
+    DeclarationsSanitairesModule,
+    SitesModule,
     HealthModule,
     SeedModule,
   ],

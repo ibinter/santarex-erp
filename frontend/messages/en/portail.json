@@ -1,0 +1,68 @@
+{
+  "portail": {
+    "brand": "SANTAREX — Patient portal",
+    "loginTitle": "Patient area",
+    "loginSubtitle": "View your appointments, results and prescriptions",
+    "tenantSlug": "Facility identifier",
+    "tenantSlugPlaceholder": "e.g. clinique-saint-joseph",
+    "identifiant": "Login / access code",
+    "identifiantPlaceholder": "Your access code",
+    "motDePasse": "Password",
+    "motDePassePlaceholder": "Your password",
+    "seConnecter": "Sign in",
+    "connexionEnCours": "Signing in…",
+    "champsRequis": "Please fill in all fields",
+    "identifiantsIncorrects": "Invalid credentials",
+    "show": "Show",
+    "hide": "Hide",
+    "dashboardTitle": "My patient area",
+    "deconnexion": "Sign out",
+    "onglets": {
+      "rendezVous": "My appointments",
+      "resultats": "My results",
+      "ordonnances": "My prescriptions",
+      "profil": "My profile"
+    },
+    "chargement": "Loading…",
+    "aucunRendezVous": "No appointments",
+    "aucunResultat": "No results available",
+    "aucuneOrdonnance": "No prescriptions",
+    "rdv": {
+      "motif": "Reason",
+      "type": "Type",
+      "statut": "Status",
+      "salle": "Room",
+      "duree": "Duration"
+    },
+    "resultat": {
+      "valideLe": "Validated on",
+      "critique": "Critical result — contact your doctor",
+      "parametre": "Parameter",
+      "valeur": "Value",
+      "normes": "Range",
+      "interpretation": "Interpretation"
+    },
+    "ordonnance": {
+      "emiseLe": "Issued on",
+      "expireLe": "Expires on",
+      "statut": "Status",
+      "medicament": "Medication",
+      "posologie": "Dosage",
+      "duree": "Duration",
+      "quantite": "Quantity",
+      "instructions": "Instructions"
+    },
+    "profil": {
+      "ipp": "Record no. (IPP)",
+      "nom": "Last name",
+      "prenom": "First name",
+      "dateNaissance": "Date of birth",
+      "sexe": "Sex",
+      "telephone": "Phone",
+      "ville": "City",
+      "groupeSanguin": "Blood type"
+    },
+    "erreurChargement": "Error while loading data",
+    "sessionExpiree": "Session expired, please sign in again"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "title": "Sites / Network",
+  "subtitle": "Manage your facility's branches and clinics and staff assignments",
+  "tabs": {
+    "reseau": "Network dashboard",
+    "sites": "Sites",
+    "affectations": "Assignments"
+  },
+  "chargement": "Loading…",
+  "erreur": "An error occurred",
+  "actualiser": "Refresh",
+  "nouveauSite": "New site",
+  "modifierSite": "Edit site",
+  "aucunSite": "No sites yet",
+  "aucuneAffectation": "No assignments for this site",
+  "principal": "Main",
+  "enregistrer": "Save",
+  "annuler": "Cancel",
+  "supprimer": "Delete",
+  "confirmerSuppression": "Delete this site?",
+  "confirmerSuppressionAffectation": "Remove this assignment?",
+  "champs": {
+    "code": "Code",
+    "nom": "Site name",
+    "type": "Type",
+    "adresse": "Address",
+    "ville": "City",
+    "telephone": "Phone",
+    "responsableRef": "Manager (reference)",
+    "capaciteLits": "Capacity (beds)",
+    "statut": "Status",
+    "estPrincipal": "Main site"
+  },
+  "type": {
+    "siege": "Headquarters",
+    "antenne": "Branch",
+    "clinique": "Clinic",
+    "pharmacie": "Pharmacy",
+    "laboratoire": "Laboratory"
+  },
+  "statut": {
+    "actif": "Active",
+    "inactif": "Inactive"
+  },
+  "stats": {
+    "nbSites": "Sites",
+    "sitesActifs": "Active sites",
+    "litsTotal": "Beds (network total)",
+    "personnelTotal": "Assigned staff"
+  },
+  "affectations": {
+    "titre": "Staff assignments",
+    "ajouter": "Assign staff",
+    "userId": "Staff member (ID / payroll no.)",
+    "fonction": "Role at site",
+    "dateDebut": "Start date",
+    "dateFin": "End date",
+    "enCours": "Ongoing",
+    "personnelActif": "Active staff",
+    "choisirSite": "Choose a site"
+  }
+}
