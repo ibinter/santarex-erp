@@ -1,0 +1,101 @@
+{
+  "priseEnCharge": {
+    "heroTitle": "Bons de prise en charge",
+    "heroSubtitle": "{count, plural, one {# bon} other {# bons}} • {assureurs, plural, one {# assureur} other {# assureurs}}",
+    "loading": "Chargement…",
+    "actualiser": "Actualiser",
+    "tabBons": "Bons de prise en charge",
+    "tabAssureurs": "Assureurs",
+
+    "kpiTotal": "Total bons",
+    "kpiEnAttente": "En attente réponse",
+    "kpiAcceptes": "Acceptés",
+    "kpiMontantCouvert": "Montant couvert",
+
+    "rechercherBon": "Rechercher patient, N° bon, prestation…",
+    "rechercherAssureur": "Rechercher un assureur…",
+    "filtreTous": "Tous",
+    "resultats": "{count, plural, one {# résultat} other {# résultats}}",
+
+    "nouveauBon": "Nouveau bon",
+    "nouvelAssureur": "Nouvel assureur",
+
+    "thNumero": "N° Bon",
+    "thPatient": "Patient",
+    "thAssureur": "Assureur",
+    "thPrestation": "Prestation",
+    "thMontant": "Montant estimé",
+    "thCouvert": "Couvert",
+    "thStatut": "Statut",
+    "thActions": "Actions",
+
+    "thNom": "Nom",
+    "thType": "Type",
+    "thContact": "Contact",
+    "thTaux": "Taux défaut",
+    "thPlafond": "Plafond",
+    "thActif": "Actif",
+
+    "videBons": "Aucun bon de prise en charge",
+    "videBonsRecherche": "Aucun bon ne correspond à « {q} »",
+    "videAssureurs": "Aucun assureur enregistré",
+    "videAssureursRecherche": "Aucun assureur ne correspond à « {q} »",
+
+    "statut": {
+      "brouillon": "Brouillon",
+      "demande_envoyee": "Demande envoyée",
+      "accepte": "Accepté",
+      "refuse": "Refusé",
+      "expire": "Expiré"
+    },
+
+    "type": {
+      "mutuelle": "Mutuelle",
+      "assurance_privee": "Assurance privée",
+      "cmu": "CMU",
+      "cnam": "CNAM"
+    },
+
+    "actionEnvoyer": "Envoyer",
+    "actionRepondre": "Réponse",
+    "actionModifier": "Modifier",
+    "oui": "Oui",
+    "non": "Non",
+
+    "formBonTitre": "Nouveau bon de prise en charge",
+    "formAssureurTitre": "Nouvel assureur",
+    "formRepondreTitre": "Réponse de l'assureur",
+    "champPatient": "Patient",
+    "champAssureur": "Assureur",
+    "champNumeroAssure": "N° assuré / police",
+    "champPrestation": "Acte / prestation demandée",
+    "champDescription": "Description / justification",
+    "champMontantEstime": "Montant estimé (XOF)",
+    "champTauxCouverture": "Taux de couverture (%)",
+    "champNotes": "Notes",
+    "champNom": "Nom de l'assureur",
+    "champType": "Type",
+    "champContactNom": "Contact (nom)",
+    "champContactTelephone": "Téléphone",
+    "champContactEmail": "Email",
+    "champAdresse": "Adresse",
+    "champPlafond": "Plafond (XOF)",
+    "champActif": "Actif",
+    "champReponse": "Décision",
+    "reponseAccepte": "Accepté",
+    "reponseRefuse": "Refusé",
+    "champNumeroAutorisation": "N° d'autorisation",
+    "champDateValidite": "Date de validité",
+    "champMotifRefus": "Motif du refus",
+
+    "selectionner": "Sélectionner…",
+    "annuler": "Annuler",
+    "enregistrer": "Enregistrer",
+    "envoiEnCours": "Envoi…",
+    "montantCouvertApercu": "Montant couvert estimé : {montant}",
+
+    "erreurChargement": "Erreur de chargement",
+    "erreurEnregistrement": "Échec de l'enregistrement",
+    "champsRequis": "Veuillez renseigner les champs obligatoires"
+  }
+}

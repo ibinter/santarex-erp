@@ -1,0 +1,121 @@
+{
+  "approvisionnement": {
+    "hero": {
+      "title": "Procurement",
+      "subtitle": "Suppliers & purchase orders",
+      "loading": "Loading…",
+      "refresh": "Refresh"
+    },
+    "kpi": {
+      "fournisseurs": "Active suppliers",
+      "commandesEnCours": "Orders in progress",
+      "montantEngage": "Committed amount",
+      "totalCommandes": "Total orders"
+    },
+    "tabs": {
+      "fournisseurs": "Suppliers",
+      "commandes": "Purchase orders"
+    },
+    "statut": {
+      "brouillon": "Draft",
+      "envoyee": "Sent",
+      "partiellement_recue": "Partially received",
+      "recue": "Received",
+      "annulee": "Cancelled"
+    },
+    "typeFournisseur": {
+      "grossiste": "Wholesaler",
+      "laboratoire": "Laboratory",
+      "consommables": "Consumables",
+      "autre": "Other"
+    },
+    "fournisseurs": {
+      "title": "Suppliers",
+      "new": "New supplier",
+      "searchPlaceholder": "Search a supplier…",
+      "colNom": "Name",
+      "colType": "Type",
+      "colContact": "Contact",
+      "colTelephone": "Phone",
+      "colVille": "City",
+      "colStatut": "Status",
+      "actif": "Active",
+      "inactif": "Inactive",
+      "empty": "No supplier registered",
+      "count": "{count} supplier(s)"
+    },
+    "commandes": {
+      "title": "Purchase orders",
+      "new": "New order",
+      "searchPlaceholder": "Search a number…",
+      "colNumero": "Number",
+      "colFournisseur": "Supplier",
+      "colDate": "Date",
+      "colLivraison": "Expected delivery",
+      "colMontant": "Amount",
+      "colStatut": "Status",
+      "colActions": "Actions",
+      "empty": "No purchase order",
+      "count": "{count} order(s)",
+      "envoyer": "Send",
+      "reception": "Receive",
+      "annuler": "Cancel",
+      "voir": "View",
+      "confirmEnvoyer": "Send this purchase order to the supplier?",
+      "confirmAnnuler": "Cancel this purchase order?"
+    },
+    "formFournisseur": {
+      "title": "New supplier",
+      "editTitle": "Edit supplier",
+      "nom": "Name",
+      "type": "Type",
+      "contact": "Contact person",
+      "telephone": "Phone",
+      "email": "Email",
+      "adresse": "Address",
+      "ville": "City",
+      "actif": "Active supplier",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "formCommande": {
+      "title": "New purchase order",
+      "fournisseur": "Supplier",
+      "selectFournisseur": "Select a supplier",
+      "dateLivraison": "Expected delivery",
+      "notes": "Notes",
+      "lignes": "Order lines",
+      "designation": "Description",
+      "medicament": "Drug (optional)",
+      "aucunMedicament": "— Free item —",
+      "quantite": "Qty",
+      "prixUnitaire": "Unit price",
+      "montant": "Amount",
+      "addLigne": "Add a line",
+      "removeLigne": "Remove",
+      "total": "Total",
+      "cancel": "Cancel",
+      "save": "Create order",
+      "saving": "Creating…",
+      "noLignes": "Add at least one line."
+    },
+    "reception": {
+      "title": "Receiving — {numero}",
+      "designation": "Description",
+      "commandee": "Ordered",
+      "dejaRecue": "Already received",
+      "aRecevoir": "Received now",
+      "notes": "Receiving notes",
+      "cancel": "Cancel",
+      "save": "Confirm receiving",
+      "saving": "Confirming…",
+      "stockInfo": "Lines linked to a drug will need to be added to pharmacy stock (to be wired)."
+    },
+    "errors": {
+      "load": "Loading error",
+      "save": "Error while saving",
+      "action": "Action failed"
+    }
+  }
+}

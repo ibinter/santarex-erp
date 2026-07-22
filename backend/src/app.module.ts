@@ -41,6 +41,12 @@ import { UrgencesModule } from './urgences/urgences.module';
 import { PharmacieModule } from './pharmacie/pharmacie.module';
 import { LaboratoireModule } from './laboratoire/laboratoire.module';
 import { HospitalisationModule } from './hospitalisation/hospitalisation.module';
+// Vague 1 — nouveaux modules hospitaliers
+import { MaterniteModule } from './maternite/maternite.module';
+import { PriseEnChargeModule } from './prise-en-charge/prise-en-charge.module';
+import { ApprovisionnementModule } from './approvisionnement/approvisionnement.module';
+import { InteractionsModule } from './interactions-medicamenteuses/interactions.module';
+import { IncidentsQualiteModule } from './incidents-qualite/incidents-qualite.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -99,6 +105,11 @@ import { SeedModule } from './database/seed.module';
     AnalyticsModule,
     AcademieModule,
     SauvegardesModule,
+    MaterniteModule,
+    PriseEnChargeModule,
+    ApprovisionnementModule,
+    InteractionsModule,
+    IncidentsQualiteModule,
     HealthModule,
     SeedModule,
   ],

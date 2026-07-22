@@ -1,0 +1,121 @@
+{
+  "approvisionnement": {
+    "hero": {
+      "title": "Approvisionnement",
+      "subtitle": "Fournisseurs & bons de commande",
+      "loading": "Chargement…",
+      "refresh": "Rafraîchir"
+    },
+    "kpi": {
+      "fournisseurs": "Fournisseurs actifs",
+      "commandesEnCours": "Commandes en cours",
+      "montantEngage": "Montant engagé",
+      "totalCommandes": "Total commandes"
+    },
+    "tabs": {
+      "fournisseurs": "Fournisseurs",
+      "commandes": "Bons de commande"
+    },
+    "statut": {
+      "brouillon": "Brouillon",
+      "envoyee": "Envoyée",
+      "partiellement_recue": "Partiellement reçue",
+      "recue": "Reçue",
+      "annulee": "Annulée"
+    },
+    "typeFournisseur": {
+      "grossiste": "Grossiste",
+      "laboratoire": "Laboratoire",
+      "consommables": "Consommables",
+      "autre": "Autre"
+    },
+    "fournisseurs": {
+      "title": "Fournisseurs",
+      "new": "Nouveau fournisseur",
+      "searchPlaceholder": "Rechercher un fournisseur…",
+      "colNom": "Nom",
+      "colType": "Type",
+      "colContact": "Contact",
+      "colTelephone": "Téléphone",
+      "colVille": "Ville",
+      "colStatut": "Statut",
+      "actif": "Actif",
+      "inactif": "Inactif",
+      "empty": "Aucun fournisseur enregistré",
+      "count": "{count} fournisseur(s)"
+    },
+    "commandes": {
+      "title": "Bons de commande",
+      "new": "Nouveau bon",
+      "searchPlaceholder": "Rechercher un numéro…",
+      "colNumero": "Numéro",
+      "colFournisseur": "Fournisseur",
+      "colDate": "Date",
+      "colLivraison": "Livraison prévue",
+      "colMontant": "Montant",
+      "colStatut": "Statut",
+      "colActions": "Actions",
+      "empty": "Aucun bon de commande",
+      "count": "{count} bon(s)",
+      "envoyer": "Envoyer",
+      "reception": "Réception",
+      "annuler": "Annuler",
+      "voir": "Voir",
+      "confirmEnvoyer": "Envoyer ce bon de commande au fournisseur ?",
+      "confirmAnnuler": "Annuler ce bon de commande ?"
+    },
+    "formFournisseur": {
+      "title": "Nouveau fournisseur",
+      "editTitle": "Modifier le fournisseur",
+      "nom": "Nom",
+      "type": "Type",
+      "contact": "Personne de contact",
+      "telephone": "Téléphone",
+      "email": "Email",
+      "adresse": "Adresse",
+      "ville": "Ville",
+      "actif": "Fournisseur actif",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "formCommande": {
+      "title": "Nouveau bon de commande",
+      "fournisseur": "Fournisseur",
+      "selectFournisseur": "Sélectionner un fournisseur",
+      "dateLivraison": "Livraison prévue",
+      "notes": "Notes",
+      "lignes": "Lignes de commande",
+      "designation": "Désignation",
+      "medicament": "Médicament (optionnel)",
+      "aucunMedicament": "— Article libre —",
+      "quantite": "Qté",
+      "prixUnitaire": "Prix unitaire",
+      "montant": "Montant",
+      "addLigne": "Ajouter une ligne",
+      "removeLigne": "Supprimer",
+      "total": "Total",
+      "cancel": "Annuler",
+      "save": "Créer le bon",
+      "saving": "Création…",
+      "noLignes": "Ajoutez au moins une ligne."
+    },
+    "reception": {
+      "title": "Réception — {numero}",
+      "designation": "Désignation",
+      "commandee": "Commandée",
+      "dejaRecue": "Déjà reçue",
+      "aRecevoir": "Reçue maintenant",
+      "notes": "Notes de réception",
+      "cancel": "Annuler",
+      "save": "Valider la réception",
+      "saving": "Validation…",
+      "stockInfo": "Les lignes liées à un médicament seront à intégrer au stock pharmacie (à câbler)."
+    },
+    "errors": {
+      "load": "Erreur de chargement",
+      "save": "Erreur lors de l'enregistrement",
+      "action": "Action impossible"
+    }
+  }
+}

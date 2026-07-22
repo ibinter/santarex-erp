@@ -1,0 +1,101 @@
+{
+  "priseEnCharge": {
+    "heroTitle": "Insurance pre-authorizations",
+    "heroSubtitle": "{count, plural, one {# authorization} other {# authorizations}} • {assureurs, plural, one {# insurer} other {# insurers}}",
+    "loading": "Loading…",
+    "actualiser": "Refresh",
+    "tabBons": "Pre-authorizations",
+    "tabAssureurs": "Insurers",
+
+    "kpiTotal": "Total authorizations",
+    "kpiEnAttente": "Awaiting response",
+    "kpiAcceptes": "Approved",
+    "kpiMontantCouvert": "Covered amount",
+
+    "rechercherBon": "Search patient, ref, service…",
+    "rechercherAssureur": "Search an insurer…",
+    "filtreTous": "All",
+    "resultats": "{count, plural, one {# result} other {# results}}",
+
+    "nouveauBon": "New authorization",
+    "nouvelAssureur": "New insurer",
+
+    "thNumero": "Ref",
+    "thPatient": "Patient",
+    "thAssureur": "Insurer",
+    "thPrestation": "Service",
+    "thMontant": "Estimated amount",
+    "thCouvert": "Covered",
+    "thStatut": "Status",
+    "thActions": "Actions",
+
+    "thNom": "Name",
+    "thType": "Type",
+    "thContact": "Contact",
+    "thTaux": "Default rate",
+    "thPlafond": "Cap",
+    "thActif": "Active",
+
+    "videBons": "No pre-authorizations",
+    "videBonsRecherche": "No authorization matches “{q}”",
+    "videAssureurs": "No insurer registered",
+    "videAssureursRecherche": "No insurer matches “{q}”",
+
+    "statut": {
+      "brouillon": "Draft",
+      "demande_envoyee": "Request sent",
+      "accepte": "Approved",
+      "refuse": "Refused",
+      "expire": "Expired"
+    },
+
+    "type": {
+      "mutuelle": "Mutual fund",
+      "assurance_privee": "Private insurance",
+      "cmu": "CMU",
+      "cnam": "CNAM"
+    },
+
+    "actionEnvoyer": "Send",
+    "actionRepondre": "Response",
+    "actionModifier": "Edit",
+    "oui": "Yes",
+    "non": "No",
+
+    "formBonTitre": "New pre-authorization",
+    "formAssureurTitre": "New insurer",
+    "formRepondreTitre": "Insurer response",
+    "champPatient": "Patient",
+    "champAssureur": "Insurer",
+    "champNumeroAssure": "Policy / member no.",
+    "champPrestation": "Requested service / procedure",
+    "champDescription": "Description / justification",
+    "champMontantEstime": "Estimated amount (XOF)",
+    "champTauxCouverture": "Coverage rate (%)",
+    "champNotes": "Notes",
+    "champNom": "Insurer name",
+    "champType": "Type",
+    "champContactNom": "Contact (name)",
+    "champContactTelephone": "Phone",
+    "champContactEmail": "Email",
+    "champAdresse": "Address",
+    "champPlafond": "Cap (XOF)",
+    "champActif": "Active",
+    "champReponse": "Decision",
+    "reponseAccepte": "Approved",
+    "reponseRefuse": "Refused",
+    "champNumeroAutorisation": "Authorization no.",
+    "champDateValidite": "Valid until",
+    "champMotifRefus": "Refusal reason",
+
+    "selectionner": "Select…",
+    "annuler": "Cancel",
+    "enregistrer": "Save",
+    "envoiEnCours": "Sending…",
+    "montantCouvertApercu": "Estimated covered amount: {montant}",
+
+    "erreurChargement": "Loading error",
+    "erreurEnregistrement": "Save failed",
+    "champsRequis": "Please fill in the required fields"
+  }
+}
