@@ -24,6 +24,7 @@ import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { SearchDto } from '../common/dto/search.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
@@ -54,11 +55,10 @@ export class PatientsController {
   @ApiQuery({ name: 'q', description: 'Terme de recherche', required: true })
   @ApiResponse({ status: 200, description: 'Résultats de recherche' })
   async search(
-    @Query('q') query: string,
     @CurrentUser('tenantId') tenantId: string,
-    @Query() paginationDto: PaginationDto,
+    @Query() searchDto: SearchDto,
   ) {
-    return this.patientsService.search(query || '', tenantId, paginationDto);
+    return this.patientsService.search(searchDto.q || '', tenantId, searchDto);
   }
 
   @Get(':id')
