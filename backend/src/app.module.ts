@@ -27,7 +27,6 @@ import { MailModule } from './mail/mail.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
 import { ExportsModule } from './exports/exports.module';
 import { SearchModule } from './search/search.module';
-import { PaiementsSaasModule } from './paiements-saas/paiements-saas.module';
 import { AiAssistantModule } from './ai-assistant/ai-assistant.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SupportTicketsModule } from './support-tickets/support-tickets.module';
@@ -69,7 +68,6 @@ import { SeedModule } from './database/seed.module';
     SuperadminModule,
     ExportsModule,
     SearchModule,
-    PaiementsSaasModule,
     PaymentsModule,
     EntitlementModule,
     AiAssistantModule,

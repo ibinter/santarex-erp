@@ -6,6 +6,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { ManualPaymentService } from '../manual-payment.service';
 import { ProofStorageService } from '../proof-storage.service';
 import { LicenceLifecycleService } from '../licence-lifecycle.service';
+import { MailService } from '../../mail/mail.service';
 import { OffresSaasService } from '../../offres-saas/offres-saas.service';
 import { PaymentTransaction } from '../entities/payment-transaction.entity';
 import { PaymentProof } from '../entities/payment-proof.entity';
@@ -68,6 +69,7 @@ describe('ManualPaymentService', () => {
         { provide: OffresSaasService, useValue: { findByCode: jest.fn() } },
         { provide: ProofStorageService, useValue: proofStorage },
         { provide: LicenceLifecycleService, useValue: lifecycle },
+        { provide: MailService, useValue: { envoyerPaiementRecu: jest.fn() } },
         { provide: ConfigService, useValue: { get: (_k: string, d?: unknown) => d } },
       ],
     }).compile();

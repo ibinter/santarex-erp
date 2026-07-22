@@ -14,6 +14,7 @@ import { Lit } from '../../hospitalisation/entities/lit.entity';
 import { Sejour, StatutSejour, TypeSortie } from '../../hospitalisation/entities/sejour.entity';
 import { NoteEvolution } from '../../hospitalisation/entities/note-evolution.entity';
 import { SoinInfirmier } from '../../hospitalisation/entities/soin-infirmier.entity';
+import { User } from '../../users/entities/user.entity';
 
 import {
   assertTenantScoped,
@@ -265,6 +266,8 @@ describe('Isolation multi-tenant — HospitalisationService', () => {
         { provide: getRepositoryToken(Sejour), useValue: sejourRepo },
         { provide: getRepositoryToken(NoteEvolution), useValue: makeRepo([]) },
         { provide: getRepositoryToken(SoinInfirmier), useValue: makeRepo([]) },
+        { provide: getRepositoryToken(Patient), useValue: makeRepo([]) },
+        { provide: getRepositoryToken(User), useValue: makeRepo([]) },
       ],
     }).compile();
 

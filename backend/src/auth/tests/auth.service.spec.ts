@@ -2,8 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from '../auth.service';
 import { UsersService } from '../../users/users.service';
+import { TenantsService } from '../../tenants/tenants.service';
+import { LicenceLifecycleService } from '../../payments/licence-lifecycle.service';
+import { MailService } from '../../mail/mail.service';
+import { User } from '../../users/entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 
 const mockUser = {
@@ -48,6 +53,34 @@ describe('AuthService', () => {
           useValue: {
             getOrThrow: jest.fn().mockReturnValue('test-secret'),
             get: jest.fn().mockReturnValue('15m'),
+          },
+        },
+        {
+          provide: TenantsService,
+          useValue: {
+            create: jest.fn(),
+            findBySlug: jest.fn(),
+          },
+        },
+        {
+          provide: LicenceLifecycleService,
+          useValue: {
+            startTrial: jest.fn(),
+          },
+        },
+        {
+          provide: MailService,
+          useValue: {
+            envoyerBienvenue: jest.fn(),
+            envoyerReinitialisationMdp: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+            update: jest.fn(),
+            createQueryBuilder: jest.fn(),
           },
         },
       ],
