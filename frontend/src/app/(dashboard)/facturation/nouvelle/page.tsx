@@ -23,7 +23,7 @@ function newLigne(): LigneForm {
   return { id: Math.random().toString(36).slice(2), type: 'consultation', libelle: '', quantite: 1, prixUnitaire: 0 };
 }
 
-function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
+function fmtXOF(v?: number | null) { return (Number(v) || 0).toLocaleString('fr-FR') + ' XOF'; }
 
 export default function NouvelleFacturePage() {
   const t = useTranslations('facturation');

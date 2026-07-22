@@ -40,7 +40,7 @@ const CATALOGUE_LOCAL: CategorieAnalyse[] = [
   ]},
 ];
 
-function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
+function fmtXOF(v?: number | null) { return (Number(v) || 0).toLocaleString('fr-FR') + ' XOF'; }
 
 export default function NouvelleDemandeLaboratoirePage() {
   const router = useRouter();

@@ -18,8 +18,8 @@ type Medicament = {
   actif: boolean; createdAt: string;
 };
 
-function fmtXOF(v: number) {
-  return new Intl.NumberFormat('fr-FR').format(v)+' F';
+function fmtXOF(v?: number | null) {
+  return new Intl.NumberFormat('fr-FR').format(Number(v) || 0)+' F';
 }
 
 type StockStatus = 'ok'|'alerte'|'rupture';

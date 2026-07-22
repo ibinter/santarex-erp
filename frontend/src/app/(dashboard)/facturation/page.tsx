@@ -44,7 +44,7 @@ function avatarColor(name: string): [string, string] {
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
 
-function fmtXOF(v: number) { return v.toLocaleString('fr-FR') + ' XOF'; }
+function fmtXOF(v?: number | null) { return (Number(v) || 0).toLocaleString('fr-FR') + ' XOF'; }
 function fmtDate(iso?: string) {
   if (!iso) return '—';
   try { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }); }
@@ -113,9 +113,17 @@ export default function FacturationPage() {
         ? Object.fromEntries(unwrap(patRes.value).map((p: any) => [p.id, p])) : {};
       if (factRes.status === 'fulfilled') {
         const list = unwrap(factRes.value).map((f: any) => {
-          if (f.patient) return f;
-          const p = pMap[f.patientId];
-          return p ? { ...f, patient: { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } } : f;
+          // L'API renvoie les montants en décimaux-chaînes (montantTTC/montantRestant).
+          // On normalise en nombres et vers les noms utilisés par la page (total/resteAPayer).
+          const norm = {
+            ...f,
+            total: Number(f.total ?? f.montantTTC) || 0,
+            montantPaye: Number(f.montantPaye) || 0,
+            resteAPayer: Number(f.resteAPayer ?? f.montantRestant) || 0,
+          };
+          if (norm.patient) return norm;
+          const p = pMap[norm.patientId];
+          return p ? { ...norm, patient: { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } } : norm;
         });
         setFactures(list);
       }
