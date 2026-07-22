@@ -6,7 +6,9 @@ import NavSidebar from '@/components/layout/NavSidebar';
 import Topbar from '@/components/layout/Topbar';
 import BottomNav from '@/components/layout/BottomNav';
 import AiChat from '@/components/AiChat';
+import AppFooter from '@/components/layout/AppFooter';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
+import OfflineBanner from '@/components/OfflineBanner';
 import { isAuthenticated } from '@/lib/auth';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -59,6 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <>
+      <OfflineBanner />
       <style>{`
         @media (max-width: 1023px) {
           .dashboard-main {
@@ -152,9 +155,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             paddingTop: '60px',
             minHeight: '100vh',
             transition: 'margin-left 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {children}
+          <div style={{ flex: 1 }}>{children}</div>
+          <AppFooter />
         </main>
 
         <BottomNav onMoreClick={() => setMoreDrawerOpen(v => !v)} />

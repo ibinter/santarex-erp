@@ -12,6 +12,7 @@ import {
   Biohazard, Truck, ShieldAlert, Calculator, Wallet, FileSpreadsheet,
   PiggyBank, Wrench, Ambulance, Trash2, Snowflake, Network, AlertTriangle,
   Gauge, SmilePlus, FileWarning, MessageCircle, CalendarClock,
+  Puzzle, Plug,
 } from 'lucide-react';
 import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -126,6 +127,8 @@ const navGroups: NavGroup[] = [
       { key: 'rhLong', href: '/rh', icon: <UserCog size={18} />, roles: ['superadmin','admin','drh','directeur'] },
       { key: 'planningsGardes', href: '/plannings-gardes', icon: <CalendarClock size={18} />, roles: ['superadmin','admin','drh','directeur','medecin'] },
       { key: 'reportingLong', href: '/reporting', icon: <BarChart2 size={18} />, roles: ADMIN_DIR },
+      { key: 'servicesPersonnalises', href: '/services-personnalises', icon: <Puzzle size={18} />, roles: ADMIN_DIR },
+      { key: 'interoperabilite', href: '/interoperabilite', icon: <Plug size={18} />, roles: ADMIN_DIR },
       { key: 'auditLogs', href: '/audit-logs', icon: <ShieldCheck size={18} />, roles: ADMIN_DIR },
       { key: 'licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
       { key: 'guide', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },

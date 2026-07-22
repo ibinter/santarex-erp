@@ -229,7 +229,7 @@ function VehiculeCard({ v, t }: { v: Vehicule; t: ReturnType<typeof useTranslati
         <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20, background: cfg.color, color: '#fff', whiteSpace: 'nowrap' }}>{t(`statutVehicule.${v.statut}`)}</span>
       </div>
       <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: '#374151', display: 'flex', alignItems: 'center', gap: 4 }}><Gauge size={13} /> {Number(v.kilometrage).toLocaleString()} km</span>
+        <span style={{ fontSize: 12, color: '#374151', display: 'flex', alignItems: 'center', gap: 4 }}><Gauge size={13} /> {(Number(v.kilometrage) || 0).toLocaleString()} km</span>
         {v.dateProchainEntretien && (
           <span style={{ fontSize: 12, color: '#374151', display: 'flex', alignItems: 'center', gap: 4 }}><Wrench size={13} /> {new Date(v.dateProchainEntretien).toLocaleDateString()}</span>
         )}

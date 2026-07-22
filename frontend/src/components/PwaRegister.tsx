@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { API_URL } from '@/lib/api';
 
 /**
  * Enregistre le service worker (/sw.js) au montage et gère les mises à jour.
@@ -23,9 +24,30 @@ export default function PwaRegister() {
       setShowReload(true);
     };
 
+    // Transmet l'origine de l'API au SW pour le cache offline & la file de mutations.
+    let apiOrigin = '';
+    try {
+      apiOrigin = new URL(API_URL, window.location.origin).origin;
+    } catch {
+      apiOrigin = '';
+    }
+    const swUrl = apiOrigin
+      ? `/sw.js?apiOrigin=${encodeURIComponent(apiOrigin)}`
+      : '/sw.js';
+
+    // Rejoue la file de mutations hors-ligne au retour du réseau.
+    const triggerReplay = () => {
+      navigator.serviceWorker.ready
+        .then((r) => r.active?.postMessage({ type: 'REPLAY_QUEUE' }))
+        .catch(() => undefined);
+    };
+    window.addEventListener('online', triggerReplay);
+
     const register = async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
+        const reg = await navigator.serviceWorker.register(swUrl);
+        // Si on est déjà en ligne, tente de vider une file éventuelle laissée par une session précédente.
+        if (navigator.onLine) triggerReplay();
 
         // Un SW est déjà en attente (nouvelle version prête)
         if (reg.waiting && navigator.serviceWorker.controller) {
@@ -67,6 +89,7 @@ export default function PwaRegister() {
 
     return () => {
       navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      window.removeEventListener('online', triggerReplay);
     };
   }, []);
 

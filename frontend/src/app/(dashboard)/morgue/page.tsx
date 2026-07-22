@@ -312,7 +312,7 @@ export default function MorguePage() {
                       <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, padding: '4px 10px', borderRadius: 20, background: s.statut === 'en_chambre' ? '#EFF6FF' : '#F0FDF4', color: s.statut === 'en_chambre' ? '#1D4ED8' : '#15803D', border: `1px solid ${s.statut === 'en_chambre' ? '#93C5FD' : '#86EFAC'}` }}>{t(`statutSejour.${s.statut}`)}</span>
                     </td>
                     <td style={{ padding: '13px 14px', fontSize: 12, color: '#374151', whiteSpace: 'nowrap' }}>
-                      {s.fraisConservation != null ? `${Number(s.fraisConservation).toLocaleString('fr-FR')} FCFA` : <span style={{ color: '#9CA3AF' }}>{Number(s.tarifJournalier).toLocaleString('fr-FR')}/{t('jour')}</span>}
+                      {s.fraisConservation != null ? `${Number(s.fraisConservation).toLocaleString('fr-FR')} FCFA` : <span style={{ color: '#9CA3AF' }}>{(Number(s.tarifJournalier) || 0).toLocaleString('fr-FR')}/{t('jour')}</span>}
                     </td>
                     <td style={{ padding: '13px 14px', whiteSpace: 'nowrap' }}>
                       {s.statut === 'en_chambre' && (

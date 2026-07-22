@@ -236,6 +236,8 @@ img,svg,video,canvas,iframe,embed,object{max-width:100%}
 .lp-module-card h3{font-size:.9375rem;font-weight:700;color:#E2E8F0;margin-bottom:6px;letter-spacing:-.01em}
 .lp-module-card p{font-size:.8125rem;color:#64748B;line-height:1.55}
 .lp-module-tag{display:inline-block;margin-top:10px;font-size:.6875rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px;color:var(--teal);background:rgba(0,200,184,.08)}
+.lp-module-cat{grid-column:1/-1;background:var(--navy-2);padding:22px 22px 8px;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:10px}
+.lp-module-cat::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.07)}
 
 /* ── WHY ── */
 .lp-why-section{padding:96px 48px;background:var(--off)}

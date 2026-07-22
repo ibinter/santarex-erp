@@ -75,7 +75,9 @@
     "declarationsSanitaires": "Déclarations sanitaires",
     "messagerie": "Messagerie",
     "messagesSortants": "SMS / Rappels",
-    "planningsGardes": "Gardes & astreintes"
+    "planningsGardes": "Gardes & astreintes",
+    "servicesPersonnalises": "Services personnalisés",
+    "interoperabilite": "Interopérabilité"
   },
   "hero": {
     "badge": "Solution SaaS Hospitalière #1 en Afrique de l'Ouest",

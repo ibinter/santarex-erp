@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import Providers from './providers';
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
     shortcut: '/favicon-32-tr.png',
   },
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0D47A1',
 };
 
 export default async function RootLayout({

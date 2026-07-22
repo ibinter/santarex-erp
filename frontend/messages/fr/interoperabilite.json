@@ -1,0 +1,114 @@
+{
+  "interoperabilite": {
+    "title": "Interopérabilité",
+    "subtitle": "API publique, webhooks et interfaçage HL7 / DICOM",
+    "loading": "Chargement…",
+    "refresh": "Rafraîchir",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "delete": "Supprimer",
+    "test": "Tester",
+    "close": "Fermer",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "confirmDelete": "Confirmer la suppression ?",
+    "tabs": {
+      "cles": "Clés API",
+      "webhooks": "Webhooks",
+      "interfaces": "Interfaces HL7 / DICOM",
+      "messages": "Journal des messages",
+      "docs": "API publique"
+    },
+    "stats": {
+      "cles": "Clés API",
+      "clesActives": "Clés actives",
+      "webhooks": "Webhooks actifs",
+      "configs": "Interfaces",
+      "messages": "Messages",
+      "messagesErreur": "Erreurs"
+    },
+    "cles": {
+      "title": "Clés API",
+      "new": "Nouvelle clé",
+      "name": "Nom",
+      "namePlaceholder": "Ex. Automate labo Cobas",
+      "scopes": "Portées",
+      "scopesHint": "Séparées par des virgules (ex. patients:read, hl7:write)",
+      "prefix": "Préfixe",
+      "lastUsed": "Dernier usage",
+      "never": "Jamais",
+      "status": "Statut",
+      "createdAt": "Créée le",
+      "revoke": "Révoquer",
+      "revoked": "Révoquée",
+      "empty": "Aucune clé API. Créez-en une pour permettre l'accès à l'API publique.",
+      "createdTitle": "Clé créée",
+      "createdWarning": "Copiez cette clé maintenant : elle ne sera plus jamais affichée.",
+      "copy": "Copier",
+      "copied": "Copié"
+    },
+    "webhooks": {
+      "title": "Webhooks sortants",
+      "new": "Nouveau webhook",
+      "url": "URL cible",
+      "urlPlaceholder": "https://exemple.com/hooks/santarex",
+      "events": "Événements",
+      "lastStatus": "Dernier statut",
+      "empty": "Aucun webhook. Ajoutez-en un pour recevoir les événements en temps réel.",
+      "testSent": "Test envoyé — statut : {statut}",
+      "secretTitle": "Secret du webhook",
+      "secretWarning": "Copiez ce secret : il signe les payloads (HMAC-SHA256) et ne sera plus affiché.",
+      "evt": {
+        "patient.cree": "Patient créé",
+        "resultat.pret": "Résultat prêt",
+        "facture.creee": "Facture créée",
+        "rendezvous.cree": "Rendez-vous créé",
+        "interop.message.recu": "Message interop reçu"
+      }
+    },
+    "interfaces": {
+      "title": "Interfaces HL7 / DICOM",
+      "new": "Nouvelle interface",
+      "type": "Type",
+      "typeHl7": "HL7 — Automate laboratoire",
+      "typeDicom": "DICOM / PACS — Imagerie",
+      "name": "Nom",
+      "namePlaceholder": "Ex. Cobas 6000 - Salle B",
+      "host": "Hôte / IP",
+      "port": "Port",
+      "connection": "Connexion",
+      "empty": "Aucune interface configurée.",
+      "testConnection": "Tester la connexion",
+      "statut": {
+        "non_configure": "Non configuré",
+        "connecte": "Connecté",
+        "deconnecte": "Déconnecté",
+        "erreur": "Erreur"
+      },
+      "siteNote": "Configuration logicielle uniquement. Le raccordement physique des appareils se fera sur site."
+    },
+    "messages": {
+      "title": "Journal des messages",
+      "direction": "Sens",
+      "protocol": "Protocole",
+      "type": "Type",
+      "status": "Statut",
+      "date": "Date",
+      "error": "Erreur",
+      "empty": "Aucun message enregistré.",
+      "sens": { "entrant": "Entrant", "sortant": "Sortant" },
+      "statut": { "recu": "Reçu", "traite": "Traité", "erreur": "Erreur" }
+    },
+    "docs": {
+      "title": "API publique — endpoints exposés",
+      "intro": "Authentifiez chaque requête avec l'en-tête X-API-Key. Chaque clé n'accède qu'aux données de son établissement.",
+      "header": "En-tête requis",
+      "endpoints": "Endpoints",
+      "listPatients": "Liste des patients (portée patients:read)",
+      "getPatient": "Détail d'un patient (portée patients:read)",
+      "ingestHl7": "Ingestion de résultats HL7 v2 (portée hl7:write)",
+      "webhookNote": "Les payloads de webhook sont signés via HMAC-SHA256 dans l'en-tête X-Santarex-Signature."
+    }
+  }
+}

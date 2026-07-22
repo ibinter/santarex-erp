@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import '@/app/landing.css';
 import { API_URL } from '@/lib/api';
@@ -124,7 +124,7 @@ const T = {
     hero_badge: 'Un produit IBIG SOFT · ibigsoft.com',
     trust_count: 'établissements actifs',
     problem_before_label: 'Avant', problem_after_label: 'Avec SANTAREX',
-    modules_desc: 'Chaque module communique en temps réel. Une prescription générée en consultation alerte automatiquement la pharmacie. Un résultat labo apparaît dans le DME dès validation.',
+    modules_desc: "48 modules couvrant tout le cycle hospitalier — de la maternité au bloc, de la banque de sang au portail patient. Chaque module communique en temps réel : une prescription générée en consultation alerte automatiquement la pharmacie, un résultat labo apparaît dans le DME dès validation.",
     modules_check1: 'Données synchronisées en temps réel',
     modules_check2: 'Déployable module par module',
     modules_check3: 'Formation incluse dans tous les plans',
@@ -224,7 +224,7 @@ const T = {
     hero_badge: 'A product by IBIG SOFT · ibigsoft.com',
     trust_count: 'active facilities',
     problem_before_label: 'Before', problem_after_label: 'With SANTAREX',
-    modules_desc: 'Every module communicates in real time. A prescription from a consultation automatically alerts the pharmacy. A lab result appears in the EHR as soon as it is validated.',
+    modules_desc: '48 modules covering the entire hospital cycle — from maternity to the operating room, from the blood bank to the patient portal. Every module communicates in real time: a prescription from a consultation automatically alerts the pharmacy, and a lab result appears in the EHR as soon as it is validated.',
     modules_check1: 'Data synchronized in real time',
     modules_check2: 'Deploy module by module',
     modules_check3: 'Training included in all plans',
@@ -266,7 +266,7 @@ const SARA_KB = [
   { t: ['essai','gratuit','trial','free','tester','commencer','démarrer'],
     r: "Oui ! L'essai est gratuit pendant 30 jours, sans carte bancaire et sans engagement. Cliquez sur « Démo gratuite » pour commencer." },
   { t: ['module','fonctionnalité','feature','quoi','faire','propose','contient','inclus'],
-    r: 'SANTAREX ERP comprend 14 modules :\n• Patients & DME\n• Consultations & ordonnances\n• Rendez-vous\n• Pharmacie\n• Laboratoire\n• Hospitalisation\n• Urgences & triage\n• Facturation\n• Reporting BI\n• Imagerie médicale\n• Ressources humaines\n• Bloc opératoire\n\nChaque module communique en temps réel.' },
+    r: "SANTAREX ERP couvre tout le cycle hospitalier avec 48 modules, regroupés par domaine :\n• Clinique & Soins : DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD\n• Pharmacie & Plateau technique : pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI\n• Finances & Assurances : facturation, devis, caisse, assureurs, tiers-payant, budget\n• Communication : portail patient, SMS & rappels, messagerie, satisfaction\n• Qualité : gardes, incidents, indicateurs, déclarations sanitaires\n• Opérations : transport/ambulances, morgue, RH, BI, multi-sites\n\nChaque module communique en temps réel." },
   { t: ['pharmacie','pharmacy','stock','médicament','dispensation','rupture'],
     r: 'Le module Pharmacie gère les stocks en temps réel, la dispensation sur ordonnance, les alertes péremption/rupture et la traçabilité des lots.\n\n💊 Plan Pharmacie autonome : 12 000 FCFA/mois.' },
   { t: ['pays','afrique','disponible','région','déploie','cameroun','sénégal','guinée'],
@@ -297,7 +297,7 @@ const SARA_GROQ_KEY = ['gsk_nSy9kIik08HF5GAwnBJoWG','dyb3FYJr2YGDHM37GHH2uJ8qu',
 const SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
 SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
 Plans mensuels : Pharmacie 12 000 | Cabinet 18 000 | Centre de santé 35 000 | Clinique 75 000 | Hôpital 150 000 FCFA/mois. Forfait annuel = 10 mois payés 2 mois offerts.
-14 modules : Patients/DME, Consultations, Rendez-vous, Pharmacie, Laboratoire, Hospitalisation, Urgences, Facturation, BI, Imagerie, RH, Bloc opératoire.
+48 modules couvrant tout le cycle hospitalier, regroupés par domaine : Clinique & Soins (DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD), Pharmacie & Plateau technique (pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI), Finances & Assurances (facturation, devis, caisse, assureurs, tiers-payant, budget), Communication (portail patient, SMS & rappels, messagerie, satisfaction), Qualité (gardes, incidents, indicateurs, déclarations sanitaires), Opérations (transport/ambulances, morgue, RH, BI, multi-sites).
 Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
 Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
 Réponds de façon concise (max 5 lignes), professionnelle et en français. Si la question dépasse tes connaissances, propose de contacter l'équipe.`;
@@ -378,19 +378,69 @@ const PROBLEMS: { icon: string; before: Record<Lang,string>; after: Record<Lang,
   { icon: '📱', before: { fr: 'Impossible de travailler depuis un smartphone ou hors connexion', en: 'Impossible to work from a smartphone or offline' }, after: { fr: 'SANTAREX ERP fonctionne sur tous les appareils — ordinateur, tablette, smartphone, hors ligne', en: 'SANTAREX ERP works on all devices — computer, tablet, smartphone, offline' } },
 ];
 
-const MODULES: { title: Record<Lang,string>; desc: Record<Lang,string>; tag: string; iconColor: string; strokeColor: string; icon: React.ReactNode }[] = [
-  { title: { fr: 'Patients & DME', en: 'Patients & EHR' }, desc: { fr: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', en: 'Complete electronic health records, automatic patient ID, history, allergies, medical background.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-  { title: { fr: 'Rendez-vous', en: 'Appointments' }, desc: { fr: "Agenda multi-médecins, créneaux disponibles, rappels SMS, liste d'attente.", en: 'Multi-doctor schedule, available slots, SMS reminders, waiting list.' }, tag: 'Core', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-  { title: { fr: 'Consultations', en: 'Consultations' }, desc: { fr: 'CIM-10, constantes vitales, ordonnances numériques, certificats médicaux, plan de soins.', en: 'ICD-10, vital signs, digital prescriptions, medical certificates, care plan.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> },
-  { title: { fr: 'Pharmacie', en: 'Pharmacy' }, desc: { fr: 'Stock temps réel, alertes rupture & péremption, gestion des lots, dispensation sur ordonnance.', en: 'Real-time stock, stockout & expiry alerts, batch management, prescription dispensing.' }, tag: 'Cabinet+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg> },
-  { title: { fr: 'Laboratoire', en: 'Laboratory' }, desc: { fr: "Demandes d'analyses, saisie & validation des résultats, interface biologiste, historique labo.", en: 'Test requests, result entry & validation, biologist interface, lab history.' }, tag: 'Cabinet+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> },
-  { title: { fr: 'Hospitalisation', en: 'Inpatient care' }, desc: { fr: 'Plan des lits temps réel, prescriptions médicales, notes infirmières, sorties et transferts.', en: 'Real-time bed plan, medical prescriptions, nursing notes, discharges and transfers.' }, tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-  { title: { fr: 'Urgences', en: 'Emergency' }, desc: { fr: 'Triage Manchester, file attente temps réel, suivi des passages, alertes critiques.', en: 'Manchester triage, real-time queue, patient tracking, critical alerts.' }, tag: 'Clinique+', iconColor: 'rgba(239,68,68,.1)', strokeColor: '#F87171', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> },
-  { title: { fr: 'Facturation', en: 'Billing' }, desc: { fr: 'Devis, factures, tiers-payant, paiement mobile money (Orange, MTN, Wave), historique.', en: 'Quotes, invoices, third-party billing, mobile money payment (Orange, MTN, Wave), history.' }, tag: 'Core', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-  { title: { fr: 'Reporting & BI', en: 'Reporting & BI' }, desc: { fr: 'KPIs temps réel, tableau de bord direction, exports PDF/Excel, analyses de performance.', en: 'Real-time KPIs, management dashboard, PDF/Excel exports, performance analytics.' }, tag: 'Clinique+', iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> },
-  { title: { fr: 'Imagerie médicale', en: 'Medical imaging' }, desc: { fr: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus, PACS basique.', en: 'Exam management (X-ray, Echo, CT, MRI), reports, basic PACS.' }, tag: 'Hôpital+', iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
-  { title: { fr: 'Ressources humaines', en: 'Human resources' }, desc: { fr: 'Personnel médical & administratif, plannings, congés, paie mensuelle, organigramme.', en: 'Medical & admin staff, schedules, leave, monthly payroll, org chart.' }, tag: 'Hôpital+', iconColor: 'rgba(139,92,246,.12)', strokeColor: '#A78BFA', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-  { title: { fr: 'Bloc opératoire', en: 'Operating room' }, desc: { fr: 'Programme chirurgical, gestion des salles, protocoles anesthésie, comptes rendus opératoires.', en: 'Surgical schedule, room management, anaesthesia protocols, operative reports.' }, tag: 'Hôpital+', iconColor: 'rgba(0,200,184,.1)', strokeColor: '#00C8B8', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
+type Mod = { title: Record<Lang,string>; desc: Record<Lang,string>; tag: string; iconColor: string; strokeColor: string; icon: React.ReactNode };
+const MC = {
+  teal:   { iconColor: 'rgba(0,200,184,.1)',  strokeColor: '#00C8B8' },
+  blue:   { iconColor: 'rgba(26,86,200,.15)', strokeColor: '#4A8AF4' },
+  amber:  { iconColor: 'rgba(245,166,35,.1)', strokeColor: '#F5A623' },
+  purple: { iconColor: 'rgba(139,92,246,.12)',strokeColor: '#A78BFA' },
+  red:    { iconColor: 'rgba(239,68,68,.1)',  strokeColor: '#F87171' },
+} as const;
+const S = (children: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{children}</svg>;
+
+const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
+  { cat: { fr: 'Clinique & Soins', en: 'Clinical & Care' }, items: [
+    { title: { fr: 'Patients & DME', en: 'Patients & EHR' }, desc: { fr: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', en: 'Complete electronic health records, automatic patient ID, history, allergies, medical background.' }, tag: 'Core', ...MC.teal, icon: S(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    { title: { fr: 'Consultations', en: 'Consultations' }, desc: { fr: 'CIM-10, constantes vitales, ordonnances numériques, certificats médicaux, plan de soins.', en: 'ICD-10, vital signs, digital prescriptions, medical certificates, care plan.' }, tag: 'Core', ...MC.teal, icon: S(<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>) },
+    { title: { fr: 'Rendez-vous', en: 'Appointments' }, desc: { fr: "Agenda multi-médecins, créneaux disponibles, rappels SMS, liste d'attente.", en: 'Multi-doctor schedule, available slots, SMS reminders, waiting list.' }, tag: 'Core', ...MC.blue, icon: S(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { title: { fr: 'Hospitalisation', en: 'Inpatient care' }, desc: { fr: 'Plan des lits temps réel, prescriptions médicales, notes infirmières, sorties et transferts.', en: 'Real-time bed plan, medical prescriptions, nursing notes, discharges and transfers.' }, tag: 'Clinique+', ...MC.red, icon: S(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+    { title: { fr: 'Urgences & triage', en: 'Emergency & triage' }, desc: { fr: 'Triage Manchester, file attente temps réel, suivi des passages, alertes critiques.', en: 'Manchester triage, real-time queue, patient tracking, critical alerts.' }, tag: 'Clinique+', ...MC.red, icon: S(<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>) },
+    { title: { fr: 'Bloc opératoire', en: 'Operating room' }, desc: { fr: 'Programme chirurgical, gestion des salles, protocoles anesthésie, comptes rendus opératoires.', en: 'Surgical schedule, room management, anaesthesia protocols, operative reports.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>) },
+    { title: { fr: 'Maternité & accouchements', en: 'Maternity & deliveries' }, desc: { fr: 'Suivi de grossesse, partogramme, salle de naissance, suivi mère-enfant post-partum.', en: 'Pregnancy follow-up, partogram, delivery room, mother-and-child postpartum tracking.' }, tag: 'Clinique+', ...MC.red, icon: S(<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/>) },
+    { title: { fr: 'Pédiatrie', en: 'Pediatrics' }, desc: { fr: 'Courbes de croissance, dossier enfant, posologies pédiatriques, suivi développemental.', en: 'Growth charts, child record, pediatric dosing, developmental follow-up.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>) },
+    { title: { fr: 'Vaccination', en: 'Vaccination' }, desc: { fr: 'Calendrier vaccinal, carnet numérique, rappels automatiques, gestion des campagnes.', en: 'Immunization schedule, digital record, automatic reminders, campaign management.' }, tag: 'Cabinet+', ...MC.teal, icon: S(<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>) },
+    { title: { fr: 'Soins infirmiers', en: 'Nursing care' }, desc: { fr: 'Plan de soins, feuilles de surveillance, administration des traitements, transmissions.', en: 'Care plan, monitoring sheets, treatment administration, shift handovers.' }, tag: 'Clinique+', ...MC.purple, icon: S(<><path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2z"/></>) },
+    { title: { fr: 'Consentements éclairés', en: 'Informed consent' }, desc: { fr: 'Formulaires de consentement, signature numérique, archivage horodaté et traçable.', en: 'Consent forms, digital signature, time-stamped and traceable archiving.' }, tag: 'Clinique+', ...MC.amber, icon: S(<><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></>) },
+    { title: { fr: 'Interactions médicamenteuses', en: 'Drug interactions' }, desc: { fr: "Contrôle automatique des interactions, allergies et contre-indications à la prescription.", en: 'Automatic checks for interactions, allergies and contraindications at prescription.' }, tag: 'Clinique+', ...MC.red, icon: S(<><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>) },
+    { title: { fr: 'Hospitalisation à domicile', en: 'Home hospitalization' }, desc: { fr: 'Coordination des soins HAD, tournées, suivi à distance et continuité des traitements.', en: 'Home-care (HAH) coordination, visit rounds, remote monitoring and treatment continuity.' }, tag: 'Hôpital+', ...MC.blue, icon: S(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 12v5m-2.5-2.5h5"/></>) },
+  ]},
+  { cat: { fr: 'Pharmacie, Labo & Plateau technique', en: 'Pharmacy, Lab & Technical' }, items: [
+    { title: { fr: 'Pharmacie', en: 'Pharmacy' }, desc: { fr: 'Stock temps réel, alertes rupture & péremption, gestion des lots, dispensation sur ordonnance.', en: 'Real-time stock, stockout & expiry alerts, batch management, prescription dispensing.' }, tag: 'Cabinet+', ...MC.amber, icon: S(<path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/>) },
+    { title: { fr: 'Laboratoire', en: 'Laboratory' }, desc: { fr: "Demandes d'analyses, saisie & validation des résultats, interface biologiste, historique labo.", en: 'Test requests, result entry & validation, biologist interface, lab history.' }, tag: 'Cabinet+', ...MC.purple, icon: S(<><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></>) },
+    { title: { fr: 'Imagerie médicale', en: 'Medical imaging' }, desc: { fr: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus, PACS basique.', en: 'Exam management (X-ray, Echo, CT, MRI), reports, basic PACS.' }, tag: 'Hôpital+', ...MC.amber, icon: S(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
+    { title: { fr: 'Approvisionnement & achats', en: 'Procurement & purchasing' }, desc: { fr: 'Commandes fournisseurs, bons de réception, suivi des livraisons et coûts.', en: 'Supplier orders, goods receipts, delivery and cost tracking.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></>) },
+    { title: { fr: 'Banque de sang', en: 'Blood bank' }, desc: { fr: 'Poches, groupes & compatibilité, stock par type, traçabilité des transfusions.', en: 'Blood units, groups & compatibility, stock by type, transfusion traceability.' }, tag: 'Hôpital+', ...MC.red, icon: S(<path d="M12 2.7s6 6.3 6 10.3a6 6 0 0 1-12 0c0-4 6-10.3 6-10.3z"/>) },
+    { title: { fr: 'Stérilisation', en: 'Sterilization' }, desc: { fr: 'Cycles de stérilisation, traçabilité des instruments, contrôle qualité des lots.', en: 'Sterilization cycles, instrument traceability, batch quality control.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></>) },
+    { title: { fr: 'Équipements biomédicaux', en: 'Biomedical equipment' }, desc: { fr: 'Inventaire du parc, maintenance préventive, calibrations et interventions techniques.', en: 'Asset inventory, preventive maintenance, calibrations and technical interventions.' }, tag: 'Hôpital+', ...MC.purple, icon: S(<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>) },
+    { title: { fr: 'Déchets DASRI', en: 'Medical waste (DASRI)' }, desc: { fr: "Suivi des déchets de soins, bordereaux d'enlèvement, filières et conformité.", en: 'Clinical waste tracking, collection slips, disposal channels and compliance.' }, tag: 'Hôpital+', ...MC.amber, icon: S(<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>) },
+  ]},
+  { cat: { fr: 'Finances & Assurances', en: 'Finance & Insurance' }, items: [
+    { title: { fr: 'Facturation', en: 'Billing' }, desc: { fr: 'Factures, avoirs, paiement mobile money (Orange, MTN, Wave), suivi des encours.', en: 'Invoices, credit notes, mobile money payment (Orange, MTN, Wave), receivables tracking.' }, tag: 'Core', ...MC.teal, icon: S(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { title: { fr: 'Devis', en: 'Quotes' }, desc: { fr: 'Devis personnalisés, conversion en facture, validité et suivi des acceptations.', en: 'Custom quotes, conversion to invoice, validity and acceptance tracking.' }, tag: 'Cabinet+', ...MC.blue, icon: S(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>) },
+    { title: { fr: 'Caisse & reçus', en: 'Cash sessions & receipts' }, desc: { fr: 'Sessions de caisse, ouverture/clôture, reçus numériques et rapprochement.', en: 'Cash register sessions, open/close, digital receipts and reconciliation.' }, tag: 'Cabinet+', ...MC.amber, icon: S(<><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></>) },
+    { title: { fr: 'Prise en charge assureurs', en: 'Insurance coverage' }, desc: { fr: 'Conventions, bons de prise en charge, plafonds et suivi des remboursements.', en: 'Agreements, coverage vouchers, ceilings and reimbursement tracking.' }, tag: 'Clinique+', ...MC.purple, icon: S(<path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/>) },
+    { title: { fr: 'Tiers-payant', en: 'Third-party payment' }, desc: { fr: 'Facturation aux mutuelles & assurances, quote-part patient, relances automatiques.', en: 'Billing to mutuals & insurers, patient co-pay, automatic follow-ups.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M7 15h.01M11 15h2"/></>) },
+    { title: { fr: 'Budget', en: 'Budget' }, desc: { fr: 'Budgets prévisionnels, suivi des dépenses par service, écarts et analyses.', en: 'Forecast budgets, spending tracking by department, variances and analysis.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></>) },
+  ]},
+  { cat: { fr: 'Communication & Patient', en: 'Communication & Patient' }, items: [
+    { title: { fr: 'Portail patient', en: 'Patient portal' }, desc: { fr: 'Accès sécurisé aux résultats, ordonnances, rendez-vous et documents en ligne.', en: 'Secure online access to results, prescriptions, appointments and documents.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
+    { title: { fr: 'SMS & rappels', en: 'SMS & reminders' }, desc: { fr: 'Rappels de rendez-vous, notifications de résultats et campagnes SMS automatisées.', en: 'Appointment reminders, result notifications and automated SMS campaigns.' }, tag: 'Cabinet+', ...MC.teal, icon: S(<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>) },
+    { title: { fr: 'Messagerie interne', en: 'Internal messaging' }, desc: { fr: 'Communication sécurisée entre services et équipes, notifications temps réel.', en: 'Secure communication between departments and teams, real-time notifications.' }, tag: 'Clinique+', ...MC.purple, icon: S(<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>) },
+    { title: { fr: 'Satisfaction patient', en: 'Patient satisfaction' }, desc: { fr: 'Enquêtes de satisfaction, collecte des avis, scores NPS et suivi qualité perçue.', en: 'Satisfaction surveys, feedback collection, NPS scores and perceived-quality tracking.' }, tag: 'Clinique+', ...MC.amber, icon: S(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>) },
+  ]},
+  { cat: { fr: 'Qualité & Conformité', en: 'Quality & Compliance' }, items: [
+    { title: { fr: 'Gardes & astreintes', en: 'On-call & duty rosters' }, desc: { fr: 'Planning des gardes, astreintes, permutations et suivi du temps de travail.', en: 'On-call scheduling, duty rosters, swaps and working-time tracking.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>) },
+    { title: { fr: 'Incidents qualité', en: 'Quality incidents' }, desc: { fr: "Déclaration d'événements indésirables, analyse des causes et plans d'action.", en: 'Adverse-event reporting, root-cause analysis and action plans.' }, tag: 'Hôpital+', ...MC.red, icon: S(<><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>) },
+    { title: { fr: 'Indicateurs qualité', en: 'Quality indicators' }, desc: { fr: 'Tableaux de bord qualité, indicateurs de performance et démarche accréditation.', en: 'Quality dashboards, performance indicators and accreditation processes.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>) },
+    { title: { fr: 'Déclarations sanitaires', en: 'Health reporting' }, desc: { fr: 'Rapports réglementaires, surveillance épidémiologique et transmissions aux autorités.', en: 'Regulatory reports, epidemiological surveillance and reporting to authorities.' }, tag: 'Hôpital+', ...MC.purple, icon: S(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>) },
+  ]},
+  { cat: { fr: 'Opérations & Administration', en: 'Operations & Admin' }, items: [
+    { title: { fr: 'Transport & ambulances', en: 'Transport & ambulances' }, desc: { fr: 'Flotte d\'ambulances, demandes de transport, missions et suivi des interventions.', en: 'Ambulance fleet, transport requests, missions and intervention tracking.' }, tag: 'Hôpital+', ...MC.red, icon: S(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>) },
+    { title: { fr: 'Morgue', en: 'Mortuary' }, desc: { fr: 'Gestion des chambres froides, entrées/sorties, formalités et facturation dédiée.', en: 'Cold-room management, admissions/releases, formalities and dedicated billing.' }, tag: 'Hôpital+', ...MC.blue, icon: S(<><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></>) },
+    { title: { fr: 'Ressources humaines', en: 'Human resources' }, desc: { fr: 'Personnel médical & administratif, plannings, congés, paie mensuelle, organigramme.', en: 'Medical & admin staff, schedules, leave, monthly payroll, org chart.' }, tag: 'Hôpital+', ...MC.purple, icon: S(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>) },
+    { title: { fr: 'Reporting & BI', en: 'Reporting & BI' }, desc: { fr: 'KPIs temps réel, tableau de bord direction, exports PDF/Excel, analyses de performance.', en: 'Real-time KPIs, management dashboard, PDF/Excel exports, performance analytics.' }, tag: 'Clinique+', ...MC.blue, icon: S(<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>) },
+    { title: { fr: 'Multi-sites', en: 'Multi-site' }, desc: { fr: 'Gestion de plusieurs établissements, consolidation des données et pilotage de groupe.', en: 'Management of multiple facilities, data consolidation and group-level steering.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>) },
+  ]},
 ];
 
 const PLANS = [
@@ -449,8 +499,8 @@ const PLANS = [
     users: { fr: 'Utilisateurs illimités', en: 'Unlimited users' },
     featured: false, badge: null,
     features: {
-      fr: ['Utilisateurs illimités','Tous les 12 modules','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
-      en: ['Unlimited users','All 12 modules','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
+      fr: ['Utilisateurs illimités','Les 48 modules inclus','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
+      en: ['Unlimited users','All 48 modules included','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: 'Nous contacter', en: 'Contact us' },
   },
@@ -1173,7 +1223,7 @@ export default function LandingPage() {
       {/* ══ STATS ══ */}
       <section className="lp-stats-section">
         <div className="lp-stats-inner">
-          {[{ num: '12', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
+          {[{ num: '48', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
             <div key={lbl} className="lp-stat-box"><div className="lp-stat-num">{num}<span>{sup}</span></div><div className="lp-stat-lbl">{lbl}</div></div>
           ))}
         </div>
@@ -1218,11 +1268,16 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="lp-modules-grid">
-              {MODULES.map(m => (
-                <div key={m.title.fr} className="lp-module-card">
-                  <div className="lp-module-icon" style={{ background: m.iconColor }}><span style={{ color: m.strokeColor }}>{m.icon}</span></div>
-                  <h3>{m.title[lang]}</h3><p>{m.desc[lang]}</p><span className="lp-module-tag">{m.tag}</span>
-                </div>
+              {MODULE_GROUPS.map(g => (
+                <Fragment key={g.cat.fr}>
+                  <div className="lp-module-cat">{g.cat[lang]}</div>
+                  {g.items.map(m => (
+                    <div key={m.title.fr} className="lp-module-card">
+                      <div className="lp-module-icon" style={{ background: m.iconColor }}><span style={{ color: m.strokeColor }}>{m.icon}</span></div>
+                      <h3>{m.title[lang]}</h3><p>{m.desc[lang]}</p><span className="lp-module-tag">{m.tag}</span>
+                    </div>
+                  ))}
+                </Fragment>
               ))}
             </div>
           </div>

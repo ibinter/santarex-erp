@@ -75,6 +75,9 @@ import { IndicateursQualiteModule } from './indicateurs-qualite/indicateurs-qual
 import { PortailPatientModule } from './portail-patient/portail-patient.module';
 import { DeclarationsSanitairesModule } from './declarations-sanitaires/declarations-sanitaires.module';
 import { SitesModule } from './sites/sites.module';
+// Finalisation v1 — extensibilité & interopérabilité
+import { ServicesPersonnalisesModule } from './services-personnalises/services-personnalises.module';
+import { InteroperabiliteModule } from './interoperabilite/interoperabilite.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -161,6 +164,8 @@ import { SeedModule } from './database/seed.module';
     PortailPatientModule,
     DeclarationsSanitairesModule,
     SitesModule,
+    ServicesPersonnalisesModule,
+    InteroperabiliteModule,
     HealthModule,
     SeedModule,
   ],

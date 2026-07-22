@@ -75,7 +75,9 @@
     "declarationsSanitaires": "Notifiable diseases",
     "messagerie": "Messaging",
     "messagesSortants": "SMS / Reminders",
-    "planningsGardes": "On-call planning"
+    "planningsGardes": "On-call planning",
+    "servicesPersonnalises": "Custom services",
+    "interoperabilite": "Interoperability"
   },
   "hero": {
     "badge": "#1 Hospital SaaS Solution in West Africa",

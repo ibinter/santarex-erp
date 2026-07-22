@@ -19,6 +19,7 @@ import type { ReactNode } from 'react';
 import {
   Users, Calendar, FlaskConical, Pill, Receipt, Bed, Settings, Activity,
   Siren, Scissors, ScanLine, Calculator, Users2, BarChart3, LifeBuoy, CreditCard,
+  Baby, Syringe, FileText, Droplets, Wrench, MessageSquare, ClipboardList, Building2,
 } from 'lucide-react';
 
 export type Lang = 'fr' | 'en';
@@ -1794,6 +1795,1073 @@ export const SECTIONS: Section[] = [
         titre: 'Data backup and confidentiality',
         texte: "Patient data is confidential. SANTAREX ensures secure hosting; settings define access and retention per the facility's rules.",
         astuce: "The best technical backup does not replace vigilance: never share your credentials and sign out of shared workstations.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  19. MATERNITÉ & PÉDIATRIE  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'maternite-pediatrie', icon: <Baby size={ICON} />, color: '#BE185D', bg: '#FCE7F3', border: '#F9A8D4',
+    fr: { titre: 'Maternité & Pédiatrie', desc: 'Grossesse, CPN, partogramme, croissance et vaccins' },
+    en: { titre: 'Maternity & Pediatrics', desc: 'Pregnancy, ANC, partogram, growth and vaccines' },
+    fr_content: [
+      {
+        titre: 'Ouvrir un dossier de grossesse',
+        texte: "Le dossier de grossesse est rattaché à la patiente : on part toujours de sa fiche, jamais d'un écran isolé. Il regroupe le terme prévu, les antécédents obstétricaux et le suivi des consultations prénatales.",
+        etapes: [
+          '① Ouvrez le module Patients et sélectionnez d\'abord la patiente dans la liste.',
+          '② Dans son dossier, ouvrez l\'onglet « Maternité / Grossesse ».',
+          '③ Cliquez sur « Nouveau dossier de grossesse ».',
+          'Renseignez la date des dernières règles (DDR) : le terme et l\'âge gestationnel se calculent automatiquement.',
+          'Complétez les antécédents (gestité, parité, césariennes) et validez.',
+        ],
+        astuce: "Saisissez la DDR avec soin : c'est elle qui pilote tout le calendrier de suivi (CPN, échographies, date prévue d'accouchement).",
+      },
+      {
+        titre: 'Enregistrer une consultation prénatale (CPN)',
+        texte: "Chaque CPN documente la surveillance de la grossesse : poids, tension, hauteur utérine, bruits du cœur fœtal, œdèmes et bandelette urinaire. Les valeurs s'historisent dans le dossier de grossesse.",
+        etapes: [
+          '① Sélectionnez la patiente puis ouvrez son dossier de grossesse.',
+          '② Onglet « CPN / Consultations prénatales ».',
+          '③ Cliquez sur « Nouvelle CPN ».',
+          'Saisissez les mesures du jour et le terme, puis validez.',
+        ],
+        astuce: "Une tension élevée associée à des protéines dans les urines doit alerter (pré-éclampsie) : signalez-le immédiatement au médecin.",
+      },
+      {
+        titre: 'Renseigner le partogramme',
+        texte: "Le partogramme trace le déroulement du travail : dilatation du col, descente fœtale, contractions et rythme cardiaque fœtal en fonction du temps. Il aide à repérer une dystocie.",
+        etapes: [
+          '① Sélectionnez la parturiente dans la liste.',
+          '② Onglet « Accouchement / Partogramme ».',
+          '③ Cliquez sur « Ajouter un relevé » à chaque examen.',
+          'Reportez dilatation, contractions et RCF : la courbe se met à jour.',
+        ],
+        astuce: "Respectez la périodicité des relevés : un partogramme n'a de valeur que si les points sont saisis à intervalles réguliers.",
+      },
+      {
+        titre: 'Suivre les courbes de croissance de l\'enfant',
+        texte: "Pour le nourrisson et l'enfant, poids, taille et périmètre crânien sont reportés sur des courbes de croissance (référentiel OMS) permettant de repérer une cassure ou un retard.",
+        etapes: [
+          '① Ouvrez le module Patients et sélectionnez d\'abord l\'enfant.',
+          '② Onglet « Pédiatrie / Croissance ».',
+          '③ Cliquez sur « Ajouter une mesure ».',
+          'Saisissez poids, taille et périmètre crânien : le point se place sur la courbe.',
+        ],
+        astuce: "Une cassure de la courbe pondérale est plus parlante qu'une valeur isolée : mesurez à chaque visite pour un suivi fiable.",
+      },
+      {
+        titre: 'Tenir le carnet vaccinal de l\'enfant',
+        texte: "Le carnet vaccinal recense les vaccins reçus et à venir selon le calendrier national (PEV). Il indique les rappels dus et les retards.",
+        etapes: [
+          '① Sélectionnez l\'enfant dans la liste des patients.',
+          '② Onglet « Vaccination / Carnet vaccinal ».',
+          '③ Cliquez sur « Enregistrer un vaccin ».',
+          'Choisissez le vaccin, la dose, le lot et la date ; les rappels suivants sont programmés automatiquement.',
+        ],
+        astuce: "Enregistrez toujours le numéro de lot du vaccin : il est indispensable en cas de pharmacovigilance ou de rappel de lot.",
+      },
+      {
+        titre: 'Calculer une posologie pédiatrique',
+        texte: "En pédiatrie, la posologie dépend du poids. L'outil d'aide au calcul propose la dose adaptée à partir du poids de l'enfant et du produit choisi, réduisant le risque d'erreur.",
+        etapes: [
+          '① Sélectionnez l\'enfant (son poids récent est repris de la courbe).',
+          '② Depuis la consultation ou l\'onglet Pédiatrie, ouvrez « Calcul de dose ».',
+          '③ Choisissez le médicament : la dose en mg/kg et le volume sont proposés.',
+        ],
+        astuce: "Vérifiez toujours la dose proposée : l'outil est une aide, pas une prescription. La responsabilité reste au prescripteur.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Open a pregnancy record',
+        texte: "The pregnancy record is attached to the patient: you always start from her file, never from an isolated screen. It gathers the due date, obstetric history and the antenatal follow-up.",
+        etapes: [
+          '① Open the Patients module and first select the patient from the list.',
+          '② In her record, open the « Maternity / Pregnancy » tab.',
+          '③ Click « New pregnancy record ».',
+          'Enter the last menstrual period (LMP): term and gestational age are computed automatically.',
+          'Complete the history (gravidity, parity, C-sections) and save.',
+        ],
+        astuce: "Enter the LMP carefully: it drives the whole follow-up schedule (ANC visits, ultrasounds, expected delivery date).",
+      },
+      {
+        titre: 'Record an antenatal visit (ANC)',
+        texte: "Each ANC visit documents pregnancy monitoring: weight, blood pressure, fundal height, fetal heart sounds, oedema and urine dipstick. Values are stored in the pregnancy record.",
+        etapes: [
+          '① Select the patient then open her pregnancy record.',
+          '② « ANC / Antenatal visits » tab.',
+          '③ Click « New ANC visit ».',
+          'Enter the day\'s measurements and term, then save.',
+        ],
+        astuce: "High blood pressure with protein in urine must raise concern (pre-eclampsia): flag it to the doctor immediately.",
+      },
+      {
+        titre: 'Fill in the partogram',
+        texte: "The partogram plots the course of labour: cervical dilation, fetal descent, contractions and fetal heart rate against time. It helps spot dystocia.",
+        etapes: [
+          '① Select the labouring patient from the list.',
+          '② « Delivery / Partogram » tab.',
+          '③ Click « Add a reading » at each examination.',
+          'Record dilation, contractions and FHR: the curve updates.',
+        ],
+        astuce: "Keep the reading intervals: a partogram is only meaningful if points are entered at regular intervals.",
+      },
+      {
+        titre: 'Track the child\'s growth curves',
+        texte: "For infants and children, weight, height and head circumference are plotted on growth curves (WHO reference) to spot a break or delay.",
+        etapes: [
+          '① Open the Patients module and first select the child.',
+          '② « Pediatrics / Growth » tab.',
+          '③ Click « Add a measurement ».',
+          'Enter weight, height and head circumference: the point is placed on the curve.',
+        ],
+        astuce: "A break in the weight curve is more telling than a single value: measure at every visit for reliable follow-up.",
+      },
+      {
+        titre: 'Keep the child\'s vaccination card',
+        texte: "The vaccination card lists vaccines received and due per the national schedule (EPI). It shows due boosters and any delays.",
+        etapes: [
+          '① Select the child from the patient list.',
+          '② « Vaccination / Vaccine card » tab.',
+          '③ Click « Record a vaccine ».',
+          'Choose the vaccine, dose, lot and date; the next boosters are scheduled automatically.',
+        ],
+        astuce: "Always record the vaccine lot number: it is essential for pharmacovigilance or a batch recall.",
+      },
+      {
+        titre: 'Compute a pediatric dose',
+        texte: "In pediatrics, dosage depends on weight. The dose helper suggests the adapted dose from the child's weight and the chosen product, reducing the risk of error.",
+        etapes: [
+          '① Select the child (their recent weight is reused from the curve).',
+          '② From the consultation or the Pediatrics tab, open « Dose calculation ».',
+          '③ Choose the medicine: the mg/kg dose and volume are proposed.',
+        ],
+        astuce: "Always check the proposed dose: the tool is an aid, not a prescription. Responsibility stays with the prescriber.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  20. VACCINATION & SOINS INFIRMIERS  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'vaccination-soins', icon: <Syringe size={ICON} />, color: '#0E7490', bg: '#CFFAFE', border: '#67E8F9',
+    fr: { titre: 'Vaccination & Soins infirmiers', desc: 'Calendrier vaccinal, rappels, transmissions DAR, douleur' },
+    en: { titre: 'Vaccination & Nursing care', desc: 'Vaccine schedule, boosters, DAR notes, pain scales' },
+    fr_content: [
+      {
+        titre: 'Consulter le calendrier vaccinal',
+        texte: "Le calendrier vaccinal reprend les vaccins recommandés par âge (nourrisson, enfant, adulte, femme enceinte). Il sert de référence pour planifier les injections.",
+        etapes: [
+          '① Sélectionnez d\'abord le patient dans la liste.',
+          '② Onglet « Vaccination ».',
+          '③ Le calendrier affiche les vaccins reçus, dus et à venir.',
+        ],
+        astuce: "Vérifiez le statut vaccinal à chaque passage : c'est l'occasion de rattraper un rappel oublié.",
+      },
+      {
+        titre: 'Administrer un vaccin et tracer l\'acte',
+        texte: "L'administration d'un vaccin décrémente le stock et trace l'acte (produit, dose, lot, site d'injection, soignant). Elle alimente le carnet vaccinal du patient.",
+        etapes: [
+          '① Sélectionnez le patient.',
+          '② Onglet « Vaccination » › ③ « Enregistrer une injection ».',
+          'Choisissez le vaccin, la dose, le lot et le site ; validez.',
+        ],
+        astuce: "Contrôlez la date de péremption et le respect de la chaîne du froid avant toute injection.",
+      },
+      {
+        titre: 'Programmer et suivre les rappels',
+        texte: "À chaque vaccin, le système calcule la date du rappel suivant. La liste des rappels dus permet de relancer les patients (SMS / appel).",
+        astuce: "Traitez chaque semaine la liste des rappels échus : un calendrier vaccinal interrompu perd de son efficacité.",
+      },
+      {
+        titre: 'Planifier un soin infirmier',
+        texte: "Les soins infirmiers (pansements, injections, perfusions, surveillance) se planifient sur le patient. Chaque soin porte une date, une fréquence et un exécutant.",
+        etapes: [
+          '① Sélectionnez d\'abord le patient dans la liste.',
+          '② Onglet « Soins infirmiers ».',
+          '③ Cliquez sur « Nouveau soin » et décrivez le geste, la fréquence et l\'horaire.',
+        ],
+        astuce: "Regroupez les soins d'un même patient sur un plan de soins : l'équipe visualise ce qui est fait et ce qui reste à faire.",
+      },
+      {
+        titre: 'Rédiger une transmission DAR',
+        texte: "La transmission ciblée DAR structure l'observation infirmière : Données (ce qu'on observe), Actions (ce qu'on fait), Résultat (l'effet obtenu). Elle assure la continuité entre les équipes.",
+        etapes: [
+          '① Sélectionnez le patient.',
+          '② Onglet « Soins infirmiers / Transmissions » › ③ « Nouvelle transmission ».',
+          'Renseignez la cible, puis les trois volets Données / Actions / Résultat ; validez.',
+        ],
+        astuce: "Une transmission claire au changement d'équipe évite les oublis : soyez factuel et daté, pas d'interprétation vague.",
+      },
+      {
+        titre: 'Évaluer la douleur avec une échelle',
+        texte: "L'évaluation de la douleur utilise une échelle adaptée : EVA / EN (adulte capable de s'exprimer), EVS, ou échelles comportementales pour l'enfant ou le patient non communicant. Le score s'historise.",
+        etapes: [
+          '① Sélectionnez le patient.',
+          '② Onglet « Soins infirmiers / Douleur » › ③ « Nouvelle évaluation ».',
+          'Choisissez l\'échelle, saisissez le score et l\'heure ; validez.',
+        ],
+        astuce: "Réévaluez la douleur après chaque antalgique : la comparaison des scores mesure l'efficacité du traitement.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'View the vaccination schedule',
+        texte: "The vaccination schedule lists recommended vaccines by age (infant, child, adult, pregnant woman). It is the reference for planning injections.",
+        etapes: [
+          '① First select the patient from the list.',
+          '② « Vaccination » tab.',
+          '③ The schedule shows vaccines received, due and upcoming.',
+        ],
+        astuce: "Check vaccination status at every visit: it is the chance to catch up a missed booster.",
+      },
+      {
+        titre: 'Administer a vaccine and trace the act',
+        texte: "Administering a vaccine decrements stock and traces the act (product, dose, lot, injection site, nurse). It feeds the patient's vaccine card.",
+        etapes: [
+          '① Select the patient.',
+          '② « Vaccination » tab › ③ « Record an injection ».',
+          'Choose the vaccine, dose, lot and site; confirm.',
+        ],
+        astuce: "Check the expiry date and cold-chain compliance before any injection.",
+      },
+      {
+        titre: 'Schedule and track boosters',
+        texte: "At each vaccine, the system computes the next booster date. The list of due boosters lets you follow up with patients (SMS / call).",
+        astuce: "Process the overdue booster list weekly: an interrupted vaccine schedule loses its effectiveness.",
+      },
+      {
+        titre: 'Plan a nursing care',
+        texte: "Nursing care (dressings, injections, infusions, monitoring) is planned on the patient. Each care has a date, a frequency and a performer.",
+        etapes: [
+          '① First select the patient from the list.',
+          '② « Nursing care » tab.',
+          '③ Click « New care » and describe the procedure, frequency and time.',
+        ],
+        astuce: "Group a patient's care on a care plan: the team sees what is done and what remains.",
+      },
+      {
+        titre: 'Write a DAR note',
+        texte: "The focused DAR note structures the nursing observation: Data (what you observe), Actions (what you do), Result (the effect). It ensures continuity between teams.",
+        etapes: [
+          '① Select the patient.',
+          '② « Nursing care / Notes » tab › ③ « New note ».',
+          'Enter the focus, then the three parts Data / Actions / Result; confirm.',
+        ],
+        astuce: "A clear handover note at shift change prevents omissions: be factual and dated, no vague interpretation.",
+      },
+      {
+        titre: 'Assess pain with a scale',
+        texte: "Pain assessment uses a suitable scale: VAS / NRS (adult able to express), VRS, or behavioural scales for children or non-communicating patients. The score is stored.",
+        etapes: [
+          '① Select the patient.',
+          '② « Nursing care / Pain » tab › ③ « New assessment ».',
+          'Choose the scale, enter the score and time; confirm.',
+        ],
+        astuce: "Reassess pain after each analgesic: comparing scores measures the treatment's effectiveness.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  21. CONSENTEMENTS & INTERACTIONS MÉDICAMENTEUSES  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'consentements-interactions', icon: <FileText size={ICON} />, color: '#7C3AED', bg: '#EDE9FE', border: '#C4B5FD',
+    fr: { titre: 'Consentements & Interactions', desc: 'Consentements signés et vérificateur d\'interactions' },
+    en: { titre: 'Consents & Interactions', desc: 'Signed consents and drug interaction checker' },
+    fr_content: [
+      {
+        titre: 'Créer un consentement éclairé',
+        texte: "Le consentement éclairé formalise l'accord du patient pour un acte (intervention, anesthésie, transfusion). Il est rattaché au patient et daté.",
+        etapes: [
+          '① Sélectionnez d\'abord le patient dans la liste.',
+          '② Onglet « Consentements ».',
+          '③ Cliquez sur « Nouveau consentement » et choisissez le type d\'acte.',
+          'Renseignez l\'information délivrée et le praticien ; générez le document.',
+        ],
+        astuce: "Le consentement doit être recueilli avant l'acte : anticipez, surtout pour la chirurgie programmée.",
+      },
+      {
+        titre: 'Recueillir la signature',
+        texte: "Le consentement peut être signé électroniquement ou imprimé, signé sur papier puis rescanné et attaché au dossier. Le document signé est horodaté.",
+        etapes: [
+          '① Ouvrez le consentement du patient.',
+          '② Faites signer (signature à l\'écran) ou imprimez pour signature papier.',
+          '③ Attachez le document signé au dossier.',
+        ],
+        astuce: "Un consentement non signé n'a pas de valeur juridique : vérifiez la présence de la signature avant l'acte.",
+      },
+      {
+        titre: 'Retrouver et archiver les consentements',
+        texte: "Tous les consentements d'un patient sont regroupés dans son dossier, consultables et exportables en PDF. Ils constituent une pièce médico-légale.",
+        astuce: "Ne supprimez jamais un consentement signé : il fait partie du dossier médical et doit être conservé.",
+      },
+      {
+        titre: 'Utiliser le vérificateur d\'interactions',
+        texte: "Le vérificateur d'interactions analyse les médicaments prescrits ensemble et signale les associations à risque (contre-indications, majorations d'effet). Il s'appuie sur le traitement en cours du patient.",
+        etapes: [
+          '① Sélectionnez le patient (son traitement en cours est chargé).',
+          '② Ouvrez « Interactions médicamenteuses » depuis la prescription.',
+          '③ Ajoutez le nouveau médicament : les interactions détectées s\'affichent.',
+        ],
+        astuce: "Renseignez les traitements pris à domicile : une interaction ne se détecte que si le médicament est connu du système.",
+      },
+      {
+        titre: 'Interpréter les niveaux d\'alerte',
+        texte: "Les interactions sont graduées : à surveiller, précaution d'emploi, association déconseillée, contre-indication. Le code couleur reflète la gravité.",
+        astuce: "Une contre-indication (rouge) ne s'ignore pas : cherchez une alternative thérapeutique ou justifiez cliniquement.",
+      },
+      {
+        titre: 'Croiser avec les allergies du patient',
+        texte: "Le vérificateur tient compte des allergies déclarées dans la fiche patient : prescrire un produit auquel le patient est allergique déclenche une alerte spécifique.",
+        astuce: "Documentez précisément les allergies dès l'accueil : c'est ce qui rend les alertes fiables au moment de prescrire.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Create an informed consent',
+        texte: "Informed consent formalises the patient's agreement for an act (surgery, anaesthesia, transfusion). It is attached to the patient and dated.",
+        etapes: [
+          '① First select the patient from the list.',
+          '② « Consents » tab.',
+          '③ Click « New consent » and choose the type of act.',
+          'Enter the information given and the practitioner; generate the document.',
+        ],
+        astuce: "Consent must be obtained before the act: plan ahead, especially for scheduled surgery.",
+      },
+      {
+        titre: 'Collect the signature',
+        texte: "The consent can be signed electronically or printed, signed on paper then rescanned and attached to the record. The signed document is timestamped.",
+        etapes: [
+          '① Open the patient\'s consent.',
+          '② Have it signed (on-screen signature) or print for paper signature.',
+          '③ Attach the signed document to the record.',
+        ],
+        astuce: "An unsigned consent has no legal value: check the signature is present before the act.",
+      },
+      {
+        titre: 'Find and archive consents',
+        texte: "All of a patient's consents are gathered in their record, viewable and exportable to PDF. They are a medico-legal document.",
+        astuce: "Never delete a signed consent: it is part of the medical record and must be kept.",
+      },
+      {
+        titre: 'Use the interaction checker',
+        texte: "The interaction checker analyses medicines prescribed together and flags risky combinations (contraindications, effect potentiation). It uses the patient's current treatment.",
+        etapes: [
+          '① Select the patient (their current treatment is loaded).',
+          '② Open « Drug interactions » from the prescription.',
+          '③ Add the new medicine: detected interactions are shown.',
+        ],
+        astuce: "Enter home medications: an interaction is only detected if the medicine is known to the system.",
+      },
+      {
+        titre: 'Interpret the alert levels',
+        texte: "Interactions are graded: monitor, use with caution, not recommended, contraindicated. The colour code reflects severity.",
+        astuce: "A contraindication (red) must not be ignored: find a therapeutic alternative or justify it clinically.",
+      },
+      {
+        titre: 'Cross-check with patient allergies',
+        texte: "The checker accounts for allergies declared in the patient file: prescribing a product the patient is allergic to triggers a specific alert.",
+        astuce: "Document allergies precisely at intake: that is what makes prescription alerts reliable.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  22. PHARMACIE AVANCÉE  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'pharmacie-avancee', icon: <Droplets size={ICON} />, color: '#B91C1C', bg: '#FEE2E2', border: '#FCA5A5',
+    fr: { titre: 'Pharmacie avancée', desc: 'Commandes fournisseurs, banque de sang, stérilisation' },
+    en: { titre: 'Advanced Pharmacy', desc: 'Supplier orders, blood bank, sterilisation' },
+    fr_content: [
+      {
+        titre: 'Passer une commande fournisseur',
+        texte: "La commande d'approvisionnement regroupe les produits à réapprovisionner auprès d'un fournisseur. Le bouton « Nouvelle commande » est en haut de la page Approvisionnement.",
+        etapes: [
+          'Menu › Pharmacie › Approvisionnement › « Nouvelle commande ».',
+          'Sélectionnez le fournisseur.',
+          'Ajoutez les produits et les quantités (les articles sous seuil sont proposés).',
+          'Validez : la commande passe au statut « Envoyée ».',
+        ],
+        astuce: "Générez la commande à partir des alertes de stock : le système pré-remplit les produits sous le seuil minimum.",
+      },
+      {
+        titre: 'Réceptionner une livraison',
+        texte: "À la réception, on rapproche la livraison de la commande : quantités reçues, lots et péremptions. Le stock est mis à jour automatiquement.",
+        etapes: [
+          'Ouvrez la commande concernée.',
+          'Cliquez sur « Réceptionner ».',
+          'Saisissez les quantités réellement reçues, les lots et les dates de péremption.',
+          'Validez : le stock augmente et la commande passe « Réceptionnée ».',
+        ],
+        astuce: "Contrôlez la conformité (quantité, lot, péremption, intégrité) avant de valider : un écart doit être signalé au fournisseur.",
+      },
+      {
+        titre: 'Gérer la banque de sang',
+        texte: "La banque de sang suit les poches par groupe et rhésus, avec leur date de péremption et leur statut (disponible, réservée, transfusée, périmée).",
+        etapes: [
+          'Menu › Pharmacie › Banque de sang › « Ajouter une poche ».',
+          'Renseignez le groupe, le rhésus, le volume, le lot et la péremption.',
+          'Validez : la poche entre en stock « Disponible ».',
+        ],
+        astuce: "Appliquez le FEFO sur les poches : délivrez en priorité celles dont la péremption est la plus proche.",
+      },
+      {
+        titre: 'Réserver et délivrer une poche',
+        texte: "Une poche peut être réservée pour un patient après compatibilité, puis délivrée. La traçabilité poche ↔ patient est essentielle en cas d'incident transfusionnel.",
+        etapes: [
+          'Recherchez une poche compatible (groupe / rhésus).',
+          'Réservez-la pour le patient, puis marquez-la « Transfusée » à la pose.',
+        ],
+        astuce: "Vérifiez toujours la concordance groupe patient / groupe poche avant la pose : c'est un contrôle de sécurité vital.",
+      },
+      {
+        titre: 'Suivre la stérilisation du matériel',
+        texte: "Le module Stérilisation trace les cycles de stérilisation des instruments : composition du lot, type de cycle, contrôle et validation. Il garantit la disponibilité de matériel stérile.",
+        etapes: [
+          'Menu › Pharmacie › Stérilisation › « Nouveau cycle ».',
+          'Composez le lot d\'instruments et choisissez le type de cycle.',
+          'Enregistrez le contrôle (indicateur) et validez le cycle.',
+        ],
+        astuce: "Un cycle non validé au contrôle ne doit pas être remis en service : recommencez la stérilisation.",
+      },
+      {
+        titre: 'Suivre les péremptions et pertes',
+        texte: "La pharmacie avancée consolide les péremptions à venir (médicaments, poches de sang, consommables) pour anticiper les pertes et les retraits.",
+        astuce: "Passez en revue chaque semaine les produits proches de péremption : écoulez-les ou retirez-les avant qu'ils ne deviennent inutilisables.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Place a supplier order',
+        texte: "A supply order groups products to reorder from a supplier. The « New order » button is at the top of the Supply page.",
+        etapes: [
+          'Menu › Pharmacy › Supply › « New order ».',
+          'Select the supplier.',
+          'Add products and quantities (below-threshold items are suggested).',
+          'Confirm: the order moves to « Sent ».',
+        ],
+        astuce: "Generate the order from stock alerts: the system pre-fills products below the minimum threshold.",
+      },
+      {
+        titre: 'Receive a delivery',
+        texte: "On receipt, reconcile the delivery with the order: received quantities, lots and expiries. Stock updates automatically.",
+        etapes: [
+          'Open the relevant order.',
+          'Click « Receive ».',
+          'Enter the quantities actually received, lots and expiry dates.',
+          'Confirm: stock increases and the order becomes « Received ».',
+        ],
+        astuce: "Check compliance (quantity, lot, expiry, integrity) before confirming: any discrepancy must be reported to the supplier.",
+      },
+      {
+        titre: 'Manage the blood bank',
+        texte: "The blood bank tracks bags by group and rhesus, with their expiry date and status (available, reserved, transfused, expired).",
+        etapes: [
+          'Menu › Pharmacy › Blood bank › « Add a bag ».',
+          'Enter the group, rhesus, volume, lot and expiry.',
+          'Confirm: the bag enters « Available » stock.',
+        ],
+        astuce: "Apply FEFO on bags: dispense first those with the nearest expiry.",
+      },
+      {
+        titre: 'Reserve and issue a bag',
+        texte: "A bag can be reserved for a patient after compatibility, then issued. Bag ↔ patient traceability is essential in case of a transfusion incident.",
+        etapes: [
+          'Find a compatible bag (group / rhesus).',
+          'Reserve it for the patient, then mark it « Transfused » at administration.',
+        ],
+        astuce: "Always check patient group / bag group match before administration: it is a vital safety control.",
+      },
+      {
+        titre: 'Track instrument sterilisation',
+        texte: "The Sterilisation module traces instrument sterilisation cycles: batch composition, cycle type, control and validation. It ensures sterile material availability.",
+        etapes: [
+          'Menu › Pharmacy › Sterilisation › « New cycle ».',
+          'Compose the instrument batch and choose the cycle type.',
+          'Record the control (indicator) and validate the cycle.',
+        ],
+        astuce: "A cycle that fails control must not be returned to service: repeat the sterilisation.",
+      },
+      {
+        titre: 'Track expiries and losses',
+        texte: "Advanced pharmacy consolidates upcoming expiries (medicines, blood bags, consumables) to anticipate losses and withdrawals.",
+        astuce: "Review near-expiry products weekly: use them up or withdraw them before they become unusable.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  23. OPÉRATIONS  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'operations', icon: <Wrench size={ICON} />, color: '#78350F', bg: '#FEF3C7', border: '#FCD34D',
+    fr: { titre: 'Opérations', desc: 'Équipements, déchets DASRI, morgue, transport' },
+    en: { titre: 'Operations', desc: 'Equipment, DASRI waste, mortuary, transport' },
+    fr_content: [
+      {
+        titre: 'Inventorier les équipements',
+        texte: "Le module Équipements recense le matériel biomédical et technique : désignation, localisation, date de mise en service, état. Le bouton « Nouvel équipement » est en haut de page.",
+        etapes: [
+          'Menu › Opérations › Équipements › « Nouvel équipement ».',
+          'Renseignez la désignation, le service, le numéro de série et l\'état.',
+          'Validez : l\'équipement entre dans l\'inventaire.',
+        ],
+        astuce: "Renseignez la localisation précise : en cas de panne, on retrouve immédiatement l'appareil et son service.",
+      },
+      {
+        titre: 'Planifier la maintenance',
+        texte: "La maintenance préventive et curative se planifie par équipement. Les échéances de maintenance préventive génèrent des rappels pour éviter les pannes.",
+        etapes: [
+          'Ouvrez l\'équipement concerné.',
+          'Onglet « Maintenance » › « Planifier une intervention ».',
+          'Choisissez le type (préventive / curative), la date et le prestataire.',
+        ],
+        astuce: "Ne repoussez pas la maintenance préventive d'un dispositif critique (respirateur, autoclave) : c'est une exigence de sécurité.",
+      },
+      {
+        titre: 'Suivre les déchets DASRI',
+        texte: "Les déchets d'activités de soins à risques infectieux (DASRI) sont tracés de la production à l'élimination : type, poids, contenant, filière. Le bouton « Nouvelle collecte » est en haut de page.",
+        etapes: [
+          'Menu › Opérations › Déchets DASRI › « Nouvelle collecte ».',
+          'Renseignez le type de déchet, le poids et le service producteur.',
+          'Suivez l\'enlèvement jusqu\'au bordereau d\'élimination.',
+        ],
+        astuce: "Conservez les bordereaux d'élimination : ils sont exigés lors des contrôles d'hygiène et de conformité réglementaire.",
+      },
+      {
+        titre: 'Gérer la morgue',
+        texte: "Le module Morgue enregistre les entrées et sorties de corps, la case de conservation, l'identité et les documents associés (déclaration de décès, autorisation).",
+        etapes: [
+          'Menu › Opérations › Morgue › « Nouvelle entrée ».',
+          'Renseignez l\'identité du défunt, la date/heure et la case attribuée.',
+          'À la remise du corps, enregistrez la sortie et les documents.',
+        ],
+        astuce: "Vérifiez la concordance identité / documents à chaque mouvement : la rigueur administrative est primordiale dans ce module sensible.",
+      },
+      {
+        titre: 'Gérer le transport et les ambulances',
+        texte: "Le module Transport suit les ambulances et les missions (transfert, sortie, urgence) : véhicule, équipage, départ, destination et statut.",
+        etapes: [
+          'Menu › Opérations › Transport › « Nouvelle mission ».',
+          'Choisissez le véhicule, l\'équipage et le patient si applicable.',
+          'Renseignez départ et destination ; suivez le statut jusqu\'au retour.',
+        ],
+        astuce: "Contrôlez la disponibilité et l'entretien du véhicule avant d'affecter une mission : une ambulance immobilisée doit apparaître « Hors service ».",
+      },
+      {
+        titre: 'Suivre la disponibilité des ressources',
+        texte: "Les Opérations offrent une vue consolidée de la disponibilité des ressources logistiques (équipements en service / en panne, véhicules, cases de morgue), utile au pilotage quotidien.",
+        astuce: "Un tableau de bord des ressources indisponibles aide à anticiper : réparez ou remplacez avant que la ressource ne devienne critique.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Inventory equipment',
+        texte: "The Equipment module lists biomedical and technical assets: label, location, commissioning date, condition. The « New equipment » button is at the top of the page.",
+        etapes: [
+          'Menu › Operations › Equipment › « New equipment ».',
+          'Enter the label, department, serial number and condition.',
+          'Confirm: the equipment enters the inventory.',
+        ],
+        astuce: "Enter the precise location: in case of breakdown, the device and its department are found immediately.",
+      },
+      {
+        titre: 'Plan maintenance',
+        texte: "Preventive and corrective maintenance is planned per equipment. Preventive maintenance due dates generate reminders to prevent breakdowns.",
+        etapes: [
+          'Open the relevant equipment.',
+          '« Maintenance » tab › « Schedule an intervention ».',
+          'Choose the type (preventive / corrective), date and provider.',
+        ],
+        astuce: "Do not postpone preventive maintenance of a critical device (ventilator, autoclave): it is a safety requirement.",
+      },
+      {
+        titre: 'Track DASRI waste',
+        texte: "Infectious-risk healthcare waste (DASRI) is traced from production to disposal: type, weight, container, channel. The « New collection » button is at the top of the page.",
+        etapes: [
+          'Menu › Operations › DASRI waste › « New collection ».',
+          'Enter the waste type, weight and producing department.',
+          'Track removal through to the disposal slip.',
+        ],
+        astuce: "Keep the disposal slips: they are required during hygiene and regulatory compliance controls.",
+      },
+      {
+        titre: 'Manage the mortuary',
+        texte: "The Mortuary module records body entries and exits, the storage bay, identity and related documents (death declaration, authorisation).",
+        etapes: [
+          'Menu › Operations › Mortuary › « New entry ».',
+          'Enter the deceased\'s identity, date/time and assigned bay.',
+          'On release, record the exit and documents.',
+        ],
+        astuce: "Check identity / document match at each movement: administrative rigour is paramount in this sensitive module.",
+      },
+      {
+        titre: 'Manage transport and ambulances',
+        texte: "The Transport module tracks ambulances and missions (transfer, discharge, emergency): vehicle, crew, departure, destination and status.",
+        etapes: [
+          'Menu › Operations › Transport › « New mission ».',
+          'Choose the vehicle, crew and patient if applicable.',
+          'Enter departure and destination; track status until return.',
+        ],
+        astuce: "Check vehicle availability and upkeep before assigning a mission: an immobilised ambulance must show as « Out of service ».",
+      },
+      {
+        titre: 'Track resource availability',
+        texte: "Operations offer a consolidated view of logistics resource availability (equipment in service / down, vehicles, mortuary bays), useful for daily steering.",
+        astuce: "A dashboard of unavailable resources helps anticipate: repair or replace before the resource becomes critical.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  24. FINANCES & ASSURANCES  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'finances-assurances', icon: <CreditCard size={ICON} />, color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7',
+    fr: { titre: 'Finances & Assurances', desc: 'Prise en charge/BPC, devis, caisse & reçus, tiers-payant, budget' },
+    en: { titre: 'Finance & Insurance', desc: 'Coverage/BPC, quotes, till & receipts, third-party, budget' },
+    fr_content: [
+      {
+        titre: 'Établir une prise en charge (BPC)',
+        texte: "Le bon de prise en charge (BPC) matérialise l'accord de l'assureur pour couvrir tout ou partie des soins d'un patient. Le bouton « Nouvelle prise en charge » est en haut de la page dédiée.",
+        etapes: [
+          'Menu › Finances › Prises en charge › « Nouvelle prise en charge ».',
+          'Sélectionnez le patient et son assureur.',
+          'Renseignez le taux, le plafond et la validité du bon.',
+          'Validez : la BPC est reprise automatiquement à la facturation.',
+        ],
+        astuce: "Vérifiez le plafond et la date de validité : une BPC expirée ou dépassée bascule le reste à charge sur le patient.",
+      },
+      {
+        titre: 'Émettre un devis',
+        texte: "Le devis estime le coût d'une prise en charge avant réalisation (chirurgie, hospitalisation). Il présente le détail des prestations et la répartition assurance / patient.",
+        etapes: [
+          'Menu › Finances › Devis › « Nouveau devis ».',
+          'Sélectionnez le patient et ajoutez les prestations prévues.',
+          'Validez : le devis est éditable en PDF pour remise au patient.',
+        ],
+        astuce: "Un devis accepté facilite la facturation ultérieure : les lignes prévues peuvent être reprises sans ressaisie.",
+      },
+      {
+        titre: 'Ouvrir et suivre une session de caisse',
+        texte: "La session de caisse encadre les encaissements d'un caissier sur une période : fonds de caisse initial, opérations, puis clôture avec comptage. C'est la base du contrôle.",
+        etapes: [
+          'Menu › Caisse › « Ouvrir une session ».',
+          'Renseignez le fonds de caisse initial.',
+          'Encaissez les paiements pendant le service.',
+          'En fin de service, clôturez et saisissez le comptage physique.',
+        ],
+        astuce: "Rapprochez le comptage physique du total système à la clôture : tout écart doit être justifié et tracé.",
+      },
+      {
+        titre: 'Émettre un reçu',
+        texte: "Chaque encaissement génère un reçu remis au patient, avec le montant, le mode de paiement et l'en-tête de l'établissement.",
+        astuce: "Le reçu peut porter un QR code de vérification : le patient ou un tiers peut en contrôler l'authenticité en ligne.",
+      },
+      {
+        titre: 'Gérer le tiers-payant',
+        texte: "En tiers-payant, l'établissement facture directement l'assureur pour la part couverte, le patient ne réglant que le reste à charge. Le suivi des créances assureurs pilote le recouvrement.",
+        etapes: [
+          'À la facturation, la part assurance est isolée grâce à la BPC.',
+          'Menu › Finances › Tiers-payant › regroupez les créances par assureur.',
+          'Éditez le bordereau et suivez le paiement de l\'assureur.',
+        ],
+        astuce: "Relancez régulièrement les assureurs : les créances de tiers-payant non suivies pèsent vite sur la trésorerie.",
+      },
+      {
+        titre: 'Suivre le budget',
+        texte: "Le module Budget compare les recettes et dépenses réelles aux prévisions par poste. Il aide au pilotage financier de l'établissement.",
+        etapes: [
+          'Menu › Finances › Budget.',
+          'Consultez les écarts prévu / réalisé par poste.',
+          'Ajustez les prévisions selon l\'activité constatée.',
+        ],
+        astuce: "Analysez les écarts significatifs plutôt que les petits écarts : concentrez le pilotage là où l'impact financier est réel.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Issue a coverage authorisation (BPC)',
+        texte: "The coverage authorisation (BPC) formalises the insurer's agreement to cover all or part of a patient's care. The « New coverage » button is at the top of the dedicated page.",
+        etapes: [
+          'Menu › Finance › Coverage › « New coverage ».',
+          'Select the patient and their insurer.',
+          'Enter the rate, ceiling and validity of the authorisation.',
+          'Confirm: the BPC is reused automatically at billing.',
+        ],
+        astuce: "Check the ceiling and validity date: an expired or exceeded BPC shifts the balance onto the patient.",
+      },
+      {
+        titre: 'Issue a quote',
+        texte: "The quote estimates the cost of care before it is delivered (surgery, hospitalisation). It shows the service breakdown and the insurer / patient split.",
+        etapes: [
+          'Menu › Finance › Quotes › « New quote ».',
+          'Select the patient and add the planned services.',
+          'Confirm: the quote can be exported to PDF for the patient.',
+        ],
+        astuce: "An accepted quote eases later billing: the planned lines can be reused without re-entry.",
+      },
+      {
+        titre: 'Open and track a till session',
+        texte: "A till session frames a cashier's collections over a period: opening float, operations, then closing with a count. It is the basis of control.",
+        etapes: [
+          'Menu › Cashier › « Open a session ».',
+          'Enter the opening float.',
+          'Collect payments during the shift.',
+          'At end of shift, close and enter the physical count.',
+        ],
+        astuce: "Reconcile the physical count with the system total at closing: any gap must be justified and traced.",
+      },
+      {
+        titre: 'Issue a receipt',
+        texte: "Each collection generates a receipt handed to the patient, with the amount, payment method and the facility header.",
+        astuce: "The receipt can carry a verification QR code: the patient or a third party can check its authenticity online.",
+      },
+      {
+        titre: 'Manage third-party payment',
+        texte: "Under third-party payment, the facility bills the insurer directly for the covered share, the patient paying only the balance. Tracking insurer receivables drives collection.",
+        etapes: [
+          'At billing, the insurer share is isolated via the BPC.',
+          'Menu › Finance › Third-party › group receivables by insurer.',
+          'Produce the statement and track the insurer\'s payment.',
+        ],
+        astuce: "Chase insurers regularly: unmonitored third-party receivables quickly weigh on cash flow.",
+      },
+      {
+        titre: 'Track the budget',
+        texte: "The Budget module compares actual income and expenses to forecasts by line. It supports the facility's financial steering.",
+        etapes: [
+          'Menu › Finance › Budget.',
+          'Review the forecast / actual variances by line.',
+          'Adjust forecasts to observed activity.',
+        ],
+        astuce: "Analyse significant variances rather than small ones: focus steering where the financial impact is real.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  25. COMMUNICATION & PORTAIL  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'communication-portail', icon: <MessageSquare size={ICON} />, color: '#1D4ED8', bg: '#DBEAFE', border: '#93C5FD',
+    fr: { titre: 'Communication & Portail', desc: 'Portail patient, SMS/rappels, messagerie interne' },
+    en: { titre: 'Communication & Portal', desc: 'Patient portal, SMS/reminders, internal messaging' },
+    fr_content: [
+      {
+        titre: 'Comprendre le portail patient',
+        texte: "Le portail patient offre au patient un accès sécurisé à ses rendez-vous, résultats et documents. Il réduit les appels et fluidifie la relation.",
+        astuce: "Le portail ne remplace pas la consultation : les résultats sensibles doivent être expliqués par un professionnel.",
+      },
+      {
+        titre: 'Inviter un patient au portail',
+        texte: "L'accès au portail s'active depuis la fiche du patient. Une invitation est envoyée à son email ou téléphone pour créer ses identifiants.",
+        etapes: [
+          '① Sélectionnez d\'abord le patient dans la liste.',
+          '② Onglet « Portail / Accès patient ».',
+          '③ Cliquez sur « Inviter au portail » (email / SMS).',
+        ],
+        astuce: "Vérifiez l'email et le téléphone avant d'inviter : une invitation envoyée au mauvais contact est un risque de confidentialité.",
+      },
+      {
+        titre: 'Configurer les rappels SMS',
+        texte: "Les rappels SMS automatisent la relance des rendez-vous et des rappels vaccinaux. Le contenu et le délai d'envoi (ex. J-1) se paramètrent.",
+        etapes: [
+          'Menu › Communication › Rappels › « Nouveau modèle ».',
+          'Choisissez le déclencheur (RDV, rappel vaccinal) et le délai.',
+          'Rédigez le message et activez l\'envoi automatique.',
+        ],
+        astuce: "Un rappel J-1 réduit nettement les absences (no-show) : mesurez l'effet sur votre taux d'absence.",
+      },
+      {
+        titre: 'Envoyer un message ponctuel',
+        texte: "Au-delà des rappels automatiques, un SMS ponctuel peut être envoyé à un patient (report exceptionnel, information). Le message part sur le téléphone de sa fiche.",
+        astuce: "Restez factuel et non médical dans un SMS : ne transmettez jamais de résultat ou d'information confidentielle par ce canal.",
+      },
+      {
+        titre: 'Utiliser la messagerie interne',
+        texte: "La messagerie interne permet aux équipes d'échanger dans l'application (consigne, question sur un dossier) sans sortir de SANTAREX ni utiliser des canaux non sécurisés.",
+        etapes: [
+          'Menu › Communication › Messagerie › « Nouveau message ».',
+          'Choisissez le destinataire (collègue, service).',
+          'Rédigez et envoyez : le destinataire est notifié dans l\'application.',
+        ],
+        astuce: "Pour toute donnée patient, privilégiez la messagerie interne à un SMS ou une messagerie grand public : elle reste dans le périmètre sécurisé.",
+      },
+      {
+        titre: 'Suivre l\'historique des communications',
+        texte: "Les messages envoyés (SMS, invitations, messagerie interne) sont historisés : on retrouve qui a reçu quoi et quand, utile en cas de contestation.",
+        astuce: "En cas de litige sur un rendez-vous manqué, l'historique des rappels prouve que le patient a bien été prévenu.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Understand the patient portal',
+        texte: "The patient portal gives the patient secure access to their appointments, results and documents. It reduces calls and smooths the relationship.",
+        astuce: "The portal does not replace the consultation: sensitive results must be explained by a professional.",
+      },
+      {
+        titre: 'Invite a patient to the portal',
+        texte: "Portal access is activated from the patient file. An invitation is sent to their email or phone to create their credentials.",
+        etapes: [
+          '① First select the patient from the list.',
+          '② « Portal / Patient access » tab.',
+          '③ Click « Invite to portal » (email / SMS).',
+        ],
+        astuce: "Check the email and phone before inviting: an invitation sent to the wrong contact is a confidentiality risk.",
+      },
+      {
+        titre: 'Configure SMS reminders',
+        texte: "SMS reminders automate follow-up for appointments and vaccine boosters. The content and send delay (e.g. D-1) are configurable.",
+        etapes: [
+          'Menu › Communication › Reminders › « New template ».',
+          'Choose the trigger (appointment, vaccine booster) and delay.',
+          'Write the message and enable automatic sending.',
+        ],
+        astuce: "A D-1 reminder clearly reduces no-shows: measure the effect on your no-show rate.",
+      },
+      {
+        titre: 'Send a one-off message',
+        texte: "Beyond automatic reminders, a one-off SMS can be sent to a patient (exceptional reschedule, information). The message goes to the phone on their file.",
+        astuce: "Stay factual and non-medical in an SMS: never send a result or confidential information via this channel.",
+      },
+      {
+        titre: 'Use internal messaging',
+        texte: "Internal messaging lets teams exchange within the app (instruction, question on a record) without leaving SANTAREX or using unsecured channels.",
+        etapes: [
+          'Menu › Communication › Messaging › « New message ».',
+          'Choose the recipient (colleague, department).',
+          'Write and send: the recipient is notified in the app.',
+        ],
+        astuce: "For any patient data, prefer internal messaging over SMS or consumer apps: it stays within the secure perimeter.",
+      },
+      {
+        titre: 'Track communication history',
+        texte: "Sent messages (SMS, invitations, internal messaging) are logged: you can find who received what and when, useful in case of dispute.",
+        astuce: "In a dispute over a missed appointment, the reminder history proves the patient was indeed notified.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  26. QUALITÉ & CONFORMITÉ  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'qualite-conformite', icon: <ClipboardList size={ICON} />, color: '#0F766E', bg: '#CCFBF1', border: '#5EEAD4',
+    fr: { titre: 'Qualité & Conformité', desc: 'Incidents, indicateurs, déclarations sanitaires, satisfaction' },
+    en: { titre: 'Quality & Compliance', desc: 'Incidents, indicators, health declarations, satisfaction' },
+    fr_content: [
+      {
+        titre: 'Déclarer un incident (événement indésirable)',
+        texte: "La déclaration d'incident recense les événements indésirables (chute, erreur médicamenteuse, dysfonctionnement). Le bouton « Nouvelle déclaration » est en haut de la page Incidents.",
+        etapes: [
+          'Menu › Qualité › Incidents › « Nouvelle déclaration ».',
+          'Décrivez l\'événement, la date, le lieu et la gravité.',
+          'Précisez les mesures immédiates prises et validez.',
+        ],
+        astuce: "La déclaration doit être non punitive : l'objectif est d'apprendre et de corriger, pas de sanctionner. Déclarez sans crainte.",
+      },
+      {
+        titre: 'Traiter et clôturer un incident',
+        texte: "Un incident déclaré est analysé (causes, actions correctives) puis clôturé. Le suivi des actions évite qu'un même événement ne se reproduise.",
+        etapes: [
+          'Ouvrez l\'incident depuis la liste.',
+          'Renseignez l\'analyse des causes et les actions correctives.',
+          'Suivez les actions jusqu\'à leur réalisation, puis clôturez.',
+        ],
+        astuce: "Un incident clôturé sans action corrective n'apporte rien : formalisez toujours ce qui a été mis en place.",
+      },
+      {
+        titre: 'Suivre les indicateurs qualité',
+        texte: "Le module rassemble les indicateurs qualité (taux d'infections, délais, taux d'occupation, satisfaction) pour piloter l'amélioration continue.",
+        astuce: "Suivez la tendance dans le temps plutôt qu'une valeur ponctuelle : un indicateur qui se dégrade est un signal d'alerte.",
+      },
+      {
+        titre: 'Produire les déclarations sanitaires',
+        texte: "Certaines pathologies à déclaration obligatoire et statistiques épidémiologiques doivent être transmises aux autorités. Le module s'appuie sur les diagnostics codés (CIM-10) des consultations.",
+        etapes: [
+          'Menu › Qualité › Déclarations sanitaires.',
+          'Sélectionnez la période et le type de déclaration.',
+          'Vérifiez les données agrégées et générez le document.',
+        ],
+        astuce: "Un codage CIM-10 rigoureux en consultation conditionne la fiabilité des déclarations : la qualité vient de la saisie initiale.",
+      },
+      {
+        titre: 'Recueillir la satisfaction patient',
+        texte: "Les enquêtes de satisfaction mesurent le vécu des patients (accueil, délais, prise en charge). Les résultats alimentent les indicateurs qualité.",
+        etapes: [
+          'Menu › Qualité › Satisfaction › « Nouvelle enquête » (ou lien envoyé au patient).',
+          'Configurez les questions et la période.',
+          'Consultez la synthèse des réponses.',
+        ],
+        astuce: "Les commentaires libres sont souvent plus riches que les notes : lisez-les pour identifier des pistes d'amélioration concrètes.",
+      },
+      {
+        titre: 'Préparer un audit / une accréditation',
+        texte: "Les données de qualité (incidents traités, indicateurs, actions correctives) constituent le dossier de preuve utile lors d'un audit interne ou d'une démarche d'accréditation.",
+        astuce: "Tenez la qualité à jour en continu : reconstituer un an de données la veille d'un audit est bien plus difficile qu'un suivi régulier.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Report an incident (adverse event)',
+        texte: "Incident reporting records adverse events (fall, medication error, malfunction). The « New report » button is at the top of the Incidents page.",
+        etapes: [
+          'Menu › Quality › Incidents › « New report ».',
+          'Describe the event, date, location and severity.',
+          'State the immediate measures taken and confirm.',
+        ],
+        astuce: "Reporting must be non-punitive: the goal is to learn and correct, not to punish. Report without fear.",
+      },
+      {
+        titre: 'Handle and close an incident',
+        texte: "A reported incident is analysed (causes, corrective actions) then closed. Tracking actions prevents the same event from recurring.",
+        etapes: [
+          'Open the incident from the list.',
+          'Enter the root-cause analysis and corrective actions.',
+          'Track actions to completion, then close.',
+        ],
+        astuce: "An incident closed with no corrective action adds nothing: always formalise what was put in place.",
+      },
+      {
+        titre: 'Track quality indicators',
+        texte: "The module gathers quality indicators (infection rates, delays, occupancy, satisfaction) to steer continuous improvement.",
+        astuce: "Follow the trend over time rather than a single value: a deteriorating indicator is a warning signal.",
+      },
+      {
+        titre: 'Produce health declarations',
+        texte: "Some notifiable diseases and epidemiological statistics must be sent to the authorities. The module relies on the coded diagnoses (ICD-10) from consultations.",
+        etapes: [
+          'Menu › Quality › Health declarations.',
+          'Select the period and declaration type.',
+          'Check the aggregated data and generate the document.',
+        ],
+        astuce: "Rigorous ICD-10 coding in consultation drives declaration reliability: quality comes from the initial entry.",
+      },
+      {
+        titre: 'Collect patient satisfaction',
+        texte: "Satisfaction surveys measure patients' experience (reception, delays, care). Results feed the quality indicators.",
+        etapes: [
+          'Menu › Quality › Satisfaction › « New survey » (or link sent to the patient).',
+          'Configure the questions and period.',
+          'Review the summary of responses.',
+        ],
+        astuce: "Free comments are often richer than scores: read them to identify concrete improvement leads.",
+      },
+      {
+        titre: 'Prepare an audit / accreditation',
+        texte: "Quality data (handled incidents, indicators, corrective actions) form the evidence file useful during an internal audit or accreditation process.",
+        astuce: "Keep quality up to date continuously: rebuilding a year of data the night before an audit is far harder than steady tracking.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  27. ADMINISTRATION AVANCÉE  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'administration-avancee', icon: <Building2 size={ICON} />, color: '#374151', bg: '#F3F4F6', border: '#D1D5DB',
+    fr: { titre: 'Administration avancée', desc: 'Multi-sites, gardes & astreintes, services personnalisés' },
+    en: { titre: 'Advanced Administration', desc: 'Multi-site, on-call rotas, custom services' },
+    fr_content: [
+      {
+        titre: 'Gérer plusieurs sites',
+        texte: "Le mode multi-sites permet de gérer plusieurs établissements ou antennes sous une même organisation, avec des données cloisonnées par site et une vue consolidée.",
+        etapes: [
+          'Menu › Paramètres › Sites › « Nouveau site ».',
+          'Renseignez le nom, l\'adresse et les paramètres propres au site.',
+          'Affectez les utilisateurs et les ressources au site.',
+        ],
+        astuce: "Vérifiez le site actif en haut de l'écran avant de saisir : une donnée créée sur le mauvais site est source de confusion.",
+      },
+      {
+        titre: 'Basculer entre sites',
+        texte: "Un utilisateur habilité sur plusieurs sites peut basculer de l'un à l'autre. Les listes (patients, stocks, agenda) reflètent le site sélectionné.",
+        astuce: "Les stocks pharmacie et les lits sont propres à chaque site : ne cherchez pas un lit d'un autre site depuis le site courant.",
+      },
+      {
+        titre: 'Planifier les gardes et astreintes',
+        texte: "Le planning des gardes et astreintes organise la couverture médicale et paramédicale hors heures ouvrées. Le bouton « Nouvelle garde » est en haut de la page.",
+        etapes: [
+          'Menu › Administration › Gardes & astreintes › « Nouvelle garde ».',
+          'Choisissez le service, la date, le créneau et le personnel affecté.',
+          'Validez : la garde apparaît au planning.',
+        ],
+        astuce: "Évitez d'affecter la même personne sur des gardes consécutives sans repos : le planning aide à repérer les surcharges.",
+      },
+      {
+        titre: 'Suivre la couverture et les échanges',
+        texte: "Le planning de gardes met en évidence les créneaux non couverts et permet de gérer les échanges entre soignants (permutation de garde).",
+        astuce: "Traitez tôt les créneaux non couverts (en rouge) : trouver un remplaçant à la dernière minute est toujours plus difficile.",
+      },
+      {
+        titre: 'Créer des services personnalisés',
+        texte: "Au-delà des services standard, l'administration permet de créer des services ou unités personnalisés adaptés à l'organisation de l'établissement (ex. unité de jour, HAD).",
+        etapes: [
+          'Menu › Paramètres › Services › « Nouveau service ».',
+          'Renseignez le nom, le type et le responsable.',
+          'Affectez les lits, le personnel et les paramètres du service.',
+        ],
+        astuce: "Nommez les services de façon claire et cohérente : des libellés ambigus compliquent les affectations et les statistiques.",
+      },
+      {
+        titre: 'Paramétrer droits et accès par site',
+        texte: "Les rôles et permissions peuvent être ajustés par site : un utilisateur peut être administrateur sur un site et simple opérateur sur un autre.",
+        astuce: "Appliquez le moindre privilège : n'accordez que les droits nécessaires à chacun, site par site, pour limiter les risques.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'Manage multiple sites',
+        texte: "Multi-site mode lets you manage several facilities or branches under one organisation, with data partitioned by site and a consolidated view.",
+        etapes: [
+          'Menu › Settings › Sites › « New site ».',
+          'Enter the name, address and site-specific settings.',
+          'Assign users and resources to the site.',
+        ],
+        astuce: "Check the active site at the top of the screen before entering data: data created on the wrong site causes confusion.",
+      },
+      {
+        titre: 'Switch between sites',
+        texte: "A user authorised on several sites can switch between them. Lists (patients, stock, schedule) reflect the selected site.",
+        astuce: "Pharmacy stock and beds are site-specific: do not look for another site's bed from the current site.",
+      },
+      {
+        titre: 'Plan on-call and standby rotas',
+        texte: "The on-call and standby rota organises medical and paramedical cover outside working hours. The « New shift » button is at the top of the page.",
+        etapes: [
+          'Menu › Administration › On-call & standby › « New shift ».',
+          'Choose the department, date, slot and assigned staff.',
+          'Confirm: the shift appears on the rota.',
+        ],
+        astuce: "Avoid assigning the same person to consecutive shifts without rest: the rota helps spot overloads.",
+      },
+      {
+        titre: 'Track cover and swaps',
+        texte: "The on-call rota highlights uncovered slots and lets you manage swaps between staff (shift exchange).",
+        astuce: "Handle uncovered slots (in red) early: finding a replacement at the last minute is always harder.",
+      },
+      {
+        titre: 'Create custom services',
+        texte: "Beyond standard departments, administration lets you create custom services or units suited to the facility's organisation (e.g. day unit, home hospitalisation).",
+        etapes: [
+          'Menu › Settings › Services › « New service ».',
+          'Enter the name, type and manager.',
+          'Assign beds, staff and service settings.',
+        ],
+        astuce: "Name services clearly and consistently: ambiguous labels complicate assignments and statistics.",
+      },
+      {
+        titre: 'Configure rights and access per site',
+        texte: "Roles and permissions can be tuned per site: a user can be administrator on one site and a simple operator on another.",
+        astuce: "Apply least privilege: grant only the rights each person needs, site by site, to limit risk.",
       },
     ],
   },

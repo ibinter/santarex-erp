@@ -1,0 +1,15 @@
+{
+  "footer": {
+    "copyright": "© {year} SANTAREX ERP — IBIG Softwares",
+    "version": "v1.0",
+    "tagline": "Solution hospitalière intégrée",
+    "links": {
+      "guide": "Guide utilisateur",
+      "faq": "FAQ",
+      "support": "Support",
+      "parametres": "Paramètres",
+      "cgu": "CGU",
+      "confidentialite": "Confidentialité"
+    }
+  }
+}

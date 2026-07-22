@@ -1,0 +1,114 @@
+{
+  "interoperabilite": {
+    "title": "Interoperability",
+    "subtitle": "Public API, webhooks and HL7 / DICOM interfacing",
+    "loading": "Loading…",
+    "refresh": "Refresh",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "test": "Test",
+    "close": "Close",
+    "active": "Active",
+    "inactive": "Inactive",
+    "confirmDelete": "Confirm deletion?",
+    "tabs": {
+      "cles": "API Keys",
+      "webhooks": "Webhooks",
+      "interfaces": "HL7 / DICOM Interfaces",
+      "messages": "Message Log",
+      "docs": "Public API"
+    },
+    "stats": {
+      "cles": "API Keys",
+      "clesActives": "Active keys",
+      "webhooks": "Active webhooks",
+      "configs": "Interfaces",
+      "messages": "Messages",
+      "messagesErreur": "Errors"
+    },
+    "cles": {
+      "title": "API Keys",
+      "new": "New key",
+      "name": "Name",
+      "namePlaceholder": "e.g. Cobas lab analyzer",
+      "scopes": "Scopes",
+      "scopesHint": "Comma-separated (e.g. patients:read, hl7:write)",
+      "prefix": "Prefix",
+      "lastUsed": "Last used",
+      "never": "Never",
+      "status": "Status",
+      "createdAt": "Created",
+      "revoke": "Revoke",
+      "revoked": "Revoked",
+      "empty": "No API keys. Create one to grant public API access.",
+      "createdTitle": "Key created",
+      "createdWarning": "Copy this key now: it will never be shown again.",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "webhooks": {
+      "title": "Outbound webhooks",
+      "new": "New webhook",
+      "url": "Target URL",
+      "urlPlaceholder": "https://example.com/hooks/santarex",
+      "events": "Events",
+      "lastStatus": "Last status",
+      "empty": "No webhooks. Add one to receive events in real time.",
+      "testSent": "Test sent — status: {statut}",
+      "secretTitle": "Webhook secret",
+      "secretWarning": "Copy this secret: it signs payloads (HMAC-SHA256) and won't be shown again.",
+      "evt": {
+        "patient.cree": "Patient created",
+        "resultat.pret": "Result ready",
+        "facture.creee": "Invoice created",
+        "rendezvous.cree": "Appointment created",
+        "interop.message.recu": "Interop message received"
+      }
+    },
+    "interfaces": {
+      "title": "HL7 / DICOM Interfaces",
+      "new": "New interface",
+      "type": "Type",
+      "typeHl7": "HL7 — Laboratory analyzer",
+      "typeDicom": "DICOM / PACS — Imaging",
+      "name": "Name",
+      "namePlaceholder": "e.g. Cobas 6000 - Room B",
+      "host": "Host / IP",
+      "port": "Port",
+      "connection": "Connection",
+      "empty": "No interface configured.",
+      "testConnection": "Test connection",
+      "statut": {
+        "non_configure": "Not configured",
+        "connecte": "Connected",
+        "deconnecte": "Disconnected",
+        "erreur": "Error"
+      },
+      "siteNote": "Software configuration only. Physical device wiring will happen on site."
+    },
+    "messages": {
+      "title": "Message log",
+      "direction": "Direction",
+      "protocol": "Protocol",
+      "type": "Type",
+      "status": "Status",
+      "date": "Date",
+      "error": "Error",
+      "empty": "No messages recorded.",
+      "sens": { "entrant": "Inbound", "sortant": "Outbound" },
+      "statut": { "recu": "Received", "traite": "Processed", "erreur": "Error" }
+    },
+    "docs": {
+      "title": "Public API — exposed endpoints",
+      "intro": "Authenticate each request with the X-API-Key header. Each key only accesses its own facility's data.",
+      "header": "Required header",
+      "endpoints": "Endpoints",
+      "listPatients": "List patients (scope patients:read)",
+      "getPatient": "Patient detail (scope patients:read)",
+      "ingestHl7": "HL7 v2 result ingestion (scope hl7:write)",
+      "webhookNote": "Webhook payloads are signed via HMAC-SHA256 in the X-Santarex-Signature header."
+    }
+  }
+}
