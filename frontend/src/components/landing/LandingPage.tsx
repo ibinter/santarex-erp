@@ -1580,6 +1580,25 @@ export default function LandingPage() {
               </div>
               <p>{t('footer_brand_desc')}<br />{t('footer_brand_sub')}</p>
               <a href="https://ibigsoft.com" target="_blank" rel="noopener noreferrer" className="lp-footer-ibig">ibigsoft.com ↗</a>
+              {/* Réseaux sociaux IBIG SOFT */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+                {[
+                  { nom: 'Facebook', url: 'https://www.facebook.com/ibigsoft', d: 'M14 8h2V5h-2a4 4 0 0 0-4 4v2H8v3h2v7h3v-7h2.2l.8-3H13V9a1 1 0 0 1 1-1Z' },
+                  { nom: 'LinkedIn', url: 'https://www.linkedin.com/company/ibigsoft/', d: 'M6.5 8A1.75 1.75 0 1 0 6.5 4.5 1.75 1.75 0 0 0 6.5 8ZM5 9.5h3V20H5V9.5Zm5 0h2.9v1.4A3.3 3.3 0 0 1 16 9.3c2.4 0 3.9 1.5 3.9 4.3V20h-3v-5.7c0-1.4-.6-2.2-1.8-2.2s-2 .8-2 2.2V20h-3V9.5Z' },
+                  { nom: 'YouTube', url: 'https://www.youtube.com/@IBIGSOFT', d: 'M21.6 8.2a2.5 2.5 0 0 0-1.7-1.8C18.3 6 12 6 12 6s-6.3 0-7.9.4A2.5 2.5 0 0 0 2.4 8.2 26 26 0 0 0 2 12c0 1.3.1 2.6.4 3.8a2.5 2.5 0 0 0 1.7 1.8C5.7 18 12 18 12 18s6.3 0 7.9-.4a2.5 2.5 0 0 0 1.7-1.8c.3-1.2.4-2.5.4-3.8s-.1-2.6-.4-3.8ZM10 15V9l5.2 3L10 15Z' },
+                  { nom: 'TikTok', url: 'https://www.tiktok.com/@ibigsoft', d: 'M14 3h3a5 5 0 0 0 4 4v3a8 8 0 0 1-4-1.2V15a6 6 0 1 1-6-6c.3 0 .7 0 1 .1v3.2A2.8 2.8 0 1 0 14 15V3Z' },
+                  { nom: 'Instagram', url: 'https://www.instagram.com/ibigsoft/', d: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm0 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM17 6.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM7.5 3h9A4.5 4.5 0 0 1 21 7.5v9a4.5 4.5 0 0 1-4.5 4.5h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3Zm0 2A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 16.5 5h-9Z' },
+                  { nom: lang === 'fr' ? 'Groupe Facebook' : 'Facebook Group', url: 'https://www.facebook.com/groups/1655325562202049', d: 'M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM8.5 12.5c-3 0-5.5 1.6-5.5 3.6V19h11v-2.9c0-2-2.5-3.6-5.5-3.6Zm7.5.5c-.7 0-1.3.1-1.9.3 1 .9 1.6 2 1.6 3.3V19h5v-2.4c0-1.9-2.2-3.1-4.7-3.1Z' },
+                  { nom: lang === 'fr' ? 'Chaîne WhatsApp' : 'WhatsApp Channel', url: 'https://whatsapp.com/channel/0029VbD8TIr9xVJmniJ8m81w', d: 'M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3Zm0 2a7 7 0 1 1-3.6 13l-.3-.2-2.3.6.6-2.2-.2-.3A7 7 0 0 1 12 5Zm-2.6 3.6c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.7 4.2 3.7 2 .8 2.5.6 2.9.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.6-.3-1.6-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5v-.5l-.8-1.9c-.2-.4-.4-.4-.6-.4h-.3Z' },
+                ].map(r => (
+                  <a key={r.nom} href={r.url} target="_blank" rel="noopener noreferrer" aria-label={r.nom} title={r.nom}
+                    style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid rgba(255,255,255,.14)', display: 'grid', placeItems: 'center', color: '#94A3B8', transition: 'all .18s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#00CEB8'; e.currentTarget.style.borderColor = '#00CEB8'; e.currentTarget.style.color = '#03090F'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,.14)'; e.currentTarget.style.color = '#94A3B8'; }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={r.d} /></svg>
+                  </a>
+                ))}
+              </div>
             </div>
             {/* Col 2 */}
             <div className="lp-footer-col">
@@ -1622,9 +1641,11 @@ export default function LandingPage() {
                 <li><Link href="/mentions-legales">{t('footer_mentions')}</Link></li>
                 <li><Link href="/cgu">{t('footer_cgu')}</Link></li>
                 <li><Link href="/confidentialite">{t('footer_privacy')}</Link></li>
+                <li><a href="https://ibigsoft.com/cgv.php" target="_blank" rel="noopener noreferrer">CGV</a></li>
                 <li><Link href="/cookies">Cookies</Link></li>
                 <li><Link href="/licence">{t('footer_licence')}</Link></li>
                 <li><Link href="/securite">{t('footer_security')}</Link></li>
+                <li><a href="mailto:legal@ibigsoft.com">legal@ibigsoft.com</a></li>
               </ul>
             </div>
             {/* Col 6 */}
@@ -1632,10 +1653,13 @@ export default function LandingPage() {
               <h4>Contact</h4>
               <ul>
                 <li><a href="mailto:contact@ibigsoft.com">contact@ibigsoft.com</a></li>
+                <li><a href="mailto:santarex@ibigsoft.com">santarex@ibigsoft.com</a></li>
+                <li><a href="mailto:support@ibigsoft.com">support@ibigsoft.com</a></li>
                 <li><a href="tel:+2252722276014">+225 27 22 27 60 14</a></li>
+                <li><a href="tel:+2250555059901">+225 05 55 05 99 01</a></li>
                 <li><a href="https://wa.me/2250778882592">WhatsApp +225 07 78 88 25 92</a></li>
                 <li>Abidjan, Côte d&apos;Ivoire</li>
-                <li style={{ marginTop: 8 }}>{lang === 'fr' ? 'Lun–Ven : 8h – 18h' : 'Mon–Fri: 8am – 6pm'}</li>
+                <li style={{ marginTop: 8 }}>{lang === 'fr' ? 'Lun–Sam : 8h – 18h' : 'Mon–Sat: 8am – 6pm'}</li>
               </ul>
             </div>
           </div>

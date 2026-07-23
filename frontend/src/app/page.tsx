@@ -26,15 +26,16 @@ export default function Page() {
   return (
     <>
       <LandingPage />
-      {/* Écosystème IBIG SOFT (carrousel « Nos solutions ») + footer universel,
-          injectés par le script universel. La solution courante est détectée
-          automatiquement par le domaine (santarex.ibigsoft.com). */}
+      {/* Écosystème IBIG SOFT : on injecte UNIQUEMENT le carrousel « Nos solutions »
+          (data-render="solutions"). Le footer universel est volontairement désactivé
+          pour éviter un double footer — le footer SANTAREX reste le seul, enrichi
+          des informations éditeur/contacts/réseaux. */}
       <div data-ibig="solutions" />
-      <div data-ibig="footer" />
       <Script
         src="/ibigsoft-universal.js"
         data-solution="santarex"
         data-accent="#DC2626"
+        data-render="solutions"
         strategy="afterInteractive"
       />
     </>
