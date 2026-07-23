@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import LandingPage from '@/components/landing/LandingPage';
 
 export const metadata: Metadata = {
@@ -22,5 +23,20 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <LandingPage />;
+  return (
+    <>
+      <LandingPage />
+      {/* Écosystème IBIG SOFT (carrousel « Nos solutions ») + footer universel,
+          injectés par le script universel. La solution courante est détectée
+          automatiquement par le domaine (santarex.ibigsoft.com). */}
+      <div data-ibig="solutions" />
+      <div data-ibig="footer" />
+      <Script
+        src="/ibigsoft-universal.js"
+        data-solution="santarex"
+        data-accent="#DC2626"
+        strategy="afterInteractive"
+      />
+    </>
+  );
 }
