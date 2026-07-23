@@ -1565,6 +1565,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══ ÉCOSYSTÈME IBIG SOFT (carrousel injecté par le script universel) ══ */}
+      <div data-ibig="solutions" />
+
       {/* ══ FOOTER ══ */}
       <footer className="lp-footer">
         <div className="lp-footer-inner">
