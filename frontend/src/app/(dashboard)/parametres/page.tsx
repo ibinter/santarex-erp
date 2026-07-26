@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Settings, Building, Shield, Bell, Users,
@@ -69,6 +69,16 @@ export default function ParametresPage() {
   const [notifFacture, setNotifFacture] = useState(false);
   const [twoFa, setTwoFa] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState('60');
+  const [appVersion, setAppVersion] = useState('');
+
+  useEffect(() => {
+    apiClient<any>('/version')
+      .then((r) => {
+        const v = r?.data ?? r;
+        if (v?.version) setAppVersion(v.version);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -159,6 +169,15 @@ export default function ParametresPage() {
                     <div style={{ fontSize: 11, color: '#546E7A', marginTop: 4 }}>{t('etab.tenantNote')}</div>
                   </div>
                 </div>
+                {appVersion && (
+                  <div style={{ marginTop: 12, fontSize: 12, color: '#78909C', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Info size={13} color="#90A4AE" />
+                    <span>SANTAREX ERP — <strong style={{ color: '#0B7285' }}>v{appVersion}</strong></span>
+                    <a href="/changelog" style={{ marginLeft: 4, color: '#0B7285', fontWeight: 600, textDecoration: 'none' }}>
+                      {t('etab.changelogLink')}
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 

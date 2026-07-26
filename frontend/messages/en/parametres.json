@@ -21,7 +21,8 @@
       "telephone": "Phone",
       "email": "Contact email",
       "tenantTitle": "Tenant identifier",
-      "tenantNote": "Unique identifier for your facility — not editable"
+      "tenantNote": "Unique identifier for your facility — not editable",
+      "changelogLink": "See what's new"
     },
     "securite": {
       "twoFa": "Two-factor authentication (2FA)",

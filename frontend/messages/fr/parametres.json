@@ -21,7 +21,8 @@
       "telephone": "Téléphone",
       "email": "Email de contact",
       "tenantTitle": "Identifiant Tenant",
-      "tenantNote": "Identifiant unique de votre établissement — non modifiable"
+      "tenantNote": "Identifiant unique de votre établissement — non modifiable",
+      "changelogLink": "Voir les nouveautés"
     },
     "securite": {
       "twoFa": "Authentification à 2 facteurs (2FA)",

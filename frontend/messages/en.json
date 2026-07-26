@@ -77,7 +77,8 @@
     "messagesSortants": "SMS / Reminders",
     "planningsGardes": "On-call planning",
     "servicesPersonnalises": "Custom services",
-    "interoperabilite": "Interoperability"
+    "interoperabilite": "Interoperability",
+    "changelog": "What's new"
   },
   "hero": {
     "badge": "#1 Hospital SaaS Solution in West Africa",

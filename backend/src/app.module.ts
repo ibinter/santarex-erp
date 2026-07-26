@@ -78,6 +78,9 @@ import { SitesModule } from './sites/sites.module';
 // Finalisation v1 — extensibilité & interopérabilité
 import { ServicesPersonnalisesModule } from './services-personnalises/services-personnalises.module';
 import { InteroperabiliteModule } from './interoperabilite/interoperabilite.module';
+// PROMPT FINAL — activation assistée & versions
+import { ClesActivationModule } from './cles-activation/cles-activation.module';
+import { ChangelogModule } from './changelog/changelog.module';
 import { SeedModule } from './database/seed.module';
 
 @Module({
@@ -166,6 +169,8 @@ import { SeedModule } from './database/seed.module';
     SitesModule,
     ServicesPersonnalisesModule,
     InteroperabiliteModule,
+    ClesActivationModule,
+    ChangelogModule,
     HealthModule,
     SeedModule,
   ],

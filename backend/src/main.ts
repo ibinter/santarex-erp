@@ -11,7 +11,44 @@ async function bootstrap() {
   // de paiement (le corps brut doit être disponible via req.rawBody).
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
-  app.use(helmet());
+  // En-têtes de sécurité durcis (section 46.3 #8).
+  // L'API est servie en HTTPS derrière un reverse proxy.
+  //
+  // Choix CSP : REPORT-ONLY. L'API renvoie surtout du JSON, mais Swagger UI
+  // (/api/docs) charge des scripts/styles inline. Une CSP appliquée risquerait
+  // de casser Swagger et d'éventuels contenus servis par l'API. On rapporte
+  // sans bloquer pour observer avant tout durcissement définitif.
+  app.use(
+    helmet({
+      // X-Content-Type-Options: nosniff (défaut helmet, explicite ici)
+      noSniff: true,
+      // X-Frame-Options: protège contre le clickjacking
+      frameguard: { action: 'sameorigin' },
+      // Referrer-Policy: ne fuite pas l'URL complète vers les tiers
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      // HSTS: force HTTPS pendant 2 ans, sous-domaines inclus, éligible preload
+      hsts: {
+        maxAge: 63072000,
+        includeSubDomains: true,
+        preload: true,
+      },
+      // CSP en mode rapport uniquement (aucun blocage) — voir commentaire ci-dessus
+      contentSecurityPolicy: {
+        useDefaults: true,
+        reportOnly: true,
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https://api.groq.com'],
+        },
+      },
+      // On désactive COEP : trop strict, casse le chargement de ressources cross-origin
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.setGlobalPrefix('api/v1');
 

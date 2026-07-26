@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   CreditCard, Smartphone, Building2, Globe, Send, Banknote, Coins,
   Ticket, Truck, ShieldCheck, Upload, Loader2, CheckCircle2, AlertCircle,
-  Lock, RefreshCw, ExternalLink, FileText,
+  Lock, RefreshCw, ExternalLink, FileText, Copy, Check, KeyRound,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient, API_URL } from '@/lib/api';
@@ -31,6 +31,14 @@ interface ClientPaymentMethod {
 
 interface Offre { code: string; nom?: string; prix?: number }
 interface Transaction { reference: string; paymentUrl?: string | null; status?: string }
+
+interface CoordonneeMomo {
+  operateur: string;
+  code: string;
+  numero: string;
+  titulaire: string;
+}
+interface CoordonneesMomoResponse { securite: string; coordonnees: CoordonneeMomo[] }
 
 // Familles de formulaire dérivées du type de méthode.
 type FormKind = 'gateway' | 'voucher' | 'reference' | 'proof' | 'order';
@@ -188,7 +196,197 @@ export default function AbonnementPage() {
         ))}
       </div>
 
+      {/* Paiement Mobile Money direct (section 19.5) */}
+      <MomoDirectSection offerCode={offerCode} methods={methods} />
+
+      {/* Activation par clé (section 19.6) */}
+      <ActivationKeySection />
+
       <style>{`.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+// ── Paiement Mobile Money direct ─────────────────────────────────────────────
+function MomoDirectSection({ offerCode, methods }: { offerCode: string; methods: ClientPaymentMethod[] }) {
+  const t = useTranslations('abonnement');
+  const [data, setData] = useState<CoordonneesMomoResponse | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  // Preuve
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Réutilise un moyen de paiement mobile_money existant pour créer la demande.
+  const momoMethodKey = methods.find((m) => m.type === 'mobile_money')?.key ?? null;
+
+  useEffect(() => {
+    apiClient<CoordonneesMomoResponse>('/paiement/coordonnees-momo')
+      .then((r) => setData(r))
+      .catch((e) => setErr(e instanceof Error ? e.message : t('momo.loadError')));
+  }, [t]);
+
+  async function copy(numero: string) {
+    try {
+      await navigator.clipboard.writeText(numero);
+      setCopied(numero);
+      setTimeout(() => setCopied((c) => (c === numero ? null : c)), 1800);
+    } catch { /* clipboard indisponible : ignoré */ }
+  }
+
+  async function sendProof() {
+    setBusy(true); setMsg(null);
+    try {
+      if (!offerCode) throw new Error(t('msg.selectPlanFirst'));
+      if (!momoMethodKey) throw new Error(t('momo.noMethod'));
+      if (!file) throw new Error(t('msg.addProof'));
+      const tx = await apiClient<Transaction>('/payments/transactions', {
+        method: 'POST',
+        body: { offerCode, methodKey: momoMethodKey },
+      });
+      if (!tx?.reference) throw new Error(t('msg.invalidResponse'));
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${API_URL}/payments/transactions/${encodeURIComponent(tx.reference)}/proof`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: fd,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error?.message || json?.message || t('msg.proofUploadError'));
+      setMsg({ ok: true, text: t('msg.proofSent', { ref: tx.reference }) });
+      setFile(null);
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('msg.proofError') });
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <section style={sectionStyle}>
+      <div style={sectionHeadStyle}>
+        <Smartphone size={20} color="#4F46E5" />
+        <h2 style={sectionTitleStyle}>{t('momo.title')}</h2>
+      </div>
+      <p style={{ color: '#6B7280', fontSize: 13, margin: '0 0 12px' }}>{t('momo.subtitle')}</p>
+
+      {err && (
+        <div style={{ ...noticeStyle, background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B' }}>
+          <AlertCircle size={18} /> <span>{err}</span>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: 10 }}>
+        {(data?.coordonnees ?? []).map((c) => (
+          <div key={c.code + c.numero} style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
+            border: '1px solid #E5E7EB', borderRadius: 12, background: '#fff',
+          }}>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ display: 'block', fontWeight: 600, color: '#111827', fontSize: 14 }}>{c.operateur}</span>
+              <span style={{ display: 'block', fontSize: 14, color: '#111827', fontFamily: 'ui-monospace, monospace' }}>{c.numero}</span>
+              <span style={{ display: 'block', fontSize: 12, color: '#6B7280' }}>{t('momo.holder')} : {c.titulaire}</span>
+            </span>
+            <button onClick={() => copy(c.numero)} style={ghostBtnStyle}>
+              {copied === c.numero ? <><Check size={14} /> {t('momo.copied')}</> : <><Copy size={14} /> {t('momo.copy')}</>}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', gap: 8,
+        background: '#FFFBEB', border: '1px solid #FDE68A', color: '#92400E',
+        borderRadius: 10, padding: '10px 12px', fontSize: 12.5, margin: '12px 0',
+      }}>
+        <ShieldCheck size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+        <span>{data?.securite ?? t('momo.securityText')}</span>
+      </div>
+
+      {/* Upload de preuve → crée une demande en attente (validation manuelle) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <label style={labelStyle}>{t('proofLabel')}</label>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          style={{ ...inputStyle, padding: 8 }}
+        />
+        <button onClick={sendProof} disabled={busy || !offerCode || !momoMethodKey} style={primaryBtnStyle(busy || !offerCode || !momoMethodKey)}>
+          {busy ? <Loader2 size={16} className="spin" /> : <Upload size={16} />} {t('sendProof')}
+        </button>
+        {!momoMethodKey && (
+          <p style={{ fontSize: 12, color: '#B45309', margin: 0 }}>{t('momo.noMethod')}</p>
+        )}
+      </div>
+
+      {msg && <ResultNotice ok={msg.ok} text={msg.text} />}
+    </section>
+  );
+}
+
+// ── Activation par clé ───────────────────────────────────────────────────────
+function ActivationKeySection() {
+  const t = useTranslations('abonnement');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function activate() {
+    setBusy(true); setMsg(null);
+    try {
+      const c = code.trim().toUpperCase();
+      if (!c) throw new Error(t('key.enter'));
+      const r = await apiClient<{ offreCode?: string }>('/cles-activation/utiliser', {
+        method: 'POST',
+        body: { code: c },
+      });
+      setMsg({ ok: true, text: t('key.ok', { offre: r?.offreCode ?? '' }) });
+      setCode('');
+    } catch (e) {
+      setMsg({ ok: false, text: e instanceof Error ? e.message : t('key.invalid') });
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <section style={sectionStyle}>
+      <div style={sectionHeadStyle}>
+        <KeyRound size={20} color="#4F46E5" />
+        <h2 style={sectionTitleStyle}>{t('key.title')}</h2>
+      </div>
+      <p style={{ color: '#6B7280', fontSize: 13, margin: '0 0 12px' }}>{t('key.subtitle')}</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="SRX-XXXX-XXXX-XXXX"
+          autoCapitalize="characters"
+          style={{ ...inputStyle, fontFamily: 'ui-monospace, monospace', letterSpacing: 1 }}
+        />
+        <button onClick={activate} disabled={busy} style={primaryBtnStyle(busy)}>
+          {busy ? <Loader2 size={16} className="spin" /> : <KeyRound size={16} />} {t('key.activate')}
+        </button>
+      </div>
+
+      {msg && <ResultNotice ok={msg.ok} text={msg.text} />}
+    </section>
+  );
+}
+
+function ResultNotice({ ok, text }: { ok: boolean; text: string }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 12,
+      fontSize: 13, borderRadius: 10, padding: '10px 12px',
+      background: ok ? '#ECFDF5' : '#FEF2F2',
+      border: `1px solid ${ok ? '#A7F3D0' : '#FECACA'}`,
+      color: ok ? '#065F46' : '#991B1B',
+    }}>
+      {ok ? <CheckCircle2 size={16} style={{ flexShrink: 0 }} /> : <AlertCircle size={16} style={{ flexShrink: 0 }} />}
+      <span>{text}</span>
     </div>
   );
 }
@@ -452,6 +650,15 @@ const inputStyle: React.CSSProperties = {
   border: '1px solid #D1D5DB', borderRadius: 10, outline: 'none', background: '#fff', color: '#111827',
 };
 const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: '#374151' };
+const sectionStyle: React.CSSProperties = {
+  marginTop: 24, padding: '18px 16px', border: '1px solid #E5E7EB', borderRadius: 16, background: '#fff',
+};
+const sectionHeadStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6,
+};
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: 16, fontWeight: 700, margin: 0, color: '#111827',
+};
 const noticeStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, padding: '12px 14px', fontSize: 13, marginBottom: 12,
 };

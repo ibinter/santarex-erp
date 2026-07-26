@@ -9,6 +9,7 @@ import AiChat from '@/components/AiChat';
 import AppFooter from '@/components/layout/AppFooter';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import OfflineBanner from '@/components/OfflineBanner';
+import QuoiDeNeuf from '@/components/QuoiDeNeuf';
 import { isAuthenticated } from '@/lib/auth';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -160,6 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }}
         >
           <div style={{ flex: 1 }}>{children}</div>
+          <QuoiDeNeuf />
           <AppFooter />
         </main>
 

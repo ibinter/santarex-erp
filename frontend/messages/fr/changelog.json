@@ -1,0 +1,12 @@
+{
+  "changelog": {
+    "title": "Journal des versions",
+    "subtitle": "Historique des nouveautés et améliorations de SANTAREX ERP",
+    "currentVersion": "Version installée : v{version}",
+    "refresh": "Rafraîchir",
+    "loading": "Chargement…",
+    "empty": "Aucune version publiée pour le moment.",
+    "major": "Majeure",
+    "formuleMin": "Formule {formule}"
+  }
+}

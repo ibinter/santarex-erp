@@ -51,6 +51,24 @@
       "proofError": "Unable to send the proof.",
       "orderRegistered": "Order {ref} registered. Payment will be collected on delivery.",
       "orderError": "Unable to create the order."
+    },
+    "momo": {
+      "title": "Direct Mobile Money payment",
+      "subtitle": "Send the amount to one of the official IBIG SARL numbers below, then upload your proof. The request is validated manually.",
+      "holder": "Account holder",
+      "copy": "Copy number",
+      "copied": "Copied",
+      "securityText": "Always verify the number and the IBIG SARL account holder before sending.",
+      "loadError": "Unable to load Mobile Money details.",
+      "noMethod": "No Mobile Money method is enabled to create the request. Please contact support."
+    },
+    "key": {
+      "title": "I have an activation key",
+      "subtitle": "Enter the key provided by IBIG SOFT to activate your license.",
+      "enter": "Enter an activation key.",
+      "activate": "Activate",
+      "ok": "Key validated: the {offre} plan has been activated.",
+      "invalid": "Invalid, expired or already used key."
     }
   }
 }

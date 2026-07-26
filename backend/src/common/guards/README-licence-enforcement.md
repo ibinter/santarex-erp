@@ -83,9 +83,15 @@ passerelle (sans JWT), l'assistant IA et le support.
 ## Carte préfixe → module (`ModuleGuard`, interne)
 
 `/laboratoire`→`laboratoire`, `/pharmacie`→`pharmacie`,
-`/hospitalisation`→`hospitalisation`, `/facturation`→`facturation`,
-`/consultations`→`consultations`, `/urgences`→`urgences`,
-`/rendez-vous`→`rendez-vous`, `/dme`→`dme`, `/patients`→`patients`,
-`/paiements`→`paiements`.
+`/hospitalisation`→`hospitalisation`, `/bloc-operatoire`→`bloc-operatoire`,
+`/imagerie`→`imagerie`, `/comptabilite`→`comptabilite`, `/rh`→`rh`,
+`/facturation`→`facturation`, `/consultations`→`consultations`,
+`/urgences`→`urgences`, `/rendez-vous`→`rendez-vous`, `/dme`→`dme`,
+`/patients`→`patients`, `/paiements`→`paiements`.
+
+Les préfixes `bloc-operatoire`, `imagerie`, `comptabilite`, `rh` sont les
+modules **premium** de l'offre « hôpital » : leurs contrôleurs portaient déjà
+`ModuleGuard` mais le mapping manquait, si bien qu'un tenant sur une formule
+inférieure (ex. `clinique`) pouvait y accéder hors formule. C'est corrigé.
 
 Un chemin non mappé n'est pas restreint par le module (fail-open).

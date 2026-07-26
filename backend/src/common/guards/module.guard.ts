@@ -24,6 +24,14 @@ const PREFIX_TO_MODULE: ReadonlyArray<readonly [string, string]> = [
   ['/laboratoire', 'laboratoire'],
   ['/pharmacie', 'pharmacie'],
   ['/hospitalisation', 'hospitalisation'],
+  // Modules premium (offre « hôpital » uniquement) — les contrôleurs portent
+  // déjà `@UseGuards(… ModuleGuard)` ; sans mapping ici, le garde restait inerte
+  // et n'importe quel tenant pouvait y accéder hors formule. Les préfixes
+  // correspondent 1:1 aux codes stockés dans `OffreSaas.modulesInclus`.
+  ['/bloc-operatoire', 'bloc-operatoire'],
+  ['/imagerie', 'imagerie'],
+  ['/comptabilite', 'comptabilite'],
+  ['/rh', 'rh'],
   ['/facturation', 'facturation'],
   ['/consultations', 'consultations'],
   ['/urgences', 'urgences'],

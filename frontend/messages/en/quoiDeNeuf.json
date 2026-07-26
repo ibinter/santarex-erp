@@ -1,0 +1,10 @@
+{
+  "quoiDeNeuf": {
+    "title": "What's new?",
+    "version": "Version {version}",
+    "close": "Close",
+    "compris": "Got it",
+    "voirChangelog": "See full history",
+    "formuleMin": "{formule} plan"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "changelog": {
+    "title": "Release notes",
+    "subtitle": "History of new features and improvements in SANTAREX ERP",
+    "currentVersion": "Installed version: v{version}",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "empty": "No published version yet.",
+    "major": "Major",
+    "formuleMin": "{formule} plan"
+  }
+}

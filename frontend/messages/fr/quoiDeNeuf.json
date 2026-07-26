@@ -1,0 +1,10 @@
+{
+  "quoiDeNeuf": {
+    "title": "Quoi de neuf ?",
+    "version": "Version {version}",
+    "close": "Fermer",
+    "compris": "Compris",
+    "voirChangelog": "Voir tout l'historique",
+    "formuleMin": "Formule {formule}"
+  }
+}
