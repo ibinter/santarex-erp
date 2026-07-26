@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -43,7 +44,7 @@ export class RhController {
   }
 
   @Get('employes/:id')
-  findOneEmploye(@Param('id') id: string, @Request() req) {
+  findOneEmploye(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.rhService.findOneEmploye(id, req.user.tenantId);
   }
 
@@ -54,7 +55,7 @@ export class RhController {
 
   @Patch('employes/:id')
   updateEmploye(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEmployeDto,
     @Request() req,
   ) {
@@ -79,7 +80,7 @@ export class RhController {
 
   @Patch('conges/:id/approuver')
   approuverConge(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ApprouverCongeDto,
     @Request() req,
   ) {

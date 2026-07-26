@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, LessThan, Between } from 'typeorm';
@@ -51,6 +52,9 @@ export class VaccinationService {
       .andWhere('v.estActif = true');
 
     if (filters.cible) {
+      if (!Object.values(CibleVaccin).includes(filters.cible)) {
+        throw new BadRequestException(`Cible invalide: ${filters.cible}`);
+      }
       // « tous » reste toujours visible quel que soit le filtre cible.
       qb.andWhere('(v.cible = :cible OR v.cible = :tous)', {
         cible: filters.cible,

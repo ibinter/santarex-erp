@@ -112,7 +112,7 @@ export class MorgueService {
       .createQueryBuilder('d')
       .where('d.tenantId = :tenantId', { tenantId });
 
-    if (filters.lieuDeces) {
+    if (filters.lieuDeces && Object.values(LieuDeces).includes(filters.lieuDeces)) {
       qb.andWhere('d.lieuDeces = :lieuDeces', { lieuDeces: filters.lieuDeces });
     }
     if (filters.certificatEmis === 'true' || filters.certificatEmis === 'false') {
@@ -201,7 +201,7 @@ export class MorgueService {
       .where('c.tenantId = :tenantId', { tenantId })
       .andWhere('c.estActif = true');
 
-    if (filters.statut) {
+    if (filters.statut && Object.values(StatutCasier).includes(filters.statut)) {
       qb.andWhere('c.statut = :statut', { statut: filters.statut });
     }
     return qb.orderBy('c.numero', 'ASC').getMany();
@@ -346,7 +346,7 @@ export class MorgueService {
     const qb = this.sejourRepo
       .createQueryBuilder('s')
       .where('s.tenantId = :tenantId', { tenantId });
-    if (filters.statut) {
+    if (filters.statut && Object.values(StatutSejourMorgue).includes(filters.statut)) {
       qb.andWhere('s.statut = :statut', { statut: filters.statut });
     }
     const sejours = await qb.orderBy('s.dateEntree', 'DESC').getMany();

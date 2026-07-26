@@ -128,8 +128,18 @@ export class UrgencesService {
       .createQueryBuilder('u')
       .where('u.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('u.statut = :statut', { statut: filters.statut });
-    if (filters.categorie) qb.andWhere('u.categorieUrgence = :categorie', { categorie: filters.categorie });
+    if (filters.statut) {
+      if (!Object.values(StatutUrgence).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      qb.andWhere('u.statut = :statut', { statut: filters.statut });
+    }
+    if (filters.categorie) {
+      if (!Object.values(CategorieUrgence).includes(filters.categorie)) {
+        throw new BadRequestException(`Catégorie invalide: ${filters.categorie}`);
+      }
+      qb.andWhere('u.categorieUrgence = :categorie', { categorie: filters.categorie });
+    }
     if (filters.date) {
       const d = new Date(filters.date);
       d.setHours(0, 0, 0, 0);

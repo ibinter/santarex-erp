@@ -166,7 +166,12 @@ export class BlocOperatoireService {
       .createQueryBuilder('i')
       .where('i.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('i.statut = :statut', { statut: filters.statut });
+    if (filters.statut) {
+      if (!Object.values(StatutIntervention).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      qb.andWhere('i.statut = :statut', { statut: filters.statut });
+    }
     if (filters.salleId) qb.andWhere('i.salleId = :salleId', { salleId: filters.salleId });
     if (filters.patientId) qb.andWhere('i.patientId = :patientId', { patientId: filters.patientId });
 

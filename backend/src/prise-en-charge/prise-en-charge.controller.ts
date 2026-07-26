@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -62,7 +63,7 @@ export class PriseEnChargeController {
 
   @Get('assureurs/:id')
   @ApiOperation({ summary: "Détail d'un assureur" })
-  findOneAssureur(@Param('id') id: string, @Request() req) {
+  findOneAssureur(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOneAssureur(id, req.user.tenantId);
   }
 
@@ -109,7 +110,7 @@ export class PriseEnChargeController {
 
   @Get('bons/:id')
   @ApiOperation({ summary: "Détail d'un bon de prise en charge" })
-  findOneBon(@Param('id') id: string, @Request() req) {
+  findOneBon(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOneBon(id, req.user.tenantId);
   }
 

@@ -77,8 +77,10 @@ export class SterilisationService {
       .createQueryBuilder('l')
       .where('l.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('l.statut = :statut', { statut: filters.statut });
-    if (filters.methode) qb.andWhere('l.methode = :methode', { methode: filters.methode });
+    if (filters.statut && Object.values(StatutLot).includes(filters.statut))
+      qb.andWhere('l.statut = :statut', { statut: filters.statut });
+    if (filters.methode && Object.values(MethodeSterilisation).includes(filters.methode))
+      qb.andWhere('l.methode = :methode', { methode: filters.methode });
 
     return qb.orderBy('l.dateCycle', 'DESC').getMany();
   }

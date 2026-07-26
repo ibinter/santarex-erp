@@ -100,7 +100,9 @@ export class IndicateursQualiteService {
     const qb = this.indicateurRepo
       .createQueryBuilder('i')
       .where('i.tenantId = :tenantId', { tenantId });
-    if (filters.domaine) qb.andWhere('i.domaine = :d', { d: filters.domaine });
+    if (filters.domaine && Object.values(DomaineIndicateur).includes(filters.domaine)) {
+      qb.andWhere('i.domaine = :d', { d: filters.domaine });
+    }
     if (filters.actif !== undefined)
       qb.andWhere('i.actif = :a', { a: filters.actif });
     return qb.orderBy('i.domaine', 'ASC').addOrderBy('i.libelle', 'ASC').getMany();

@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Param,
+  ParseUUIDPipe,
   Body,
   Query,
   Ip,
@@ -70,7 +71,7 @@ export class ClesActivationController {
   @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
   @ApiOperation({ summary: 'Révoquer une clé d\'activation' })
   revoquer(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: RevoquerDto,
     @CurrentUser('userId') userId: string,
   ) {

@@ -180,7 +180,12 @@ export class FacturationService {
       .where('f.tenantId = :tenantId', { tenantId });
 
     if (filters.patientId) qb.andWhere('f.patientId = :patientId', { patientId: filters.patientId });
-    if (filters.statut) qb.andWhere('f.statut = :statut', { statut: filters.statut });
+    if (filters.statut) {
+      if (!Object.values(StatutFacture).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+      }
+      qb.andWhere('f.statut = :statut', { statut: filters.statut });
+    }
     if (filters.dateDebut) qb.andWhere('f.dateEmission >= :dateDebut', { dateDebut: filters.dateDebut });
     if (filters.dateFin) qb.andWhere('f.dateEmission <= :dateFin', { dateFin: filters.dateFin });
 

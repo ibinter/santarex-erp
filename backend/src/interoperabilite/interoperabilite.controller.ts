@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -59,7 +60,7 @@ export class InteroperabiliteController {
 
   @Patch('cles/:id/revoquer')
   @ApiOperation({ summary: 'Révoquer (désactiver) une clé API' })
-  revoquerCle(@Param('id') id: string, @Request() req) {
+  revoquerCle(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.revoquerCleApi(id, req.user.tenantId);
   }
 
@@ -78,19 +79,19 @@ export class InteroperabiliteController {
 
   @Patch('webhooks/:id')
   @ApiOperation({ summary: 'Modifier un webhook' })
-  updateWebhook(@Param('id') id: string, @Body() dto: UpdateWebhookDto, @Request() req) {
+  updateWebhook(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateWebhookDto, @Request() req) {
     return this.service.updateWebhook(id, dto, req.user.tenantId);
   }
 
   @Post('webhooks/:id/test')
   @ApiOperation({ summary: 'Envoyer un payload de test vers un webhook' })
-  testerWebhook(@Param('id') id: string, @Request() req) {
+  testerWebhook(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.testerWebhook(id, req.user.tenantId);
   }
 
   @Delete('webhooks/:id')
   @ApiOperation({ summary: 'Supprimer un webhook' })
-  supprimerWebhook(@Param('id') id: string, @Request() req) {
+  supprimerWebhook(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.supprimerWebhook(id, req.user.tenantId);
   }
 
@@ -109,19 +110,19 @@ export class InteroperabiliteController {
 
   @Patch('interfaces/:id')
   @ApiOperation({ summary: 'Modifier une configuration d\'interface' })
-  updateConfig(@Param('id') id: string, @Body() dto: UpdateConfigInterfaceDto, @Request() req) {
+  updateConfig(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateConfigInterfaceDto, @Request() req) {
     return this.service.updateConfig(id, dto, req.user.tenantId);
   }
 
   @Post('interfaces/:id/tester')
   @ApiOperation({ summary: 'Tester la connexion (simulé tant que hors site)' })
-  testerConnexion(@Param('id') id: string, @Request() req) {
+  testerConnexion(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.testerConnexion(id, req.user.tenantId);
   }
 
   @Delete('interfaces/:id')
   @ApiOperation({ summary: 'Supprimer une configuration d\'interface' })
-  supprimerConfig(@Param('id') id: string, @Request() req) {
+  supprimerConfig(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.supprimerConfig(id, req.user.tenantId);
   }
 

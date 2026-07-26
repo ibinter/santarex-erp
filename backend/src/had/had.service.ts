@@ -122,7 +122,12 @@ export class HadService {
       .createQueryBuilder('h')
       .where('h.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('h.statut = :statut', { statut: filters.statut });
+    if (filters.statut) {
+      if (!Object.values(StatutHAD).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      qb.andWhere('h.statut = :statut', { statut: filters.statut });
+    }
     if (filters.patientId) qb.andWhere('h.patientId = :patientId', { patientId: filters.patientId });
 
     const [data, total] = await qb

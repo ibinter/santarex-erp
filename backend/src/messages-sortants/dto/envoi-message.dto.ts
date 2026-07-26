@@ -3,6 +3,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
   MinLength,
 } from 'class-validator';
 import { CanalMessage, CodeModeleMessage } from '../entities/modele-message.entity';
@@ -15,7 +16,7 @@ import { CanalMessage, CodeModeleMessage } from '../entities/modele-message.enti
 export class EnvoiMessageDto {
   /** Patient destinataire (optionnel : le numéro peut être fourni directement). */
   @IsOptional()
-  @IsString()
+  @IsUUID()
   patientId?: string;
 
   /** Numéro destinataire. Requis si aucun patientId fourni. */

@@ -148,7 +148,12 @@ export class ConsentementsService {
     const qb = this.modeleRepo
       .createQueryBuilder('m')
       .where('m.tenantId = :tenantId', { tenantId });
-    if (filters.type) qb.andWhere('m.type = :type', { type: filters.type });
+    if (filters.type) {
+      if (!Object.values(TypeConsentement).includes(filters.type)) {
+        throw new BadRequestException(`Type invalide: ${filters.type}`);
+      }
+      qb.andWhere('m.type = :type', { type: filters.type });
+    }
     if (filters.actif !== undefined)
       qb.andWhere('m.actif = :actif', { actif: filters.actif });
     return qb.orderBy('m.type', 'ASC').addOrderBy('m.titre', 'ASC').getMany();
@@ -255,8 +260,18 @@ export class ConsentementsService {
       .where('c.tenantId = :tenantId', { tenantId });
     if (filters.patientId)
       qb.andWhere('c.patientId = :patientId', { patientId: filters.patientId });
-    if (filters.statut) qb.andWhere('c.statut = :statut', { statut: filters.statut });
-    if (filters.type) qb.andWhere('c.type = :type', { type: filters.type });
+    if (filters.statut) {
+      if (!Object.values(StatutConsentement).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      qb.andWhere('c.statut = :statut', { statut: filters.statut });
+    }
+    if (filters.type) {
+      if (!Object.values(TypeConsentement).includes(filters.type)) {
+        throw new BadRequestException(`Type invalide: ${filters.type}`);
+      }
+      qb.andWhere('c.type = :type', { type: filters.type });
+    }
     if (filters.interventionId)
       qb.andWhere('c.interventionId = :interventionId', {
         interventionId: filters.interventionId,

@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
@@ -109,7 +110,12 @@ export class ConsultationsService {
 
     if (filters.medecinId) where.medecinId = filters.medecinId;
     if (filters.patientId) where.patientId = filters.patientId;
-    if (filters.statut) where.statut = filters.statut;
+    if (filters.statut) {
+      if (!Object.values(StatutConsultation).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      where.statut = filters.statut;
+    }
 
     if (filters.dateDebut && filters.dateFin) {
       where.dateHeure = Between(new Date(filters.dateDebut), new Date(filters.dateFin));

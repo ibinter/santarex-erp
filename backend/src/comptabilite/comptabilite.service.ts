@@ -231,8 +231,12 @@ export class ComptabiliteService {
 
     if (filters.journal)
       qb.andWhere('e.journal = :journal', { journal: filters.journal });
-    if (filters.statut)
+    if (filters.statut) {
+      if (!Object.values(StatutEcriture).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+      }
       qb.andWhere('e.statut = :statut', { statut: filters.statut });
+    }
     if (filters.dateDebut)
       qb.andWhere('e.date >= :dateDebut', { dateDebut: filters.dateDebut });
     if (filters.dateFin)

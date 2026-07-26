@@ -15,7 +15,7 @@ type Medicament = {
   createdAt?: string; updatedAt?: string;
 };
 
-function fmtXOF(v?: number) { return v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—'; }
+function fmtXOF(v?: number) { return v != null ? (Number(v) || 0).toLocaleString('fr-FR') + ' XOF' : '—'; }
 function fmtDate(d?: string) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });

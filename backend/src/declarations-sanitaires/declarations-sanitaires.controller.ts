@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -76,7 +77,7 @@ export class DeclarationsSanitairesController {
   @ApiOperation({ summary: 'Modifier une MDO propre au tenant' })
   @Roles(UserRole.ADMIN, UserRole.DIRECTEUR, UserRole.MEDECIN)
   updateMaladie(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateMaladieDto,
     @Request() req,
   ) {
@@ -131,14 +132,14 @@ export class DeclarationsSanitairesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Détail d\'une déclaration' })
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOne(id, req.user.tenantId);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Mettre à jour une déclaration' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDeclarationDto,
     @Request() req,
   ) {
@@ -148,7 +149,7 @@ export class DeclarationsSanitairesController {
   @Patch(':id/statut')
   @ApiOperation({ summary: 'Changer le statut (workflow)' })
   changerStatut(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ChangerStatutDeclarationDto,
     @Request() req,
   ) {
@@ -158,7 +159,7 @@ export class DeclarationsSanitairesController {
   @Patch(':id/transmettre')
   @ApiOperation({ summary: 'Marquer transmise à l\'autorité sanitaire' })
   transmettre(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: TransmettreDeclarationDto,
     @Request() req,
   ) {

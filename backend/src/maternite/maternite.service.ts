@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between } from 'typeorm';
@@ -105,7 +106,12 @@ export class MaterniteService {
       .createQueryBuilder('d')
       .where('d.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('d.statut = :statut', { statut: filters.statut });
+    if (filters.statut) {
+      if (!Object.values(StatutGrossesse).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      qb.andWhere('d.statut = :statut', { statut: filters.statut });
+    }
     if (filters.risque !== undefined)
       qb.andWhere('d.grossesseARisque = :risque', { risque: filters.risque });
     if (filters.patientId)

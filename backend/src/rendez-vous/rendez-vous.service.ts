@@ -3,6 +3,7 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan, MoreThan, In } from 'typeorm';
@@ -155,7 +156,12 @@ export class RendezVousService {
 
     if (filters.medecinId) where.medecinId = filters.medecinId;
     if (filters.patientId) where.patientId = filters.patientId;
-    if (filters.statut) where.statut = filters.statut;
+    if (filters.statut) {
+      if (!Object.values(StatutRendezVous).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
+      where.statut = filters.statut;
+    }
 
     if (filters.date) {
       const dateDebut = new Date(filters.date);

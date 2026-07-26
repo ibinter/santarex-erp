@@ -107,9 +107,15 @@ export class HospitalisationService {
       .andWhere('l.estActif = true');
 
     if (filters.service) {
+      if (!Object.values(ServiceHospitalisation).includes(filters.service)) {
+        throw new BadRequestException(`Service invalide: ${filters.service}`);
+      }
       qb.andWhere('l.service = :service', { service: filters.service });
     }
     if (filters.statut) {
+      if (!Object.values(StatutLit).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
       qb.andWhere('l.statut = :statut', { statut: filters.statut });
     }
 
@@ -192,9 +198,15 @@ export class HospitalisationService {
       .where('s.tenantId = :tenantId', { tenantId });
 
     if (filters.statut) {
+      if (!Object.values(StatutSejour).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
       qb.andWhere('s.statut = :statut', { statut: filters.statut });
     }
     if (filters.service) {
+      if (!Object.values(ServiceHospitalisation).includes(filters.service)) {
+        throw new BadRequestException(`Service invalide: ${filters.service}`);
+      }
       qb.andWhere('s.service = :service', { service: filters.service });
     }
     if (filters.patientId) {

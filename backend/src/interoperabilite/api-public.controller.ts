@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseUUIDPipe,
   Query,
   Req,
   UseGuards,
@@ -50,7 +51,7 @@ export class ApiPublicController {
   @Get('patients/:id')
   @ApiScopes('patients:read')
   @ApiOperation({ summary: 'Détail d\'un patient (scoping tenant strict)' })
-  getPatient(@Param('id') id: string, @Req() req: Request) {
+  getPatient(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     const { tenantId } = this.ctx(req);
     return this.patientsService.findOne(id, tenantId);
   }

@@ -84,8 +84,18 @@ export class BudgetService {
       .where('b.tenantId = :tenantId', { tenantId });
 
     if (filters.exercice) qb.andWhere('b.exercice = :exercice', { exercice: filters.exercice });
-    if (filters.type) qb.andWhere('b.type = :type', { type: filters.type });
-    if (filters.statut) qb.andWhere('b.statut = :statut', { statut: filters.statut });
+    if (filters.type) {
+      if (!Object.values(TypeBudget).includes(filters.type)) {
+        throw new BadRequestException(`Type invalide : ${filters.type}`);
+      }
+      qb.andWhere('b.type = :type', { type: filters.type });
+    }
+    if (filters.statut) {
+      if (!Object.values(StatutBudget).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide : ${filters.statut}`);
+      }
+      qb.andWhere('b.statut = :statut', { statut: filters.statut });
+    }
     if (filters.service) qb.andWhere('b.service = :service', { service: filters.service });
 
     return qb.orderBy('b.exercice', 'DESC').addOrderBy('b.createdAt', 'DESC').getMany();

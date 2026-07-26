@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -85,14 +86,14 @@ export class IncidentsQualiteController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Détail d\'un incident qualité' })
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOne(id, req.user.tenantId);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Mettre à jour un incident (causes, mesures, gravité…)' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateIncidentQualiteDto,
     @Request() req,
   ) {
@@ -102,7 +103,7 @@ export class IncidentsQualiteController {
   @Patch(':id/statut')
   @ApiOperation({ summary: 'Changer le statut (workflow qualité)' })
   changerStatut(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateStatutIncidentDto,
     @Request() req,
   ) {
@@ -112,7 +113,7 @@ export class IncidentsQualiteController {
   @Post(':id/action')
   @ApiOperation({ summary: 'Ajouter une action / commentaire au fil de suivi' })
   ajouterAction(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AjouterActionIncidentDto,
     @Request() req,
   ) {

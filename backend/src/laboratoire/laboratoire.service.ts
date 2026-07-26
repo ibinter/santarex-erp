@@ -109,6 +109,9 @@ export class LaboratoireService {
       .andWhere('t.estActif = true');
 
     if (filters.categorie) {
+      if (!Object.values(CategorieAnalyse).includes(filters.categorie)) {
+        throw new BadRequestException(`Catégorie invalide: ${filters.categorie}`);
+      }
       qb.andWhere('t.categorie = :categorie', { categorie: filters.categorie });
     }
     if (filters.search) {

@@ -30,14 +30,14 @@ export class SupportTicketsController {
   }
 
   @Post(':id/repondre')
-  repondre(@Param('id') id: string, @Body() dto: RepondreTicketDto, @Req() req: Request) {
+  repondre(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RepondreTicketDto, @Req() req: Request) {
     return this.service.repondre(id, dto, (req as any).user);
   }
 
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   @Patch(':id/statut')
-  updateStatut(@Param('id') id: string, @Body() dto: UpdateTicketStatutDto, @Req() req: Request) {
+  updateStatut(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateTicketStatutDto, @Req() req: Request) {
     return this.service.updateStatut(id, dto, (req as any).user.tenantId);
   }
 }

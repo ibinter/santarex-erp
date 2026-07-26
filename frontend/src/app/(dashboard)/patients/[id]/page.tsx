@@ -19,9 +19,9 @@ type Patient = {
   createdAt?: string;
 };
 type Consultation = { id: string; createdAt: string; motif?: string; diagnostic?: string; medecin?: { prenom: string; nom: string } };
-type Ordonnance = { id: string; createdAt: string; status?: string };
-type DemandeLabo = { id: string; createdAt: string; urgence?: boolean; status?: string };
-type Facture = { id: string; createdAt: string; montantTotal?: number; status?: string };
+type Ordonnance = { id: string; createdAt: string; statut?: string };
+type DemandeLabo = { id: string; createdAt: string; urgence?: boolean; statutPrelevement?: string };
+type Facture = { id: string; createdAt: string; montantTTC?: number; statut?: string };
 
 function ageNum(dob?: string) {
   if (!dob) return null;
@@ -32,7 +32,7 @@ function fmtDate(d?: string) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-function fmtXOF(v?: number) { return v != null ? v.toLocaleString('fr-FR') + ' XOF' : '—'; }
+function fmtXOF(v?: number) { return v != null ? (Number(v) || 0).toLocaleString('fr-FR') + ' XOF' : '—'; }
 
 export default function PatientDetailPage() {
   const router = useRouter();
@@ -287,11 +287,11 @@ export default function PatientDetailPage() {
       {tab === 'ordonnances' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {ordonnances.length === 0 ? <EmptyState icon={<Pill size={24} />} text={t('detail.emptyOrdonnances')} /> : ordonnances.map(o => {
-            const [bg, col] = statusColor(o.status);
+            const [bg, col] = statusColor(o.statut);
             return (
               <div key={o.id} style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: 13, color: '#1A2332' }}>{t('detail.ordonnanceFrom', { date: fmtDate(o.createdAt) })}</div>
-                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{o.status ?? t('detail.statusCreee')}</span>
+                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{o.statut ?? t('detail.statusCreee')}</span>
               </div>
             );
           })}
@@ -302,7 +302,7 @@ export default function PatientDetailPage() {
       {tab === 'labo' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {demandes.length === 0 ? <EmptyState icon={<FlaskConical size={24} />} text={t('detail.emptyLabo')} /> : demandes.map(d => {
-            const [bg, col] = statusColor(d.status);
+            const [bg, col] = statusColor(d.statutPrelevement);
             return (
               <div key={d.id} onClick={() => router.push(`/laboratoire/demandes/${d.id}`)}
                 style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '14px 18px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
@@ -312,7 +312,7 @@ export default function PatientDetailPage() {
                   {d.urgence && <span style={{ fontSize: 10, padding: '2px 8px', background: '#FFEBEE', color: '#C62828', borderRadius: 20, fontWeight: 700 }}>{t('detail.urgent')}</span>}
                   <span style={{ fontSize: 13, color: '#1A2332' }}>{t('detail.demandeFrom', { date: fmtDate(d.createdAt) })}</span>
                 </div>
-                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{d.status ?? t('detail.statusPending')}</span>
+                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{d.statutPrelevement ?? t('detail.statusPending')}</span>
               </div>
             );
           })}
@@ -323,17 +323,17 @@ export default function PatientDetailPage() {
       {tab === 'factures' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {factures.length === 0 ? <EmptyState icon={<FileText size={24} />} text={t('detail.emptyFactures')} /> : factures.map(f => {
-            const [bg, col] = statusColor(f.status);
+            const [bg, col] = statusColor(f.statut);
             return (
               <div key={f.id} onClick={() => router.push(`/facturation/${f.id}`)}
                 style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '14px 18px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
                 onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{fmtXOF(f.montantTotal)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#1A2332' }}>{fmtXOF(f.montantTTC)}</div>
                   <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{fmtDate(f.createdAt)}</div>
                 </div>
-                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{f.status ?? '—'}</span>
+                <span style={{ padding: '3px 10px', borderRadius: 20, background: bg, color: col, fontSize: 11, fontWeight: 700 }}>{f.statut ?? '—'}</span>
               </div>
             );
           })}

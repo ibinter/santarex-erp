@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
 import { ChangelogService } from './changelog.service';
@@ -52,7 +53,7 @@ export class ChangelogController {
 
   @Get('changelog/:id')
   @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.changelogService.findOne(id);
   }
 
@@ -64,13 +65,13 @@ export class ChangelogController {
 
   @Put('changelog/:id')
   @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
-  update(@Param('id') id: string, @Body() dto: UpdateVersionDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateVersionDto) {
     return this.changelogService.update(id, dto);
   }
 
   @Delete('changelog/:id')
   @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.changelogService.remove(id);
   }
 }

@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -72,7 +73,7 @@ export class TiersPayantController {
 
   @Get('bordereaux/:id')
   @ApiOperation({ summary: "Détail d'un bordereau (avec lignes)" })
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOne(id, req.user.tenantId);
   }
 

@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -73,14 +74,14 @@ export class IndicateursQualiteController {
 
   @Get('indicateurs/:id')
   @ApiOperation({ summary: "Détail d'un indicateur" })
-  getIndicateur(@Param('id') id: string, @Request() req) {
+  getIndicateur(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.getIndicateur(id, req.user.tenantId);
   }
 
   @Patch('indicateurs/:id')
   @ApiOperation({ summary: 'Modifier un indicateur' })
   modifierIndicateur(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateIndicateurDto,
     @Request() req,
   ) {
@@ -89,21 +90,21 @@ export class IndicateursQualiteController {
 
   @Delete('indicateurs/:id')
   @ApiOperation({ summary: 'Supprimer un indicateur (et ses mesures)' })
-  supprimerIndicateur(@Param('id') id: string, @Request() req) {
+  supprimerIndicateur(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.supprimerIndicateur(id, req.user.tenantId);
   }
 
   // ── Mesures ───────────────────────────────────────────────────────────────
   @Get('indicateurs/:id/mesures')
   @ApiOperation({ summary: "Historique des mesures d'un indicateur" })
-  listerMesures(@Param('id') id: string, @Request() req) {
+  listerMesures(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.listerMesures(id, req.user.tenantId);
   }
 
   @Post('indicateurs/:id/mesures')
   @ApiOperation({ summary: 'Saisir une mesure périodique (statut calculé vs cible)' })
   ajouterMesure(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateMesureDto,
     @Request() req,
   ) {
@@ -127,7 +128,7 @@ export class IndicateursQualiteController {
   @Patch('accreditation/:id')
   @ApiOperation({ summary: 'Modifier un critère (statut de conformité, preuve…)' })
   modifierCritere(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCritereDto,
     @Request() req,
   ) {
@@ -136,7 +137,7 @@ export class IndicateursQualiteController {
 
   @Delete('accreditation/:id')
   @ApiOperation({ summary: 'Supprimer un critère' })
-  supprimerCritere(@Param('id') id: string, @Request() req) {
+  supprimerCritere(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.supprimerCritere(id, req.user.tenantId);
   }
 }

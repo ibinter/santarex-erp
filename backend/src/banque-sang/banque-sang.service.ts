@@ -169,7 +169,8 @@ export class BanqueSangService {
     });
     if (orClauses) qb.andWhere(`(${orClauses})`, params);
 
-    if (typeProduit) qb.andWhere('p.typeProduit = :typeProduit', { typeProduit });
+    if (typeProduit && Object.values(TypeProduitSanguin).includes(typeProduit))
+      qb.andWhere('p.typeProduit = :typeProduit', { typeProduit });
 
     qb.orderBy('p.datePeremption', 'ASC');
     return qb.getMany();

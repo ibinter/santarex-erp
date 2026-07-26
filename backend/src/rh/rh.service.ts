@@ -101,7 +101,8 @@ export class RhService {
       .createQueryBuilder('e')
       .where('e.tenantId = :tenantId', { tenantId });
 
-    if (filters.statut) qb.andWhere('e.statut = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutEmploye).includes(filters.statut))
+      qb.andWhere('e.statut = :statut', { statut: filters.statut });
     if (filters.departement)
       qb.andWhere('e.departement = :departement', { departement: filters.departement });
     if (filters.q) {
@@ -170,7 +171,8 @@ export class RhService {
       .where('c.tenantId = :tenantId', { tenantId });
 
     if (filters.employeId) qb.andWhere('c.employeId = :employeId', { employeId: filters.employeId });
-    if (filters.statut) qb.andWhere('c.statut = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutConge).includes(filters.statut))
+      qb.andWhere('c.statut = :statut', { statut: filters.statut });
 
     return qb.orderBy('c.createdAt', 'DESC').getMany();
   }
@@ -287,7 +289,8 @@ export class RhService {
 
     if (filters.employeId) qb.andWhere('b.employeId = :employeId', { employeId: filters.employeId });
     if (filters.mois) qb.andWhere('b.mois = :mois', { mois: filters.mois });
-    if (filters.statut) qb.andWhere('b.statut = :statut', { statut: filters.statut });
+    if (filters.statut && Object.values(StatutBulletin).includes(filters.statut))
+      qb.andWhere('b.statut = :statut', { statut: filters.statut });
 
     return qb.orderBy('b.mois', 'DESC').addOrderBy('b.createdAt', 'DESC').getMany();
   }

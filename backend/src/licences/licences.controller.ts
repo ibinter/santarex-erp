@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Param, Body, Query, UseGuards,
+  Controller, Get, Post, Patch, Param, ParseUUIDPipe, Body, Query, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LicencesService } from './licences.service';
@@ -56,7 +56,7 @@ export class LicencesController {
   @Get(':id')
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Détail d\'une licence' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.licencesService.findOne(id);
   }
 

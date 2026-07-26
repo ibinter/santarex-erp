@@ -90,7 +90,7 @@ export class DechetsMedicauxService {
       .createQueryBuilder('c')
       .where('c.tenantId = :tenantId', { tenantId });
 
-    if (filters.categorie) {
+    if (filters.categorie && Object.values(CategorieDechet).includes(filters.categorie)) {
       qb.andWhere('c.categorie = :categorie', { categorie: filters.categorie });
     }
     if (filters.statut && Object.values(StatutCollecte).includes(filters.statut)) {

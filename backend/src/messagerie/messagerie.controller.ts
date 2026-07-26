@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   Req,
   UseGuards,
@@ -37,14 +38,14 @@ export class MessagerieController {
 
   @Get('conversations/:id/messages')
   @ApiOperation({ summary: "Messages d'une conversation" })
-  messages(@Param('id') id: string, @Req() req: Request) {
+  messages(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     return this.service.messagesDe(id, (req as any).user);
   }
 
   @Post('conversations/:id/messages')
   @ApiOperation({ summary: 'Envoyer un message dans une conversation' })
   envoyer(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: EnvoyerMessageDto,
     @Req() req: Request,
   ) {
@@ -53,7 +54,7 @@ export class MessagerieController {
 
   @Patch('conversations/:id/lu')
   @ApiOperation({ summary: 'Marquer une conversation comme lue' })
-  marquerLu(@Param('id') id: string, @Req() req: Request) {
+  marquerLu(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     return this.service.marquerLu(id, (req as any).user);
   }
 

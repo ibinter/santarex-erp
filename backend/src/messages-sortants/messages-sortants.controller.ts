@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -52,13 +53,13 @@ export class MessagesSortantsController {
 
   @ApiOperation({ summary: 'Modifier un modèle de message' })
   @Patch('modeles/:id')
-  updateModele(@Param('id') id: string, @Body() dto: UpdateModeleMessageDto, @Request() req) {
+  updateModele(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateModeleMessageDto, @Request() req) {
     return this.service.updateModele(id, dto, req.user.tenantId);
   }
 
   @ApiOperation({ summary: 'Supprimer un modèle de message' })
   @Delete('modeles/:id')
-  deleteModele(@Param('id') id: string, @Request() req) {
+  deleteModele(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.deleteModele(id, req.user.tenantId);
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, IsNull } from 'typeorm';
 import { TransmissionCiblee } from './entities/transmission-ciblee.entity';
@@ -183,8 +183,12 @@ export class SoinsInfirmiersService {
       qb.andWhere('p.patientId = :patientId', { patientId: filters.patientId });
     if (filters.sejourId)
       qb.andWhere('p.sejourId = :sejourId', { sejourId: filters.sejourId });
-    if (filters.statut)
+    if (filters.statut) {
+      if (!Object.values(StatutPlanSoins).includes(filters.statut)) {
+        throw new BadRequestException(`Statut invalide: ${filters.statut}`);
+      }
       qb.andWhere('p.statut = :statut', { statut: filters.statut });
+    }
     const data = await qb.orderBy('p.createdAt', 'DESC').getMany();
     return this.enrichir(data, tenantId);
   }

@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -91,7 +92,7 @@ export class ServicesPersonnalisesController {
     UserRole.CAISSIER,
     UserRole.DRH,
   )
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.findOneService(id, req.user.tenantId);
   }
 
@@ -106,7 +107,7 @@ export class ServicesPersonnalisesController {
   @ApiOperation({ summary: 'Modifier un service personnalisé' })
   @Roles(UserRole.ADMIN, UserRole.DIRECTEUR)
   update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateServicePersonnaliseDto,
     @Request() req,
   ) {
@@ -116,7 +117,7 @@ export class ServicesPersonnalisesController {
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer un service personnalisé et ses enregistrements' })
   @Roles(UserRole.ADMIN, UserRole.DIRECTEUR)
-  remove(@Param('id') id: string, @Request() req) {
+  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.removeService(id, req.user.tenantId);
   }
 
@@ -136,7 +137,7 @@ export class ServicesPersonnalisesController {
     UserRole.DRH,
   )
   findEnregistrements(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Request() req,
     @Query('patientId') patientId?: string,
     @Query('statut') statut?: StatutEnregistrement,
@@ -160,7 +161,7 @@ export class ServicesPersonnalisesController {
     UserRole.DRH,
   )
   creerEnregistrement(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateEnregistrementDto,
     @Request() req,
   ) {
@@ -180,8 +181,8 @@ export class ServicesPersonnalisesController {
     UserRole.DRH,
   )
   updateEnregistrement(
-    @Param('id') id: string,
-    @Param('enrId') enrId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('enrId', ParseUUIDPipe) enrId: string,
     @Body() dto: UpdateEnregistrementDto,
     @Request() req,
   ) {
@@ -192,8 +193,8 @@ export class ServicesPersonnalisesController {
   @ApiOperation({ summary: 'Supprimer un enregistrement' })
   @Roles(UserRole.ADMIN, UserRole.DIRECTEUR)
   removeEnregistrement(
-    @Param('id') id: string,
-    @Param('enrId') enrId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('enrId', ParseUUIDPipe) enrId: string,
     @Request() req,
   ) {
     return this.service.removeEnregistrement(id, enrId, req.user.tenantId);

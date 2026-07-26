@@ -292,8 +292,9 @@ export class InteroperabiliteService {
   }
 
   findConfigs(tenantId: string, type?: TypeInterface): Promise<ConfigInterface[]> {
+    const typeValide = type && Object.values(TypeInterface).includes(type);
     return this.configRepo.find({
-      where: { tenantId, ...(type ? { type } : {}) },
+      where: { tenantId, ...(typeValide ? { type } : {}) },
       order: { createdAt: 'DESC' },
     });
   }
@@ -341,14 +342,17 @@ export class InteroperabiliteService {
     filtres: { sens?: SensMessage; statut?: StatutMessage; protocole?: ProtocoleMessage } = {},
     pagination: { page?: number; limit?: number } = {},
   ): Promise<{ data: MessageInterop[]; total: number; page: number; limit: number }> {
-    const page = pagination.page ?? 1;
-    const limit = pagination.limit ?? 20;
+    const page = Number.isFinite(pagination.page) && (pagination.page as number) > 0 ? Math.floor(pagination.page as number) : 1;
+    const limit = Number.isFinite(pagination.limit) && (pagination.limit as number) > 0 ? Math.floor(pagination.limit as number) : 20;
+    const sensValide = filtres.sens && Object.values(SensMessage).includes(filtres.sens);
+    const statutValide = filtres.statut && Object.values(StatutMessage).includes(filtres.statut);
+    const protocoleValide = filtres.protocole && Object.values(ProtocoleMessage).includes(filtres.protocole);
     const [data, total] = await this.messageRepo.findAndCount({
       where: {
         tenantId,
-        ...(filtres.sens ? { sens: filtres.sens } : {}),
-        ...(filtres.statut ? { statut: filtres.statut } : {}),
-        ...(filtres.protocole ? { protocole: filtres.protocole } : {}),
+        ...(sensValide ? { sens: filtres.sens } : {}),
+        ...(statutValide ? { statut: filtres.statut } : {}),
+        ...(protocoleValide ? { protocole: filtres.protocole } : {}),
       },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,

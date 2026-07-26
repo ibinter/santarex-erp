@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -77,14 +78,14 @@ export class SatisfactionController {
 
   @Get('questionnaires/:id')
   @ApiOperation({ summary: 'Détail d\'un questionnaire' })
-  getQuestionnaire(@Param('id') id: string, @Request() req) {
+  getQuestionnaire(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.getQuestionnaire(id, req.user.tenantId);
   }
 
   @Patch('questionnaires/:id')
   @ApiOperation({ summary: 'Mettre à jour un questionnaire' })
   majQuestionnaire(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateQuestionnaireDto,
     @Request() req,
   ) {
@@ -93,7 +94,7 @@ export class SatisfactionController {
 
   @Delete('questionnaires/:id')
   @ApiOperation({ summary: 'Supprimer un questionnaire' })
-  supprimerQuestionnaire(@Param('id') id: string, @Request() req) {
+  supprimerQuestionnaire(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.service.supprimerQuestionnaire(id, req.user.tenantId);
   }
 

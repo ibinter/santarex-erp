@@ -7,6 +7,7 @@
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
   Request,
@@ -58,7 +59,7 @@ export class FacturationController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Request() req) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.facturationService.findOne(id, req.user.tenantId);
   }
 
