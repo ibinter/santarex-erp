@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, ParseUUIDPipe, UseGuards, Req } from '@nestjs/common';
 import { SupportTicketsService } from './support-tickets.service';
 import { CreateTicketDto, RepondreTicketDto, UpdateTicketStatutDto } from './dto/ticket.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -24,7 +24,7 @@ export class SupportTicketsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req: Request) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     const user = (req as any).user;
     return this.service.findOne(id, user.tenantId, user.role === UserRole.SUPERADMIN);
   }

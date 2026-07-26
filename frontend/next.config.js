@@ -4,6 +4,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false, // A3 : ne pas divulguer "X-Powered-By: Next.js"
   images: { domains: ['localhost', '185.98.139.38'] },
   // Le lint est exécuté manuellement via `npm run lint`, jamais pendant le build.
   // Cela garantit que `next build` reste vert même si ESLint remonte des erreurs.
