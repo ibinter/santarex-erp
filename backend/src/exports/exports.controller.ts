@@ -4,6 +4,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ExportsService } from './exports.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -14,7 +15,9 @@ import { Medicament } from '../pharmacie/entities/medicament.entity';
 
 @ApiTags('Exports')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+// LicenceGuard : un tenant suspendu / expiré ne doit plus pouvoir exfiltrer
+// l'intégralité de ses données patients/stock via les exports XLSX/PDF.
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
 // Exports/reporting : direction et admin, plus les métiers dont un flux
 // existant dépend d'un export (facture PDF côté caisse/médecin, stock côté
 // pharmacie).

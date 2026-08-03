@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Param, Body, Query, UseGuards,
+  Controller, Get, Post, Patch, Param, ParseUUIDPipe, Body, Query, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
@@ -39,7 +39,7 @@ export class TenantsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Détail d\'un tenant par ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.tenantsService.findOne(id);
   }
 
@@ -51,19 +51,19 @@ export class TenantsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Modifier un tenant' })
-  update(@Param('id') id: string, @Body() dto: UpdateTenantDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateTenantDto) {
     return this.tenantsService.update(id, dto);
   }
 
   @Patch(':id/suspendre')
   @ApiOperation({ summary: 'Suspendre un tenant' })
-  suspendre(@Param('id') id: string) {
+  suspendre(@Param('id', ParseUUIDPipe) id: string) {
     return this.tenantsService.suspendre(id);
   }
 
   @Patch(':id/activer')
   @ApiOperation({ summary: 'Activer un tenant' })
-  activer(@Param('id') id: string) {
+  activer(@Param('id', ParseUUIDPipe) id: string) {
     return this.tenantsService.activer(id);
   }
 }

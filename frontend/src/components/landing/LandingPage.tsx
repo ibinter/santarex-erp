@@ -82,7 +82,11 @@ const T = {
     deploy_in: 'Déployé dans', active: '60+ établissements actifs',
     install: 'Installer', later: 'Plus tard',
     cookie_text: 'Nous utilisons des cookies pour améliorer votre expérience.',
+    cookie_continue: 'En continuant, vous acceptez notre', cookie_policy: 'politique de cookies',
     cookie_accept: 'Tout accepter', cookie_refuse: 'Refuser',
+    pwa_banner_title: 'Installer SANTAREX ERP', pwa_banner_sub: "Accès rapide depuis votre écran d'accueil",
+    sara_placeholder: 'Posez votre question…', sara_welcome: "Bonjour ! Je suis SARA, votre assistante SANTAREX ERP 👋\n\nComment puis-je vous aider ?",
+    sara_btn_title: "Besoin d'aide ? Parlez à SARA", wa_btn_title: 'Contacter via WhatsApp',
     // sections
     problems_eyebrow: 'Problèmes résolus',
     problems_title: 'Avant SANTAREX ERP.',
@@ -124,7 +128,7 @@ const T = {
     hero_badge: 'Un produit IBIG SOFT · ibigsoft.com',
     trust_count: 'établissements actifs',
     problem_before_label: 'Avant', problem_after_label: 'Avec SANTAREX',
-    modules_desc: "48 modules couvrant tout le cycle hospitalier — de la maternité au bloc, de la banque de sang au portail patient. Chaque module communique en temps réel : une prescription générée en consultation alerte automatiquement la pharmacie, un résultat labo apparaît dans le DME dès validation.",
+    modules_desc: "40 modules couvrant tout le cycle hospitalier — de la maternité au bloc, de la banque de sang au portail patient. Chaque module communique en temps réel : une prescription générée en consultation alerte automatiquement la pharmacie, un résultat labo apparaît dans le DME dès validation.",
     modules_check1: 'Données synchronisées en temps réel',
     modules_check2: 'Déployable module par module',
     modules_check3: 'Formation incluse dans tous les plans',
@@ -182,7 +186,11 @@ const T = {
     deploy_in: 'Deployed in', active: '60+ active facilities',
     install: 'Install', later: 'Later',
     cookie_text: 'We use cookies to improve your experience.',
+    cookie_continue: 'By continuing, you accept our', cookie_policy: 'cookie policy',
     cookie_accept: 'Accept all', cookie_refuse: 'Decline',
+    pwa_banner_title: 'Install SANTAREX ERP', pwa_banner_sub: 'Quick access from your home screen',
+    sara_placeholder: 'Ask your question…', sara_welcome: "Hello! I'm SARA, your SANTAREX ERP assistant 👋\n\nHow can I help you?",
+    sara_btn_title: 'Need help? Talk to SARA', wa_btn_title: 'Contact via WhatsApp',
     // sections
     problems_eyebrow: 'Problems solved',
     problems_title: 'Before SANTAREX ERP.',
@@ -224,7 +232,7 @@ const T = {
     hero_badge: 'A product by IBIG SOFT · ibigsoft.com',
     trust_count: 'active facilities',
     problem_before_label: 'Before', problem_after_label: 'With SANTAREX',
-    modules_desc: '48 modules covering the entire hospital cycle — from maternity to the operating room, from the blood bank to the patient portal. Every module communicates in real time: a prescription from a consultation automatically alerts the pharmacy, and a lab result appears in the EHR as soon as it is validated.',
+    modules_desc: '40 modules covering the entire hospital cycle — from maternity to the operating room, from the blood bank to the patient portal. Every module communicates in real time: a prescription from a consultation automatically alerts the pharmacy, and a lab result appears in the EHR as soon as it is validated.',
     modules_check1: 'Data synchronized in real time',
     modules_check2: 'Deploy module by module',
     modules_check3: 'Training included in all plans',
@@ -266,7 +274,7 @@ const SARA_KB = [
   { t: ['essai','gratuit','trial','free','tester','commencer','démarrer'],
     r: "Oui ! L'essai est gratuit pendant 30 jours, sans carte bancaire et sans engagement. Cliquez sur « Démo gratuite » pour commencer." },
   { t: ['module','fonctionnalité','feature','quoi','faire','propose','contient','inclus'],
-    r: "SANTAREX ERP couvre tout le cycle hospitalier avec 48 modules, regroupés par domaine :\n• Clinique & Soins : DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD\n• Pharmacie & Plateau technique : pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI\n• Finances & Assurances : facturation, devis, caisse, assureurs, tiers-payant, budget\n• Communication : portail patient, SMS & rappels, messagerie, satisfaction\n• Qualité : gardes, incidents, indicateurs, déclarations sanitaires\n• Opérations : transport/ambulances, morgue, RH, BI, multi-sites\n\nChaque module communique en temps réel." },
+    r: "SANTAREX ERP couvre tout le cycle hospitalier avec 40 modules, regroupés par domaine :\n• Clinique & Soins : DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD\n• Pharmacie & Plateau technique : pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI\n• Finances & Assurances : facturation, devis, caisse, assureurs, tiers-payant, budget\n• Communication : portail patient, SMS & rappels, messagerie, satisfaction\n• Qualité : gardes, incidents, indicateurs, déclarations sanitaires\n• Opérations : transport/ambulances, morgue, RH, BI, multi-sites\n\nChaque module communique en temps réel." },
   { t: ['pharmacie','pharmacy','stock','médicament','dispensation','rupture'],
     r: 'Le module Pharmacie gère les stocks en temps réel, la dispensation sur ordonnance, les alertes péremption/rupture et la traçabilité des lots.\n\n💊 Plan Pharmacie autonome : 12 000 FCFA/mois.' },
   { t: ['pays','afrique','disponible','région','déploie','cameroun','sénégal','guinée'],
@@ -297,7 +305,7 @@ const SARA_GROQ_KEY = ['gsk_nSy9kIik08HF5GAwnBJoWG','dyb3FYJr2YGDHM37GHH2uJ8qu',
 const SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
 SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
 Plans mensuels : Pharmacie 12 000 | Cabinet 18 000 | Centre de santé 35 000 | Clinique 75 000 | Hôpital 150 000 FCFA/mois. Forfait annuel = 10 mois payés 2 mois offerts.
-48 modules couvrant tout le cycle hospitalier, regroupés par domaine : Clinique & Soins (DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD), Pharmacie & Plateau technique (pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI), Finances & Assurances (facturation, devis, caisse, assureurs, tiers-payant, budget), Communication (portail patient, SMS & rappels, messagerie, satisfaction), Qualité (gardes, incidents, indicateurs, déclarations sanitaires), Opérations (transport/ambulances, morgue, RH, BI, multi-sites).
+40 modules couvrant tout le cycle hospitalier, regroupés par domaine : Clinique & Soins (DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD), Pharmacie & Plateau technique (pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI), Finances & Assurances (facturation, devis, caisse, assureurs, tiers-payant, budget), Communication (portail patient, SMS & rappels, messagerie, satisfaction), Qualité (gardes, incidents, indicateurs, déclarations sanitaires), Opérations (transport/ambulances, morgue, RH, BI, multi-sites).
 Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
 Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
 Réponds de façon concise (max 5 lignes), professionnelle et en français. Si la question dépasse tes connaissances, propose de contacter l'équipe.`;
@@ -499,8 +507,8 @@ const PLANS = [
     users: { fr: 'Utilisateurs illimités', en: 'Unlimited users' },
     featured: false, badge: null,
     features: {
-      fr: ['Utilisateurs illimités','Les 48 modules inclus','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
-      en: ['Unlimited users','All 48 modules included','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
+      fr: ['Utilisateurs illimités','Les 40 modules inclus','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
+      en: ['Unlimited users','All 40 modules included','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: 'Nous contacter', en: 'Contact us' },
   },
@@ -603,7 +611,7 @@ const FAQ_ITEMS: { q: Record<Lang,string>; a: Record<Lang,string> }[] = [
   { q: { fr: "Qu'est-ce que SANTAREX ERP ?", en: "What is SANTAREX ERP?" }, a: { fr: "SANTAREX ERP est un logiciel de gestion hospitalière complet, conçu pour les établissements de santé en Afrique de l'Ouest et Centrale. Il centralise la gestion des patients, consultations, pharmacie, laboratoire, facturation et bien plus dans une seule plateforme cloud.", en: "SANTAREX ERP is a complete hospital management software designed for healthcare facilities in West and Central Africa. It centralizes patient management, consultations, pharmacy, laboratory, billing and more in a single cloud platform." } },
   { q: { fr: "À qui s'adresse SANTAREX ERP ?", en: "Who is SANTAREX ERP for?" }, a: { fr: "SANTAREX ERP s'adresse aux hôpitaux, cliniques, polycliniques, cabinets médicaux, pharmacies autonomes, laboratoires d'analyses, centres de santé et cliniques spécialisées (ophtalmologie, dentaire, kinésithérapie…).", en: "SANTAREX ERP is designed for hospitals, clinics, polyclinics, medical practices, standalone pharmacies, analysis labs, health centers and specialist clinics (ophthalmology, dental, physiotherapy…)." } },
   { q: { fr: "Y a-t-il une période d'essai gratuite ?", en: "Is there a free trial period?" }, a: { fr: "Oui. Un essai gratuit de 30 jours est disponible sans carte bancaire et sans engagement. Vous accédez à toutes les fonctionnalités de la formule choisie durant cette période.", en: "Yes. A 30-day free trial is available with no credit card and no commitment. You have access to all features of your chosen plan during this period." } },
-  { q: { fr: "Quels sont les tarifs ?", en: "What are the prices?" }, a: { fr: "4 formules : Pharmacie à 12 000 FCFA/mois, Cabinet à 15 000 FCFA/mois, Clinique à 75 000 FCFA/mois et Hôpital à 150 000 FCFA/mois. Tous les tarifs incluent hébergement, maintenance et support.", en: "4 plans: Pharmacy at 12,000 FCFA/month, Practice at 15,000 FCFA/month, Clinic at 75,000 FCFA/month, and Hospital at 150,000 FCFA/month. All prices include hosting, maintenance and support." } },
+  { q: { fr: "Quels sont les tarifs ?", en: "What are the prices?" }, a: { fr: "5 formules : Pharmacie à 12 000 FCFA/mois, Cabinet à partir de 18 000 FCFA/mois, Clinique à 75 000 FCFA/mois et Hôpital à 150 000 FCFA/mois. Tous les tarifs incluent hébergement, maintenance et support.", en: "5 plans: Pharmacy at 12,000 FCFA/month, Practice from 18,000 FCFA/month, Clinic at 75,000 FCFA/month, and Hospital at 150,000 FCFA/month. All prices include hosting, maintenance and support." } },
   { q: { fr: "Est-il disponible hors connexion ?", en: "Is it available offline?" }, a: { fr: "SANTAREX ERP propose un mode hors-ligne partiel pour les consultations et la pharmacie. Les données saisies sont synchronisées automatiquement au retour de connexion internet.", en: "SANTAREX ERP offers a partial offline mode for consultations and pharmacy. Data entered is automatically synced when internet connection is restored." } },
   { q: { fr: "Puis-je l'installer sur mon téléphone ?", en: "Can I install it on my phone?" }, a: { fr: "Oui. SANTAREX ERP est une Progressive Web App (PWA). Installez-la sur votre smartphone, tablette ou ordinateur directement depuis votre navigateur, sans passer par l'App Store ou le Play Store.", en: "Yes. SANTAREX ERP is a Progressive Web App (PWA). Install it on your smartphone, tablet or computer directly from your browser, without going through the App Store or Play Store." } },
   { q: { fr: "Quels modes de paiement sont pris en charge ?", en: "Which payment methods are supported?" }, a: { fr: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, carte bancaire et espèces. Tous les modes de paiement courants en Afrique sont intégrés nativement.", en: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, bank card and cash. All common payment methods in Africa are natively integrated." } },
@@ -624,7 +632,7 @@ const TESTIMONIALS: { initial: string; name: string; role: Record<Lang,string>; 
 function SaraChat({ lang }: { lang: Lang }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<{ from: 'sara' | 'user'; text: string }[]>([
-    { from: 'sara', text: "Bonjour ! Je suis SARA, votre assistante SANTAREX ERP 👋\n\nComment puis-je vous aider ?" },
+    { from: 'sara', text: T[lang].sara_welcome },
   ]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
@@ -691,7 +699,7 @@ function SaraChat({ lang }: { lang: Lang }) {
             <input
               ref={inputRef}
               className="lp-sara-input"
-              placeholder="Posez votre question…"
+              placeholder={T[lang].sara_placeholder}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send(input)}
@@ -702,7 +710,7 @@ function SaraChat({ lang }: { lang: Lang }) {
         </div>
       )}
       {/* Bouton flottant */}
-      <button className="lp-sara-btn" onClick={() => { setOpen(o => !o); setTimeout(() => inputRef.current?.focus(), 200); }} title="Besoin d'aide ? Parlez à SARA">
+      <button className="lp-sara-btn" onClick={() => { setOpen(o => !o); setTimeout(() => inputRef.current?.focus(), 200); }} title={T[lang].sara_btn_title}>
         {open ? <XIcon /> : (
           <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="22" height="22">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -718,12 +726,12 @@ function SaraChat({ lang }: { lang: Lang }) {
 /* ═══════════════════════════════════════════════════════
    BOUTON WHATSAPP FLOTTANT
 ═══════════════════════════════════════════════════════ */
-function WhatsAppButton() {
+function WhatsAppButton({ lang }: { lang: Lang }) {
   return (
     <a
       href="https://wa.me/2250778882592?text=Bonjour%20IBIG%20Soft%2C%20je%20souhaite%20obtenir%20des%20informations%20sur%20SANTAREX%20ERP."
       target="_blank" rel="noopener noreferrer"
-      className="lp-wa-btn" title="Contacter via WhatsApp"
+      className="lp-wa-btn" title={T[lang].wa_btn_title}
     >
       <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
@@ -735,7 +743,7 @@ function WhatsAppButton() {
 /* ═══════════════════════════════════════════════════════
    BANNIÈRE COOKIES
 ═══════════════════════════════════════════════════════ */
-function CookieBanner() {
+function CookieBanner({ lang }: { lang: Lang }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (!localStorage.getItem('lp_cookie_consent')) {
@@ -750,12 +758,12 @@ function CookieBanner() {
     <div className="lp-cookie-banner">
       <div className="lp-cookie-text">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Nous utilisons des cookies pour améliorer votre expérience. En continuant, vous acceptez notre{' '}
-        <Link href="/cookies" className="lp-cookie-link">politique de cookies</Link>.
+        {T[lang].cookie_text} {T[lang].cookie_continue}{' '}
+        <Link href="/cookies" className="lp-cookie-link">{T[lang].cookie_policy}</Link>.
       </div>
       <div className="lp-cookie-actions">
-        <button className="lp-cookie-btn-refuse" onClick={refuse}>Refuser</button>
-        <button className="lp-cookie-btn-accept" onClick={accept}>Tout accepter</button>
+        <button className="lp-cookie-btn-refuse" onClick={refuse}>{T[lang].cookie_refuse}</button>
+        <button className="lp-cookie-btn-accept" onClick={accept}>{T[lang].cookie_accept}</button>
       </div>
     </div>
   );
@@ -764,7 +772,7 @@ function CookieBanner() {
 /* ═══════════════════════════════════════════════════════
    BANNIÈRE PWA
 ═══════════════════════════════════════════════════════ */
-function PwaBanner() {
+function PwaBanner({ lang }: { lang: Lang }) {
   const [prompt, setPrompt] = useState<any>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -779,13 +787,13 @@ function PwaBanner() {
       <div className="lp-pwa-left">
         <SantarexIcon size={32} />
         <div>
-          <div className="lp-pwa-title">Installer SANTAREX ERP</div>
-          <div className="lp-pwa-sub">Accès rapide depuis votre écran d&apos;accueil</div>
+          <div className="lp-pwa-title">{T[lang].pwa_banner_title}</div>
+          <div className="lp-pwa-sub">{T[lang].pwa_banner_sub}</div>
         </div>
       </div>
       <div className="lp-pwa-actions">
-        <button className="lp-pwa-later" onClick={() => setVisible(false)}>Plus tard</button>
-        <button className="lp-pwa-install" onClick={install}><DownloadIcon /> Installer</button>
+        <button className="lp-pwa-later" onClick={() => setVisible(false)}>{T[lang].later}</button>
+        <button className="lp-pwa-install" onClick={install}><DownloadIcon /> {T[lang].install}</button>
       </div>
     </div>
   );
@@ -1223,7 +1231,7 @@ export default function LandingPage() {
       {/* ══ STATS ══ */}
       <section className="lp-stats-section">
         <div className="lp-stats-inner">
-          {[{ num: '48', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
+          {[{ num: '40', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
             <div key={lbl} className="lp-stat-box"><div className="lp-stat-num">{num}<span>{sup}</span></div><div className="lp-stat-lbl">{lbl}</div></div>
           ))}
         </div>
@@ -1684,9 +1692,9 @@ export default function LandingPage() {
 
       {/* ══ FLOTTANTS ══ */}
       <SaraChat lang={lang} />
-      <WhatsAppButton />
-      <CookieBanner />
-      <PwaBanner />
+      <WhatsAppButton lang={lang} />
+      <CookieBanner lang={lang} />
+      <PwaBanner lang={lang} />
     </div>
   );
 }

@@ -72,6 +72,7 @@
     "champDescription": "Description / justification",
     "champMontantEstime": "Estimated amount (XOF)",
     "champTauxCouverture": "Coverage rate (%)",
+    "champTaux": "Rate",
     "champNotes": "Notes",
     "champNom": "Insurer name",
     "champType": "Type",

@@ -12,7 +12,7 @@ import {
   Biohazard, Truck, ShieldAlert, Calculator, Wallet, FileSpreadsheet,
   PiggyBank, Wrench, Ambulance, Trash2, Snowflake, Network, AlertTriangle,
   Gauge, SmilePlus, FileWarning, MessageCircle, CalendarClock,
-  Puzzle, Plug, Sparkles,
+  Puzzle, Plug, Sparkles, Library,
 } from 'lucide-react';
 import { logout, getCurrentUser } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -133,6 +133,7 @@ const navGroups: NavGroup[] = [
       { key: 'licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
       { key: 'changelog', href: '/changelog', icon: <Sparkles size={18} />, roles: ALL_ROLES },
       { key: 'guide', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },
+      { key: 'lexique', href: '/lexique', icon: <Library size={18} />, roles: ALL_ROLES },
       { key: 'faq', href: '/faq', icon: <HelpCircle size={18} />, roles: ALL_ROLES },
       { key: 'support', href: '/support', icon: <MessageSquare size={18} />, roles: ALL_ROLES },
       { key: 'parametres', href: '/parametres', icon: <Settings size={18} />, roles: ADMIN_DIR },

@@ -18,6 +18,7 @@ import { CreateInterventionDto } from './dto/create-intervention.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import {
@@ -27,7 +28,7 @@ import {
 
 @ApiTags('Équipements / Maintenance biomédicale')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Consultation ouverte aux soignants et à la direction ; toute mutation du parc
 // ou des interventions réservée à la maintenance/technique et à la direction.
 @Roles(

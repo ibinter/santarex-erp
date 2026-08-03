@@ -19,13 +19,14 @@ import { EnregistrerPaiementDto } from './dto/enregistrer-paiement.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { StatutBordereau } from './entities/bordereau-tiers-payant.entity';
 
 @ApiTags('Tiers-payant')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Lecture ouverte aux profils facturation/administration ; mutations réservées
 // aux profils caissier / administration / direction.
 @Roles(

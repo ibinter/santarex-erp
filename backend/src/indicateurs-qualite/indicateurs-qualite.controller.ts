@@ -23,13 +23,14 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { DomaineIndicateur } from './entities/indicateur-qualite.entity';
 
 @ApiTags('Indicateurs Qualité & Accréditation')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Pilotage qualité : réservé à l'encadrement (qualiticien, direction, admin) et
 // aux médecins référents. La saisie de mesures reste tracée par tenant.
 @Roles(UserRole.ADMIN, UserRole.DIRECTEUR, UserRole.MEDECIN)

@@ -18,12 +18,13 @@ import { PosologieDto } from './dto/posologie.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Pédiatrie')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Lecture ouverte au personnel soignant ; mutations réservées aux soignants
 // habilités (médecin, infirmier, laborantin pour la saisie des mesures).
 @Roles(

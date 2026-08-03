@@ -18,12 +18,13 @@ import { UpdateDevisDto, RepondreDevisDto } from './dto/update-devis.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { StatutDevis } from './entities/devis-patient.entity';
 
 @Controller('devis')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Lecture large (soignant + caisse + direction) ; mutations réservées caisse/admin/direction.
 @Roles(
   UserRole.MEDECIN,

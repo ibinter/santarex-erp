@@ -1,4 +1,5 @@
 import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { PortailPatientService } from './portail-patient.service';
 import { PortailLoginDto } from './dto/portail-login.dto';
 
@@ -10,6 +11,8 @@ import { PortailLoginDto } from './dto/portail-login.dto';
 export class PortailPatientController {
   constructor(private readonly service: PortailPatientService) {}
 
+  // Anti-force-brute : 5 tentatives / minute comme le login personnel.
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: PortailLoginDto) {

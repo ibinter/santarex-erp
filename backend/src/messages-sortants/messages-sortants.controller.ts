@@ -18,6 +18,7 @@ import { EnvoiMessageDto } from './dto/envoi-message.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { StatutMessageSortant } from './entities/message-sortant.entity';
@@ -26,7 +27,7 @@ import { CanalMessage } from './entities/modele-message.entity';
 @ApiTags('Messages sortants (SMS / WhatsApp)')
 @ApiBearerAuth()
 @Controller('messages-sortants')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Roles(
   UserRole.ADMIN,
   UserRole.DIRECTEUR,

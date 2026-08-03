@@ -18,6 +18,7 @@ import { UpdateVisiteDto } from './dto/update-visite.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { StatutHAD } from './entities/prise-en-charge-had.entity';
@@ -25,7 +26,7 @@ import { StatutHAD } from './entities/prise-en-charge-had.entity';
 @ApiTags('HAD - Hospitalisation à domicile')
 @ApiBearerAuth()
 @Controller('had')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Roles(UserRole.MEDECIN, UserRole.INFIRMIER, UserRole.ADMIN, UserRole.DIRECTEUR)
 export class HadController {
   constructor(private readonly hadService: HadService) {}

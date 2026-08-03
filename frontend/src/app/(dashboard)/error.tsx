@@ -1,8 +1,27 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw, Home, LifeBuoy } from 'lucide-react';
+
+const DICT = {
+  fr: {
+    title: "Une erreur s'est produite",
+    description: 'Une erreur inattendue a interrompu cette page. Vous pouvez réessayer ou créer un ticket support en conservant la référence ci-dessous.',
+    ref: 'Réf.',
+    retry: 'Réessayer',
+    dashboard: 'Tableau de bord',
+    ticket: 'Créer un ticket',
+  },
+  en: {
+    title: 'An error occurred',
+    description: 'An unexpected error interrupted this page. You can try again or create a support ticket keeping the reference below.',
+    ref: 'Ref.',
+    retry: 'Try again',
+    dashboard: 'Dashboard',
+    ticket: 'Create a ticket',
+  },
+};
 
 /**
  * Frontière d'erreur du périmètre (dashboard). Capture les erreurs de rendu
@@ -17,6 +36,12 @@ export default function DashboardError({
   reset: () => void;
 }) {
   const router = useRouter();
+  const [locale, setLocale] = useState<'fr' | 'en'>('fr');
+  useEffect(() => {
+    const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(en|fr)/);
+    if (m) setLocale(m[1] as 'fr' | 'en');
+  }, []);
+  const t = DICT[locale];
 
   useEffect(() => {
     console.error('[SANTAREX] Dashboard error:', error);
@@ -52,11 +77,10 @@ export default function DashboardError({
       </div>
 
       <h1 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 700, color: '#1A2332' }}>
-        Une erreur s&apos;est produite
+        {t.title}
       </h1>
       <p style={{ margin: '0 0 20px', fontSize: 14, color: '#546E7A', maxWidth: 380, lineHeight: 1.6 }}>
-        Une erreur inattendue a interrompu cette page. Vous pouvez réessayer ou créer un ticket
-        support en conservant la référence ci-dessous.
+        {t.description}
       </p>
 
       <div
@@ -70,7 +94,7 @@ export default function DashboardError({
           marginBottom: 28,
         }}
       >
-        Réf. : {ref}
+        {t.ref} : {ref}
       </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -90,7 +114,7 @@ export default function DashboardError({
             fontWeight: 600,
           }}
         >
-          <RefreshCw size={14} /> Réessayer
+          <RefreshCw size={14} /> {t.retry}
         </button>
         <button
           onClick={() => router.push('/dashboard')}
@@ -108,7 +132,7 @@ export default function DashboardError({
             fontWeight: 600,
           }}
         >
-          <Home size={14} /> Tableau de bord
+          <Home size={14} /> {t.dashboard}
         </button>
         <button
           onClick={() => router.push(`/support?ref=${encodeURIComponent(ref)}`)}
@@ -126,7 +150,7 @@ export default function DashboardError({
             fontWeight: 700,
           }}
         >
-          <LifeBuoy size={14} /> Créer un ticket
+          <LifeBuoy size={14} /> {t.ticket}
         </button>
       </div>
     </div>

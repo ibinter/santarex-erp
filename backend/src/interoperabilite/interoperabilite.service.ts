@@ -29,6 +29,7 @@ import {
   UpdateConfigInterfaceDto,
 } from './dto/interop.dto';
 import { parseHl7 } from './hl7/hl7-parser';
+import { EntitlementService } from '../common/entitlement.service';
 
 /** Contexte résolu à partir d'une clé API valide. */
 export interface ApiKeyContext {
@@ -52,6 +53,7 @@ export class InteroperabiliteService {
     private readonly configRepo: Repository<ConfigInterface>,
     @InjectRepository(MessageInterop)
     private readonly messageRepo: Repository<MessageInterop>,
+    private readonly entitlement: EntitlementService,
   ) {}
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -116,6 +118,18 @@ export class InteroperabiliteService {
     for (const c of candidats) {
       const match = await bcrypt.compare(cleEnClair, c.cleHashee);
       if (match) {
+        // Gouvernance de licence : une clé API valide ne donne PLUS accès si la
+        // licence du tenant n'est plus accordante (suspendue / expirée /
+        // annulée). Empêche un client non-payant d'aspirer ses données via
+        // X-API-Key en contournant tout le blocage JWT. `getTenantAccess` reste
+        // fail-open sur absence de licence / erreur (choix de disponibilité).
+        const access = await this.entitlement.getTenantAccess(c.tenantId);
+        if (!access.allowed) {
+          this.logger.warn(
+            `Clé API refusée (licence ${access.reason}) pour tenant=${c.tenantId}`,
+          );
+          return null;
+        }
         // Mise à jour best-effort de la date de dernier usage.
         this.cleRepo
           .update(c.id, { dateDernierUsage: new Date() })

@@ -34,9 +34,80 @@ interface OffrePublique {
 const BLUE = '#0D47A1';
 const TEAL = '#00838F';
 
+const DICT = {
+  fr: {
+    loading: 'Chargement du devis…',
+    unavailable: 'Devis indisponible',
+    accepted: 'Offre acceptée',
+    acceptedOn: 'le',
+    thanks: 'Merci pour votre confiance.',
+    expired: 'Ce devis a expiré. Contactez-nous pour une nouvelle proposition.',
+    refused: 'Ce devis a été refusé.',
+    recipient: 'DESTINATAIRE',
+    validUntil: "Valable jusqu'au",
+    quote: 'Devis',
+    plan: 'Formule',
+    users: 'Utilisateurs',
+    sites: 'Sites',
+    duration: 'Durée',
+    modules: 'Modules inclus',
+    options: 'Options',
+    support: 'Accompagnement',
+    training: 'Formation',
+    migration: 'Migration',
+    accompaniment: 'Accompagnement',
+    totalHT: 'Total HT',
+    discount: 'Remise',
+    taxes: 'Taxes',
+    totalTTC: 'TOTAL TTC',
+    schedule: 'Échéancier de paiement',
+    conditions: 'Conditions',
+    accept: "Accepter l'offre",
+    processing: 'Traitement…',
+  },
+  en: {
+    loading: 'Loading quote…',
+    unavailable: 'Quote unavailable',
+    accepted: 'Offer accepted',
+    acceptedOn: 'on',
+    thanks: 'Thank you for your trust.',
+    expired: 'This quote has expired. Contact us for a new proposal.',
+    refused: 'This quote was declined.',
+    recipient: 'RECIPIENT',
+    validUntil: 'Valid until',
+    quote: 'Quote',
+    plan: 'Plan',
+    users: 'Users',
+    sites: 'Sites',
+    duration: 'Duration',
+    modules: 'Included modules',
+    options: 'Options',
+    support: 'Support',
+    training: 'Training',
+    migration: 'Migration',
+    accompaniment: 'Support',
+    totalHT: 'Subtotal (excl. tax)',
+    discount: 'Discount',
+    taxes: 'Taxes',
+    totalTTC: 'TOTAL (incl. tax)',
+    schedule: 'Payment schedule',
+    conditions: 'Terms',
+    accept: 'Accept the offer',
+    processing: 'Processing…',
+  },
+};
+
 export default function OffrePubliquePage() {
   const params = useParams();
   const token = String(params?.token ?? '');
+
+  const [locale, setLocale] = useState<'fr' | 'en'>('fr');
+  useEffect(() => {
+    const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(en|fr)/);
+    if (m) setLocale(m[1] as 'fr' | 'en');
+  }, []);
+  const tr = DICT[locale];
+  const dateLocale = locale === 'en' ? 'en-US' : 'fr-FR';
 
   const [offre, setOffre] = useState<OffrePublique | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +156,7 @@ export default function OffrePubliquePage() {
     }
   };
 
-  const fmt = (n: number, d: string) => `${(n ?? 0).toLocaleString('fr-FR')} ${d}`;
+  const fmt = (n: number, d: string) => `${(n ?? 0).toLocaleString(dateLocale)} ${d}`;
 
   const page: React.CSSProperties = {
     minHeight: '100vh',
@@ -108,7 +179,7 @@ export default function OffrePubliquePage() {
     return (
       <div style={page}>
         <div style={{ ...card, padding: 48, textAlign: 'center', color: '#94a3b8' }}>
-          Chargement du devis…
+          {tr.loading}
         </div>
       </div>
     );
@@ -119,7 +190,7 @@ export default function OffrePubliquePage() {
       <div style={page}>
         <div style={{ ...card, padding: 48, textAlign: 'center' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Devis indisponible</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{tr.unavailable}</h1>
           <p style={{ color: '#64748b', marginTop: 8 }}>{error}</p>
         </div>
       </div>
@@ -160,7 +231,7 @@ export default function OffrePubliquePage() {
               <div style={{ fontSize: 12, opacity: 0.85 }}>IBIG SOFT — ibigsoft.com</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 12, opacity: 0.85 }}>Devis</div>
+              <div style={{ fontSize: 12, opacity: 0.85 }}>{tr.quote}</div>
               <div style={{ fontSize: 18, fontWeight: 700 }}>{offre.numero}</div>
             </div>
           </div>
@@ -170,31 +241,31 @@ export default function OffrePubliquePage() {
           {/* Bandeau statut */}
           {estAccepte && (
             <Banner bg="#ecfdf5" color="#047857" icon="✓">
-              Offre acceptée{offre.acceptedAt ? ` le ${new Date(offre.acceptedAt).toLocaleDateString('fr-FR')}` : ''}. Merci pour votre confiance.
+              {tr.accepted}{offre.acceptedAt ? ` ${tr.acceptedOn} ${new Date(offre.acceptedAt).toLocaleDateString(dateLocale)}` : ''}. {tr.thanks}
             </Banner>
           )}
           {expiree && !estAccepte && (
             <Banner bg="#fffbeb" color="#b45309" icon="⏳">
-              Ce devis a expiré. Contactez-nous pour une nouvelle proposition.
+              {tr.expired}
             </Banner>
           )}
           {refusee && (
             <Banner bg="#fef2f2" color="#b91c1c" icon="✕">
-              Ce devis a été refusé.
+              {tr.refused}
             </Banner>
           )}
 
           {/* Client */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 0.5 }}>
-              DESTINATAIRE
+              {tr.recipient}
             </div>
             <div style={{ fontWeight: 700, fontSize: 16, marginTop: 4 }}>{offre.clientNom}</div>
             <div style={{ color: '#64748b', fontSize: 14 }}>{offre.clientEmail}</div>
             {offre.dateValidite && (
               <div style={{ color: '#64748b', fontSize: 13, marginTop: 6 }}>
-                Valable jusqu'au{' '}
-                <strong>{new Date(offre.dateValidite).toLocaleDateString('fr-FR')}</strong>
+                {tr.validUntil}{' '}
+                <strong>{new Date(offre.dateValidite).toLocaleDateString(dateLocale)}</strong>
               </div>
             )}
           </div>
@@ -211,7 +282,7 @@ export default function OffrePubliquePage() {
             }}
           >
             {offre.logiciel}
-            {offre.formule ? ` — Formule ${offre.formule}` : ''}
+            {offre.formule ? ` — ${tr.plan} ${offre.formule}` : ''}
           </div>
 
           <div
@@ -224,14 +295,14 @@ export default function OffrePubliquePage() {
               marginBottom: 24,
             }}
           >
-            <span>Utilisateurs : <strong>{offre.nbUtilisateurs}</strong></span>
-            <span>Sites : <strong>{offre.nbSites}</strong></span>
-            {offre.duree && <span>Durée : <strong>{offre.duree}</strong></span>}
+            <span>{tr.users} : <strong>{offre.nbUtilisateurs}</strong></span>
+            <span>{tr.sites} : <strong>{offre.nbSites}</strong></span>
+            {offre.duree && <span>{tr.duration} : <strong>{offre.duree}</strong></span>}
           </div>
 
           {/* Modules */}
           {offre.modules?.length > 0 && (
-            <Section titre="Modules inclus">
+            <Section titre={tr.modules}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {offre.modules.map((m) => (
                   <span
@@ -254,7 +325,7 @@ export default function OffrePubliquePage() {
 
           {/* Options */}
           {offre.options?.length > 0 && (
-            <Section titre="Options">
+            <Section titre={tr.options}>
               {offre.options.map((o, i) => (
                 <Ligne key={i} left={o.libelle} right={fmt(o.prix, devise)} />
               ))}
@@ -263,10 +334,10 @@ export default function OffrePubliquePage() {
 
           {/* Prestations */}
           {(offre.formation || offre.migration || offre.accompagnement) && (
-            <Section titre="Accompagnement">
-              {offre.formation && <Puce>Formation : {offre.formation}</Puce>}
-              {offre.migration && <Puce>Migration : {offre.migration}</Puce>}
-              {offre.accompagnement && <Puce>Accompagnement : {offre.accompagnement}</Puce>}
+            <Section titre={tr.support}>
+              {offre.formation && <Puce>{tr.training} : {offre.formation}</Puce>}
+              {offre.migration && <Puce>{tr.migration} : {offre.migration}</Puce>}
+              {offre.accompagnement && <Puce>{tr.accompaniment} : {offre.accompagnement}</Puce>}
             </Section>
           )}
 
@@ -279,11 +350,11 @@ export default function OffrePubliquePage() {
               marginBottom: 16,
             }}
           >
-            <Ligne left="Total HT" right={fmt(offre.prixHT, devise)} />
+            <Ligne left={tr.totalHT} right={fmt(offre.prixHT, devise)} />
             {offre.remise > 0 && (
-              <Ligne left="Remise" right={`- ${fmt(offre.remise, devise)}`} muted />
+              <Ligne left={tr.discount} right={`- ${fmt(offre.remise, devise)}`} muted />
             )}
-            <Ligne left="Taxes" right={fmt(offre.taxes, devise)} muted />
+            <Ligne left={tr.taxes} right={fmt(offre.taxes, devise)} muted />
             <div
               style={{
                 display: 'flex',
@@ -294,7 +365,7 @@ export default function OffrePubliquePage() {
                 borderTop: '2px solid #e2e8f0',
               }}
             >
-              <span style={{ fontWeight: 800, color: BLUE, fontSize: 18 }}>TOTAL TTC</span>
+              <span style={{ fontWeight: 800, color: BLUE, fontSize: 18 }}>{tr.totalTTC}</span>
               <span style={{ fontWeight: 800, color: BLUE, fontSize: 22 }}>
                 {fmt(offre.prixTTC, devise)}
               </span>
@@ -303,7 +374,7 @@ export default function OffrePubliquePage() {
 
           {/* Échéancier */}
           {offre.echeancier?.length > 0 && (
-            <Section titre="Échéancier de paiement">
+            <Section titre={tr.schedule}>
               {offre.echeancier.map((e, i) => (
                 <Ligne
                   key={i}
@@ -316,7 +387,7 @@ export default function OffrePubliquePage() {
 
           {offre.conditions && (
             <div style={{ fontSize: 12, color: '#64748b', marginTop: 16 }}>
-              <strong>Conditions :</strong> {offre.conditions}
+              <strong>{tr.conditions} :</strong> {offre.conditions}
             </div>
           )}
           {offre.notes && (
@@ -359,7 +430,7 @@ export default function OffrePubliquePage() {
                 opacity: accepting ? 0.7 : 1,
               }}
             >
-              {accepting ? 'Traitement…' : "Accepter l'offre"}
+              {accepting ? tr.processing : tr.accept}
             </button>
           )}
         </div>
@@ -373,7 +444,7 @@ export default function OffrePubliquePage() {
             borderTop: '1px solid #f1f5f9',
           }}
         >
-          SANTAREX ERP — IBIG SOFT · Devis {offre.numero}
+          SANTAREX ERP — IBIG SOFT · {tr.quote} {offre.numero}
         </div>
       </div>
     </div>

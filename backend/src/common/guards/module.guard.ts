@@ -39,6 +39,36 @@ const PREFIX_TO_MODULE: ReadonlyArray<readonly [string, string]> = [
   ['/dme', 'dme'],
   ['/patients', 'patients'],
   ['/paiements', 'paiements'],
+  // ── Modules hospitaliers premium (câblés avec ModuleGuard sur leurs
+  //    contrôleurs). Codes 1:1 avec `OffreSaas.modulesInclus`. Préfixes longs
+  //    d'abord (ex. caisse-sessions avant un éventuel /caisse).
+  ['/interactions-medicamenteuses', 'interactions-medicamenteuses'],
+  ['/declarations-sanitaires', 'declarations-sanitaires'],
+  ['/services-personnalises', 'services-personnalises'],
+  ['/indicateurs-qualite', 'indicateurs-qualite'],
+  ['/messages-sortants', 'messages-sortants'],
+  ['/soins-infirmiers', 'soins-infirmiers'],
+  ['/dechets-medicaux', 'dechets-medicaux'],
+  ['/incidents-qualite', 'incidents-qualite'],
+  ['/prise-en-charge', 'prise-en-charge'],
+  ['/plannings-gardes', 'plannings-gardes'],
+  ['/approvisionnement', 'approvisionnement'],
+  ['/caisse-sessions', 'caisse-sessions'],
+  ['/consentements', 'consentements'],
+  ['/tiers-payant', 'tiers-payant'],
+  ['/banque-sang', 'banque-sang'],
+  ['/sterilisation', 'sterilisation'],
+  ['/satisfaction', 'satisfaction'],
+  ['/vaccination', 'vaccination'],
+  ['/equipements', 'equipements'],
+  ['/maternite', 'maternite'],
+  ['/pediatrie', 'pediatrie'],
+  ['/transport', 'transport'],
+  ['/morgue', 'morgue'],
+  ['/budget', 'budget'],
+  ['/devis', 'devis'],
+  ['/sites', 'sites'],
+  ['/had', 'had'],
 ];
 
 /** Résout le code de module métier d'un chemin normalisé, ou null. */

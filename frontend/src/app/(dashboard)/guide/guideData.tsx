@@ -20,6 +20,7 @@ import {
   Users, Calendar, FlaskConical, Pill, Receipt, Bed, Settings, Activity,
   Siren, Scissors, ScanLine, Calculator, Users2, BarChart3, LifeBuoy, CreditCard,
   Baby, Syringe, FileText, Droplets, Wrench, MessageSquare, ClipboardList, Building2,
+  Home, Network, ScrollText,
 } from 'lucide-react';
 
 export type Lang = 'fr' | 'en';
@@ -984,6 +985,139 @@ export const SECTIONS: Section[] = [
         titre: 'Bill the stay',
         texte: "The stay aggregates services (hospital days, acts, medicines, tests) that feed the patient's overall invoice.",
         astuce: "Check all stay services are billed before discharge: a forgotten service is hard to recover after the patient leaves.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  HAD — HOSPITALISATION À DOMICILE  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'had', icon: <Home size={ICON} />, color: '#0369A1', bg: '#E0F2FE', border: '#7DD3FC',
+    fr: { titre: 'HAD — Hospitalisation à domicile', desc: 'Soins hospitaliers au domicile du patient' },
+    en: { titre: 'HHC — Hospital at Home', desc: 'Hospital-level care at the patient\'s home' },
+    fr_content: [
+      {
+        titre: 'À quoi sert l\'Hospitalisation à domicile',
+        texte: "L'HAD permet d'assurer au domicile du patient des soins qui relèveraient normalement d'une hospitalisation classique (perfusions, pansements complexes, soins palliatifs, surveillance post-opératoire). Le module HAD organise l'admission, le plan de soins, la tournée des intervenants et le suivi, sans qu'un lit physique ne soit mobilisé.",
+        astuce: "L'HAD n'est pas un simple soin à domicile ponctuel : c'est un séjour à part entière, avec un médecin coordonnateur, un plan de soins et une facturation dédiée.",
+      },
+      {
+        titre: 'Admettre un patient en HAD',
+        texte: "L'admission ouvre un séjour HAD, désigne le médecin coordonnateur et enregistre l'adresse du domicile où seront réalisés les soins.",
+        etapes: [
+          'Menu › HAD › « Nouvelle admission ».',
+          'Sélectionnez le patient et vérifiez ses coordonnées et son adresse.',
+          'Choisissez le médecin coordonnateur et le motif de prise en charge.',
+          'Renseignez la date d\'entrée et la durée prévisionnelle du séjour.',
+          'Validez : le séjour HAD est ouvert et apparaît dans la liste des patients à domicile.',
+        ],
+        astuce: "Vérifiez que l'adresse et un contact téléphonique joignable sont bien renseignés : ce sont les informations essentielles pour organiser les tournées des intervenants.",
+      },
+      {
+        titre: 'Établir le plan de soins',
+        texte: "Le plan de soins décrit les actes à réaliser au domicile (perfusions, injections, pansements, kinésithérapie, surveillance des constantes) avec leur fréquence et l'intervenant attendu.",
+        etapes: [
+          'Ouvrez le séjour HAD concerné.',
+          'Dans l\'onglet Plan de soins, cliquez sur « Ajouter un soin ».',
+          'Choisissez le type de soin, la fréquence (quotidien, hebdomadaire…) et l\'intervenant.',
+          'Enregistrez : les soins programmés alimentent automatiquement le calendrier des visites.',
+        ],
+        astuce: "Regroupez si possible plusieurs soins sur une même visite : cela limite les déplacements et améliore le confort du patient.",
+      },
+      {
+        titre: 'Planifier les visites à domicile',
+        texte: "Le calendrier des visites organise les passages des soignants au domicile. Chaque visite est reliée à un intervenant, à une date et à un ou plusieurs soins du plan.",
+        etapes: [
+          'Ouvrez l\'onglet Visites du séjour.',
+          'Cliquez sur « Planifier une visite » et choisissez la date et le créneau.',
+          'Affectez l\'intervenant (infirmier, kinésithérapeute, aide-soignant).',
+          'Rattachez les soins à réaliser lors de cette visite, puis validez.',
+        ],
+        astuce: "Anticipez les tournées sur plusieurs jours : une planification à l'avance permet d'optimiser les trajets des soignants entre plusieurs domiciles.",
+      },
+      {
+        titre: 'Réaliser et tracer une visite',
+        texte: "À l'issue de chaque passage, l'intervenant consigne les soins effectués, les constantes relevées et ses observations. La visite passe alors au statut « Réalisée ».",
+        astuce: "Consignez la visite dès le retour, tant que les observations sont fraîches : une traçabilité fidèle est indispensable pour la continuité des soins et la facturation.",
+      },
+      {
+        titre: 'Suivre le séjour à domicile',
+        texte: "Le tableau de bord du séjour HAD synthétise l'évolution du patient : visites réalisées et à venir, constantes historisées, soins en retard et alertes éventuelles.",
+        astuce: "Une visite non réalisée à la date prévue apparaît en alerte : traitez-la rapidement en reprogrammant ou en cherchant un remplaçant.",
+      },
+      {
+        titre: 'Clôturer une prise en charge HAD',
+        texte: "La clôture met fin au séjour à domicile (guérison, transfert vers l'hospitalisation classique, décès). Elle fige le plan de soins et agrège les prestations pour la facturation.",
+        etapes: [
+          'Ouvrez le séjour HAD.',
+          'Cliquez sur « Clôturer » et indiquez la date et le motif de fin de prise en charge.',
+          'Vérifiez que toutes les visites réalisées sont bien tracées.',
+          'Validez : le séjour est clôturé et les prestations remontent vers la facture du patient.',
+        ],
+        astuce: "Contrôlez que toutes les visites sont saisies avant de clôturer : une visite oubliée ne sera pas facturée et faussera le suivi.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'What Hospital at Home is for',
+        texte: "Hospital at Home (HHC) delivers, at the patient's home, care that would normally require a classic hospital stay (infusions, complex dressings, palliative care, post-operative monitoring). The HHC module organises admission, the care plan, the caregivers' rounds and follow-up, without using a physical bed.",
+        astuce: "HHC is not a one-off home visit: it is a full stay, with a coordinating doctor, a care plan and dedicated billing.",
+      },
+      {
+        titre: 'Admit a patient to Hospital at Home',
+        texte: "Admission opens an HHC stay, appoints the coordinating doctor and records the home address where care will be provided.",
+        etapes: [
+          'Menu › HHC › « New admission ».',
+          'Select the patient and check their contact details and address.',
+          'Choose the coordinating doctor and the reason for care.',
+          'Enter the entry date and the expected length of stay.',
+          'Confirm: the HHC stay is open and appears in the list of home patients.',
+        ],
+        astuce: "Make sure the address and a reachable phone contact are filled in: these are essential to organise the caregivers' rounds.",
+      },
+      {
+        titre: 'Build the care plan',
+        texte: "The care plan describes the acts to perform at home (infusions, injections, dressings, physiotherapy, vital-sign monitoring) with their frequency and the expected caregiver.",
+        etapes: [
+          'Open the relevant HHC stay.',
+          'In the Care plan tab, click « Add care ».',
+          'Choose the care type, frequency (daily, weekly…) and caregiver.',
+          'Save: scheduled care automatically feeds the visit calendar.',
+        ],
+        astuce: "Group several acts into one visit where possible: it limits travel and improves patient comfort.",
+      },
+      {
+        titre: 'Schedule home visits',
+        texte: "The visit calendar organises caregivers' trips to the home. Each visit is linked to a caregiver, a date and one or more acts from the plan.",
+        etapes: [
+          'Open the stay\'s Visits tab.',
+          'Click « Schedule a visit » and choose the date and slot.',
+          'Assign the caregiver (nurse, physiotherapist, care assistant).',
+          'Attach the acts to perform during this visit, then confirm.',
+        ],
+        astuce: "Plan rounds over several days ahead: advance scheduling optimises caregivers' routes between homes.",
+      },
+      {
+        titre: 'Perform and record a visit',
+        texte: "After each visit, the caregiver records the care given, the vital signs measured and their observations. The visit then moves to « Completed » status.",
+        astuce: "Record the visit as soon as you return, while observations are fresh: faithful traceability is essential for continuity of care and for billing.",
+      },
+      {
+        titre: 'Follow the home stay',
+        texte: "The HHC stay dashboard summarises the patient's evolution: completed and upcoming visits, stored vital signs, overdue care and any alerts.",
+        astuce: "A visit not completed on its due date appears as an alert: handle it quickly by rescheduling or finding a replacement.",
+      },
+      {
+        titre: 'Close a Hospital at Home episode',
+        texte: "Closing ends the home stay (recovery, transfer to classic hospitalisation, death). It freezes the care plan and aggregates services for billing.",
+        etapes: [
+          'Open the HHC stay.',
+          'Click « Close » and enter the date and reason for ending care.',
+          'Check that all completed visits are recorded.',
+          'Confirm: the stay is closed and services flow to the patient\'s invoice.',
+        ],
+        astuce: "Check every visit is recorded before closing: a forgotten visit will not be billed and will distort follow-up.",
       },
     ],
   },
@@ -2862,6 +2996,206 @@ export const SECTIONS: Section[] = [
         titre: 'Configure rights and access per site',
         texte: "Roles and permissions can be tuned per site: a user can be administrator on one site and a simple operator on another.",
         astuce: "Apply least privilege: grant only the rights each person needs, site by site, to limit risk.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  INTEROPÉRABILITÉ (API, HL7/FHIR, DICOM)  (NOUVEAU — admin / DSI)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'interoperabilite', icon: <Network size={ICON} />, color: '#4338CA', bg: '#E0E7FF', border: '#A5B4FC',
+    fr: { titre: 'Interopérabilité (API, HL7/FHIR, DICOM)', desc: 'Échanges de données avec les systèmes tiers — réservé admin / DSI' },
+    en: { titre: 'Interoperability (API, HL7/FHIR, DICOM)', desc: 'Data exchange with third-party systems — admin / IT only' },
+    fr_content: [
+      {
+        titre: 'À quoi sert l\'interopérabilité',
+        texte: "Le module Interopérabilité permet à SANTAREX d'échanger des données avec d'autres systèmes de santé : laboratoires externes, plateaux d'imagerie, assurances, systèmes nationaux ou logiciels tiers. Les échanges reposent sur des normes standard (HL7 v2, FHIR, DICOM) et sur une API sécurisée. Cette section est réservée aux administrateurs et à la DSI.",
+        astuce: "N'ouvrez un échange que vers des partenaires de confiance : chaque connexion expose ou reçoit des données de santé sensibles.",
+      },
+      {
+        titre: 'Normes et formats supportés',
+        texte: "SANTAREX prend en charge les principales normes du secteur : HL7 v2 pour les messages hospitaliers (admissions, résultats), FHIR (ressources REST modernes : Patient, Encounter, Observation…), DICOM pour l'imagerie médicale, et une API REST/JSON propre à SANTAREX pour les intégrations sur mesure.",
+        astuce: "Choisissez FHIR pour les nouvelles intégrations quand le partenaire le propose : c'est la norme la plus moderne et la plus simple à maintenir.",
+      },
+      {
+        titre: 'Générer une clé API',
+        texte: "Une clé API authentifie un système tiers auprès de SANTAREX. Elle est nécessaire pour tout appel programmatique à l'API.",
+        etapes: [
+          'Menu › Interopérabilité › Clés API › « Nouvelle clé ».',
+          'Nommez la clé selon son usage (ex. « Labo externe BioPlus »).',
+          'Sélectionnez les périmètres (scopes) autorisés : lecture seule, résultats, facturation…',
+          'Générez la clé et copiez-la immédiatement.',
+          'Transmettez-la au partenaire via un canal sécurisé.',
+        ],
+        astuce: "La clé n'est affichée en clair qu'une seule fois, à sa création. Copiez-la aussitôt : si elle est perdue, il faut en générer une nouvelle et révoquer l'ancienne.",
+      },
+      {
+        titre: 'Configurer un échange / endpoint',
+        texte: "Un endpoint définit une destination ou une source d'échange (URL du partenaire, norme utilisée, type de messages). Il matérialise la connexion entre SANTAREX et un système tiers.",
+        etapes: [
+          'Menu › Interopérabilité › Endpoints › « Nouvel endpoint ».',
+          'Renseignez l\'URL du partenaire et la norme (HL7, FHIR, DICOM, REST).',
+          'Choisissez le sens de l\'échange (entrant, sortant ou bidirectionnel) et le type de données.',
+          'Renseignez les paramètres d\'authentification fournis par le partenaire.',
+          'Enregistrez, puis lancez un test de connexion.',
+        ],
+        astuce: "Testez toujours l'endpoint sur un jeu de données de test avant de l'activer en production : une mauvaise configuration peut envoyer des données au mauvais destinataire.",
+      },
+      {
+        titre: 'Configurer les webhooks',
+        texte: "Un webhook notifie automatiquement un système tiers lorsqu'un événement survient dans SANTAREX (nouveau résultat de laboratoire, admission, facture émise). Le système partenaire reçoit alors les données en temps réel, sans avoir à interroger l'API.",
+        etapes: [
+          'Menu › Interopérabilité › Webhooks › « Nouveau webhook ».',
+          'Indiquez l\'URL de réception du partenaire.',
+          'Sélectionnez les événements déclencheurs (ex. « résultat validé »).',
+          'Définissez le secret de signature pour sécuriser les envois.',
+          'Enregistrez et vérifiez les premiers envois dans le journal des webhooks.',
+        ],
+        astuce: "Surveillez le journal des webhooks : un envoi en échec répété signale souvent un partenaire indisponible ou une URL erronée à corriger.",
+      },
+      {
+        titre: 'Surveiller et sécuriser les échanges',
+        texte: "Le module trace tous les échanges (appels API, messages HL7/FHIR, transferts DICOM, webhooks) avec leur statut. Vous pouvez révoquer une clé, désactiver un endpoint ou rejouer un message en échec.",
+        astuce: "Révoquez sans attendre toute clé API dont vous soupçonnez la compromission, puis générez-en une nouvelle : une clé exposée donne accès à des données de santé.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'What interoperability is for',
+        texte: "The Interoperability module lets SANTAREX exchange data with other health systems: external labs, imaging centres, insurers, national systems or third-party software. Exchanges rely on standard norms (HL7 v2, FHIR, DICOM) and on a secure API. This section is reserved for administrators and IT staff.",
+        astuce: "Only open an exchange to trusted partners: each connection sends or receives sensitive health data.",
+      },
+      {
+        titre: 'Supported standards and formats',
+        texte: "SANTAREX supports the sector's main standards: HL7 v2 for hospital messages (admissions, results), FHIR (modern REST resources: Patient, Encounter, Observation…), DICOM for medical imaging, and a SANTAREX-specific REST/JSON API for custom integrations.",
+        astuce: "Choose FHIR for new integrations when the partner offers it: it is the most modern standard and the easiest to maintain.",
+      },
+      {
+        titre: 'Generate an API key',
+        texte: "An API key authenticates a third-party system with SANTAREX. It is required for any programmatic call to the API.",
+        etapes: [
+          'Menu › Interoperability › API keys › « New key ».',
+          'Name the key by its purpose (e.g. « External lab BioPlus »).',
+          'Select the allowed scopes: read-only, results, billing…',
+          'Generate the key and copy it immediately.',
+          'Send it to the partner over a secure channel.',
+        ],
+        astuce: "The key is shown in clear only once, at creation. Copy it right away: if lost, you must generate a new one and revoke the old.",
+      },
+      {
+        titre: 'Configure an exchange / endpoint',
+        texte: "An endpoint defines an exchange destination or source (partner URL, standard used, message type). It embodies the connection between SANTAREX and a third-party system.",
+        etapes: [
+          'Menu › Interoperability › Endpoints › « New endpoint ».',
+          'Enter the partner URL and the standard (HL7, FHIR, DICOM, REST).',
+          'Choose the direction (inbound, outbound or bidirectional) and the data type.',
+          'Enter the authentication parameters provided by the partner.',
+          'Save, then run a connection test.',
+        ],
+        astuce: "Always test the endpoint on test data before activating it in production: a misconfiguration can send data to the wrong recipient.",
+      },
+      {
+        titre: 'Configure webhooks',
+        texte: "A webhook automatically notifies a third-party system when an event occurs in SANTAREX (new lab result, admission, invoice issued). The partner system then receives the data in real time, without polling the API.",
+        etapes: [
+          'Menu › Interoperability › Webhooks › « New webhook ».',
+          'Enter the partner\'s receiving URL.',
+          'Select the triggering events (e.g. « result validated »).',
+          'Set the signing secret to secure the deliveries.',
+          'Save and check the first deliveries in the webhook log.',
+        ],
+        astuce: "Monitor the webhook log: a repeatedly failing delivery often signals an unavailable partner or a wrong URL to fix.",
+      },
+      {
+        titre: 'Monitor and secure exchanges',
+        texte: "The module logs all exchanges (API calls, HL7/FHIR messages, DICOM transfers, webhooks) with their status. You can revoke a key, disable an endpoint or replay a failed message.",
+        astuce: "Immediately revoke any API key you suspect is compromised, then generate a new one: an exposed key grants access to health data.",
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  JOURNAUX D'AUDIT & NOUVEAUTÉS  (NOUVEAU)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'audit-logs', icon: <ScrollText size={ICON} />, color: '#374151', bg: '#F3F4F6', border: '#D1D5DB',
+    fr: { titre: 'Journaux d\'audit & nouveautés', desc: 'Traçabilité des actions et suivi des versions' },
+    en: { titre: 'Audit logs & release notes', desc: 'Action traceability and version tracking' },
+    fr_content: [
+      {
+        titre: 'Consulter le journal d\'audit',
+        texte: "Le journal d'audit enregistre les actions sensibles réalisées dans SANTAREX : connexions, créations et modifications de dossiers, accès aux données patients, changements de droits, exports. Chaque trace indique qui a fait quoi, quand et depuis quel poste. Cette page est réservée aux administrateurs.",
+        etapes: [
+          'Menu › Journaux d\'audit.',
+          'Parcourez la liste des traces, triée du plus récent au plus ancien.',
+          'Cliquez sur une trace pour afficher son détail complet (utilisateur, action, cible, date, adresse IP).',
+        ],
+        astuce: "Le journal d'audit est consultable mais non modifiable : c'est ce caractère inaltérable qui lui donne sa valeur probante en cas de contrôle ou de litige.",
+      },
+      {
+        titre: 'Filtrer et rechercher une trace',
+        texte: "Des filtres permettent de retrouver rapidement une action précise parmi un grand volume de traces.",
+        etapes: [
+          'Ouvrez le journal d\'audit.',
+          'Filtrez par utilisateur, par type d\'action ou par module concerné.',
+          'Restreignez la période avec le filtre de dates.',
+          'Affinez avec la barre de recherche (nom de patient, identifiant, mot-clé).',
+        ],
+        astuce: "Pour enquêter sur un accès suspect à un dossier, filtrez par patient concerné puis par plage de dates : vous isolez ainsi tous les intervenants ayant consulté le dossier.",
+      },
+      {
+        titre: 'Interpréter les traces',
+        texte: "Chaque trace suit un modèle constant : l'acteur (utilisateur), l'action (créer, consulter, modifier, supprimer, exporter), la cible (dossier, facture, paramètre) et le contexte (date, poste, adresse IP). Une action de modification affiche l'ancienne et la nouvelle valeur.",
+        astuce: "Une série d'accès inhabituels (consultations massives hors service, exports répétés) doit alerter : signalez-la à la DSI, qui pourra approfondir et, si besoin, suspendre le compte concerné.",
+      },
+      {
+        titre: 'Nouveautés / Changelog',
+        texte: "La page Nouveautés (changelog) présente l'historique des versions de SANTAREX : nouvelles fonctionnalités, améliorations et corrections apportées à chaque mise à jour, avec leur date. Elle vous permet de savoir ce qui a changé depuis votre dernière utilisation.",
+        etapes: [
+          'Menu › Nouveautés (ou l\'icône « étincelles » en haut de l\'écran).',
+          'Parcourez les versions, de la plus récente à la plus ancienne.',
+          'Dépliez une version pour lire le détail des changements.',
+        ],
+        astuce: "Consultez le changelog après chaque mise à jour : une fonctionnalité que vous cherchez a peut-être été déplacée, renommée ou nouvellement ajoutée.",
+      },
+    ],
+    en_content: [
+      {
+        titre: 'View the audit log',
+        texte: "The audit log records sensitive actions performed in SANTAREX: logins, record creations and changes, access to patient data, permission changes, exports. Each entry shows who did what, when and from which workstation. This page is reserved for administrators.",
+        etapes: [
+          'Menu › Audit logs.',
+          'Browse the list of entries, sorted from newest to oldest.',
+          'Click an entry to see its full detail (user, action, target, date, IP address).',
+        ],
+        astuce: "The audit log can be viewed but not edited: this tamper-proof nature is what gives it evidential value during a review or dispute.",
+      },
+      {
+        titre: 'Filter and search an entry',
+        texte: "Filters help you quickly find a specific action among a large volume of entries.",
+        etapes: [
+          'Open the audit log.',
+          'Filter by user, action type or affected module.',
+          'Narrow the period with the date filter.',
+          'Refine with the search bar (patient name, identifier, keyword).',
+        ],
+        astuce: "To investigate a suspicious record access, filter by the patient concerned then by date range: you isolate every person who viewed the record.",
+      },
+      {
+        titre: 'Interpret entries',
+        texte: "Each entry follows a constant model: the actor (user), the action (create, view, modify, delete, export), the target (record, invoice, setting) and the context (date, workstation, IP address). A modification shows the old and the new value.",
+        astuce: "A series of unusual accesses (mass views off-duty, repeated exports) should raise a flag: report it to IT, who can dig deeper and, if needed, suspend the account.",
+      },
+      {
+        titre: 'Release notes / Changelog',
+        texte: "The Release notes (changelog) page lists SANTAREX's version history: new features, improvements and fixes shipped in each update, with their date. It lets you know what has changed since you last used the system.",
+        etapes: [
+          'Menu › Release notes (or the « sparkles » icon at the top of the screen).',
+          'Browse the versions, from newest to oldest.',
+          'Expand a version to read the detail of the changes.',
+        ],
+        astuce: "Check the changelog after each update: a feature you are looking for may have been moved, renamed or newly added.",
       },
     ],
   },

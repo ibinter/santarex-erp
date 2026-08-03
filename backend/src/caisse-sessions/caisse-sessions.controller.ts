@@ -19,11 +19,12 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
 @Controller('caisse-sessions')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Roles(UserRole.CAISSIER, UserRole.ADMIN, UserRole.DIRECTEUR)
 export class CaisseSessionsController {
   constructor(private readonly service: CaisseSessionsService) {}

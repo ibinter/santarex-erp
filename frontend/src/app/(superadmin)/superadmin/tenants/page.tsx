@@ -30,6 +30,9 @@ export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ nom: '', slug: '', email: '', telephone: '', maxUtilisateurs: '' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +47,29 @@ export default function TenantsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.nom.trim() || !form.slug.trim()) {
+      alert('Le nom et le slug sont obligatoires.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload: any = { nom: form.nom.trim(), slug: form.slug.trim() };
+      if (form.email.trim()) payload.email = form.email.trim();
+      if (form.telephone.trim()) payload.telephone = form.telephone.trim();
+      if (form.maxUtilisateurs) payload.maxUtilisateurs = Number(form.maxUtilisateurs);
+      await api.superadmin.createTenant(payload);
+      setShowCreate(false);
+      setForm({ nom: '', slug: '', email: '', telephone: '', maxUtilisateurs: '' });
+      await load();
+    } catch (err: any) {
+      alert('Échec de la création du tenant : ' + (err?.message ?? 'erreur inconnue'));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const filtered = search
     ? tenants.filter(
         (t) =>
@@ -54,11 +80,17 @@ export default function TenantsPage() {
     : tenants;
 
   const handleAction = async (id: string, action: 'suspendre' | 'activer') => {
+    if (action === 'suspendre' &&
+        !window.confirm('Suspendre ce tenant ? Ses utilisateurs perdront l\'accès à la plateforme.')) {
+      return;
+    }
     setActionId(id);
     try {
       if (action === 'suspendre') await api.superadmin.suspendreTenant(id);
       else await api.superadmin.activerTenant(id);
       await load();
+    } catch (err: any) {
+      alert('Échec de l\'action : ' + (err?.message ?? 'erreur inconnue'));
     } finally {
       setActionId(null);
     }
@@ -74,11 +106,69 @@ export default function TenantsPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">{total} tenant(s) enregistré(s)</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+        <button onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
           style={{ background: 'linear-gradient(135deg,#0D47A1,#00838F)' }}>
           <Plus size={16} /> Nouveau tenant
         </button>
       </div>
+
+      {/* Modal création tenant */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !creating && setShowCreate(false)}>
+          <form onClick={(e) => e.stopPropagation()} onSubmit={handleCreate}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Building2 size={18} className="text-primary" /> Nouveau tenant
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Nom *</label>
+                <input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                  placeholder="Clinique Saint-Joseph" required
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Slug *</label>
+                <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  placeholder="clinique-saint-joseph" required
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary font-mono" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="contact@saint-joseph.ci"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Téléphone</label>
+                <input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+                  placeholder="+22507000000"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Max. utilisateurs</label>
+                <input type="number" min={1} value={form.maxUtilisateurs}
+                  onChange={(e) => setForm({ ...form, maxUtilisateurs: e.target.value })}
+                  placeholder="10"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setShowCreate(false)} disabled={creating}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50">
+                Annuler
+              </button>
+              <button type="submit" disabled={creating}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg,#0D47A1,#00838F)' }}>
+                {creating ? 'Création…' : 'Créer le tenant'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative max-w-sm">

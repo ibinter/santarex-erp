@@ -17,13 +17,14 @@ import { CreateAffectationDto } from './dto/create-affectation.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Sites')
 @ApiBearerAuth()
 @Controller('sites')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Roles(UserRole.ADMIN, UserRole.DIRECTEUR, UserRole.DRH)
 export class SitesController {
   constructor(private readonly sitesService: SitesService) {}

@@ -74,7 +74,7 @@ function referenceLabel(t: TFunc, type: PaymentMethodType): string {
 }
 
 function fmtXOF(v?: number) {
-  return typeof v === 'number' ? v.toLocaleString('fr-FR') + ' XOF' : '—';
+  return typeof v === 'number' ? v.toLocaleString('fr-FR') + ' FCFA' : '—';
 }
 
 // ── Bandeau de sécurité OBLIGATOIRE (présent sur toutes les vues) ─────────────

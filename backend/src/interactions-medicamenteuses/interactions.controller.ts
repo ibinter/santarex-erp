@@ -5,6 +5,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserRole } from '../users/entities/user.entity';
@@ -29,7 +30,7 @@ const ADMIN_ROLES = [UserRole.ADMIN, UserRole.DIRECTEUR, UserRole.SUPERADMIN, Us
  */
 @ApiTags('Interactions médicamenteuses')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Controller('interactions')
 export class InteractionsController {
   constructor(private readonly service: InteractionsService) {}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import type { Licence, LicenceStatut } from '@/types';
-import { CreditCard, RefreshCw, PauseCircle, CheckCircle } from 'lucide-react';
+import { CreditCard, RefreshCw, PauseCircle, CheckCircle, Plus } from 'lucide-react';
 
 const STATUT_CONFIG: Record<LicenceStatut, { label: string; bg: string; text: string }> = {
   active:    { label: 'Active',    bg: '#DCFCE7', text: '#166534' },
@@ -31,6 +31,17 @@ export default function LicencesPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [offres, setOffres] = useState<Array<{ id: string; code: string; nom: string }>>([]);
+  const [form, setForm] = useState({
+    tenantSlug: '',
+    offreId: '',
+    dateDebut: new Date().toISOString().slice(0, 10),
+    joursEssai: '',
+    montantPaye: '',
+    maxUtilisateurs: '',
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,24 +56,152 @@ export default function LicencesPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const openCreate = async () => {
+    setShowCreate(true);
+    if (!offres.length) {
+      try {
+        const res = await api.superadmin.getOffres();
+        setOffres(res.data ?? res ?? []);
+      } catch {
+        setOffres([]);
+      }
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.tenantSlug.trim() || !form.offreId || !form.dateDebut) {
+      alert('Le tenant, l\'offre et la date de début sont obligatoires.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload: any = {
+        tenantSlug: form.tenantSlug.trim(),
+        offreId: form.offreId,
+        dateDebut: new Date(form.dateDebut).toISOString(),
+      };
+      if (form.joursEssai) payload.joursEssai = Number(form.joursEssai);
+      if (form.montantPaye) payload.montantPaye = Number(form.montantPaye);
+      if (form.maxUtilisateurs) payload.maxUtilisateurs = Number(form.maxUtilisateurs);
+      await api.superadmin.creerLicence(payload);
+      setShowCreate(false);
+      setForm({ tenantSlug: '', offreId: '', dateDebut: new Date().toISOString().slice(0, 10), joursEssai: '', montantPaye: '', maxUtilisateurs: '' });
+      await load();
+    } catch (err: any) {
+      alert('Échec de la création de la licence : ' + (err?.message ?? 'erreur inconnue'));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleSuspendre = async (id: string) => {
+    if (!window.confirm('Suspendre cette licence ? Le tenant perdra l\'accès aux modules concernés.')) return;
     setActionId(id);
-    try { await api.superadmin.suspendreLicence(id); await load(); } finally { setActionId(null); }
+    try {
+      await api.superadmin.suspendreLicence(id);
+      await load();
+    } catch (err: any) {
+      alert('Échec de la suspension : ' + (err?.message ?? 'erreur inconnue'));
+    } finally {
+      setActionId(null);
+    }
   };
 
   const handleRenouveler = async (id: string) => {
     setActionId(id);
-    try { await api.superadmin.renouvelerLicence(id, 1); await load(); } finally { setActionId(null); }
+    try {
+      await api.superadmin.renouvelerLicence(id, 1);
+      await load();
+    } catch (err: any) {
+      alert('Échec du renouvellement : ' + (err?.message ?? 'erreur inconnue'));
+    } finally {
+      setActionId(null);
+    }
   };
 
   return (
     <div className="space-y-5 max-w-6xl">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <CreditCard size={22} className="text-teal-600" /> Licences SaaS
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">{total} licence(s) au total</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <CreditCard size={22} className="text-teal-600" /> Licences SaaS
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">{total} licence(s) au total</p>
+        </div>
+        <button onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+          style={{ background: 'linear-gradient(135deg,#0D47A1,#00838F)' }}>
+          <Plus size={16} /> Créer une licence
+        </button>
       </div>
+
+      {/* Modal création licence */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !creating && setShowCreate(false)}>
+          <form onClick={(e) => e.stopPropagation()} onSubmit={handleCreate}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <CreditCard size={18} className="text-teal-600" /> Créer une licence
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Slug du tenant *</label>
+                <input value={form.tenantSlug} onChange={(e) => setForm({ ...form, tenantSlug: e.target.value })}
+                  placeholder="clinique-saint-joseph" required
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary font-mono" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Offre SaaS *</label>
+                <select value={form.offreId} onChange={(e) => setForm({ ...form, offreId: e.target.value })} required
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary bg-white">
+                  <option value="">— Choisir une offre —</option>
+                  {offres.map((o) => (
+                    <option key={o.id} value={o.id}>{o.nom} ({o.code})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Date de début *</label>
+                <input type="date" value={form.dateDebut} onChange={(e) => setForm({ ...form, dateDebut: e.target.value })} required
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Jours d'essai</label>
+                  <input type="number" min={0} value={form.joursEssai}
+                    onChange={(e) => setForm({ ...form, joursEssai: e.target.value })} placeholder="0"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Max. utilisateurs</label>
+                  <input type="number" min={1} value={form.maxUtilisateurs}
+                    onChange={(e) => setForm({ ...form, maxUtilisateurs: e.target.value })} placeholder="offre"
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Montant payé (FCFA)</label>
+                <input type="number" min={0} value={form.montantPaye}
+                  onChange={(e) => setForm({ ...form, montantPaye: e.target.value })} placeholder="0"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setShowCreate(false)} disabled={creating}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50">
+                Annuler
+              </button>
+              <button type="submit" disabled={creating}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg,#0D47A1,#00838F)' }}>
+                {creating ? 'Création…' : 'Créer la licence'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (

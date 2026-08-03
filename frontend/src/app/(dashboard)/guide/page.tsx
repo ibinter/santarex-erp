@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
-  BookOpen, ChevronRight, Search, Globe, Download, Lightbulb,
+  BookOpen, ChevronRight, Search, Globe, Download, Lightbulb, Library,
 } from 'lucide-react';
 import { SECTIONS, type Lang } from './guideData';
 import { genererGuidePdf } from './guidePdf';
@@ -72,6 +73,14 @@ export default function GuidePage() {
             ? (lang === 'fr' ? 'Génération…' : 'Generating…')
             : (lang === 'fr' ? 'Télécharger le guide (PDF)' : 'Download guide (PDF)')}
         </button>
+
+        {/* Lien vers le Lexique */}
+        <Link href="/lexique"
+          title={lang === 'fr' ? 'Consulter le lexique (glossaire)' : 'Open the glossary'}
+          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 8, border: '1.5px solid rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', textDecoration: 'none', transition: 'all .15s' }}>
+          <Library size={13}/>
+          {lang === 'fr' ? 'Lexique' : 'Glossary'}
+        </Link>
 
         {/* Lang toggle */}
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: 3, gap: 2 }}>

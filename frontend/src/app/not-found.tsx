@@ -1,6 +1,26 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+
+const DICT = {
+  fr: {
+    title: 'Page introuvable',
+    description: "Cette page n'existe pas ou vous n'avez pas les droits nécessaires pour y accéder. Vérifiez l'URL ou retournez au tableau de bord.",
+    back: '← Retour au tableau de bord',
+    rights: 'Tous droits réservés',
+  },
+  en: {
+    title: 'Page not found',
+    description: "This page does not exist or you do not have the required permissions to access it. Check the URL or return to the dashboard.",
+    back: '← Back to dashboard',
+    rights: 'All rights reserved',
+  },
+};
 
 export default function NotFound() {
+  const localeCookie = cookies().get('NEXT_LOCALE')?.value;
+  const locale: 'fr' | 'en' = localeCookie === 'en' ? 'en' : 'fr';
+  const t = DICT[locale];
+
   return (
     <div
       style={{
@@ -52,11 +72,10 @@ export default function NotFound() {
         404
       </h1>
       <h2 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 700, color: '#37474F' }}>
-        Page introuvable
+        {t.title}
       </h2>
       <p style={{ margin: '0 0 32px', fontSize: '14px', color: '#546E7A', maxWidth: '380px', lineHeight: 1.6 }}>
-        Cette page n&apos;existe pas ou vous n&apos;avez pas les droits nécessaires pour y accéder.
-        Vérifiez l&apos;URL ou retournez au tableau de bord.
+        {t.description}
       </p>
 
       <Link
@@ -76,11 +95,11 @@ export default function NotFound() {
           transition: 'background 0.2s',
         }}
       >
-        ← Retour au tableau de bord
+        {t.back}
       </Link>
 
       <p style={{ marginTop: '48px', fontSize: '11px', color: '#90A4AE' }}>
-        © {new Date().getFullYear()} IBIG SOFT — Tous droits réservés
+        © {new Date().getFullYear()} IBIG SOFT — {t.rights}
       </p>
     </div>
   );

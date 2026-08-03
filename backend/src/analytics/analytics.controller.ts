@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { CreateAnalyticsEventDto } from './dto/create-analytics-event.dto';
@@ -19,6 +20,9 @@ export class AnalyticsController {
    * Endpoint public (aucun guard) : la landing envoie des événements légers en
    * fire-and-forget. Répond toujours 200 pour ne jamais bloquer l'UI.
    */
+  // Endpoint public non authentifié → throttle agressif anti-spam/inflation
+  // de données (30 événements / minute par IP).
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
   @Post('event')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enregistrer un événement analytics (public)' })

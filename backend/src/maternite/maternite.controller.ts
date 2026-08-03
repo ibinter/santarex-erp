@@ -21,13 +21,14 @@ import { CreateSuiviPostNatalDto } from './dto/create-suivi-postnatal.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { StatutGrossesse } from './entities/dossier-grossesse.entity';
 
 @ApiTags('Maternité')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Lecture ouverte au personnel soignant ; mutations réservées aux
 // prescripteurs et sages-femmes (médecin, infirmier) et à l'administration.
 @Roles(

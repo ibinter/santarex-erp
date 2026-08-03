@@ -14,6 +14,7 @@ import { SoinsInfirmiersService } from './soins-infirmiers.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { CreateTransmissionDto } from './dto/create-transmission.dto';
@@ -31,7 +32,7 @@ import { StatutPlanSoins } from './entities/plan-soins.entity';
 @ApiTags('Soins infirmiers')
 @ApiBearerAuth()
 @Controller('soins-infirmiers')
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Roles(
   UserRole.MEDECIN,
   UserRole.INFIRMIER,

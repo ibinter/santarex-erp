@@ -17,6 +17,7 @@ import { CreateTransfusionDto } from './dto/create-transfusion.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import {
@@ -28,7 +29,7 @@ import {
 
 @ApiTags('Banque de sang')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Consultation ouverte aux soignants ; mutations du stock et enregistrement
 // des transfusions réservés au laboratoire/soignants habilités et à la direction.
 @Roles(

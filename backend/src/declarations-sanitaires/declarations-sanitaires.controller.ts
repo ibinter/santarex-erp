@@ -23,6 +23,7 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { CategorieMaladie } from './entities/maladie-declarable.entity';
@@ -33,7 +34,7 @@ import {
 
 @ApiTags('Déclarations sanitaires (MDO)')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 // Surveillance épidémiologique : la déclaration est ouverte au personnel
 // soignant ; le référentiel MDO et les stats sont utiles à l'admin/direction.
 @Roles(

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, ParseUUIDPipe, Body, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { OffresSaasService } from './offres-saas.service';
 import { CreateOffreSaasDto } from './dto/create-offre-saas.dto';
@@ -33,7 +33,7 @@ export class OffresSaasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Détail d\'une offre' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.offresSaasService.findOne(id);
   }
 
@@ -51,7 +51,7 @@ export class OffresSaasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Modifier une offre' })
-  update(@Param('id') id: string, @Body() dto: UpdateOffreSaasDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOffreSaasDto) {
     return this.offresSaasService.update(id, dto);
   }
 
@@ -60,7 +60,7 @@ export class OffresSaasController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Désactiver une offre' })
-  desactiver(@Param('id') id: string) {
+  desactiver(@Param('id', ParseUUIDPipe) id: string) {
     return this.offresSaasService.desactiver(id);
   }
 }

@@ -28,22 +28,83 @@ type Etat =
   | { phase: 'notfound' }
   | { phase: 'error' };
 
-const TYPE_LABELS: Record<string, string> = {
-  facture: 'Facture',
-  recu: 'Reçu',
-  ordonnance: 'Ordonnance',
-  attestation: 'Attestation',
+const TYPE_LABELS: Record<'fr' | 'en', Record<string, string>> = {
+  fr: {
+    facture: 'Facture',
+    recu: 'Reçu',
+    ordonnance: 'Ordonnance',
+    attestation: 'Attestation',
+  },
+  en: {
+    facture: 'Invoice',
+    recu: 'Receipt',
+    ordonnance: 'Prescription',
+    attestation: 'Certificate',
+  },
 };
 
-const STATUT_LABELS: Record<string, string> = {
-  authentique: 'Document authentique',
-  annule: 'Document annulé',
-  remplace: 'Document remplacé',
-  revoque: 'Document révoqué',
+const STATUT_LABELS: Record<'fr' | 'en', Record<string, string>> = {
+  fr: {
+    authentique: 'Document authentique',
+    annule: 'Document annulé',
+    remplace: 'Document remplacé',
+    revoque: 'Document révoqué',
+  },
+  en: {
+    authentique: 'Authentic document',
+    annule: 'Cancelled document',
+    remplace: 'Replaced document',
+    revoque: 'Revoked document',
+  },
+};
+
+const DICT = {
+  fr: {
+    subtitle: 'Vérification de document',
+    checking: 'Vérification en cours…',
+    notFoundTitle: 'Document introuvable',
+    notFoundSub: 'Aucun document ne correspond à ce code. Ce QR code est peut-être invalide ou expiré.',
+    errorTitle: 'Vérification indisponible',
+    errorSub: 'Impossible de contacter le service de vérification. Réessayez plus tard.',
+    authenticTitle: 'Document authentique',
+    invalidTitle: 'Document non valide',
+    authenticSub: 'Ce document a bien été émis via SANTAREX ERP.',
+    invalidSub: "Ce document a été émis via SANTAREX ERP mais n'est plus valide.",
+    software: 'Logiciel',
+    issuer: 'Société émettrice',
+    docType: 'Type de document',
+    reference: 'Référence',
+    issueDate: "Date d'émission",
+    footer: 'Cette page ne révèle aucune donnée confidentielle du document.',
+  },
+  en: {
+    subtitle: 'Document verification',
+    checking: 'Verifying…',
+    notFoundTitle: 'Document not found',
+    notFoundSub: 'No document matches this code. This QR code may be invalid or expired.',
+    errorTitle: 'Verification unavailable',
+    errorSub: 'Unable to reach the verification service. Please try again later.',
+    authenticTitle: 'Authentic document',
+    invalidTitle: 'Invalid document',
+    authenticSub: 'This document was indeed issued through SANTAREX ERP.',
+    invalidSub: 'This document was issued through SANTAREX ERP but is no longer valid.',
+    software: 'Software',
+    issuer: 'Issuing company',
+    docType: 'Document type',
+    reference: 'Reference',
+    issueDate: 'Issue date',
+    footer: 'This page does not reveal any confidential data from the document.',
+  },
 };
 
 export default function VerifyPage({ params }: { params: { token: string } }) {
   const [etat, setEtat] = useState<Etat>({ phase: 'loading' });
+  const [locale, setLocale] = useState<'fr' | 'en'>('fr');
+  useEffect(() => {
+    const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(en|fr)/);
+    if (m) setLocale(m[1] as 'fr' | 'en');
+  }, []);
+  const t = DICT[locale];
 
   useEffect(() => {
     let cancelled = false;
@@ -127,7 +188,7 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
               SANTAREX ERP
             </div>
             <div style={{ fontSize: '12px', color: '#6b7683' }}>
-              Vérification de document
+              {t.subtitle}
             </div>
           </div>
         </header>
@@ -135,7 +196,7 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
         <div style={{ padding: '28px 24px' }}>
           {etat.phase === 'loading' && (
             <p style={{ textAlign: 'center', color: '#6b7683', margin: 0 }}>
-              Vérification en cours…
+              {t.checking}
             </p>
           )}
 
@@ -144,8 +205,8 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
               couleur="#b23b3b"
               fond="#fdecec"
               icone="✕"
-              titre="Document introuvable"
-              sousTitre="Aucun document ne correspond à ce code. Ce QR code est peut-être invalide ou expiré."
+              titre={t.notFoundTitle}
+              sousTitre={t.notFoundSub}
             />
           )}
 
@@ -154,8 +215,8 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
               couleur="#8a6d1f"
               fond="#fdf6e3"
               icone="!"
-              titre="Vérification indisponible"
-              sousTitre="Impossible de contacter le service de vérification. Réessayez plus tard."
+              titre={t.errorTitle}
+              sousTitre={t.errorSub}
             />
           )}
 
@@ -166,27 +227,23 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
                 fond={etat.data.authentique ? '#e8f6ee' : '#fdecec'}
                 icone={etat.data.authentique ? '✓' : '✕'}
                 titre={
-                  STATUT_LABELS[etat.data.statut] ??
-                  (etat.data.authentique ? 'Document authentique' : 'Document non valide')
+                  STATUT_LABELS[locale][etat.data.statut] ??
+                  (etat.data.authentique ? t.authenticTitle : t.invalidTitle)
                 }
-                sousTitre={
-                  etat.data.authentique
-                    ? 'Ce document a bien été émis via SANTAREX ERP.'
-                    : "Ce document a été émis via SANTAREX ERP mais n'est plus valide."
-                }
+                sousTitre={etat.data.authentique ? t.authenticSub : t.invalidSub}
               />
 
               <dl style={{ margin: '24px 0 0', display: 'grid', gap: '2px' }}>
-                <Ligne label="Logiciel" valeur={etat.data.logiciel} />
-                <Ligne label="Société émettrice" valeur={etat.data.societe} />
+                <Ligne label={t.software} valeur={etat.data.logiciel} />
+                <Ligne label={t.issuer} valeur={etat.data.societe} />
                 <Ligne
-                  label="Type de document"
-                  valeur={TYPE_LABELS[etat.data.typeDocument] ?? etat.data.typeDocument}
+                  label={t.docType}
+                  valeur={TYPE_LABELS[locale][etat.data.typeDocument] ?? etat.data.typeDocument}
                 />
-                <Ligne label="Référence" valeur={etat.data.reference} />
+                <Ligne label={t.reference} valeur={etat.data.reference} />
                 <Ligne
-                  label="Date d'émission"
-                  valeur={formaterDate(etat.data.date)}
+                  label={t.issueDate}
+                  valeur={formaterDate(etat.data.date, locale)}
                 />
               </dl>
             </>
@@ -202,7 +259,7 @@ export default function VerifyPage({ params }: { params: { token: string } }) {
             textAlign: 'center',
           }}
         >
-          Cette page ne révèle aucune donnée confidentielle du document.
+          {t.footer}
         </footer>
       </div>
     </main>
@@ -278,9 +335,9 @@ function Ligne({ label, valeur }: { label: string; valeur: string }) {
   );
 }
 
-function formaterDate(iso: string): string {
+function formaterDate(iso: string, locale: 'fr' | 'en' = 'fr'): string {
   try {
-    return new Date(iso).toLocaleDateString('fr-FR', {
+    return new Date(iso).toLocaleDateString(locale === 'en' ? 'en-US' : 'fr-FR', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
