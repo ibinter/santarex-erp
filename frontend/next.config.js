@@ -13,7 +13,8 @@ const nextConfig = {
   //
   // Choix CSP : REPORT-ONLY. Next.js 14 injecte des scripts/styles inline (hydration,
   // styled-jsx), le landing charge Google Fonts, des logos ibigsoft.com, le script
-  // same-origin ibigsoft-universal.js, et appelle l'API SANTAREX + Groq côté client.
+  // same-origin ibigsoft-universal.js, et appelle l'API SANTAREX. L'IA (SARA) passe
+  // désormais par le backend — plus aucun appel Groq direct depuis le navigateur.
   // Une CSP appliquée risquerait de casser le rendu ; on rapporte sans bloquer.
   async headers() {
     const csp = [
@@ -22,7 +23,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: http://185.98.139.38",
-      "connect-src 'self' https://api.groq.com https://santarex.ibigsoft.com",
+      "connect-src 'self' https://santarex.ibigsoft.com",
       "frame-ancestors 'self'",
     ].join('; ');
     return [

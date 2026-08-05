@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AiAssistantController } from './ai-assistant.controller';
+import { SaraPublicController } from './sara-public.controller';
 import { AiAssistantService } from './ai-assistant.service';
 import { AiConfig } from './entities/ai-config.entity';
 import { AiUsage } from './entities/ai-usage.entity';
@@ -9,7 +10,7 @@ import { OffreSaas } from '../offres-saas/entities/offre-saas.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AiConfig, AiUsage, OffreSaas])],
-  controllers: [AiAssistantController],
+  controllers: [AiAssistantController, SaraPublicController],
   providers: [AiAssistantService, KnowledgeService],
 })
 export class AiAssistantModule {}

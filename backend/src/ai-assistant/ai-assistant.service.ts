@@ -187,6 +187,47 @@ export class AiAssistantService {
     await this.recordUsage(tenantId, userId, tokens, config.provider, question);
   }
 
+  // ── SARA publique (chatbot de la landing) ────────────────────────────────
+  //  Proxy serveur vers Groq : la clé API reste côté backend (GROQ_API_KEY),
+  //  plus JAMAIS exposée dans le bundle frontend. Non authentifié mais throttlé
+  //  au niveau du contrôleur. Prompt système figé côté serveur ; modèle et
+  //  plafond de tokens verrouillés pour éviter tout détournement en proxy IA.
+  private static readonly SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
+SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
+Plans mensuels : Pharmacie 12 000 | Cabinet 18 000 | Centre de santé 35 000 | Clinique 75 000 | Hôpital 150 000 FCFA/mois. Forfait annuel = 10 mois payés 2 mois offerts.
+40 modules couvrant tout le cycle hospitalier, regroupés par domaine : Clinique & Soins (DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD), Pharmacie & Plateau technique (pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI), Finances & Assurances (facturation, devis, caisse, assureurs, tiers-payant, budget), Communication (portail patient, SMS & rappels, messagerie, satisfaction), Qualité (gardes, incidents, indicateurs, déclarations sanitaires), Opérations (transport/ambulances, morgue, RH, BI, multi-sites).
+Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
+Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
+Réponds de façon concise (max 5 lignes), professionnelle et en français. Si la question dépasse tes connaissances, propose de contacter l'équipe.`;
+
+  async saraPublic(message: string): Promise<{ reply: string }> {
+    const msg = String(message ?? '').slice(0, 500);
+    try {
+      const apiKey = this.appConfig.getOrThrow<string>('GROQ_API_KEY');
+      const groq = new Groq({ apiKey });
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.1-8b-instant',
+        temperature: 0.65,
+        max_tokens: 350,
+        messages: [
+          { role: 'system', content: AiAssistantService.SARA_SYSTEM },
+          { role: 'user', content: msg },
+        ],
+      });
+      const reply = completion.choices?.[0]?.message?.content?.trim();
+      return {
+        reply:
+          reply || 'Une erreur est survenue. Contactez-nous : +225 07 78 88 25 92',
+      };
+    } catch (e) {
+      this.logger.warn(`SARA publique — échec Groq : ${(e as Error).message}`);
+      return {
+        reply:
+          'Connexion impossible. Contactez-nous via WhatsApp : +225 07 78 88 25 92',
+      };
+    }
+  }
+
   private async streamGroq(
     config: AiConfig,
     system: string,

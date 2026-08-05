@@ -301,15 +301,6 @@ const SARA_KB = [
     r: "Avec plaisir ! N'hésitez pas si vous avez d'autres questions. Je suis disponible 24h/24 😊" },
 ];
 
-const SARA_GROQ_KEY = ['gsk_nSy9kIik08HF5GAwnBJoWG','dyb3FYJr2YGDHM37GHH2uJ8qu','wyEu1'].join('');
-const SARA_SYSTEM = `Tu es SARA, l'assistante IA officielle de SANTAREX ERP, édité par IBIG Soft (ibigsoft.com).
-SANTAREX ERP est un logiciel de gestion hospitalière SaaS pour l'Afrique de l'Ouest et Centrale.
-Plans mensuels : Pharmacie 12 000 | Cabinet 18 000 | Centre de santé 35 000 | Clinique 75 000 | Hôpital 150 000 FCFA/mois. Forfait annuel = 10 mois payés 2 mois offerts.
-40 modules couvrant tout le cycle hospitalier, regroupés par domaine : Clinique & Soins (DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD), Pharmacie & Plateau technique (pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI), Finances & Assurances (facturation, devis, caisse, assureurs, tiers-payant, budget), Communication (portail patient, SMS & rappels, messagerie, satisfaction), Qualité (gardes, incidents, indicateurs, déclarations sanitaires), Opérations (transport/ambulances, morgue, RH, BI, multi-sites).
-Paiements : Orange Money, MTN MoMo, Wave, Moov Money, Moneroo, CinetPay.
-Support : WhatsApp +225 07 78 88 25 92 | Tél +225 27 22 27 60 14 | contact@ibigsoft.com.
-Réponds de façon concise (max 5 lignes), professionnelle et en français. Si la question dépasse tes connaissances, propose de contacter l'équipe.`;
-
 function getSaraLocal(msg: string): string | null {
   const lower = msg.toLowerCase();
   for (const item of SARA_KB) {
@@ -318,19 +309,20 @@ function getSaraLocal(msg: string): string | null {
   return null;
 }
 
+// SARA passe par le proxy backend (/ai-assistant/sara) : la clé Groq reste
+// côté serveur et n'est PLUS jamais présente dans le bundle frontend.
 async function callGroq(msg: string): Promise<string> {
   try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const res = await fetch(`${API_URL}/ai-assistant/sara`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${SARA_GROQ_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'system', content: SARA_SYSTEM }, { role: 'user', content: msg }],
-        max_tokens: 350, temperature: 0.65,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg }),
     });
     const data = await res.json();
-    return data.choices?.[0]?.message?.content?.trim() || 'Une erreur est survenue. Contactez-nous : +225 07 78 88 25 92';
+    return (
+      data?.reply?.trim() ||
+      'Une erreur est survenue. Contactez-nous : +225 07 78 88 25 92'
+    );
   } catch {
     return 'Connexion impossible. Contactez-nous via WhatsApp : +225 07 78 88 25 92';
   }
