@@ -13,6 +13,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { SECTIONS, type Lang, type Fiche } from './guideData';
+import { CATEGORIES } from '../lexique/lexiqueData';
 import { sanitizeText } from '@/lib/pdf/fonts';
 
 // ─── Charte / constantes de mise en page (unité mm, A4 portrait) ──────────────
@@ -53,6 +54,9 @@ const L = {
     page: 'Page',
     of: 'sur',
     footer: 'Guide utilisateur SANTAREX ERP — IBIG Softwares',
+    annexTitle: 'Annexe — Lexique',
+    annexIntro: 'Définitions des termes métier, sigles et notions employés dans SANTAREX ERP (clinique, ERP, comptabilité OHADA).',
+    terms: 'termes',
   },
   en: {
     title: 'User Guide',
@@ -66,6 +70,9 @@ const L = {
     page: 'Page',
     of: 'of',
     footer: 'SANTAREX ERP User Guide — IBIG Softwares',
+    annexTitle: 'Annex — Glossary',
+    annexIntro: 'Definitions of the business terms, acronyms and concepts used in SANTAREX ERP (clinical, ERP, OHADA accounting).',
+    terms: 'terms',
   },
 } as const;
 
@@ -171,9 +178,12 @@ export async function genererGuidePdf(lang: Lang): Promise<void> {
     const nbFiches = SECTIONS.reduce(
       (n, s) => n + (lang === 'fr' ? s.fr_content.length : s.en_content.length), 0,
     );
+    const nbTermes = CATEGORIES.reduce(
+      (n, c) => n + (lang === 'fr' ? c.fr_content : c.en_content).length, 0,
+    );
     const recap = lang === 'fr'
-      ? `${nbChap} chapitres - ${nbFiches} fiches pratiques`
-      : `${nbChap} chapters - ${nbFiches} how-to cards`;
+      ? `${nbChap} chapitres - ${nbFiches} fiches pratiques - lexique (${nbTermes} termes)`
+      : `${nbChap} chapters - ${nbFiches} how-to cards - glossary (${nbTermes} terms)`;
     doc.text(S(recap), MARGIN_X, 150);
 
     // Filet de marque en bas de page.
@@ -228,6 +238,27 @@ export async function genererGuidePdf(lang: Lang): Promise<void> {
 
       y += 9;
     });
+
+    // Entrée d'annexe (lexique) — pastille « A ».
+    ensure(9);
+    const nbTermes = CATEGORIES.reduce(
+      (n, c) => n + (lang === 'fr' ? c.fr_content : c.en_content).length, 0,
+    );
+    setFill(BRAND);
+    doc.circle(MARGIN_X + 3, y - 1.4, 3, 'F');
+    setColor('#FFFFFF');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('A', MARGIN_X + 3, y - 0.2, { align: 'center' });
+    setColor(INK);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11.5);
+    doc.text(S(t.annexTitle), MARGIN_X + 10, y);
+    setColor(MUTED);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.text(S(`${nbTermes} ${t.terms}`), PAGE_W - MARGIN_X, y, { align: 'right' });
+    y += 9;
   }
 
   // ── 3) CHAPITRE ─────────────────────────────────────────────────────────
@@ -362,6 +393,57 @@ export async function genererGuidePdf(lang: Lang): Promise<void> {
     y += 2;
   }
 
+  // ── 3bis) ANNEXE — LEXIQUE (glossaire par catégorie) ─────────────────────
+  function renderLexiqueAnnexe() {
+    newPage();
+
+    // Titre d'annexe.
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    setColor(BRAND);
+    doc.text(S(t.annexTitle), MARGIN_X, y);
+    y += 4;
+    setDraw(BRAND);
+    doc.setLineWidth(0.6);
+    doc.line(MARGIN_X, y, MARGIN_X + 40, y);
+    y += 10;
+
+    writeParagraph(t.annexIntro, { size: 10, color: MUTED });
+    y += 4;
+
+    CATEGORIES.forEach((cat) => {
+      const meta = lang === 'fr' ? cat.fr : cat.en;
+      const termes = lang === 'fr' ? cat.fr_content : cat.en_content;
+
+      // En-tête de catégorie (bandeau doux + barre couleur de la catégorie).
+      const headH = 13;
+      ensure(headH + 10);
+      y += 2;
+      setFill(cat.bg || '#EAF2FB');
+      doc.roundedRect(MARGIN_X, y - 4, CONTENT_W, headH, 2, 2, 'F');
+      setFill(cat.color || BRAND);
+      doc.rect(MARGIN_X, y - 4, 1.8, headH, 'F');
+      setColor(cat.color || BRAND);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12.5);
+      doc.text(S(meta.titre), MARGIN_X + 6, y + 1.5);
+      setColor(MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(S(meta.desc), MARGIN_X + 6, y + 6.5);
+      y += headH + 3;
+
+      // Termes : intitulé en gras puis définition.
+      termes.forEach((tm) => {
+        ensure(9);
+        writeParagraph(tm.terme, { size: 10.5, bold: true, color: INK, lineH: 5, indent: 2 });
+        writeParagraph(tm.def, { size: 10, color: '#37474F', lineH: 5, indent: 6 });
+        y += 2.6;
+      });
+      y += 2;
+    });
+  }
+
   // ── 4) PIEDS DE PAGE (après génération : numérotation) ───────────────────
   function paintFooters() {
     const total = doc.getNumberOfPages();
@@ -383,6 +465,7 @@ export async function genererGuidePdf(lang: Lang): Promise<void> {
   coverPage();
   tableOfContents();
   SECTIONS.forEach((_, i) => renderChapter(i));
+  renderLexiqueAnnexe();
   paintFooters();
 
   doc.save(`Guide-SANTAREX-${lang.toUpperCase()}.pdf`);
