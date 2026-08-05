@@ -3,6 +3,10 @@ import Script from 'next/script';
 import LandingPage from '@/components/landing/LandingPage';
 
 export const metadata: Metadata = {
+  // metadataBase : sans lui, Next résout les URLs d'images OG/Twitter contre
+  // localhost — les scrapers sociaux (Facebook, LinkedIn, WhatsApp) reçoivent
+  // alors une URL invalide. On l'ancre sur le domaine de production.
+  metadataBase: new URL('https://santarex.ibigsoft.com'),
   title: 'SANTAREX ERP — Logiciel de Gestion Hospitalière pour l\'Afrique',
   description: 'SANTAREX ERP est le logiciel SaaS de gestion hospitalière conçu pour les établissements de santé africains. Patients, consultations, pharmacie, facturation, laboratoire — tout en un.',
   openGraph: {
@@ -10,7 +14,7 @@ export const metadata: Metadata = {
     description: 'La solution SaaS complète pour cliniques, hôpitaux et cabinets médicaux en Afrique.',
     url: 'https://santarex.ibigsoft.com',
     siteName: 'SANTAREX ERP',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'SANTAREX ERP — ERP hospitalier' }],
     locale: 'fr_CI',
     type: 'website',
   },
@@ -18,6 +22,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SANTAREX ERP',
     description: 'Gestion hospitalière SaaS pour l\'Afrique',
+    images: ['/og-image.png'],
   },
   alternates: { canonical: 'https://santarex.ibigsoft.com' },
 };
