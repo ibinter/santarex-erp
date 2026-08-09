@@ -4,6 +4,7 @@ import {
   MinLength,
   IsNotEmpty,
   IsOptional,
+  IsIn,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -41,4 +42,15 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   pays?: string;
+
+  @ApiPropertyOptional({
+    example: 'gratuit',
+    description:
+      "Palier à l'inscription : 'essai' (essai 30j, défaut) ou 'gratuit' "
+      + '(palier Découverte, gratuit à vie plafonné à 10 patients).',
+    enum: ['essai', 'gratuit'],
+  })
+  @IsOptional()
+  @IsIn(['essai', 'gratuit'])
+  palier?: 'essai' | 'gratuit';
 }

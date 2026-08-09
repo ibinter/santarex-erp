@@ -118,11 +118,16 @@ export class AuthService {
       tenantId: slug,
     });
 
-    // 5. Démarrage d'un essai gratuit — non bloquant (le guard licence est fail-open).
+    // 5. Attribution de la licence — non bloquant (le guard licence est fail-open).
+    //    palier='gratuit' → espace Découverte direct (§3) ; sinon essai 30j.
     try {
-      await this.licenceLifecycle.startTrial(slug, 'cabinet');
+      if (dto.palier === 'gratuit') {
+        await this.licenceLifecycle.demarrerDecouverte(slug);
+      } else {
+        await this.licenceLifecycle.startTrial(slug, 'cabinet');
+      }
     } catch (err) {
-      this.logger.warn(`Essai gratuit non démarré pour "${slug}": ${err.message}`);
+      this.logger.warn(`Licence non attribuée pour "${slug}" (palier=${dto.palier ?? 'essai'}): ${err.message}`);
     }
 
     // 6. Email de bienvenue — non bloquant.

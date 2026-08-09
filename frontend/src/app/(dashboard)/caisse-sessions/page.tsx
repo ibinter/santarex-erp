@@ -7,6 +7,7 @@ import {
   TrendingUp, Hash, AlertTriangle, CheckCircle2, X, Banknote, ClipboardList,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { chargerEtatLicence, TEXTE_FILIGRANE } from '@/lib/pdf/filigrane';
 
 const MODES = ['especes', 'carte_bancaire', 'mobile_money', 'virement', 'cheque', 'assurance', 'autre'] as const;
 
@@ -41,6 +42,11 @@ export default function CaisseSessionsPage() {
   const [historique, setHistorique] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
+  // Filigrane du palier Découverte sur le reçu imprimé (§3.5).
+  const [filigrane, setFiligrane] = useState(false);
+  useEffect(() => {
+    chargerEtatLicence().then((e) => setFiligrane(e?.filigrane === true)).catch(() => {});
+  }, []);
 
   // formulaires
   const [showOuvrir, setShowOuvrir] = useState(false);
@@ -354,6 +360,11 @@ export default function CaisseSessionsPage() {
             </div>
             {apercu.emisParRef && <div style={{ fontSize: 10, color: '#90A4AE', marginTop: 10 }}>{t('recuEmisPar')}: {apercu.emisParRef}</div>}
             <div style={{ textAlign: 'center', fontSize: 11, color: '#546E7A', marginTop: 12 }}>{t('recuMerci')}</div>
+            {filigrane && (
+              <div style={{ textAlign: 'center', fontSize: 9, color: '#90A4AE', marginTop: 10, borderTop: '1px dashed #CFD8DC', paddingTop: 6 }}>
+                {TEXTE_FILIGRANE}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
             <button onClick={() => setApercu(null)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1.5px solid #E0E8F0', background: '#fff', color: '#546E7A', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>{t('fermer')}</button>

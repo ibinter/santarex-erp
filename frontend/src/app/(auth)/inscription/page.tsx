@@ -64,6 +64,13 @@ export default function InscriptionPage() {
     setError(null);
 
     try {
+      // Palier choisi depuis la vitrine : /inscription?palier=gratuit → espace
+      // Découverte direct ; sinon essai 30j (défaut).
+      const palier =
+        typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('palier') === 'gratuit'
+          ? 'gratuit'
+          : undefined;
       const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,6 +82,7 @@ export default function InscriptionPage() {
           password: form.password,
           telephone: form.telephone || undefined,
           pays: form.pays || undefined,
+          palier,
         }),
       });
 

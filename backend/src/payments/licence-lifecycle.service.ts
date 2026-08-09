@@ -220,6 +220,42 @@ export class LicenceLifecycleService {
   }
 
   /**
+   * Crée directement un espace au palier gratuit « Découverte » (cahier IBIG
+   * v1.1, §3) — utilisé par « Créer mon espace gratuit » à l'inscription, sans
+   * passer par l'essai. Palier à vie : pas d'échéance réelle (date lointaine
+   * pour satisfaire la colonne NOT NULL), 1 utilisateur, modules de base,
+   * plafond de 10 patients appliqué à l'écriture.
+   */
+  async demarrerDecouverte(tenant: Tenant | string): Promise<Licence> {
+    const tenantSlug = typeof tenant === 'string' ? tenant : tenant.slug;
+    await this.tenantsService.findBySlug(tenantSlug);
+
+    const offre = await this.offresSaasService.findByCode('decouverte');
+    const now = new Date();
+    const expiration = new Date(now);
+    expiration.setFullYear(expiration.getFullYear() + 100); // « à vie »
+
+    const licence = this.licenceRepo.create({
+      cle: this.generateCle(),
+      tenantSlug,
+      offreId: offre.id,
+      offreCode: offre.code,
+      statut: LicenceStatut.DECOUVERTE,
+      dateDebut: now,
+      dateExpiration: expiration,
+      maxUtilisateurs: offre.maxUtilisateurs,
+      montantPaye: 0,
+      modePaiement: LicenceModePaiement.GRATUIT,
+      joursEssai: 0,
+      modulesActivesJson: offre.modulesInclus || JSON.stringify(LICENCE_CONFIG.gratuit.modules),
+    });
+
+    const saved = await this.licenceRepo.save(licence);
+    this.logger.log(`Espace Découverte créé pour ${tenantSlug} → ${saved.cle}`);
+    return saved;
+  }
+
+  /**
    * Octroie une licence PROVISIONAL (accès accordé manuellement par un admin,
    * plafonné à `provisionalMaxDays`, défaut 14j).
    */

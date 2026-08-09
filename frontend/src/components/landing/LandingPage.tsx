@@ -1508,7 +1508,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <a href="/inscription" className="lp-plan-btn lp-plan-btn-outline" onClick={() => track('pricing_click', { plan: 'Decouverte', annual: false })}>{DISCOVER.btnLabel[lang]}</a>
+              <a href="/inscription?palier=gratuit" className="lp-plan-btn lp-plan-btn-outline" onClick={() => track('pricing_click', { plan: 'Decouverte', annual: false })}>{DISCOVER.btnLabel[lang]}</a>
               <p className="lp-discover-note">{DISCOVER.note[lang]}</p>
             </div>
             {plans.map(p => {
