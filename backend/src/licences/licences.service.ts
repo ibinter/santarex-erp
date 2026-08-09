@@ -16,6 +16,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { AuditAction } from '../audit-logs/entities/audit-log.entity';
 import { MailService } from '../mail/mail.service';
+import { PLAFOND_PATIENTS_DECOUVERTE } from '../common/licence-config';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -254,6 +255,159 @@ export class LicencesService {
         ? `Quota OK : ${actuel}/${max} utilisateurs actifs.`
         : `Plafond de licence atteint : ${actuel}/${max} utilisateurs actifs. `
           + 'Création refusée (mettez à niveau votre offre pour ajouter des utilisateurs).',
+    };
+  }
+
+  /**
+   * État de licence exposé au tenant courant (cahier IBIG v1.1, §9.4).
+   * Sert de source unique au frontend : palier, droits (export/API/SARA/
+   * multi-utilisateur), quotas patients, filigrane. Toujours calculé serveur.
+   */
+  async getEtatPourTenant(tenantSlug: string): Promise<{
+    etat: string;
+    palierGratuit: boolean;
+    joursRestants: number | null;
+    droits: { export: boolean; api: boolean; sara: boolean; multiUtilisateur: boolean };
+    quotas: { patients: { valeur: number; plafond: number; restant: number } | null };
+    filigrane: boolean;
+    message: string;
+  }> {
+    const licences = await this.licenceRepository.find({
+      where: { tenantSlug },
+      order: { dateExpiration: 'DESC', createdAt: 'DESC' },
+    });
+    const accordantes = new Set<string>([
+      LicenceStatut.ACTIVE,
+      LicenceStatut.ESSAI,
+      LicenceStatut.DECOUVERTE,
+    ]);
+    const courante = licences.find((l) => accordantes.has(l.statut));
+    const etat = courante?.statut ?? 'aucune';
+    const gratuit = etat === LicenceStatut.DECOUVERTE;
+
+    let joursRestants: number | null = null;
+    if (courante && !gratuit && courante.dateExpiration) {
+      joursRestants = Math.max(
+        0,
+        Math.ceil((courante.dateExpiration.getTime() - Date.now()) / 86_400_000),
+      );
+    }
+
+    // Au palier Découverte, les leviers de conversion sont fermés (§3.3).
+    const droits = {
+      export: !gratuit,
+      api: !gratuit,
+      sara: !gratuit,
+      multiUtilisateur: !gratuit,
+    };
+
+    let quotas: { patients: { valeur: number; plafond: number; restant: number } | null } = {
+      patients: null,
+    };
+    if (gratuit) {
+      const q = await this.verifierQuotaPatients(tenantSlug);
+      quotas = {
+        patients: {
+          valeur: q.actuel,
+          plafond: q.plafond,
+          restant: Math.max(0, q.plafond - q.actuel),
+        },
+      };
+    }
+
+    return {
+      etat,
+      palierGratuit: gratuit,
+      joursRestants,
+      droits,
+      quotas,
+      // Filigrane « Généré avec SANTAREX » sur les documents du palier gratuit.
+      filigrane: gratuit,
+      message: gratuit
+        ? `Palier Découverte — ${PLAFOND_PATIENTS_DECOUVERTE} patients.`
+        : 'Formule active.',
+    };
+  }
+
+  /**
+   * Vérifie le plafond du compteur métier « patients » au palier Découverte
+   * (cahier IBIG v1.1, §3.7 / §9.5). N'est appliqué QUE pour l'état DECOUVERTE :
+   * les formules payantes et l'essai n'ont aucun plafond de patients.
+   *
+   * Contrôle effectué à l'ÉCRITURE (jamais à l'affichage). Ne supprime ni ne
+   * masque rien : au-delà du plafond, seule la création est refusée.
+   */
+  async verifierQuotaPatients(tenantSlug: string): Promise<{
+    autorise: boolean;
+    actuel: number;
+    plafond: number;
+    palierGratuit: boolean;
+    message: string;
+  }> {
+    const licences = await this.licenceRepository.find({
+      where: { tenantSlug },
+      order: { dateExpiration: 'DESC', createdAt: 'DESC' },
+    });
+    const accordantes = new Set<string>([
+      LicenceStatut.ACTIVE,
+      LicenceStatut.ESSAI,
+      LicenceStatut.DECOUVERTE,
+    ]);
+    const courante = licences.find((l) => accordantes.has(l.statut));
+
+    // Aucun plafond patients hors palier Découverte.
+    if (!courante || courante.statut !== LicenceStatut.DECOUVERTE) {
+      return {
+        autorise: true,
+        actuel: 0,
+        plafond: 0,
+        palierGratuit: false,
+        message: 'Aucun plafond patients (formule payante ou essai).',
+      };
+    }
+
+    const plafond = PLAFOND_PATIENTS_DECOUVERTE;
+    let actuel = 0;
+    try {
+      const rows = await this.licenceRepository.manager.query(
+        'SELECT COUNT(*)::int AS count FROM patients WHERE "tenantId" = $1',
+        [tenantSlug],
+      );
+      actuel = Number(rows?.[0]?.count) || 0;
+    } catch (e) {
+      // En cas d'erreur de comptage, on n'empêche pas la création (fail-open
+      // sur la disponibilité, comme le reste du moteur d'entitlement).
+      this.logger.warn(
+        `verifierQuotaPatients — comptage échoué pour ${tenantSlug}: ${(e as Error).message}`,
+      );
+      return {
+        autorise: true,
+        actuel: 0,
+        plafond,
+        palierGratuit: true,
+        message: 'Comptage indisponible — création autorisée.',
+      };
+    }
+
+    const autorise = actuel < plafond;
+    if (!autorise) {
+      this.signalerAnomalieLicence(tenantSlug, {
+        motif: 'DEPASSEMENT_PLAFOND_PATIENTS_DECOUVERTE',
+        detail: `Patients ${actuel}/${plafond} — plafond du palier Découverte atteint (prospect chaud).`,
+        licenceCle: courante.cle,
+      });
+    }
+
+    return {
+      autorise,
+      actuel,
+      plafond,
+      palierGratuit: true,
+      message: autorise
+        ? `Quota OK : ${actuel}/${plafond} patients.`
+        : `Limite du palier Découverte atteinte (${plafond} patients). Vos données `
+          + 'restent accessibles et modifiables. Pour aller au-delà, activez la '
+          + 'formule Cabinet à partir de 18 000 FCFA.',
     };
   }
 

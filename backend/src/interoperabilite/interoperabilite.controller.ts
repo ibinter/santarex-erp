@@ -15,6 +15,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { PaidTierGuard } from '../common/guards/paid-tier.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -39,7 +40,8 @@ import {
  */
 @ApiTags('Interopérabilité')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+// PaidTierGuard : l'API & les intégrations sont fermées au palier Découverte (§3.3).
+@UseGuards(JwtAuthGuard, RolesGuard, PaidTierGuard)
 @Roles(UserRole.ADMIN, UserRole.DIRECTEUR)
 @Controller('interoperabilite')
 export class InteroperabiliteController {

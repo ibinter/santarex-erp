@@ -14,6 +14,10 @@ export enum LicenceStatut {
   EXPIREE = 'expiree',
   ESSAI = 'essai',
   ANNULEE = 'annulee',
+  // Palier gratuit à vie « Découverte » (cahier IBIG v1.1, §3). Accès aux
+  // fonctions de base, plafonné par le compteur métier (10 patients), sans
+  // export / API / SARA / multi-utilisateur.
+  DECOUVERTE = 'decouverte',
 }
 
 export enum LicenceModePaiement {

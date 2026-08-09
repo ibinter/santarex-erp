@@ -3,11 +3,13 @@ import { AiAssistantService } from './ai-assistant.service';
 import { ChatDto, UpdateAiConfigDto } from './dto/chat.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { PaidTierGuard } from '../common/guards/paid-tier.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { Request, Response } from 'express';
 
-@UseGuards(JwtAuthGuard)
+// PaidTierGuard : l'assistant SARA est fermé au palier Découverte (§3.3/§12.5.2).
+@UseGuards(JwtAuthGuard, PaidTierGuard)
 @Controller('ai-assistant')
 export class AiAssistantController {
   constructor(private readonly service: AiAssistantService) {}

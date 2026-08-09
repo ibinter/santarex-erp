@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Licence } from './entities/licence.entity';
 import { User } from '../users/entities/user.entity';
 import { LicencesController } from './licences.controller';
+import { LicenceEtatController } from './licence-etat.controller';
 import { LicencesService } from './licences.service';
 import { OffresSaasModule } from '../offres-saas/offres-saas.module';
 import { TenantsModule } from '../tenants/tenants.module';
@@ -22,7 +23,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
     TenantsModule,
     AuditLogsModule,
   ],
-  controllers: [LicencesController],
+  controllers: [LicencesController, LicenceEtatController],
   providers: [LicencesService],
   exports: [LicencesService],
 })

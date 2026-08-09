@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,6 +22,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { PatientsService } from './patients.service';
+import { LicencesService } from '../licences/licences.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -38,7 +40,10 @@ import { UserRole } from '../users/entities/user.entity';
 @UseGuards(JwtAuthGuard, LicenceGuard, ModuleGuard)
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(
+    private readonly patientsService: PatientsService,
+    private readonly licencesService: LicencesService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Liste des patients', description: 'Retourne la liste paginée des patients actifs de l\'établissement' })
@@ -81,7 +86,16 @@ export class PatientsController {
     @Body() dto: CreatePatientDto,
     @CurrentUser('tenantId') tenantId: string,
     @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
   ) {
+    // Plafond du palier Découverte (10 patients) appliqué à l'écriture.
+    // Superadmin exempté. Aucun plafond pour les formules payantes / l'essai.
+    if (role !== UserRole.SUPERADMIN) {
+      const quota = await this.licencesService.verifierQuotaPatients(tenantId);
+      if (!quota.autorise) {
+        throw new ForbiddenException(quota.message);
+      }
+    }
     return this.patientsService.create(dto, tenantId, userId);
   }
 

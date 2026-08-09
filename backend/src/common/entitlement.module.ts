@@ -4,6 +4,7 @@ import { Licence } from '../licences/entities/licence.entity';
 import { EntitlementService } from './entitlement.service';
 import { LicenceGuard } from './guards/licence.guard';
 import { ModuleGuard } from './guards/module.guard';
+import { PaidTierGuard } from './guards/paid-tier.guard';
 
 /**
  * EntitlementModule — AUTONOME et @Global. Fournit `LicenceGuard` et
@@ -17,7 +18,7 @@ import { ModuleGuard } from './guards/module.guard';
 @Global()
 @Module({
   imports: [TypeOrmModule.forFeature([Licence])],
-  providers: [EntitlementService, LicenceGuard, ModuleGuard],
-  exports: [EntitlementService, LicenceGuard, ModuleGuard],
+  providers: [EntitlementService, LicenceGuard, ModuleGuard, PaidTierGuard],
+  exports: [EntitlementService, LicenceGuard, ModuleGuard, PaidTierGuard],
 })
 export class EntitlementModule {}

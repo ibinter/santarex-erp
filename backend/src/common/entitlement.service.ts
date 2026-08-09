@@ -7,6 +7,7 @@ export interface TenantAccess {
   allowed: boolean;
   reason: string;
   modules: string[] | null; // null = tous modules autorisés
+  gratuit: boolean; // true = palier Découverte (leviers payants fermés)
 }
 
 /**
@@ -29,7 +30,7 @@ export class EntitlementService {
   ) {}
 
   async getTenantAccess(tenantSlug: string): Promise<TenantAccess> {
-    if (!tenantSlug) return { allowed: true, reason: 'no-tenant-fail-open', modules: null };
+    if (!tenantSlug) return { allowed: true, reason: 'no-tenant-fail-open', modules: null, gratuit: false };
 
     let licences: Licence[];
     try {
@@ -39,23 +40,35 @@ export class EntitlementService {
       });
     } catch (e) {
       this.logger.warn(`EntitlementService fail-open (tenant=${tenantSlug}): ${(e as Error).message}`);
-      return { allowed: true, reason: 'error-fail-open', modules: null };
+      return { allowed: true, reason: 'error-fail-open', modules: null, gratuit: false };
     }
 
     // Pas de licence → ne jamais bloquer (tenant historique sans licence).
-    if (!licences.length) return { allowed: true, reason: 'no-licence-fail-open', modules: null };
+    if (!licences.length) return { allowed: true, reason: 'no-licence-fail-open', modules: null, gratuit: false };
 
-    const GRANTING = new Set<string>([LicenceStatut.ACTIVE, LicenceStatut.ESSAI]);
+    // ACTIVE / ESSAI / DECOUVERTE accordent l'accès. DECOUVERTE (palier gratuit)
+    // est accordant mais restreint par les modules de sa licence et le plafond
+    // patients (appliqué à l'écriture, cf. LicencesService.verifierQuotaPatients).
+    const GRANTING = new Set<string>([
+      LicenceStatut.ACTIVE,
+      LicenceStatut.ESSAI,
+      LicenceStatut.DECOUVERTE,
+    ]);
     let blockingReason = LicenceStatut.SUSPENDUE as string;
 
     for (const lic of licences) {
       if (GRANTING.has(lic.statut)) {
-        return { allowed: true, reason: lic.statut, modules: this.parseModules(lic.modulesActivesJson) };
+        return {
+          allowed: true,
+          reason: lic.statut,
+          modules: this.parseModules(lic.modulesActivesJson),
+          gratuit: lic.statut === LicenceStatut.DECOUVERTE,
+        };
       }
       blockingReason = lic.statut;
     }
     // Aucune licence accordante → bloqué (suspendue / expiree / annulee).
-    return { allowed: false, reason: blockingReason, modules: null };
+    return { allowed: false, reason: blockingReason, modules: null, gratuit: false };
   }
 
   private parseModules(raw: string | null | undefined): string[] | null {
