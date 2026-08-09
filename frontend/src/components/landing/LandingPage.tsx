@@ -110,6 +110,8 @@ const T = {
     pricing_title: 'Transparent. Sans surprise.',
     testimonials_eyebrow: 'Témoignages',
     testimonials_title: 'Ils ont modernisé leur établissement.',
+    illustrative_note: 'Exemples illustratifs. Les témoignages et chiffres d\'usage réels seront publiés dès les premiers retours clients vérifiés.',
+    built_for: 'Conçu pour les cliniques, hôpitaux, centres de santé et cabinets d\'Afrique de l\'Ouest et Centrale.',
     faq_eyebrow: 'FAQ',
     partners_eyebrow: 'Programme partenaire',
     partners_title: 'Développez vos revenus avec',
@@ -214,6 +216,8 @@ const T = {
     pricing_title: 'Transparent. No surprises.',
     testimonials_eyebrow: 'Testimonials',
     testimonials_title: 'They modernized their facility.',
+    illustrative_note: 'Illustrative examples. Real testimonials and usage figures will be published as soon as the first verified client feedback comes in.',
+    built_for: 'Built for clinics, hospitals, health centers and medical practices across West and Central Africa.',
     faq_eyebrow: 'FAQ',
     partners_eyebrow: 'Partner program',
     partners_title: 'Grow your revenue with',
@@ -1207,16 +1211,13 @@ export default function LandingPage() {
         <div className="lp-scroll-indicator"><div className="lp-scroll-line" />{t('scroll_discover')}</div>
       </section>
 
-      {/* ══ TRUST BAR ══ */}
+      {/* ══ TRUST BAR ══
+          C3/D8 (cahier IBIG v1.1) : aucun chiffre d'usage ni référence client
+          non vérifiable. On affiche un positionnement de capacité (vrai), pas
+          des établissements clients fictifs ni un compteur « 60+ » non prouvé. */}
       <div className="lp-trust-bar">
-        <div className="lp-trust-bar-inner">
-          <span className="lp-trust-label">{t('deploy_in')}</span>
-          <div className="lp-trust-logos">
-            {['Clinique Sainte-Marie · Douala', 'Polyclinique Dakar Santé · Sénégal', 'CHR de Conakry · Guinée', 'Hôpital Général · Brazzaville', 'Cabinet Excellence · Lomé'].map(n => (
-              <span key={n} className="lp-trust-logo">{n}</span>
-            ))}
-          </div>
-          <div className="lp-trust-count"><strong>60+</strong> {t('trust_count')}</div>
+        <div className="lp-trust-bar-inner" style={{ justifyContent: 'center', textAlign: 'center' }}>
+          <span className="lp-trust-label">{t('built_for')}</span>
         </div>
       </div>
 
@@ -1485,6 +1486,10 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          {/* §8.7 — étiquetage obligatoire des témoignages non encore vérifiés */}
+          <p className="lp-testi-illustrative" style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--muted, #6B7280)', fontStyle: 'italic' }}>
+            {t('illustrative_note')}
+          </p>
         </div>
       </section>
 
