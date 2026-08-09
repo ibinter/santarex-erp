@@ -111,6 +111,19 @@ export class LicenceGuard implements CanActivate {
           `Licence ${access.reason}. Renouvelez votre abonnement.`,
         );
       }
+      // Mode LECTURE SEULE (état EXPIREE, §5.6) : on autorise les lectures
+      // (GET / HEAD / OPTIONS), on refuse toute écriture (POST/PUT/PATCH/DELETE).
+      // Les données restent consultables ; la modification exige un renouvellement.
+      if (access.lectureSeule) {
+        const method = String(req?.method ?? 'GET').toUpperCase();
+        const lecture = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+        if (!lecture) {
+          throw new ForbiddenException(
+            'Licence expirée — accès en lecture seule. '
+              + 'Renouvelez votre abonnement pour modifier vos données.',
+          );
+        }
+      }
       return true;
     } catch (err) {
       if (err instanceof ForbiddenException) throw err; // refus métier volontaire

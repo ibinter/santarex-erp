@@ -8,6 +8,7 @@ export interface TenantAccess {
   reason: string;
   modules: string[] | null; // null = tous modules autorisés
   gratuit: boolean; // true = palier Découverte (leviers payants fermés)
+  lectureSeule: boolean; // true = accès en LECTURE SEULE (état EXPIREE, §5.6)
 }
 
 /**
@@ -30,7 +31,7 @@ export class EntitlementService {
   ) {}
 
   async getTenantAccess(tenantSlug: string): Promise<TenantAccess> {
-    if (!tenantSlug) return { allowed: true, reason: 'no-tenant-fail-open', modules: null, gratuit: false };
+    if (!tenantSlug) return { allowed: true, reason: 'no-tenant-fail-open', modules: null, gratuit: false, lectureSeule: false };
 
     let licences: Licence[];
     try {
@@ -40,18 +41,21 @@ export class EntitlementService {
       });
     } catch (e) {
       this.logger.warn(`EntitlementService fail-open (tenant=${tenantSlug}): ${(e as Error).message}`);
-      return { allowed: true, reason: 'error-fail-open', modules: null, gratuit: false };
+      return { allowed: true, reason: 'error-fail-open', modules: null, gratuit: false, lectureSeule: false };
     }
 
     // Pas de licence → ne jamais bloquer (tenant historique sans licence).
-    if (!licences.length) return { allowed: true, reason: 'no-licence-fail-open', modules: null, gratuit: false };
+    if (!licences.length) return { allowed: true, reason: 'no-licence-fail-open', modules: null, gratuit: false, lectureSeule: false };
 
-    // ACTIVE / ESSAI / DECOUVERTE accordent l'accès. DECOUVERTE (palier gratuit)
-    // est accordant mais restreint par les modules de sa licence et le plafond
-    // patients (appliqué à l'écriture, cf. LicencesService.verifierQuotaPatients).
+    // ACTIVE / ESSAI / GRACE / DECOUVERTE accordent l'accès complet. DECOUVERTE
+    // (palier gratuit) est accordant mais restreint par les modules de sa licence
+    // et le plafond patients (appliqué à l'écriture, cf.
+    // LicencesService.verifierQuotaPatients). GRACE (§5.6) = accès complet
+    // maintenu pendant la période de grâce, mais NON gratuit.
     const GRANTING = new Set<string>([
       LicenceStatut.ACTIVE,
       LicenceStatut.ESSAI,
+      LicenceStatut.GRACE,
       LicenceStatut.DECOUVERTE,
     ]);
     let blockingReason = LicenceStatut.SUSPENDUE as string;
@@ -63,12 +67,25 @@ export class EntitlementService {
           reason: lic.statut,
           modules: this.parseModules(lic.modulesActivesJson),
           gratuit: lic.statut === LicenceStatut.DECOUVERTE,
+          lectureSeule: false,
+        };
+      }
+      // EXPIREE = accordant en LECTURE SEULE (§5.6) : les données restent
+      // consultables (GET), les écritures sont refusées par le LicenceGuard.
+      // On retient la première EXPIREE rencontrée AVANT tout état bloquant.
+      if (lic.statut === LicenceStatut.EXPIREE) {
+        return {
+          allowed: true,
+          reason: lic.statut,
+          modules: this.parseModules(lic.modulesActivesJson),
+          gratuit: false,
+          lectureSeule: true,
         };
       }
       blockingReason = lic.statut;
     }
-    // Aucune licence accordante → bloqué (suspendue / expiree / annulee).
-    return { allowed: false, reason: blockingReason, modules: null, gratuit: false };
+    // Aucune licence accordante → bloqué (suspendue / annulee).
+    return { allowed: false, reason: blockingReason, modules: null, gratuit: false, lectureSeule: false };
   }
 
   private parseModules(raw: string | null | undefined): string[] | null {

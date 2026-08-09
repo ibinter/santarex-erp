@@ -8,6 +8,7 @@ import { UpdateTenantDto } from './dto/update-tenant.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { DemoModeGuard } from '../common/guards/demo-mode.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -20,6 +21,8 @@ export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
 
   @Post()
+  // Mutations tenant fermées en démonstration publique (§4.5).
+  @UseGuards(DemoModeGuard)
   @ApiOperation({ summary: 'Créer un tenant' })
   create(@Body() dto: CreateTenantDto) {
     return this.tenantsService.create(dto);
@@ -50,18 +53,21 @@ export class TenantsController {
   }
 
   @Patch(':id')
+  @UseGuards(DemoModeGuard)
   @ApiOperation({ summary: 'Modifier un tenant' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateTenantDto) {
     return this.tenantsService.update(id, dto);
   }
 
   @Patch(':id/suspendre')
+  @UseGuards(DemoModeGuard)
   @ApiOperation({ summary: 'Suspendre un tenant' })
   suspendre(@Param('id', ParseUUIDPipe) id: string) {
     return this.tenantsService.suspendre(id);
   }
 
   @Patch(':id/activer')
+  @UseGuards(DemoModeGuard)
   @ApiOperation({ summary: 'Activer un tenant' })
   activer(@Param('id', ParseUUIDPipe) id: string) {
     return this.tenantsService.activer(id);

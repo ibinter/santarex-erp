@@ -267,6 +267,8 @@ export class LicencesService {
     etat: string;
     palierGratuit: boolean;
     joursRestants: number | null;
+    lectureSeule: boolean;
+    graceJoursRestants: number | null;
     droits: { export: boolean; api: boolean; sara: boolean; multiUtilisateur: boolean };
     quotas: { patients: { valeur: number; plafond: number; restant: number } | null };
     filigrane: boolean;
@@ -276,20 +278,38 @@ export class LicencesService {
       where: { tenantSlug },
       order: { dateExpiration: 'DESC', createdAt: 'DESC' },
     });
+    // États accordant un accès complet. GRACE (§5.6) est accordant (accès
+    // maintenu pendant la période de grâce), non gratuit.
     const accordantes = new Set<string>([
       LicenceStatut.ACTIVE,
       LicenceStatut.ESSAI,
+      LicenceStatut.GRACE,
       LicenceStatut.DECOUVERTE,
     ]);
-    const courante = licences.find((l) => accordantes.has(l.statut));
+    // Priorité : une licence accordante, sinon une licence EXPIREE (lecture seule).
+    const courante =
+      licences.find((l) => accordantes.has(l.statut)) ??
+      licences.find((l) => l.statut === LicenceStatut.EXPIREE);
     const etat = courante?.statut ?? 'aucune';
     const gratuit = etat === LicenceStatut.DECOUVERTE;
+    const enGrace = etat === LicenceStatut.GRACE;
+    // EXPIREE = accès en LECTURE SEULE (§5.6) : consultation autorisée, écriture refusée.
+    const lectureSeule = etat === LicenceStatut.EXPIREE;
 
     let joursRestants: number | null = null;
     if (courante && !gratuit && courante.dateExpiration) {
       joursRestants = Math.max(
         0,
         Math.ceil((courante.dateExpiration.getTime() - Date.now()) / 86_400_000),
+      );
+    }
+
+    // Jours restants de grâce (calculés depuis dateFinGrace) — null hors GRACE.
+    let graceJoursRestants: number | null = null;
+    if (enGrace && courante?.dateFinGrace) {
+      graceJoursRestants = Math.max(
+        0,
+        Math.ceil((courante.dateFinGrace.getTime() - Date.now()) / 86_400_000),
       );
     }
 
@@ -315,17 +335,28 @@ export class LicencesService {
       };
     }
 
+    let message: string;
+    if (gratuit) {
+      message = `Palier Découverte — ${PLAFOND_PATIENTS_DECOUVERTE} patients.`;
+    } else if (enGrace) {
+      message = `Période de grâce — ${graceJoursRestants ?? 0} jour(s) pour renouveler avant lecture seule.`;
+    } else if (lectureSeule) {
+      message = 'Licence expirée — accès en lecture seule. Renouvelez pour modifier vos données.';
+    } else {
+      message = 'Formule active.';
+    }
+
     return {
       etat,
       palierGratuit: gratuit,
       joursRestants,
+      lectureSeule,
+      graceJoursRestants,
       droits,
       quotas,
       // Filigrane « Généré avec SANTAREX » sur les documents du palier gratuit.
       filigrane: gratuit,
-      message: gratuit
-        ? `Palier Découverte — ${PLAFOND_PATIENTS_DECOUVERTE} patients.`
-        : 'Formule active.',
+      message,
     };
   }
 

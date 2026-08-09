@@ -2,8 +2,12 @@ import { Module, Global } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { MailService } from './mail.service';
+import { LicenceEmailsScheduler } from './licence-emails.scheduler';
+import { Licence } from '../licences/entities/licence.entity';
+import { User } from '../users/entities/user.entity';
 
 @Global()
 @Module({
@@ -31,8 +35,9 @@ import { MailService } from './mail.service';
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([Licence, User]),
   ],
-  providers: [MailService],
+  providers: [MailService, LicenceEmailsScheduler],
   exports: [MailService],
 })
 export class MailModule {}

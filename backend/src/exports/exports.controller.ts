@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { LicenceGuard } from '../common/guards/licence.guard';
 import { PaidTierGuard } from '../common/guards/paid-tier.guard';
+import { DemoModeGuard } from '../common/guards/demo-mode.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -19,7 +20,9 @@ import { Medicament } from '../pharmacie/entities/medicament.entity';
 // LicenceGuard : un tenant suspendu / expiré ne doit plus pouvoir exfiltrer
 // l'intégralité de ses données patients/stock via les exports XLSX/PDF.
 // PaidTierGuard : l'export est fermé au palier Découverte (§3.3).
-@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, PaidTierGuard)
+// DemoModeGuard : l'export de données (patients/stock/factures) est fermé en
+// démonstration publique (§4.5) — aucune exfiltration depuis la démo.
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, PaidTierGuard, DemoModeGuard)
 // Exports/reporting : direction et admin, plus les métiers dont un flux
 // existant dépend d'un export (facture PDF côté caisse/médecin, stock côté
 // pharmacie).

@@ -1,0 +1,116 @@
+# ══════════════════════════════════════════════════════════════════════════════
+#  SANTAREX ERP — Stack DÉMONSTRATION PUBLIQUE (cahier IBIG v1.1, §4)
+#
+#  Stack ISOLÉE, destinée à cohabiter avec la PRODUCTION sur le MÊME VPS.
+#  Nom de projet Docker Compose dédié : « santarex-demo » (à lancer avec -p).
+#
+#      docker compose -p santarex-demo --env-file .env.demo -f docker-compose.demo.yml up -d --build
+#
+#  ISOLATION vis-à-vis de la prod (projet « santarex ») :
+#    • conteneurs/volumes/réseau préfixés « santarex-demo_* » (projet distinct) ;
+#    • volume base séparé (postgres_demo_data) — AUCUN partage avec la prod ;
+#    • ports hôte distincts (voir ci-dessous) — pas de conflit avec 3002/3003.
+#
+#  PORTS HÔTE (exposés au reverse-proxy que gère l'orchestrateur) :
+#    • frontend-demo : 3100  → conteneur :3000
+#    • backend-demo  : 3101  → conteneur :3001
+#    • postgres-demo : NON exposé sur l'hôte (accès interne au réseau seulement)
+#
+#  VARIABLES CLÉS (voir .env.demo.example) :
+#    • DEMO_MODE=true               → active DemoModeGuard (surfaces sensibles 403)
+#    • NEXT_PUBLIC_DEMO_MODE=true   → bandeau/UX démo côté frontend
+#    • NODE_ENV=production          → build/run durci
+#
+#  PAS de nginx ici : l'orchestrateur branchera le sous-domaine (ex.
+#  demo.santarex.ibigsoft.com) sur le port 3100 via son reverse-proxy.
+#
+#  RESET NOCTURNE : voir demo-reset (cron 02:00) —
+#      docker compose -p santarex-demo -f docker-compose.demo.yml \
+#        exec -T backend-demo node dist/database/demo-reset.js
+# ══════════════════════════════════════════════════════════════════════════════
+
+version: '3.8'
+
+services:
+  postgres-demo:
+    image: postgres:16-alpine
+    container_name: santarex_demo_postgres
+    restart: always
+    env_file: .env.demo
+    environment:
+      POSTGRES_DB: ${DB_NAME:-santarex_demo}
+      POSTGRES_USER: ${DB_USER:-santarex}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_demo_data:/var/lib/postgresql/data
+    networks:
+      - santarex_demo_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-santarex} -d ${DB_NAME:-santarex_demo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis-demo:
+    image: redis:7-alpine
+    container_name: santarex_demo_redis
+    restart: always
+    networks:
+      - santarex_demo_net
+
+  backend-demo:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: santarex_demo_backend
+    restart: always
+    env_file: .env.demo
+    environment:
+      NODE_ENV: production
+      DEMO_MODE: "true"
+      # La base pointe sur le Postgres de démo (réseau interne).
+      DB_HOST: postgres-demo
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-santarex_demo}
+      DB_USER: ${DB_USER:-santarex}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis-demo
+      REDIS_PORT: "6379"
+    ports:
+      - "3101:3001"
+    depends_on:
+      postgres-demo:
+        condition: service_healthy
+      redis-demo:
+        condition: service_started
+    networks:
+      - santarex_demo_net
+
+  frontend-demo:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # API publique de la démo (le reverse-proxy de l'orchestrateur route
+        # ce chemin vers backend-demo:3101).
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_DEMO_API_URL:-https://demo.santarex.ibigsoft.com/api/v1}
+        NEXT_PUBLIC_DEMO_MODE: "true"
+    container_name: santarex_demo_frontend
+    restart: always
+    env_file: .env.demo
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_DEMO_MODE: "true"
+    ports:
+      - "3100:3000"
+    depends_on:
+      - backend-demo
+    networks:
+      - santarex_demo_net
+
+volumes:
+  postgres_demo_data:
+
+networks:
+  santarex_demo_net:
+    driver: bridge

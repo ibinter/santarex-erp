@@ -19,13 +19,16 @@ import { PaymentConfigService } from './payments-config.service';
 import { UpsertPaymentConfigDto, TogglePaymentConfigDto } from './dto/config.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { DemoModeGuard } from '../common/guards/demo-mode.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Admin · Paiements · Configuration')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+// DemoModeGuard : la configuration des moyens de paiement est fermée en
+// démonstration publique (§4.5) — le paiement est désactivé en démo.
+@UseGuards(JwtAuthGuard, RolesGuard, DemoModeGuard)
 @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
 @Controller('admin/payments/config')
 export class AdminPaymentsController {

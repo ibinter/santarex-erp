@@ -18,6 +18,10 @@ export enum LicenceStatut {
   // fonctions de base, plafonné par le compteur métier (10 patients), sans
   // export / API / SARA / multi-utilisateur.
   DECOUVERTE = 'decouverte',
+  // Période de grâce (cahier IBIG-LICENCE-UNIVERSEL v1.1, §5.6). Accès complet
+  // maintenu après l'échéance d'une licence ACTIVE, pendant `grace_jours` (7),
+  // le temps de renouveler. Passé ce délai → EXPIREE (lecture seule).
+  GRACE = 'grace',
 }
 
 export enum LicenceModePaiement {
@@ -99,6 +103,22 @@ export class Licence {
   @ApiProperty({ description: 'Nombre de jours d\'essai (0 si pas en période d\'essai)' })
   @Column({ type: 'int', default: 30 })
   joursEssai: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Fin de la période de grâce (état GRACE). = dateExpiration + grace_jours (7). '
+      + 'Au-delà, la licence passe EXPIREE (lecture seule).',
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  dateFinGrace: Date;
+
+  @ApiPropertyOptional({
+    description:
+      'Date de purge des données (état EXPIREE). = dateFinGrace + retention_jours (90). '
+      + 'Au-delà, le tenant est éligible à la purge best-effort.',
+  })
+  @Column({ type: 'timestamptz', nullable: true })
+  datePurge: Date;
 
   @ApiProperty()
   @CreateDateColumn()

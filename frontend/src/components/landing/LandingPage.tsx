@@ -1174,6 +1174,23 @@ export default function LandingPage() {
               <a href="#contact" className="lp-btn-primary"><ArrowRight />{t('hero_cta1')}</a>
               <a href="#modules" className="lp-btn-secondary"><PlayIcon />{t('hero_cta2')}</a>
             </div>
+            {process.env.NEXT_PUBLIC_DEMO_URL && (
+              <div className="lp-hero-demo" style={{ marginTop: 18, maxWidth: 560 }}>
+                <a
+                  href={process.env.NEXT_PUBLIC_DEMO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lp-btn-secondary"
+                >
+                  <PlayIcon />{lang === 'fr' ? 'Explorer la démo' : 'Explore the demo'}
+                </a>
+                <p style={{ marginTop: 8, fontSize: '.8rem', opacity: 0.75, lineHeight: 1.4 }}>
+                  {lang === 'fr'
+                    ? 'Le vrai logiciel, données fictives, sans inscription. Remise à zéro chaque nuit.'
+                    : 'The real software, sample data, no sign-up. Reset every night.'}
+                </p>
+              </div>
+            )}
             <div className="lp-hero-trust">
               {["Côte d'Ivoire", 'Sénégal', 'Cameroun', 'Mali', 'Burkina Faso', 'Guinée', 'Togo', 'Congo'].map((pays, i) => (
                 <div key={pays} style={{ display: 'contents' }}>

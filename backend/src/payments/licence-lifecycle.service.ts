@@ -48,6 +48,7 @@ import {
 import { PaymentTransaction } from './entities/payment-transaction.entity';
 import { Voucher } from './entities/voucher.entity';
 import { LicenceLifecycle, PaymentStatus } from './payments.enums';
+import { LICENCE_CONFIG } from '../common/licence-config';
 
 // ── État étendu persisté dans `Licence.notes` ────────────────────────────────
 interface LifecycleState {
@@ -358,6 +359,140 @@ export class LicenceLifecycleService {
   // Accès en lecture au cycle de vie étendu (utile au scheduler / API).
   getLifecycle(licence: Licence): LifecycleState {
     return this.readState(licence);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  MODÈLE À 6 ÉTATS — recalcul quotidien (cahier IBIG-LICENCE-UNIVERSEL v1.1,
+  //  §2/§5.6/§9). Source des durées : LICENCE_CONFIG (grace_jours=7,
+  //  retention_jours=90). Ces transitions pilotent le `statut` Postgres directement
+  //  (ESSAI → DECOUVERTE, ACTIVE → GRACE, GRACE → EXPIREE, EXPIREE → purge).
+  //  Idempotentes et défensives : chaque licence est traitée en try/catch par le
+  //  scheduler ; ici on ne lève pas pour un cas métier.
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Recalcule l'état de toutes les licences selon leurs jalons de date.
+   *  - ESSAI  échu (dateExpiration < now)  → DECOUVERTE (aucune suppression, §5.6).
+   *  - ACTIVE échue (dateExpiration < now)  → GRACE (dateFinGrace = +grace_jours).
+   *  - GRACE  échue (dateFinGrace < now)    → EXPIREE (datePurge = +retention_jours).
+   *  - EXPIREE échue (datePurge < now)      → à purger (retourne la liste des slugs).
+   */
+  async recalculerEtats(): Promise<{
+    trialToFree: number;
+    activeToGrace: number;
+    graceToExpired: number;
+    aPurger: string[];
+  }> {
+    const now = new Date();
+    const graceDays = LICENCE_CONFIG.grace_jours;
+    const retentionDays = LICENCE_CONFIG.retention_jours;
+
+    let trialToFree = 0;
+    let activeToGrace = 0;
+    let graceToExpired = 0;
+    const aPurger: string[] = [];
+
+    const licences = await this.licenceRepo.find({
+      where: [
+        { statut: LicenceStatut.ESSAI },
+        { statut: LicenceStatut.ACTIVE },
+        { statut: LicenceStatut.GRACE },
+        { statut: LicenceStatut.EXPIREE },
+      ],
+    });
+
+    for (const lic of licences) {
+      try {
+        // ESSAI échu → DECOUVERTE (bascule automatique, conserve les données).
+        if (lic.statut === LicenceStatut.ESSAI) {
+          if (lic.dateExpiration && lic.dateExpiration.getTime() < now.getTime()) {
+            await this.basculerEssaiVersDecouverte(lic);
+            trialToFree++;
+          }
+          continue;
+        }
+
+        // ACTIVE échue → GRACE, dateFinGrace = dateExpiration + grace_jours.
+        if (lic.statut === LicenceStatut.ACTIVE) {
+          if (lic.dateExpiration && lic.dateExpiration.getTime() < now.getTime()) {
+            const finGrace = this.addDays(lic.dateExpiration, graceDays);
+            lic.statut = LicenceStatut.GRACE;
+            lic.dateFinGrace = finGrace;
+            const state = this.readState(lic);
+            state.lc = LicenceLifecycle.GRACE;
+            state.graceEndsAt = finGrace.toISOString();
+            this.writeState(lic, state);
+            await this.licenceRepo.save(lic);
+            this.logger.log(
+              `Licence ${lic.cle} (${lic.tenantSlug}) ACTIVE → GRACE jusqu'au ${finGrace.toISOString()}`,
+            );
+            activeToGrace++;
+          }
+          continue;
+        }
+
+        // GRACE échue → EXPIREE (lecture seule), datePurge = dateFinGrace + retention_jours.
+        if (lic.statut === LicenceStatut.GRACE) {
+          const finGrace = lic.dateFinGrace ?? lic.dateExpiration;
+          if (finGrace && finGrace.getTime() < now.getTime()) {
+            const datePurge = this.addDays(finGrace, retentionDays);
+            lic.statut = LicenceStatut.EXPIREE;
+            lic.datePurge = datePurge;
+            const state = this.readState(lic);
+            state.lc = LicenceLifecycle.EXPIRED;
+            state.graceEndsAt = null;
+            this.writeState(lic, state);
+            await this.licenceRepo.save(lic);
+            this.logger.log(
+              `Licence ${lic.cle} (${lic.tenantSlug}) GRACE → EXPIREE (lecture seule), purge le ${datePurge.toISOString()}`,
+            );
+            graceToExpired++;
+          }
+          continue;
+        }
+
+        // EXPIREE dont la rétention est écoulée → à purger.
+        if (lic.statut === LicenceStatut.EXPIREE) {
+          if (lic.datePurge && lic.datePurge.getTime() < now.getTime()) {
+            aPurger.push(lic.tenantSlug);
+          }
+        }
+      } catch (e) {
+        this.logger.error(
+          `recalculerEtats — échec licence ${lic.cle}: ${(e as Error).message}`,
+        );
+      }
+    }
+
+    if (trialToFree || activeToGrace || graceToExpired || aPurger.length) {
+      this.logger.log(
+        `recalculerEtats — essai→découverte:${trialToFree}, active→grâce:${activeToGrace}, `
+          + `grâce→expirée:${graceToExpired}, à purger:${aPurger.length}`,
+      );
+    }
+    return { trialToFree, activeToGrace, graceToExpired, aPurger };
+  }
+
+  /**
+   * Bascule une licence d'ESSAI expiré vers le palier gratuit DECOUVERTE
+   * (cahier §5.6) : AUCUNE suppression de données ; le surplus de patients (>10)
+   * devient de facto lecture seule via le plafond existant appliqué à l'écriture.
+   */
+  async basculerEssaiVersDecouverte(licence: Licence): Promise<Licence> {
+    licence.statut = LicenceStatut.DECOUVERTE;
+    licence.modulesActivesJson = JSON.stringify(LICENCE_CONFIG.gratuit.modules);
+
+    const state = this.readState(licence);
+    state.lc = LicenceLifecycle.ACTIVE; // DECOUVERTE = accès de base accordé
+    state.graceEndsAt = null;
+    state.provisionalUntil = null;
+    this.writeState(licence, state);
+
+    const saved = await this.licenceRepo.save(licence);
+    this.logger.log(
+      `Licence ${licence.cle} (${licence.tenantSlug}) ESSAI expiré → DECOUVERTE (données conservées)`,
+    );
+    return saved;
   }
 
   // ══════════════════════════════════════════════════════════════════════════

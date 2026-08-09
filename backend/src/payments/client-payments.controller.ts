@@ -22,6 +22,7 @@ import {
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { DemoModeGuard } from '../common/guards/demo-mode.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -44,7 +45,10 @@ interface AuthedRequest {
 @ApiTags('Paiements')
 @ApiBearerAuth()
 @Controller('payments')
-@UseGuards(JwtAuthGuard)
+// DemoModeGuard : tout le parcours de paiement d'abonnement (création de
+// transaction, preuve, validation/rejet) est fermé en démonstration publique
+// (§4.5) — le paiement est désactivé en démo.
+@UseGuards(JwtAuthGuard, DemoModeGuard)
 export class ClientPaymentsController {
   constructor(
     private readonly manualPayments: ManualPaymentService,

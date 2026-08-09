@@ -33,6 +33,7 @@ import { PaypalGateway } from './gateways/paypal.gateway';
 import { VoucherService } from './voucher.service';
 import { LicenceLifecycleService } from './licence-lifecycle.service';
 import { LicenceSchedulerService } from './licence-scheduler.service';
+import { LicenceEtatsScheduler } from './licence-etats.scheduler';
 
 // Note : LicenceGuard / ModuleGuard sont désormais fournis par
 // EntitlementModule (@Global, autonome basé sur EntitlementService), plus par
@@ -99,6 +100,7 @@ import { VoucherController, VoucherClientController } from './voucher.controller
     VoucherService,
     LicenceLifecycleService,
     LicenceSchedulerService,
+    LicenceEtatsScheduler,
   ],
   exports: [
     PaymentConfigService,
