@@ -510,6 +510,44 @@ const PLANS = [
   },
 ];
 
+/* ── Carte « Découverte » (palier gratuit, IBIG-LICENCE-UNIVERSEL v1.1 §8.1) ──
+   Structure distincte des formules payantes (plafond mis en avant, fonctions
+   incluses ET exclues, note OTP). Rendue en 1ʳᵉ position de la grille. */
+const DISCOVER = {
+  eyebrow:  { fr: 'POUR DÉCOUVRIR', en: 'TO GET STARTED' },
+  name:     { fr: 'Découverte', en: 'Discover' },
+  price:    '0 FCFA',
+  subprice: { fr: 'Gratuit à vie, sans carte bancaire', en: 'Free forever, no credit card' },
+  cap:      { fr: '10 patients', en: '10 patients' },
+  included: {
+    fr: ['1 utilisateur', 'Toutes les fonctions de base', 'Accès web et installation PWA', 'Sauvegarde quotidienne'],
+    en: ['1 user', 'All core features', 'Web access and PWA install', 'Daily backup'],
+  },
+  excluded: {
+    fr: ['Export CSV/Excel/PDF', 'Multi-utilisateur et rôles', 'API et intégrations', 'Relances automatiques WhatsApp et SMS', 'Assistant IA SARA', 'Support prioritaire'],
+    en: ['CSV/Excel/PDF export', 'Multi-user and roles', 'API and integrations', 'Automatic WhatsApp and SMS reminders', 'SARA AI assistant', 'Priority support'],
+  },
+  btnLabel: { fr: 'Créer mon espace gratuit', en: 'Create my free space' },
+  note: {
+    fr: 'Connexion par OTP e-mail. Les documents générés portent la mention « Généré avec SANTAREX — ibigsoft.com ».',
+    en: 'Login via e-mail OTP. Generated documents carry the notice "Generated with SANTAREX — ibigsoft.com".',
+  },
+};
+
+/* ── Mentions cycle de vie de l'abonnement (IBIG-LICENCE-UNIVERSEL v1.1 §C7) ── */
+const LIFECYCLE_NOTES = {
+  fr: [
+    'Essai de 30 jours, sans carte bancaire, sans engagement.',
+    "À la fin de l'essai, votre espace bascule automatiquement en Découverte. Aucune donnée n'est supprimée.",
+    '7 jours de grâce après échéance, puis lecture seule. Données conservées 90 jours.',
+  ],
+  en: [
+    '30-day trial, no credit card, no commitment.',
+    'At the end of the trial, your space automatically switches to Discover. No data is deleted.',
+    '7-day grace period after due date, then read-only. Data kept for 90 days.',
+  ],
+};
+
 /* ── Tarifs dynamiques (BDD) ──────────────────────────────────────────────
    Charge les offres publiques depuis l'API et les convertit dans la forme
    attendue par les cartes tarifaires. Retombe silencieusement sur le tableau
@@ -1430,7 +1468,32 @@ export default function LandingPage() {
             </div>
           )}
 
-          <div className="lp-pricing-grid lp-pricing-5col">
+          <div className="lp-pricing-grid lp-pricing-6col" data-ibig-tarifs>
+            {/* Carte Découverte — palier gratuit (§8.1), toujours en 1ʳᵉ position */}
+            <div className="lp-plan-card lp-plan-discover">
+              <div className="lp-plan-eyebrow">{DISCOVER.eyebrow[lang]}</div>
+              <div className="lp-plan-name">{DISCOVER.name[lang]}</div>
+              <div className="lp-plan-users lp-discover-cap">{DISCOVER.cap[lang]}</div>
+              <div style={{ marginBottom: 20 }}>
+                <span className="lp-plan-amount">{DISCOVER.price}</span>
+              </div>
+              <div className="lp-plan-saving lp-discover-subprice">{DISCOVER.subprice[lang]}</div>
+              <div className="lp-plan-divider" />
+              <ul className="lp-plan-features">
+                {DISCOVER.included[lang].map(f => (
+                  <li key={f}><div className="lp-feature-check"><CheckIcon /></div>{f}</li>
+                ))}
+                {DISCOVER.excluded[lang].map(f => (
+                  <li key={f} className="lp-feature-excluded">
+                    <div className="lp-feature-x">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </div>{f}
+                  </li>
+                ))}
+              </ul>
+              <a href="/inscription" className="lp-plan-btn lp-plan-btn-outline" onClick={() => track('pricing_click', { plan: 'Decouverte', annual: false })}>{DISCOVER.btnLabel[lang]}</a>
+              <p className="lp-discover-note">{DISCOVER.note[lang]}</p>
+            </div>
             {plans.map(p => {
               const price = annual ? p.priceA : p.priceM;
               const cycle = annual ? p.cycleA : p.cycleM;
@@ -1466,6 +1529,12 @@ export default function LandingPage() {
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: '.8125rem', color: '#64748B' }}>
             {t('pricing_note')}
           </p>
+          {/* §C7 — mentions cycle de vie (Essai · Découverte · Période de grâce · Lecture seule) */}
+          <div className="lp-lifecycle-notes">
+            {LIFECYCLE_NOTES[lang].map(n => (
+              <p key={n} className="lp-lifecycle-note">{n}</p>
+            ))}
+          </div>
         </div>
       </section>
 

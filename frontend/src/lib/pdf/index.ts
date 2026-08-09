@@ -17,6 +17,7 @@ import { validateDocument } from './validate';
 import { exportXLSXAdaptive, exportCSV } from './xlsx';
 import { enregistrerDocumentVerifiable } from './verification';
 import type { VerifiableDocInput } from './verification';
+import { appliquerFiligraneSiGratuit } from './filigrane';
 
 export type { VerifiableDocInput, VerifiableDocType } from './verification';
 
@@ -128,6 +129,11 @@ export async function exportFichePDFVerifiable(
     meta.reference,
     reg ? { url: reg.url, qrDataUrl: reg.qrDataUrl } : undefined,
   );
+  // Filigrane palier gratuit — UNIQUEMENT sur les documents FINANCIERS
+  // (factures, reçus). JAMAIS sur les ordonnances / pièces médicales (§6).
+  if (meta.typeDocument === 'facture' || meta.typeDocument === 'recu') {
+    await appliquerFiligraneSiGratuit(doc);
+  }
   doc.save(`${filename}.pdf`);
 }
 

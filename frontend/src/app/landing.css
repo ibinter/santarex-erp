@@ -302,7 +302,21 @@ img,svg,video,canvas,iframe,embed,object{max-width:100%}
 .lp-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border-light);margin-top:32px}
 .lp-pricing-4col{grid-template-columns:repeat(4,1fr)}
 .lp-pricing-5col{grid-template-columns:repeat(5,1fr)}
+.lp-pricing-6col{grid-template-columns:repeat(6,1fr)}
 .lp-plan-users{font-size:.8rem;color:#94A3B8;margin-bottom:16px;margin-top:2px}
+/* ── Carte Découverte (palier gratuit) ── */
+.lp-plan-discover{display:flex;flex-direction:column}
+.lp-discover-cap{font-weight:800;color:var(--teal);font-size:1rem}
+.lp-discover-subprice{color:var(--teal) !important;font-weight:600;margin-top:-8px}
+.lp-plan-discover .lp-plan-features{margin-bottom:20px}
+.lp-feature-excluded{color:#94A3B8 !important;text-decoration:line-through;opacity:.7}
+.lp-feature-x{width:16px;height:16px;border-radius:50%;background:rgba(148,163,184,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.lp-feature-x svg{width:9px;height:9px;color:#94A3B8}
+.lp-plan-discover .lp-plan-btn{margin-top:auto}
+.lp-discover-note{font-size:.6875rem;line-height:1.45;color:#94A3B8;margin-top:14px}
+/* ── §C7 mentions cycle de vie ── */
+.lp-lifecycle-notes{margin-top:20px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.lp-lifecycle-note{text-align:center;font-size:.8125rem;color:#64748B;margin:0;max-width:760px}
 .lp-plan-card{background:var(--white);padding:36px 32px;position:relative}
 .lp-plan-card.featured{background:#06101F;color:var(--white)}
 .lp-plan-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 16px;background:var(--teal);color:#06101F;border-radius:0 0 6px 6px;white-space:nowrap}
@@ -789,6 +803,7 @@ body.lp-menu-open{overflow:hidden}
 @media(max-width:1280px){
   .lp-pricing-4col{grid-template-columns:repeat(2,1fr)}
   .lp-pricing-5col{grid-template-columns:repeat(3,1fr)}
+  .lp-pricing-6col{grid-template-columns:repeat(3,1fr)}
   .lp-activites-grid{grid-template-columns:repeat(2,1fr)}
   .lp-integrations-grid{grid-template-columns:repeat(3,1fr)}
   .lp-other-grid{grid-template-columns:repeat(2,1fr)}
@@ -799,6 +814,8 @@ body.lp-menu-open{overflow:hidden}
    ≤ 1024px  (tablette portrait + mobile)
 ══════════════════════════════════════════ */
 @media(max-width:1024px){
+  /* PRICING — 6 formules → 2 colonnes en tablette (§C5) */
+  .lp-pricing-6col{grid-template-columns:repeat(2,1fr)}
   /* NAV */
   .lp-nav{padding:0 20px}
   .lp-nav-links{display:none}
@@ -854,6 +871,7 @@ body.lp-menu-open{overflow:hidden}
   .lp-pricing-grid,.lp-testi-grid{grid-template-columns:1fr;gap:2px}
   .lp-pricing-4col{grid-template-columns:repeat(2,1fr)}
   .lp-pricing-5col{grid-template-columns:repeat(2,1fr)}
+  .lp-pricing-6col{grid-template-columns:1fr}
 
   /* CTA FORM */
   .lp-cta-inner{grid-template-columns:1fr;gap:40px;max-width:560px}
