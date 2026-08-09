@@ -50,6 +50,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: https://santarex.ibigsoft.com/api/v1
+        NEXT_PUBLIC_DEMO_URL: https://demo.santarex.ibigsoft.com
     container_name: santarex_frontend
     restart: always
     env_file: .env.prod

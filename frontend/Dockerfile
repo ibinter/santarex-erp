@@ -5,6 +5,10 @@ RUN npm install
 COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# URL de la démo publique (§8.3) : si définie au build, le bouton
+# « Explorer la démo » apparaît sur la vitrine (§4.7 : sinon masqué).
+ARG NEXT_PUBLIC_DEMO_URL
+ENV NEXT_PUBLIC_DEMO_URL=$NEXT_PUBLIC_DEMO_URL
 RUN mkdir -p public && npm run build
 
 FROM node:20-alpine AS production
