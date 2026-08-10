@@ -116,7 +116,7 @@ export class ClientPaymentsController {
 
   @Get('admin/transactions/review')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Lister les transactions en attente de validation' })
   listForReview() {
     return this.manualPayments.listForReview();
@@ -124,7 +124,7 @@ export class ClientPaymentsController {
 
   @Patch('admin/transactions/:ref/validate')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Valider une transaction (active la licence)' })
   validate(
     @Req() req: AuthedRequest,
@@ -136,7 +136,7 @@ export class ClientPaymentsController {
 
   @Patch('admin/transactions/:ref/reject')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Rejeter une transaction' })
   reject(
     @Req() req: AuthedRequest,

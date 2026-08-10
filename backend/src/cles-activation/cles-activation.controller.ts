@@ -38,21 +38,21 @@ export class ClesActivationController {
   // ── Administration (ADMIN / SUPERADMIN / DIRECTEUR) ─────────────────────────
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Générer un lot de N clés d\'activation' })
   genererLot(@Body() dto: GenererLotDto, @CurrentUser('userId') userId: string) {
     return this.service.genererLot(dto, userId);
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Lister / filtrer les clés d\'activation' })
   lister(@Query() dto: ListerClesDto) {
     return this.service.lister(dto);
   }
 
   @Get('export-csv')
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
+  @Roles(UserRole.SUPERADMIN)
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="cles-activation.csv"')
   @ApiOperation({ summary: 'Exporter les clés (CSV) selon les filtres' })
@@ -61,14 +61,14 @@ export class ClesActivationController {
   }
 
   @Patch('revoquer-lot')
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Révoquer toutes les clés actives d\'un lot' })
   revoquerLot(@Body() dto: RevoquerLotDto, @CurrentUser('userId') userId: string) {
     return this.service.revoquerLot(dto, userId);
   }
 
   @Patch(':id/revoquer')
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN, UserRole.DIRECTEUR)
+  @Roles(UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Révoquer une clé d\'activation' })
   revoquer(
     @Param('id', ParseUUIDPipe) id: string,
