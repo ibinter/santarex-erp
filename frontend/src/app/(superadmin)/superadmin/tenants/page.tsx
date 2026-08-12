@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import type { Tenant, TenantStatut } from '@/types';
-import { Building2, Plus, Search, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Building2, Plus, Search, CheckCircle, XCircle, Clock, AlertTriangle, Download } from 'lucide-react';
 
 const STATUT_CONFIG: Record<TenantStatut, { label: string; bg: string; text: string }> = {
   actif:       { label: 'Actif',      bg: '#DCFCE7', text: '#166534' },
@@ -33,6 +33,23 @@ export default function TenantsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ nom: '', slug: '', email: '', telephone: '', maxUtilisateurs: '' });
+  // Export CSV de la base clients (tous / par statut).
+  const [statuts, setStatuts] = useState<string[]>([]);
+  const [statutExport, setStatutExport] = useState('');
+  const [exporting, setExporting] = useState(false);
+  useEffect(() => {
+    api.superadmin.getStatutsClients().then(setStatuts).catch(() => {});
+  }, []);
+  const exporterClients = async (statut?: string) => {
+    setExporting(true);
+    try {
+      await api.superadmin.telechargerClientsCsv(statut || undefined);
+    } catch (e: any) {
+      alert(e?.message || 'Export impossible');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,6 +127,34 @@ export default function TenantsPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
           style={{ background: 'linear-gradient(135deg,#0D47A1,#00838F)' }}>
           <Plus size={16} /> Nouveau tenant
+        </button>
+      </div>
+
+      {/* Export de la base clients (CSV — Excel / Google Sheets) */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+        <span className="text-sm font-semibold text-gray-700">Export clients :</span>
+        <button
+          onClick={() => exporterClients()}
+          disabled={exporting}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60"
+          style={{ background: '#065F46' }}>
+          <Download size={15} /> Exporter tous les clients (CSV)
+        </button>
+        <span className="text-gray-300">|</span>
+        <select
+          value={statutExport}
+          onChange={(e) => setStatutExport(e.target.value)}
+          className="px-2 py-1.5 rounded-lg border border-gray-300 text-sm bg-white">
+          <option value="">— Choisir un statut —</option>
+          {statuts.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <button
+          onClick={() => exporterClients(statutExport)}
+          disabled={exporting || !statutExport}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border border-gray-300 bg-white text-gray-700 disabled:opacity-50">
+          <Download size={15} /> Exporter par statut
         </button>
       </div>
 

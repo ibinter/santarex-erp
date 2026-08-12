@@ -246,6 +246,63 @@ export class MailService {
     }
   }
 
+  /** Échappe le HTML des valeurs injectées dans un corps d'e-mail. */
+  private echapper(v: unknown): string {
+    return String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /**
+   * Notifie l'adresse PRINCIPALE de la solution à chaque nouvelle inscription.
+   * Destinataire configurable en UN SEUL endroit : variable d'environnement
+   * `NOTIF_INSCRIPTION_EMAIL` (repli sur `SMTP_FROM`). Best-effort — ne throw
+   * jamais : l'inscription reste valide même si l'envoi échoue.
+   */
+  async envoyerNotificationInscription(opts: {
+    nomEtablissement: string;
+    nom: string;
+    prenom: string;
+    email: string;
+    whatsapp?: string;
+    telephone?: string;
+    statut: string;
+    offre: string;
+    dateInscription: Date;
+    clientId?: string;
+  }): Promise<void> {
+    const dest = this.configService.get<string>(
+      'NOTIF_INSCRIPTION_EMAIL',
+      this.fromEmail,
+    );
+    const d = opts.dateInscription;
+    const dateStr = `${d.toLocaleDateString('fr-FR')} ${d.toLocaleTimeString('fr-FR')}`;
+    const e = (v: unknown) => this.echapper(v);
+    const ligne = (k: string, v?: string) =>
+      `<tr><td style="padding:6px 14px 6px 0;color:#52606d">${k}</td><td style="padding:6px 0;font-weight:600">${v && v.trim() ? v : '—'}</td></tr>`;
+    const corps = `
+      <p>Une nouvelle inscription vient d'être enregistrée sur SANTAREX ERP.</p>
+      <table style="border-collapse:collapse;font-size:14px">
+        ${ligne('Établissement', e(opts.nomEtablissement))}
+        ${ligne('Nom', e(opts.nom))}
+        ${ligne('Prénoms', e(opts.prenom))}
+        ${ligne('E-mail', e(opts.email))}
+        ${ligne('WhatsApp', e(opts.whatsapp))}
+        ${ligne('Téléphone', e(opts.telephone))}
+        ${ligne('Statut', e(opts.statut))}
+        ${ligne('Offre souscrite', e(opts.offre))}
+        ${ligne('Date & heure', e(dateStr))}
+        ${ligne('ID client', e(opts.clientId))}
+      </table>`;
+    return this.sendHtml(
+      dest,
+      `Nouvelle inscription sur SANTAREX ERP — ${opts.nomEtablissement}`,
+      this.gabaritCycle('Nouvelle inscription', corps),
+    );
+  }
+
   /** ESSAI J+1 — Prise en main : premiers pas guidés. */
   async envoyerEssaiJ1(opts: {
     to: string; prenom: string; nomEtablissement: string; urlConnexion: string;

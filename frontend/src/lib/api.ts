@@ -218,6 +218,29 @@ export const api = {
   // SuperAdmin
   superadmin: {
     getDashboard: () => fetchApi<any>('/superadmin/dashboard'),
+    // Statuts disponibles pour filtrer l'export clients.
+    getStatutsClients: () => fetchApi<string[]>('/superadmin/clients/statuts'),
+    // Export CSV de la base clients (tous, ou filtrés par statut) — déclenche
+    // le téléchargement du fichier (fetch authentifié + blob).
+    telechargerClientsCsv: async (statut?: string): Promise<void> => {
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const qs = statut ? `?statut=${encodeURIComponent(statut)}` : '';
+      const res = await fetch(`${API_URL}/superadmin/clients/export${qs}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`Export impossible (${res.status})`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const date = new Date().toISOString().slice(0, 10);
+      a.download = `clients-santarex${statut ? '-' + statut : '-tous'}-${date}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    },
     getTenants: (params?: { page?: number; limit?: number }) => {
       const qs = params ? new URLSearchParams(params as any).toString() : '';
       return fetchApi<any>(`/superadmin/tenants${qs ? '?' + qs : ''}`);

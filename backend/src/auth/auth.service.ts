@@ -130,6 +130,26 @@ export class AuthService {
       this.logger.warn(`Licence non attribuée pour "${slug}" (palier=${dto.palier ?? 'essai'}): ${err.message}`);
     }
 
+    // 5bis. Notification interne à l'adresse principale — best-effort.
+    //       L'inscription reste valide même si l'e-mail échoue (jamais de throw).
+    try {
+      const gratuit = dto.palier === 'gratuit';
+      await this.mailService.envoyerNotificationInscription({
+        nomEtablissement: dto.nomEtablissement,
+        nom: dto.adminNom,
+        prenom: dto.adminPrenom,
+        email: dto.adminEmail,
+        whatsapp: dto.telephone,
+        telephone: dto.telephone,
+        statut: gratuit ? 'Découverte (gratuit)' : 'Essai',
+        offre: gratuit ? 'Découverte' : 'Cabinet (essai 30 jours)',
+        dateInscription: new Date(),
+        clientId: slug,
+      });
+    } catch (err) {
+      this.logger.warn(`Notification d'inscription non envoyée pour "${slug}": ${err.message}`);
+    }
+
     // 6. Email de bienvenue — non bloquant.
     try {
       await this.mailService.envoyerBienvenue({
