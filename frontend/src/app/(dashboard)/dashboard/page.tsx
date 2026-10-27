@@ -242,7 +242,12 @@ export default function DashboardPage() {
         urgencesActives: u ? Number(u.totalActifs ?? 0) : null,
         urgencesCritiques: critiques,
         medicamentsRupture: p ? Number(p.ruptures ?? 0) : null,
-        consultationsJour: k ? Number(k.total ?? 0) : null,
+        // La liste paginée répond { data: [...], total } : `ok()` en retire déjà une couche, on lit donc le total sur la réponse brute.
+        consultationsJour: (() => {
+          const brut = consult.status === 'fulfilled' ? consult.value : null;
+          const total = brut?.total ?? brut?.data?.total;
+          return total != null ? Number(total) : (k ? 0 : null);
+        })(),
         occupationLits: listeLits && listeLits.length
           ? Math.round((listeLits.filter((x: any) => x.statut === 'occupe').length / listeLits.length) * 100)
           : null,
