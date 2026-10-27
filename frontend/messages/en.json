@@ -198,7 +198,7 @@
     "kpiUrgences": "Active emergencies",
     "critical": "{n} CRITICAL",
     "kpiOccupation": "Bed occupancy",
-    "bedsOccupied": "36 / 50 beds occupied",
+    "bedsOccupied": "{occupied} / {total} beds occupied",
     "kpiConsultations": "Today's consultations",
     "vsWeek": "+15% this week",
     "kpiRupture": "Out-of-stock medications",

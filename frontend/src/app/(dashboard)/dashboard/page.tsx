@@ -200,10 +200,13 @@ export default function DashboardPage() {
     medicamentsRupture: number | null;
     consultationsJour: number | null;
     occupationLits: number | null;
+    litsOccupes: number;
+    litsTotal: number;
   };
   const [stats, setStats] = useState<Stats>({
     encaissementJour: null, urgencesActives: null, urgencesCritiques: 0,
     medicamentsRupture: null, consultationsJour: null, occupationLits: null,
+    litsOccupes: 0, litsTotal: 0,
   });
   // Modules de la formule souscrite : on n'affiche (ni n'interroge) que ceux-là.
   const licModules = useLicenceModules();
@@ -243,6 +246,8 @@ export default function DashboardPage() {
         occupationLits: listeLits && listeLits.length
           ? Math.round((listeLits.filter((x: any) => x.statut === 'occupe').length / listeLits.length) * 100)
           : null,
+        litsOccupes: listeLits ? listeLits.filter((x: any) => x.statut === 'occupe').length : 0,
+        litsTotal: listeLits ? listeLits.length : 0,
       });
       setLastRefresh(new Date());
     } catch { /* garde les valeurs « — » */ }
@@ -366,7 +371,7 @@ export default function DashboardPage() {
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiOccupation')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#1565C0', lineHeight:1.1, marginTop:6 }}>{stats.occupationLits == null ? '—' : `${stats.occupationLits}%`}</div>
-              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>{t('bedsOccupied')}</div>
+              <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>{stats.occupationLits == null ? '' : t('bedsOccupied', { occupied: stats.litsOccupes, total: stats.litsTotal })}</div>
             </div>
             <DonutChart pct={stats.occupationLits ?? 0} color="#1565C0" size={72} />
           </div>
