@@ -324,6 +324,7 @@ export class PaymentConfigService {
     { key: 'mobile_money.wave', type: PaymentMethodType.MOBILE_MONEY, label: 'Wave', displayOrder: 30 },
     { key: 'mobile_money.moov', type: PaymentMethodType.MOBILE_MONEY, label: 'Moov Money', displayOrder: 40 },
     { key: 'gateway.moneroo', type: PaymentMethodType.GATEWAY, label: 'Moneroo', gateway: PaymentGateway.MONEROO, displayOrder: 50 },
+    { key: 'gateway.geniuspay', type: PaymentMethodType.GATEWAY, label: 'GeniusPay (Mobile Money, Wave, carte)', gateway: PaymentGateway.GENIUSPAY, displayOrder: 45 },
     { key: 'gateway.cinetpay', type: PaymentMethodType.GATEWAY, label: 'CinetPay', gateway: PaymentGateway.CINETPAY, displayOrder: 60 },
     { key: 'bank_transfer', type: PaymentMethodType.BANK_TRANSFER, label: 'Virement bancaire', displayOrder: 70 },
     { key: 'intl_transfer', type: PaymentMethodType.INTL_TRANSFER, label: 'Virement international (SWIFT/IBAN)', displayOrder: 80 },

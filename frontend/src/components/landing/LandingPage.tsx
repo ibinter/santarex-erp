@@ -681,6 +681,7 @@ const INTEGRATIONS = [
   { name: 'MTN MoMo', statusKey: 'int_soon' as const, color: '#FFCC00' },
   { name: 'Wave', statusKey: 'int_soon' as const, color: '#1DC9FF' },
   { name: 'Moov Money', statusKey: 'int_soon' as const, color: '#0066CC' },
+  { name: 'GeniusPay', statusKey: 'int_wip' as const, color: '#7C3AED' },
   { name: 'Moneroo', statusKey: 'int_wip' as const, color: '#6C3EDB' },
   { name: 'CinetPay', statusKey: 'int_wip' as const, color: '#E63946' },
   { name: 'WhatsApp Business', statusKey: 'int_soon' as const, color: '#25D366' },

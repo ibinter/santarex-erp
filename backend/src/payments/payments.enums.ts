@@ -31,6 +31,7 @@ export enum PaymentGateway {
   PAYSTACK = 'paystack',
   STRIPE = 'stripe',
   PAYPAL = 'paypal',
+  GENIUSPAY = 'geniuspay',
 }
 
 /** Opérateurs Mobile Money (pour un provider MOBILE_MONEY). */

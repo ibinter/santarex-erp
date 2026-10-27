@@ -46,6 +46,7 @@ import { PaystackGateway } from './gateways/paystack.gateway';
 import { FedapayGateway } from './gateways/fedapay.gateway';
 import { StripeGateway } from './gateways/stripe.gateway';
 import { PaypalGateway } from './gateways/paypal.gateway';
+import { GeniuspayGateway } from './gateways/geniuspay.gateway';
 
 /** Tolérance de contrôle du montant (en centimes). */
 const AMOUNT_TOLERANCE = 1;
@@ -72,8 +73,9 @@ export class GatewayService {
     fedapay: FedapayGateway,
     stripe: StripeGateway,
     paypal: PaypalGateway,
+    geniuspay: GeniuspayGateway,
   ) {
-    for (const a of [moneroo, cinetpay, paystack, fedapay, stripe, paypal]) {
+    for (const a of [moneroo, cinetpay, paystack, fedapay, stripe, paypal, geniuspay]) {
       this.adapters.set(a.gateway, a);
     }
   }

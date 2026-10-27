@@ -30,6 +30,7 @@ import { PaystackGateway } from './gateways/paystack.gateway';
 import { FedapayGateway } from './gateways/fedapay.gateway';
 import { StripeGateway } from './gateways/stripe.gateway';
 import { PaypalGateway } from './gateways/paypal.gateway';
+import { GeniuspayGateway } from './gateways/geniuspay.gateway';
 import { VoucherService } from './voucher.service';
 import { LicenceLifecycleService } from './licence-lifecycle.service';
 import { LicenceSchedulerService } from './licence-scheduler.service';
@@ -97,6 +98,7 @@ import { VoucherController, VoucherClientController } from './voucher.controller
     FedapayGateway,
     StripeGateway,
     PaypalGateway,
+    GeniuspayGateway,
     VoucherService,
     LicenceLifecycleService,
     LicenceSchedulerService,
