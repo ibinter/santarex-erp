@@ -86,6 +86,8 @@
     "emiseLe": "Émise le {date}",
     "imprimer": "Imprimer",
     "enregistrerPaiement": "Enregistrer un paiement",
+    "emettre": "Émettre la facture",
+    "errEmission": "Erreur lors de l’émission de la facture",
     "detailPrestations": "Détail des prestations",
     "thPrestation": "Prestation",
     "thQte": "Qté",

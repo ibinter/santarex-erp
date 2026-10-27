@@ -86,6 +86,8 @@
     "emiseLe": "Issued on {date}",
     "imprimer": "Print",
     "enregistrerPaiement": "Record a payment",
+    "emettre": "Issue invoice",
+    "errEmission": "Error while issuing the invoice",
     "detailPrestations": "Service details",
     "thPrestation": "Service",
     "thQte": "Qty",

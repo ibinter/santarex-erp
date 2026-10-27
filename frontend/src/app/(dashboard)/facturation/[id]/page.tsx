@@ -53,6 +53,7 @@ export default function FactureDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [payModal, setPayModal] = useState(false);
+  const [emitting, setEmitting] = useState(false);
   const [payMode, setPayMode] = useState('especes');
   const [payMontant, setPayMontant] = useState('');
   const [paying, setPaying] = useState(false);
@@ -93,6 +94,16 @@ export default function FactureDetailPage() {
   }, [params.id]);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleEmettre = async () => {
+    setEmitting(true);
+    try {
+      await apiClient(`/facturation/${params.id}/emettre`, { method: 'PATCH' });
+      await load();
+    } catch (e: any) {
+      alert(e?.message ?? t('errEmission'));
+    } finally { setEmitting(false); }
+  };
 
   const handlePay = async () => {
     if (!payMontant || isNaN(Number(payMontant))) return;
@@ -180,6 +191,12 @@ export default function FactureDetailPage() {
                 <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #E0E0E0', background: '#F5F7FA', cursor: 'pointer', fontSize: 12, color: '#546E7A', fontWeight: 600 }}>
                   <Printer size={13} /> {t('imprimer')}
                 </button>
+                {facture.statut === 'brouillon' && (
+                  <button onClick={handleEmettre} disabled={emitting}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#2E7D32', border: 'none', cursor: emitting ? 'wait' : 'pointer', opacity: emitting ? 0.7 : 1, fontSize: 12, color: '#fff', fontWeight: 600 }}>
+                    <CheckCircle size={13} /> {t('emettre')}
+                  </button>
+                )}
                 {reste > 0 && facture.statut !== 'annulee' && (
                   <button onClick={() => setPayModal(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, background: '#1565C0', border: 'none', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 600 }}>
