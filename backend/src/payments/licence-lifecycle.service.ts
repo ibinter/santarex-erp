@@ -76,7 +76,8 @@ const LLC_RE = /<<<LLC([\s\S]*?)LLC>>>/;
 export class LicenceLifecycleService {
   private readonly logger = new Logger(LicenceLifecycleService.name);
 
-  // Durées configurables (env) — défauts métier 14j / 7j / 48h / 14j.
+  // Durées configurables (env) — défauts métier 30j / 7j / 48h / 14j.
+  // L'essai est de 30 jours : c'est la promesse de la page de vente, de la FAQ et de l'inscription.
   private readonly trialDays: number;
   private readonly graceDays: number;
   private readonly orderExpiryHours: number;
@@ -92,7 +93,7 @@ export class LicenceLifecycleService {
     private readonly notificationsService: NotificationsService,
     private readonly config: ConfigService,
   ) {
-    this.trialDays = this.numEnv('LICENCE_TRIAL_DAYS', 14);
+    this.trialDays = this.numEnv('LICENCE_TRIAL_DAYS', 30);
     this.graceDays = this.numEnv('LICENCE_GRACE_DAYS', 7);
     this.orderExpiryHours = this.numEnv('PAYMENT_ORDER_EXPIRY_HOURS', 48);
     this.provisionalMaxDays = this.numEnv('LICENCE_PROVISIONAL_MAX_DAYS', 14);
