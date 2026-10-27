@@ -69,7 +69,7 @@ export default function LoginPage() {
       const res = await api.verify2fa({ challengeToken: challenge, code: code2fa.trim() }) as any;
       saveTokens({ access_token: res.access_token, refresh_token: res.refresh_token });
       saveUser(res.user);
-      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : '/dashboard');
+      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : res.user?.role === 'superadmin' ? '/superadmin/dashboard' : '/dashboard');
     } catch (err: unknown) {
       setError((err as Error).message || 'Code incorrect');
     } finally {
@@ -90,7 +90,7 @@ export default function LoginPage() {
       }
       saveTokens({ access_token: res.access_token, refresh_token: res.refresh_token });
       saveUser(res.user);
-      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : '/dashboard');
+      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : res.user?.role === 'superadmin' ? '/superadmin/dashboard' : '/dashboard');
     } catch (err: unknown) {
       setError((err as Error).message || t('invalidCredentials'));
     } finally {
