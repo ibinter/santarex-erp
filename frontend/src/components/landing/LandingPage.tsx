@@ -153,9 +153,9 @@ const T = {
     footer_brand_desc: 'La technologie au service de la santé.',
     footer_brand_sub: 'Un produit IBIG SOFT — Intermark Business International Group. Conçu en Côte d\'Ivoire pour toute l\'Afrique.',
     int_available: 'Disponible', int_wip: 'En intégration', int_soon: 'Bientôt',
-    why1_title: 'Paiements locaux intégrés', why1_desc: 'Orange Money, MTN MoMo, Wave, Moov, carte bancaire, espèces — tous les modes de paiement que vos patients utilisent, sans intermédiaire.', why1_badge: 'FCFA natif',
+    why1_title: 'Tous vos modes de paiement locaux', why1_desc: 'Espèces, Orange Money, MTN MoMo, Wave, Moov, carte bancaire, chèque, assurance : chaque encaissement est enregistré, rattaché à sa facture et totalisé par mode de paiement en fin de journée.', why1_badge: 'FCFA natif',
     why2_title: 'Résilient aux coupures réseau', why2_desc: 'Mode hors-ligne partiel pour les consultations et la pharmacie. Synchronisation automatique au retour de connexion, sans perte de données.', why2_badge: 'Offline-first',
-    why3_title: 'Sécurité médicale stricte', why3_desc: "Chiffrement AES-256 au repos et en transit. Contrôle d'accès par rôle. Journal d'audit complet. Conformité RGPD.", why3_badge: 'ISO 27001 en cours',
+    why3_title: 'Sécurité médicale stricte', why3_desc: "Connexion chiffrée (HTTPS). Double authentification par application et codes de secours. Contrôle d'accès par rôle, journal d'audit complet, chaque établissement dans son espace isolé.", why3_badge: 'Double authentification',
     why4_title: 'Déploiement en 48h', why4_desc: "Aucune installation de serveur. Compte créé, données importées, équipes formées — 48h pour être opérationnel, support sur site disponible.", why4_badge: 'Support sur site',
     step1_title: 'Inscription & configuration', step1_desc: 'Créez votre compte, renseignez les informations de votre établissement, configurez vos services et tarifs. Moins de 30 minutes.',
     step2_title: 'Formation & import', step2_desc: 'Notre équipe forme vos agents en visioconférence ou sur site. Import de vos patients existants via fichier Excel si besoin.',
@@ -259,9 +259,9 @@ const T = {
     footer_brand_desc: 'Technology at the service of healthcare.',
     footer_brand_sub: 'A product by IBIG SOFT — Intermark Business International Group. Built in Côte d\'Ivoire for all of Africa.',
     int_available: 'Available', int_wip: 'In progress', int_soon: 'Coming soon',
-    why1_title: 'Local payments built in', why1_desc: 'Orange Money, MTN MoMo, Wave, Moov, bank card, cash — every payment method your patients use, with no middleman.', why1_badge: 'Native FCFA',
+    why1_title: 'All your local payment methods', why1_desc: 'Cash, Orange Money, MTN MoMo, Wave, Moov, bank card, cheque, insurance: every payment is recorded, tied to its invoice and totalled by payment method at day end.', why1_badge: 'Native FCFA',
     why2_title: 'Resilient to power cuts', why2_desc: 'Partial offline mode for consultations and pharmacy. Automatic sync when connectivity returns, with no data loss.', why2_badge: 'Offline-first',
-    why3_title: 'Strict medical security', why3_desc: 'AES-256 encryption at rest and in transit. Role-based access control. Full audit trail. GDPR compliant.', why3_badge: 'ISO 27001 in progress',
+    why3_title: 'Strict medical security', why3_desc: 'Encrypted connection (HTTPS). App-based two-factor authentication with recovery codes. Role-based access control, full audit trail, each facility in its own isolated space.', why3_badge: 'Two-factor authentication',
     why4_title: '48-hour deployment', why4_desc: 'No server to install. Account created, data imported, teams trained — live in 48 hours, on-site support available.', why4_badge: 'On-site support',
     step1_title: 'Sign up & configure', step1_desc: 'Create your account, enter your facility details, configure your services and rates. Under 30 minutes.',
     step2_title: 'Training & data import', step2_desc: 'Our team trains your staff via video call or on-site. Import existing patients from an Excel file if needed.',
@@ -287,9 +287,9 @@ const SARA_KB = [
   { t: ['pwa','installer','application','install','téléphone','mobile','smartphone','tablette','appli'],
     r: "SANTAREX ERP est une PWA (Progressive Web App). Installez-la directement depuis votre navigateur sur téléphone, tablette ou PC — sans App Store ni Play Store." },
   { t: ['paiement','orange','mtn','wave','mobile money','moov','cinetpay','espèces'],
-    r: 'SANTAREX ERP intègre nativement :\n• Orange Money\n• MTN MoMo\n• Wave\n• Moov Money\n• CinetPay\n• Carte bancaire\n• Espèces\n\nTous les modes de paiement de vos patients sont couverts.' },
+    r: 'À la caisse, SANTAREX ERP enregistre tous les modes de paiement de vos patients :\n• Espèces\n• Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money)\n• Carte bancaire\n• Chèque et virement\n• Prise en charge par une assurance\n\nChaque encaissement est rattaché à sa facture, avec le détail par mode de paiement en fin de journée.' },
   { t: ['sécurité','données','security','data','chiffrement','rgpd','protection','sauvegarde'],
-    r: 'Sécurité SANTAREX ERP :\n• Chiffrement AES-256 en transit et au repos\n• Contrôle d\'accès par rôles\n• Journal d\'audit complet\n• Sauvegardes automatiques quotidiennes\n• Données isolées par établissement\n• Conformité RGPD' },
+    r: 'Sécurité SANTAREX ERP :\n• Connexion chiffrée (HTTPS)\n• Double authentification par application, avec codes de secours\n• Contrôle d\'accès par rôles\n• Journal d\'audit complet\n• Données isolées par établissement\n• Sauvegarde automatique chaque jour, copiée chaque nuit hors du serveur sous forme chiffrée (AES-256), conservée 30 jours\n• Surveillance automatique du service avec alerte immédiate' },
   { t: ['support','assistance','aide','help','contact','problème','bug','urgence'],
     r: 'Support disponible :\n• 📱 WhatsApp : +225 07 78 88 25 92\n• 📞 Tél. : +225 27 22 27 60 14\n• ✉️ contact@ibigsoft.com\n\nFormules Clinique/Hôpital : support 7j/7 et 24h/24.' },
   { t: ['demo','démonstration','demonstration','voir','montrer'],
@@ -363,8 +363,8 @@ const HERO_SLIDES: { line1: Record<Lang,string>; accent: Record<Lang,string>; li
   {
     line1: { fr: 'La facturation', en: 'Billing,' },
     accent: { fr: 'simplifiée.', en: 'simplified.' },
-    line3: { fr: 'Mobile Money intégré.', en: 'Mobile Money built in.' },
-    sub: { fr: 'Orange Money, MTN MoMo, Wave — tous les modes de paiement de vos patients intégrés nativement. Tiers-payant, mutuelles, espèces : tout en un.', en: 'Orange Money, MTN MoMo, Wave — every patient payment method built in natively. Third-party payers, insurance, cash: all in one.' },
+    line3: { fr: 'Mobile Money à la caisse.', en: 'Mobile Money at the till.' },
+    sub: { fr: 'Orange Money, MTN MoMo, Wave — tous les modes de paiement de vos patients enregistrés à la caisse. Tiers-payant, mutuelles, espèces : tout en un.', en: 'Orange Money, MTN MoMo, Wave — every patient payment method recorded at the till. Third-party payers, insurance, cash: all in one.' },
   },
   {
     line1: { fr: 'Votre assistante IA', en: 'Your AI assistant' },
@@ -377,7 +377,7 @@ const HERO_SLIDES: { line1: Record<Lang,string>; accent: Record<Lang,string>; li
 const PROBLEMS: { icon: string; before: Record<Lang,string>; after: Record<Lang,string> }[] = [
   { icon: '📋', before: { fr: 'Registres papier dispersés, risque de perte de dossiers', en: 'Scattered paper registers, risk of losing patient files' }, after: { fr: "Dossiers médicaux électroniques centralisés, accessibles en temps réel par toute l'équipe", en: 'Centralized electronic medical records, accessible in real time by the whole team' } },
   { icon: '💊', before: { fr: 'Stocks de médicaments gérés manuellement — ruptures et péremptions non détectées', en: 'Manually managed drug inventory — stockouts and expiries undetected' }, after: { fr: 'Alertes automatiques en temps réel. Zéro rupture non détectée, zéro médicament périmé distribué', en: 'Real-time automatic alerts. Zero undetected stockout, zero expired drug dispensed' } },
-  { icon: '🧾', before: { fr: 'Facturation laborieuse avec des erreurs de calcul fréquentes', en: 'Tedious billing with frequent calculation errors' }, after: { fr: 'Facturation automatique avec Mobile Money intégré, reçus numériques générés instantanément', en: 'Automatic billing with built-in Mobile Money, digital receipts generated instantly' } },
+  { icon: '🧾', before: { fr: 'Facturation laborieuse avec des erreurs de calcul fréquentes', en: 'Tedious billing with frequent calculation errors' }, after: { fr: 'Facturation automatique, paiements Mobile Money enregistrés par facture, reçus numériques générés instantanément', en: 'Automatic billing, Mobile Money payments recorded per invoice, digital receipts generated instantly' } },
   { icon: '📊', before: { fr: "Aucune visibilité sur les performances de l'établissement", en: 'No visibility on facility performance' }, after: { fr: "Tableau de bord avec KPIs en temps réel — recettes, taux d'occupation, activité médicale", en: 'Real-time KPI dashboard — revenue, occupancy rate, medical activity' } },
   { icon: '🔬', before: { fr: 'Résultats de laboratoire transmis manuellement au médecin', en: 'Lab results transmitted manually to the doctor' }, after: { fr: "Résultats disponibles dans le DME dès validation du biologiste — alertes critiques immédiates", en: 'Results available in the EHR as soon as validated by the biologist — immediate critical alerts' } },
   { icon: '📱', before: { fr: 'Impossible de travailler depuis un smartphone ou hors connexion', en: 'Impossible to work from a smartphone or offline' }, after: { fr: 'SANTAREX ERP fonctionne sur tous les appareils — ordinateur, tablette, smartphone, hors ligne', en: 'SANTAREX ERP works on all devices — computer, tablet, smartphone, offline' } },
@@ -468,7 +468,7 @@ const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
     { title: { fr: 'Déchets DASRI', en: 'Medical waste (DASRI)' }, desc: { fr: "Suivi des déchets de soins, bordereaux d'enlèvement, filières et conformité.", en: 'Clinical waste tracking, collection slips, disposal channels and compliance.' }, tag: 'Hôpital+', ...MC.amber, icon: S(<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>) },
   ]},
   { cat: { fr: 'Finances & Assurances', en: 'Finance & Insurance' }, items: [
-    { title: { fr: 'Facturation', en: 'Billing' }, desc: { fr: 'Factures, avoirs, paiement mobile money (Orange, MTN, Wave), suivi des encours.', en: 'Invoices, credit notes, mobile money payment (Orange, MTN, Wave), receivables tracking.' }, tag: 'Core', ...MC.teal, icon: S(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { title: { fr: 'Facturation', en: 'Billing' }, desc: { fr: 'Factures, paiements mobile money (Orange, MTN, Wave) enregistrés par facture, suivi des encours.', en: 'Invoices, mobile money payments (Orange, MTN, Wave) recorded per invoice, receivables tracking.' }, tag: 'Core', ...MC.teal, icon: S(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
     { title: { fr: 'Devis', en: 'Quotes' }, desc: { fr: 'Devis personnalisés, conversion en facture, validité et suivi des acceptations.', en: 'Custom quotes, conversion to invoice, validity and acceptance tracking.' }, tag: 'Cabinet+', ...MC.blue, icon: S(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>) },
     { title: { fr: 'Caisse & reçus', en: 'Cash sessions & receipts' }, desc: { fr: 'Sessions de caisse, ouverture/clôture, reçus numériques et rapprochement.', en: 'Cash register sessions, open/close, digital receipts and reconciliation.' }, tag: 'Cabinet+', ...MC.amber, icon: S(<><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></>) },
     { title: { fr: 'Prise en charge assureurs', en: 'Insurance coverage' }, desc: { fr: 'Conventions, bons de prise en charge, plafonds et suivi des remboursements.', en: 'Agreements, coverage vouchers, ceilings and reimbursement tracking.' }, tag: 'Clinique+', ...MC.purple, icon: S(<path d="M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7"/>) },
@@ -697,9 +697,9 @@ const FAQ_ITEMS: { q: Record<Lang,string>; a: Record<Lang,string> }[] = [
   { q: { fr: "Quels sont les tarifs ?", en: "What are the prices?" }, a: { fr: "5 formules : Pharmacie à 12 000 FCFA/mois, Cabinet à partir de 18 000 FCFA/mois, Clinique à 75 000 FCFA/mois et Hôpital à 150 000 FCFA/mois. Tous les tarifs incluent hébergement, maintenance et support.", en: "5 plans: Pharmacy at 12,000 FCFA/month, Practice from 18,000 FCFA/month, Clinic at 75,000 FCFA/month, and Hospital at 150,000 FCFA/month. All prices include hosting, maintenance and support." } },
   { q: { fr: "Est-il disponible hors connexion ?", en: "Is it available offline?" }, a: { fr: "SANTAREX ERP propose un mode hors-ligne partiel pour les consultations et la pharmacie. Les données saisies sont synchronisées automatiquement au retour de connexion internet.", en: "SANTAREX ERP offers a partial offline mode for consultations and pharmacy. Data entered is automatically synced when internet connection is restored." } },
   { q: { fr: "Puis-je l'installer sur mon téléphone ?", en: "Can I install it on my phone?" }, a: { fr: "Oui. SANTAREX ERP est une Progressive Web App (PWA). Installez-la sur votre smartphone, tablette ou ordinateur directement depuis votre navigateur, sans passer par l'App Store ou le Play Store.", en: "Yes. SANTAREX ERP is a Progressive Web App (PWA). Install it on your smartphone, tablet or computer directly from your browser, without going through the App Store or Play Store." } },
-  { q: { fr: "Quels modes de paiement sont pris en charge ?", en: "Which payment methods are supported?" }, a: { fr: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, carte bancaire et espèces. Tous les modes de paiement courants en Afrique sont intégrés nativement.", en: "Orange Money, MTN MoMo, Wave, Moov Money, CinetPay, bank card and cash. All common payment methods in Africa are natively integrated." } },
+  { q: { fr: "Quels modes de paiement sont pris en charge ?", en: "Which payment methods are supported?" }, a: { fr: "Espèces, Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money), carte bancaire, chèque, virement et prise en charge par une assurance. À la caisse, chaque paiement est enregistré et rattaché à sa facture. Le prélèvement automatique depuis le téléphone du patient n'est pas encore proposé.", en: "Cash, Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money), bank card, cheque, bank transfer and insurance cover. At the till, every payment is recorded and tied to its invoice. Automatic collection from the patient's phone is not offered yet." } },
   { q: { fr: "Combien de temps pour être opérationnel ?", en: "How long to get started?" }, a: { fr: "La mise en route prend généralement 48 heures : création du compte, configuration de votre établissement, import des données existantes et formation de vos équipes.", en: "Getting started generally takes 48 hours: account creation, facility configuration, existing data import and team training." } },
-  { q: { fr: "Où sont hébergées mes données ?", en: "Where is my data hosted?" }, a: { fr: "Vos données sont hébergées sur des serveurs sécurisés, chiffrées AES-256 en transit et au repos. Chaque établissement dispose de son propre espace isolé. Des sauvegardes automatiques sont effectuées quotidiennement.", en: "Your data is hosted on secure servers, AES-256 encrypted in transit and at rest. Each facility has its own isolated space. Automatic backups are performed daily." } },
+  { q: { fr: "Où sont hébergées mes données ?", en: "Where is my data hosted?" }, a: { fr: "Vos données sont hébergées sur des serveurs sécurisés, accessibles uniquement par une connexion chiffrée (HTTPS). Chaque établissement dispose de son propre espace isolé. Une sauvegarde est faite automatiquement chaque jour, puis copiée chaque nuit hors du serveur sous forme chiffrée (AES-256) et conservée 30 jours. Vous restez propriétaire de vos données.", en: "Your data is hosted on secure servers, reachable only through an encrypted connection (HTTPS). Each facility has its own isolated space. A backup is made automatically every day, then copied every night off the server in encrypted form (AES-256) and kept for 30 days. You remain the owner of your data." } },
   { q: { fr: "Y a-t-il un engagement minimum ?", en: "Is there a minimum commitment?" }, a: { fr: "Non. SANTAREX ERP fonctionne sur abonnement mensuel sans engagement de durée. Vous pouvez résilier à tout moment depuis votre espace administration, sans frais.", en: "No. SANTAREX ERP operates on a monthly subscription with no duration commitment. You can cancel at any time from your admin panel, with no fees." } },
 ];
 
@@ -1474,6 +1474,26 @@ export default function LandingPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div style={{ margin: '28px auto 8px', maxWidth: 960 }}>
+            <h3 style={{ textAlign: 'center', fontSize: 18, fontWeight: 800, margin: '0 0 16px', color: '#0F172A' }}>
+              {lang === 'fr' ? 'Inclus dans toutes les formules' : 'Included in every plan'}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 12 }}>
+              {([
+                { i: '🔐', fr: 'Double authentification par application, avec codes de secours', en: 'App-based two-factor authentication with recovery codes' },
+                { i: '🧾', fr: "Journal d'audit complet et contrôle d'accès par rôle", en: 'Full audit trail and role-based access control' },
+                { i: '🛡️', fr: 'Données isolées : chaque établissement dans son propre espace', en: 'Isolated data: each facility in its own space' },
+                { i: '💾', fr: 'Sauvegarde quotidienne, copiée chaque nuit hors du serveur (chiffrée, 30 jours)', en: 'Daily backup, copied every night off the server (encrypted, 30 days)' },
+                { i: '🔌', fr: 'Interopérabilité : API sécurisée par clés, webhooks, résultats HL7', en: 'Interoperability: key-secured API, webhooks, HL7 results' },
+                { i: '📞', fr: 'Hébergement, maintenance et support', en: 'Hosting, maintenance and support' },
+              ] as const).map((x) => (
+                <div key={x.fr} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 12, padding: '12px 14px', fontSize: 14, color: '#334155', lineHeight: 1.45 }}>
+                  <span style={{ fontSize: 20 }}>{x.i}</span>
+                  <span>{x[lang]}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <p className="lp-compare-note">
             {lang === 'fr'

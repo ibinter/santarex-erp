@@ -409,7 +409,7 @@
       },
       "interoperabilite": {
         "title": "Interoperability",
-        "desc": "HL7 & FHIR exchanges"
+        "desc": "API, webhooks & HL7"
       }
     }
   },

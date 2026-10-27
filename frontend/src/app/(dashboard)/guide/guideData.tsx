@@ -3005,18 +3005,18 @@ export const SECTIONS: Section[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     id: 'interoperabilite', icon: <Network size={ICON} />, color: '#4338CA', bg: '#E0E7FF', border: '#A5B4FC',
-    fr: { titre: 'Interopérabilité (API, HL7/FHIR, DICOM)', desc: 'Échanges de données avec les systèmes tiers — réservé admin / DSI' },
-    en: { titre: 'Interoperability (API, HL7/FHIR, DICOM)', desc: 'Data exchange with third-party systems — admin / IT only' },
+    fr: { titre: 'Interopérabilité (API, webhooks, HL7)', desc: 'Échanges de données avec les systèmes tiers — réservé admin / DSI' },
+    en: { titre: 'Interoperability (API, webhooks, HL7)', desc: 'Data exchange with third-party systems — admin / IT only' },
     fr_content: [
       {
         titre: 'À quoi sert l\'interopérabilité',
-        texte: "Le module Interopérabilité permet à SANTAREX d'échanger des données avec d'autres systèmes de santé : laboratoires externes, plateaux d'imagerie, assurances, systèmes nationaux ou logiciels tiers. Les échanges reposent sur des normes standard (HL7 v2, FHIR, DICOM) et sur une API sécurisée. Cette section est réservée aux administrateurs et à la DSI.",
+        texte: "Le module Interopérabilité permet à SANTAREX d'échanger des données avec d'autres systèmes de santé : laboratoires externes, plateaux d'imagerie, assurances, systèmes nationaux ou logiciels tiers. Les échanges reposent sur une API sécurisée par clés d'accès, des webhooks et la réception de messages HL7 v2 (résultats de laboratoire). Cette section est réservée aux administrateurs et à la DSI.",
         astuce: "N'ouvrez un échange que vers des partenaires de confiance : chaque connexion expose ou reçoit des données de santé sensibles.",
       },
       {
         titre: 'Normes et formats supportés',
-        texte: "SANTAREX prend en charge les principales normes du secteur : HL7 v2 pour les messages hospitaliers (admissions, résultats), FHIR (ressources REST modernes : Patient, Encounter, Observation…), DICOM pour l'imagerie médicale, et une API REST/JSON propre à SANTAREX pour les intégrations sur mesure.",
-        astuce: "Choisissez FHIR pour les nouvelles intégrations quand le partenaire le propose : c'est la norme la plus moderne et la plus simple à maintenir.",
+        texte: "SANTAREX reçoit aujourd'hui les résultats d'automates de laboratoire au format HL7 v2, expose une API REST/JSON sécurisée par clés d'accès et envoie des notifications (webhooks) à vos autres logiciels. Le raccordement aux appareils d'imagerie (DICOM) et le standard FHIR sont en préparation.",
+        astuce: "Pour une intégration sur mesure, utilisez l'API REST/JSON avec une clé d'accès dédiée à ce partenaire : vous pourrez la révoquer sans toucher aux autres.",
       },
       {
         titre: 'Générer une clé API',
@@ -3035,7 +3035,7 @@ export const SECTIONS: Section[] = [
         texte: "Un endpoint définit une destination ou une source d'échange (URL du partenaire, norme utilisée, type de messages). Il matérialise la connexion entre SANTAREX et un système tiers.",
         etapes: [
           'Menu › Interopérabilité › Endpoints › « Nouvel endpoint ».',
-          'Renseignez l\'URL du partenaire et la norme (HL7, FHIR, DICOM, REST).',
+          'Renseignez l\'URL du partenaire et le type d\'interface (HL7, REST).',
           'Choisissez le sens de l\'échange (entrant, sortant ou bidirectionnel) et le type de données.',
           'Renseignez les paramètres d\'authentification fournis par le partenaire.',
           'Enregistrez, puis lancez un test de connexion.',
@@ -3056,20 +3056,20 @@ export const SECTIONS: Section[] = [
       },
       {
         titre: 'Surveiller et sécuriser les échanges',
-        texte: "Le module trace tous les échanges (appels API, messages HL7/FHIR, transferts DICOM, webhooks) avec leur statut. Vous pouvez révoquer une clé, désactiver un endpoint ou rejouer un message en échec.",
+        texte: "Le module trace tous les échanges (appels API, messages HL7, webhooks) avec leur statut. Vous pouvez révoquer une clé, désactiver un endpoint ou rejouer un message en échec.",
         astuce: "Révoquez sans attendre toute clé API dont vous soupçonnez la compromission, puis générez-en une nouvelle : une clé exposée donne accès à des données de santé.",
       },
     ],
     en_content: [
       {
         titre: 'What interoperability is for',
-        texte: "The Interoperability module lets SANTAREX exchange data with other health systems: external labs, imaging centres, insurers, national systems or third-party software. Exchanges rely on standard norms (HL7 v2, FHIR, DICOM) and on a secure API. This section is reserved for administrators and IT staff.",
+        texte: "The Interoperability module lets SANTAREX exchange data with other health systems: external labs, imaging centres, insurers, national systems or third-party software. Exchanges rely on an API secured by access keys, webhooks and the reception of HL7 v2 messages (lab results). This section is reserved for administrators and IT staff.",
         astuce: "Only open an exchange to trusted partners: each connection sends or receives sensitive health data.",
       },
       {
         titre: 'Supported standards and formats',
-        texte: "SANTAREX supports the sector's main standards: HL7 v2 for hospital messages (admissions, results), FHIR (modern REST resources: Patient, Encounter, Observation…), DICOM for medical imaging, and a SANTAREX-specific REST/JSON API for custom integrations.",
-        astuce: "Choose FHIR for new integrations when the partner offers it: it is the most modern standard and the easiest to maintain.",
+        texte: "SANTAREX currently receives lab analyzer results in HL7 v2, exposes a REST/JSON API secured by access keys and sends notifications (webhooks) to your other software. Imaging device connection (DICOM) and the FHIR standard are in preparation.",
+        astuce: "For a custom integration, use the REST/JSON API with an access key dedicated to that partner: you can revoke it without affecting the others.",
       },
       {
         titre: 'Generate an API key',
@@ -3088,7 +3088,7 @@ export const SECTIONS: Section[] = [
         texte: "An endpoint defines an exchange destination or source (partner URL, standard used, message type). It embodies the connection between SANTAREX and a third-party system.",
         etapes: [
           'Menu › Interoperability › Endpoints › « New endpoint ».',
-          'Enter the partner URL and the standard (HL7, FHIR, DICOM, REST).',
+          'Enter the partner URL and the interface type (HL7, REST).',
           'Choose the direction (inbound, outbound or bidirectional) and the data type.',
           'Enter the authentication parameters provided by the partner.',
           'Save, then run a connection test.',
@@ -3109,7 +3109,7 @@ export const SECTIONS: Section[] = [
       },
       {
         titre: 'Monitor and secure exchanges',
-        texte: "The module logs all exchanges (API calls, HL7/FHIR messages, DICOM transfers, webhooks) with their status. You can revoke a key, disable an endpoint or replay a failed message.",
+        texte: "The module logs all exchanges (API calls, HL7 messages, webhooks) with their status. You can revoke a key, disable an endpoint or replay a failed message.",
         astuce: "Immediately revoke any API key you suspect is compromised, then generate a new one: an exposed key grants access to health data.",
       },
     ],
