@@ -103,7 +103,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
                     href={href}
                     onClick={() => setSidebarOpen(false)}
                     className={`relative flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                      active ? 'bg-white/12 text-white' : 'text-blue-100/80 hover:bg-white/8 hover:text-white'
+                      active ? 'bg-white/10 text-white' : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
                     }`}
                     style={active ? { background: 'rgba(255,255,255,0.12)' } : undefined}
                   >
@@ -131,7 +131,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-blue-100/80 hover:bg-white/8 hover:text-white transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-blue-100/80 hover:bg-white/10 hover:text-white transition-all"
         >
           <LogOut size={16} />
           Déconnexion
