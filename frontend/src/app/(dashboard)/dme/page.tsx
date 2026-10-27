@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 
 type Patient = {
   id: string; ipp?: string; nom: string; prenom: string;
@@ -49,26 +50,48 @@ export default function DMEIndexPage() {
   const [search, setSearch]     = useState('');
   const [sexeFilter, setSexeFilter] = useState('');
 
+  const PAGE_SIZE = 50;
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchDebounced, setSearchDebounced] = useState('');
+
+  useEffect(() => { const id = setTimeout(() => setSearchDebounced(search.trim()), 300); return () => clearTimeout(id); }, [search]);
+
+  // Recherche et filtre sexe faits par le serveur : toute la base est interrogée.
+  const url = (p: number) => {
+    const qs = new URLSearchParams({ page: String(p), limit: String(PAGE_SIZE), statut: 'actif' });
+    if (searchDebounced) qs.set('q', searchDebounced);
+    if (sexeFilter) qs.set('sexe', sexeFilter);
+    return `/patients?${qs}`;
+  };
+  const rows = (d: any): Patient[] => Array.isArray(d) ? d : d?.items ?? d?.data ?? [];
+  const totalOf = (d: any, fallback: number) => Number((d?.data?.total !== undefined ? d.data.total : d?.total) ?? fallback);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient<any>('/patients?limit=100&statut=actif');
-      setPatients(Array.isArray(d) ? d : d?.items ?? d?.data ?? []);
-    } catch { setPatients([]); }
+      const d = await apiClient<any>(url(1));
+      const list = rows(d);
+      setPatients(list); setPage(1); setTotal(totalOf(d, list.length));
+    } catch { setPatients([]); setTotal(0); }
     finally { setLoading(false); }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchDebounced, sexeFilter]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const d = await apiClient<any>(url(page + 1));
+      setPatients(prev => [...prev, ...rows(d)]);
+      setPage(p => p + 1);
+      setTotal(totalOf(d, total));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = patients.filter(p => {
-    const q = search.toLowerCase();
-    const matchQ = !q ||
-      `${p.prenom} ${p.nom}`.toLowerCase().includes(q) ||
-      (p.ipp??'').toLowerCase().includes(q) ||
-      (p.telephone??'').includes(q);
-    const matchS = !sexeFilter || p.sexe === sexeFilter;
-    return matchQ && matchS;
-  });
+  const filtered = patients;
 
   return (
     <div style={{ padding:'18px', background:'#F4F6FA', minHeight:'100vh' }}>
@@ -102,7 +125,7 @@ export default function DMEIndexPage() {
           {/* Stats pills */}
           <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginTop:6 }}>
             {[
-              { label:t('index.statPatientsActifs'), val:loading?'…':patients.length, icon:<User size={11}/>, reset:true },
+              { label:t('index.statPatientsActifs'), val:loading?'…':total, icon:<User size={11}/>, reset:true },
               { label:t('index.statConsultations'), val:t('index.statConsultationsVal'), icon:<Stethoscope size={11}/>, reset:false },
               { label:t('index.statOrdonnances'), val:t('index.statOrdonnancesVal'), icon:<Pill size={11}/>, reset:false },
             ].map((s,i)=>(
@@ -161,7 +184,7 @@ export default function DMEIndexPage() {
       {/* Résultats count */}
       {!loading&&(
         <div style={{ fontSize:12, color:'#90A4AE', fontWeight:600, marginBottom:10 }}>
-          {t('index.foundCount', { count: filtered.length })}
+          {t('index.foundCount', { count: total })}
         </div>
       )}
 
@@ -238,6 +261,7 @@ export default function DMEIndexPage() {
           })}
         </div>
       )}
+      {!loading && <LoadMore loaded={patients.length} total={total} loading={loadingMore} onMore={loadMore} />}
     </div>
   );
 }

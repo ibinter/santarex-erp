@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DevisPatient } from './entities/devis-patient.entity';
 import { LigneDevis } from './entities/ligne-devis.entity';
+import { Patient } from '../patients/entities/patient.entity';
 import { DevisService } from './devis.service';
 import { DevisController } from './devis.controller';
 import { FacturationModule } from '../facturation/facturation.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DevisPatient, LigneDevis]), FacturationModule],
+  imports: [TypeOrmModule.forFeature([DevisPatient, LigneDevis, Patient]), FacturationModule],
   providers: [DevisService],
   controllers: [DevisController],
   exports: [DevisService],

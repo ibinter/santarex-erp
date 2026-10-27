@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -70,7 +70,6 @@ function fmtDate(iso?: string) {
 export default function DevisPage() {
   const t = useTranslations('devis');
   const [devisList, setDevisList] = useState<Devis[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -85,23 +84,17 @@ export default function DevisPage() {
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const metaTotal = (r: any, fallback: number) => Number((r?.data?.total !== undefined ? r.data.total : r?.total) ?? fallback);
-  const patientsRef = useRef<Record<string, Patient>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [dRes, sRes, pRes] = await Promise.allSettled([
+      const [dRes, sRes] = await Promise.allSettled([
         apiClient<any>(`/devis?limit=${PAGE_SIZE}&page=1`),
         apiClient<any>('/devis/stats'),
-        apiClient<any>('/patients?limit=100'),
       ]);
-      // Liste utilisée par le sélecteur de patient du formulaire « Nouveau devis ».
-      const pList: Patient[] = pRes.status === 'fulfilled' ? unwrap(pRes.value) : [];
-      setPatients(pList);
-      patientsRef.current = Object.fromEntries(pList.map(p => [p.id, p]));
       if (dRes.status === 'fulfilled') {
-        // Le patient fourni par le serveur n'est jamais écrasé.
-        const list = unwrap(dRes.value).map((d: any) => ({ ...d, patient: d.patient ?? patientsRef.current[d.patientId] }));
+        // Le patient est joint côté serveur (toute la base).
+        const list = unwrap(dRes.value);
         setDevisList(list); setPage(1); setTotal(metaTotal(dRes.value, list.length));
       }
       if (sRes.status === 'fulfilled') setStats(sRes.value);
@@ -112,7 +105,7 @@ export default function DevisPage() {
     setLoadingMore(true);
     try {
       const r = await apiClient<any>(`/devis?limit=${PAGE_SIZE}&page=${page + 1}`);
-      const more = unwrap(r).map((d: any) => ({ ...d, patient: d.patient ?? patientsRef.current[d.patientId] }));
+      const more = unwrap(r);
       setDevisList(prev => [...prev, ...more]);
       setPage(p => p + 1);
       setTotal(metaTotal(r, total));

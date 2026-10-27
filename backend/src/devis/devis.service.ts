@@ -4,7 +4,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
+import { Patient } from '../patients/entities/patient.entity';
 import { DevisPatient, StatutDevis } from './entities/devis-patient.entity';
 import { LigneDevis, TypeLigneDevis } from './entities/ligne-devis.entity';
 import { CreateDevisDto, CreateLigneDevisDto } from './dto/create-devis.dto';
@@ -18,8 +19,23 @@ export class DevisService {
     private devisRepo: Repository<DevisPatient>,
     @InjectRepository(LigneDevis)
     private ligneRepo: Repository<LigneDevis>,
+    @InjectRepository(Patient)
+    private patientRepo: Repository<Patient>,
     private readonly facturationService: FacturationService,
   ) {}
+
+  /** Joint le patient (nom, prénom, IPP) en une seule requête, sans N+1. */
+  private async enrichir(devis: DevisPatient[], tenantId: string) {
+    const ids = [...new Set(devis.map((d) => d.patientId).filter(Boolean))] as string[];
+    const patients = ids.length ? await this.patientRepo.find({ where: { id: In(ids), tenantId } }) : [];
+    const map = new Map(patients.map((p) => [p.id, p]));
+    return devis.map((d) => {
+      const p = map.get(d.patientId);
+      return Object.assign(d, {
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+      });
+    });
+  }
 
   private round(v: number): number {
     return Math.round(v * 100) / 100;
@@ -247,7 +263,7 @@ export class DevisService {
     tenantId: string,
     filters: { patientId?: string; statut?: StatutDevis },
     pagination: { page?: number; limit?: number },
-  ): Promise<{ data: DevisPatient[]; total: number; page: number; limit: number }> {
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -266,7 +282,7 @@ export class DevisService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
   async findOne(id: string, tenantId: string): Promise<DevisPatient> {

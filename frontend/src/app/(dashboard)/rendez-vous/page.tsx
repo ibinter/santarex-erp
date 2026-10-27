@@ -66,19 +66,17 @@ export default function RendezVousPage() {
       const deb = weekStart.toISOString().split('T')[0];
       const fin = addDays(weekStart,6).toISOString().split('T')[0];
       const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
-      const [rdvRes, patRes, usrRes] = await Promise.all([
-        apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=100`),
-        apiClient<any>('/patients?limit=100'),
+      // Le patient est joint côté serveur ; une semaine peut dépasser 100 rendez-vous.
+      const [rdvRes, usrRes] = await Promise.all([
+        apiClient<any>(`/rendez-vous?dateDebut=${deb}&dateFin=${fin}&limit=500`),
         apiClient<any>('/users'),
       ]);
-      const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));
       const uMap: Record<string, any> = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
       const list = unwrap(rdvRes).map((r: any) => {
-        const p = pMap[r.patientId];
         const u = uMap[r.medecinId];
         return {
           ...r,
-          patient: r.patient ?? (p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : undefined),
+          patient: r.patient ?? undefined,
           medecin: r.medecin ?? (u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined),
         };
       });
