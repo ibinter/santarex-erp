@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Stethoscope, Plus, Search, RefreshCw, Eye,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
 type Consultation = {
@@ -110,32 +111,51 @@ export default function ConsultationsPage() {
     t('list.pdfSubtitle', { count: consultations.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
+  const PAGE_SIZE = 50;
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const usersRef = useRef<Record<string, any>>({});
+
+  const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+  const meta = (r: any) => (r?.data?.total !== undefined ? r.data : r);
+
+  // Le serveur joint déjà patient et médecin ; on ne complète le médecin
+  // depuis la liste des utilisateurs que s'il manque (jamais d'écrasement).
+  const enrichir = (rows: any[]) => rows.map((c: any) => {
+    const u = usersRef.current[c.medecinId];
+    return {
+      ...c,
+      medecin: c.medecin ?? (u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined),
+    };
+  });
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
-      const [conRes, patRes, usrRes] = await Promise.all([
-        apiClient<any>('/consultations?limit=100'),
-        apiClient<any>('/patients?limit=100'),
+      const [conRes, usrRes] = await Promise.all([
+        apiClient<any>(`/consultations?limit=${PAGE_SIZE}&page=1`),
         apiClient<any>('/users'),
       ]);
-      const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));
-      const uMap: Record<string, any> = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
-      // L'API liste ne renvoie que patientId / medecinId : on résout les noms.
-      const list = unwrap(conRes).map((c: any) => {
-        const p = pMap[c.patientId];
-        const u = uMap[c.medecinId];
-        return {
-          ...c,
-          patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : undefined,
-          medecin: u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined,
-        };
-      });
+      usersRef.current = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
+      const list = enrichir(unwrap(conRes));
       setConsultations(list);
+      setPage(1);
+      setTotal(Number(meta(conRes)?.total ?? list.length));
       setLastRefresh(new Date());
     } catch { setConsultations([]); }
     finally { setLoading(false); }
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const res = await apiClient<any>(`/consultations?limit=${PAGE_SIZE}&page=${page + 1}`);
+      setConsultations(prev => [...prev, ...enrichir(unwrap(res))]);
+      setPage(p => p + 1);
+      setTotal(Number(meta(res)?.total ?? total));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -369,6 +389,7 @@ export default function ConsultationsPage() {
             </tbody>
           </table>
         </div>
+        <LoadMore loaded={consultations.length} total={total} loading={loadingMore} onMore={loadMore} />
 
         {/* Footer info */}
         {displayed.length > 0 && (

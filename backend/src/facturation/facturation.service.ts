@@ -4,7 +4,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Like } from 'typeorm';
+import { Repository, Between, Like, In } from 'typeorm';
+import { Patient } from '../patients/entities/patient.entity';
 import { Facture, StatutFacture } from './entities/facture.entity';
 import { LigneFacture } from './entities/ligne-facture.entity';
 import { CreateFactureDto, CreateLigneFactureDto } from './dto/create-facture.dto';
@@ -17,7 +18,22 @@ export class FacturationService {
     private factureRepo: Repository<Facture>,
     @InjectRepository(LigneFacture)
     private ligneRepo: Repository<LigneFacture>,
+    @InjectRepository(Patient)
+    private patientRepo: Repository<Patient>,
   ) {}
+
+  /** Joint le patient (nom, prénom, IPP) en une seule requête, sans N+1. */
+  private async enrichir(factures: Facture[], tenantId: string) {
+    const ids = [...new Set(factures.map((f) => f.patientId).filter(Boolean))] as string[];
+    const patients = ids.length ? await this.patientRepo.find({ where: { id: In(ids), tenantId } }) : [];
+    const map = new Map(patients.map((p) => [p.id, p]));
+    return factures.map((f) => {
+      const p = map.get(f.patientId);
+      return Object.assign(f, {
+        patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : null,
+      });
+    });
+  }
 
   async genererNumeroFacture(tenantId: string): Promise<string> {
     const year = new Date().getFullYear();
@@ -188,7 +204,7 @@ export class FacturationService {
     tenantId: string,
     filters: { patientId?: string; statut?: StatutFacture; dateDebut?: string; dateFin?: string },
     pagination: { page?: number; limit?: number },
-  ): Promise<{ data: Facture[]; total: number; page: number; limit: number }> {
+  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 20;
     const skip = (page - 1) * limit;
@@ -210,7 +226,7 @@ export class FacturationService {
 
     const [data, total] = await qb.orderBy('f.createdAt', 'DESC').skip(skip).take(limit).getManyAndCount();
 
-    return { data, total, page, limit };
+    return { data: await this.enrichir(data, tenantId), total, page, limit };
   }
 
   async findOne(id: string, tenantId: string): Promise<Facture> {

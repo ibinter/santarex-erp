@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   FlaskConical, Plus, Search, RefreshCw, ChevronRight,
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
 type StatutDemande = 'attente_prelevement'|'preleve'|'en_analyse'|'termine'|'valide';
@@ -98,41 +99,60 @@ export default function LaboratoirePage() {
     t('export.pdfSubtitle', { count: demandes.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
+  const PAGE_SIZE = 50;
+  const [totalServeur, setTotalServeur] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const refsRef = useRef<{ users: Record<string, any>; types: Record<string, any> }>({ users: {}, types: {} });
+
+  const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+  const meta = (r: any) => (r?.data?.total !== undefined ? r.data : r);
+
+  // Le serveur joint déjà patient et médecin ; on ne complète que ce qui manque.
+  const enrichir = (rows: any[]) => rows.map((d: any) => {
+    const u = refsRef.current.users[d.medecinId];
+    return {
+      ...d,
+      medecin: d.medecin ?? (u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined),
+      typesAnalyse: (d.analyses || [])
+        .map((id: string) => refsRef.current.types[id])
+        .filter(Boolean)
+        .map((t: any) => ({ id: t.id, code: t.code, nom: t.nom, prix: t.prixUnitaire })),
+      statut: d.statutPrelevement ?? d.statut,
+      createdAt: d.dateHeureDemande ?? d.createdAt,
+      datePrelevement: d.dateHeurePrelevement ?? d.datePrelevement,
+    };
+  });
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
-      const [demRes, patRes, usrRes, typRes] = await Promise.all([
-        apiClient<any>('/laboratoire/demandes?limit=100'),
-        apiClient<any>('/patients?limit=100'),
+      const [demRes, usrRes, typRes] = await Promise.all([
+        apiClient<any>(`/laboratoire/demandes?limit=${PAGE_SIZE}&page=1`),
         apiClient<any>('/users'),
         apiClient<any>('/laboratoire/types-analyse'),
       ]);
-      const rawDem = unwrap(demRes);
-      const pMap: Record<string, any> = Object.fromEntries(unwrap(patRes).map((p: any) => [p.id, p]));
-      const uMap: Record<string, any> = Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u]));
-      const tMap: Record<string, any> = Object.fromEntries(unwrap(typRes).map((t: any) => [t.id, t]));
-      // L'API liste ne renvoie que les IDs : on résout patient / médecin / analyses.
-      const enriched = rawDem.map((d: any) => {
-        const p = pMap[d.patientId];
-        const u = uMap[d.medecinId];
-        return {
-          ...d,
-          patient: p ? { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } : undefined,
-          medecin: u ? { id: u.id, nom: u.lastName, prenom: u.firstName } : undefined,
-          typesAnalyse: (d.analyses || [])
-            .map((id: string) => tMap[id])
-            .filter(Boolean)
-            .map((t: any) => ({ id: t.id, code: t.code, nom: t.nom, prix: t.prixUnitaire })),
-          statut: d.statutPrelevement ?? d.statut,
-          createdAt: d.dateHeureDemande ?? d.createdAt,
-          datePrelevement: d.dateHeurePrelevement ?? d.datePrelevement,
-        };
-      });
-      setDemandes(enriched);
+      refsRef.current = {
+        users: Object.fromEntries(unwrap(usrRes).map((u: any) => [u.id, u])),
+        types: Object.fromEntries(unwrap(typRes).map((t: any) => [t.id, t])),
+      };
+      const list = enrichir(unwrap(demRes));
+      setDemandes(list);
+      setPage(1);
+      setTotalServeur(Number(meta(demRes)?.total ?? list.length));
       setLastRefresh(new Date());
     } finally { setLoading(false); }
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const res = await apiClient<any>(`/laboratoire/demandes?limit=${PAGE_SIZE}&page=${page + 1}`);
+      setDemandes(prev => [...prev, ...enrichir(unwrap(res))]);
+      setPage(p => p + 1);
+      setTotalServeur(Number(meta(res)?.total ?? totalServeur));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(()=>{ load(); },[load]);
 
@@ -335,6 +355,7 @@ export default function LaboratoirePage() {
             </tbody>
           </table>
         </div>
+        <LoadMore loaded={demandes.length} total={totalServeur} loading={loadingMore} onMore={loadMore} />
       </div>
     </div>
   );

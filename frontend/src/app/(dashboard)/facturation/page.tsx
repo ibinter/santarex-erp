@@ -9,6 +9,7 @@ import {
   ChevronRight, Shield, Download, FileSpreadsheet,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
 type StatutFacture = 'brouillon' | 'emise' | 'partiellement_payee' | 'payee' | 'annulee';
@@ -100,37 +101,52 @@ export default function FacturationPage() {
     t('expSous', { count: factures.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
+  const PAGE_SIZE = 50;
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
+  const meta = (r: any) => (r?.data?.total !== undefined ? r.data : r);
+
+  // L'API renvoie les montants en décimaux-chaînes (montantTTC/montantRestant).
+  // On normalise en nombres et vers les noms utilisés par la page (total/resteAPayer).
+  // Le patient est joint côté serveur (nom, prénom, IPP).
+  const normaliser = (f: any) => ({
+    ...f,
+    total: Number(f.total ?? f.montantTTC) || 0,
+    montantPaye: Number(f.montantPaye) || 0,
+    resteAPayer: Number(f.resteAPayer ?? f.montantRestant) || 0,
+  });
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
-      const [factRes, statsRes, patRes] = await Promise.allSettled([
-        apiClient<any>('/facturation?limit=100'),
+      const [factRes, statsRes] = await Promise.allSettled([
+        apiClient<any>(`/facturation?limit=${PAGE_SIZE}&page=1`),
         apiClient<StatsFacturation>('/facturation/stats'),
-        apiClient<any>('/patients?limit=100'),
       ]);
-      const pMap: Record<string, any> = patRes.status === 'fulfilled'
-        ? Object.fromEntries(unwrap(patRes.value).map((p: any) => [p.id, p])) : {};
       if (factRes.status === 'fulfilled') {
-        const list = unwrap(factRes.value).map((f: any) => {
-          // L'API renvoie les montants en décimaux-chaînes (montantTTC/montantRestant).
-          // On normalise en nombres et vers les noms utilisés par la page (total/resteAPayer).
-          const norm = {
-            ...f,
-            total: Number(f.total ?? f.montantTTC) || 0,
-            montantPaye: Number(f.montantPaye) || 0,
-            resteAPayer: Number(f.resteAPayer ?? f.montantRestant) || 0,
-          };
-          if (norm.patient) return norm;
-          const p = pMap[norm.patientId];
-          return p ? { ...norm, patient: { id: p.id, nom: p.nom, prenom: p.prenom, ipp: p.ipp } } : norm;
-        });
+        const list = unwrap(factRes.value).map(normaliser);
         setFactures(list);
+        setPage(1);
+        setTotal(Number(meta(factRes.value)?.total ?? list.length));
       }
       if (statsRes.status === 'fulfilled') setStats(statsRes.value);
       setLastRefresh(new Date());
     } finally { setLoading(false); }
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const res = await apiClient<any>(`/facturation?limit=${PAGE_SIZE}&page=${page + 1}`);
+      const more = unwrap(res).map(normaliser);
+      setFactures(prev => [...prev, ...more]);
+      setPage(p => p + 1);
+      setTotal(Number(meta(res)?.total ?? total));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -338,6 +354,7 @@ export default function FacturationPage() {
             </tbody>
           </table>
         </div>
+        <LoadMore loaded={factures.length} total={total} loading={loadingMore} onMore={loadMore} />
       </div>
     </div>
   );
