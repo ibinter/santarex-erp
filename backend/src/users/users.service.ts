@@ -1,4 +1,4 @@
-import { Injectable, Logger, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Not } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -164,6 +164,23 @@ export class UsersService {
     if (!user) throw new NotFoundException('Utilisateur introuvable');
     user.isActive = !user.isActive;
     return this.userRepository.save(user);
+  }
+
+  /** Changement de mot de passe par l'utilisateur lui-même (vérifie l'ancien). */
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .addSelect('u.password')
+      .where('u.id = :id', { id: userId })
+      .getOne();
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) throw new BadRequestException('Mot de passe actuel incorrect');
+    if (await bcrypt.compare(newPassword, user.password)) {
+      throw new BadRequestException("Le nouveau mot de passe doit être différent de l'actuel");
+    }
+    user.password = await this.hashPassword(newPassword);
+    await this.userRepository.save(user);
   }
 
   async resetPassword(id: string, tenantId: string, newPassword: string): Promise<{ message: string }> {

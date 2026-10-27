@@ -99,7 +99,7 @@ export default function DMEPage() {
     try {
       const [patR,antR,conR,anaR,ordR] = await Promise.allSettled([
         apiClient<Patient>(`/patients/${patientId}`),
-        apiClient<any>(`/patients/${patientId}/antecedents`),
+        apiClient<any>(`/dme/${patientId}/antecedents`),
         apiClient<any>(`/consultations?patientId=${patientId}&limit=20`),
         apiClient<any>(`/laboratoire/demandes?patientId=${patientId}&limit=20`),
         apiClient<any>(`/ordonnances?patientId=${patientId}&limit=20`),
@@ -109,7 +109,17 @@ export default function DMEPage() {
       if (antR.status==='fulfilled') { const d=antR.value; setAntecedents(Array.isArray(d)?d:d?.items??[]); }
       if (conR.status==='fulfilled') { const d=conR.value; setConsultations(Array.isArray(d)?d:d?.items??[]); }
       if (anaR.status==='fulfilled') { const d=anaR.value; setAnalyses(Array.isArray(d)?d:d?.items??[]); }
-      if (ordR.status==='fulfilled') { const d=ordR.value; setOrdonnances(Array.isArray(d)?d:d?.items??[]); }
+      if (ordR.status==='fulfilled') {
+        const d=ordR.value; const rows:any[]=Array.isArray(d)?d:d?.items??d?.data??[];
+        // L'API renvoie des lignes structurées ; l'onglet affiche une ligne de texte par médicament.
+        setOrdonnances(rows.map(o=>({
+          ...o,
+          dateCreation: o.dateCreation ?? o.dateEmission ?? o.createdAt,
+          lignes: (Array.isArray(o.lignes)?o.lignes:[]).map((l:any)=>
+            typeof l==='string' ? l
+              : [l.medicamentNom, l.posologie, l.duree].filter(Boolean).join(' — ')),
+        })));
+      }
     } catch(e:any) { setError(e?.message??t('detail.loadError')); }
     finally { setLoading(false); }
   },[patientId, t]);

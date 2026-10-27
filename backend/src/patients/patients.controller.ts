@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -99,6 +100,8 @@ export class PatientsController {
     return this.patientsService.create(dto, tenantId, userId);
   }
 
+  // PUT et PATCH : le formulaire de modification envoie PATCH.
+  @Patch(':id')
   @Put(':id')
   @ApiOperation({ summary: 'Modifier un patient', description: 'Met à jour les informations du dossier patient' })
   @ApiParam({ name: 'id', description: 'UUID du patient' })

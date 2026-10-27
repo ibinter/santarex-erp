@@ -27,6 +27,45 @@ export class TenantsService {
   }
 
   /** Annule une création d'établissement restée incomplète (inscription échouée). */
+  private lireParametres(t: Tenant): Record<string, any> {
+    try { return t.parametresJson ? JSON.parse(t.parametresJson) : {}; } catch { return {}; }
+  }
+
+  /** Paramètres de l'établissement courant (coordonnées + préférences). */
+  async getSettings(slug: string) {
+    const t = await this.findBySlug(slug);
+    const p = this.lireParametres(t);
+    return {
+      nomEtablissement: t.nom ?? '',
+      ville: t.ville ?? '',
+      pays: t.pays ?? '',
+      telephone: t.telephone ?? '',
+      email: t.email ?? '',
+      twoFaEnabled: p.twoFaEnabled ?? false,
+      sessionTimeoutMinutes: p.sessionTimeoutMinutes ?? 60,
+      notifStock: p.notifStock ?? true,
+      notifRdv: p.notifRdv ?? true,
+      notifLabo: p.notifLabo ?? true,
+      notifFacture: p.notifFacture ?? false,
+    };
+  }
+
+  async updateSettings(slug: string, dto: Record<string, any>) {
+    const t = await this.findBySlug(slug);
+    if (dto.nomEtablissement !== undefined) t.nom = dto.nomEtablissement;
+    if (dto.ville !== undefined) t.ville = dto.ville;
+    if (dto.pays !== undefined) t.pays = dto.pays;
+    if (dto.telephone !== undefined) t.telephone = dto.telephone;
+    if (dto.email !== undefined) t.email = dto.email;
+    const p = this.lireParametres(t);
+    for (const k of ['twoFaEnabled', 'sessionTimeoutMinutes', 'notifStock', 'notifRdv', 'notifLabo', 'notifFacture']) {
+      if (dto[k] !== undefined) p[k] = dto[k];
+    }
+    t.parametresJson = JSON.stringify(p);
+    await this.tenantRepository.save(t);
+    return this.getSettings(slug);
+  }
+
   async removeBySlug(slug: string): Promise<void> {
     await this.tenantRepository.delete({ slug });
   }

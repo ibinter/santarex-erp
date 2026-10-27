@@ -58,11 +58,12 @@ export default function ParametresPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [nomEtab, setNomEtab] = useState('Clinique Saint-Joseph');
-  const [ville, setVille] = useState('Abidjan');
-  const [pays, setPays] = useState("Côte d'Ivoire");
-  const [tel, setTel] = useState('+225 27 20 32 45 67');
-  const [email, setEmail] = useState('contact@clinique-saintjoseph.ci');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [nomEtab, setNomEtab] = useState('');
+  const [ville, setVille] = useState('');
+  const [pays, setPays] = useState('');
+  const [tel, setTel] = useState('');
+  const [email, setEmail] = useState('');
   const [notifStock, setNotifStock] = useState(true);
   const [notifRdv, setNotifRdv] = useState(true);
   const [notifLabo, setNotifLabo] = useState(true);
@@ -70,6 +71,21 @@ export default function ParametresPage() {
   const [twoFa, setTwoFa] = useState(false);
   const [sessionTimeout, setSessionTimeout] = useState('60');
   const [appVersion, setAppVersion] = useState('');
+
+  // Valeurs réelles de l'établissement connecté (plus de données d'exemple).
+  useEffect(() => {
+    apiClient<any>('/settings')
+      .then((r) => {
+        const v = r?.data ?? r;
+        if (!v) return;
+        setNomEtab(v.nomEtablissement ?? ''); setVille(v.ville ?? ''); setPays(v.pays ?? '');
+        setTel(v.telephone ?? ''); setEmail(v.email ?? '');
+        setTwoFa(!!v.twoFaEnabled); setSessionTimeout(String(v.sessionTimeoutMinutes ?? 60));
+        setNotifStock(v.notifStock ?? true); setNotifRdv(v.notifRdv ?? true);
+        setNotifLabo(v.notifLabo ?? true); setNotifFacture(v.notifFacture ?? false);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     apiClient<any>('/version')
@@ -81,15 +97,23 @@ export default function ParametresPage() {
   }, []);
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true); setSaveError(null);
     try {
       await apiClient('/settings', {
         method: 'PATCH',
-        body: { nomEtablissement: nomEtab, ville, pays, telephone: tel, email, twoFaEnabled: twoFa, sessionTimeoutMinutes: parseInt(sessionTimeout, 10), notifStock, notifRdv, notifLabo, notifFacture },
+        body: {
+          nomEtablissement: nomEtab, ville, pays, telephone: tel,
+          ...(email ? { email } : {}),
+          twoFaEnabled: twoFa, sessionTimeoutMinutes: parseInt(sessionTimeout, 10) || 60,
+          notifStock, notifRdv, notifLabo, notifFacture,
+        },
       });
-    } catch { /* endpoint may not exist yet */ }
-    setSaving(false); setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e: any) {
+      // Plus de faux « Enregistré » : l'erreur réelle est affichée.
+      setSaveError(e?.message ?? 'Enregistrement impossible');
+    } finally { setSaving(false); }
   };
 
   const activeSec = NAV_SECTIONS.find(s => s.id === section)!;
@@ -121,6 +145,12 @@ export default function ParametresPage() {
           </button>
         </div>
       </div>
+
+      {saveError && (
+        <div role="alert" style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 10, background: '#FEE2E2', color: '#991B1B', fontSize: 13, fontWeight: 600 }}>
+          {saveError}
+        </div>
+      )}
 
       {/* ── LAYOUT ────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 16 }}>
@@ -256,9 +286,6 @@ export default function ParametresPage() {
                       <div style={{ fontSize: 13, fontWeight: 800, color: '#1A2332' }}>{t(`roles.${i}.nom`)}</div>
                       <div style={{ fontSize: 11, color: '#90A4AE', marginTop: 2 }}>{(t.raw(`roles.${i}.permissions`) as string[]).join(' · ')}</div>
                     </div>
-                    <span style={{ background: r.bg, color: r.color, fontSize: 11, fontWeight: 800, padding: '3px 12px', borderRadius: 20, flexShrink: 0, border: `1px solid ${r.color}33` }}>
-                      {t('userCount', { count: r.count })}
-                    </span>
                   </div>
                 ))}
               </div>

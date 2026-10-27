@@ -191,4 +191,13 @@ export class ConsultationsService {
       order: { createdAt: 'DESC' },
     });
   }
+
+  /** Ordonnances d'un patient (toutes consultations confondues), les plus récentes d'abord. */
+  async getOrdonnancesByPatient(patientId: string, tenantId: string, limit = 20) {
+    return this.ordonnanceRepository.find({
+      where: { patientId, tenantId },
+      order: { createdAt: 'DESC' },
+      take: Math.min(Math.max(limit, 1), 100),
+    });
+  }
 }

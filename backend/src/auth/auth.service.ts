@@ -346,6 +346,18 @@ export class AuthService {
     return candidate;
   }
 
+  async updateProfile(userId: string, tenantId: string, dto: { firstName?: string; lastName?: string }) {
+    const patch: { firstName?: string; lastName?: string } = {};
+    if (dto.firstName?.trim()) patch.firstName = dto.firstName.trim();
+    if (dto.lastName?.trim()) patch.lastName = dto.lastName.trim();
+    const u = await this.usersService.updateUser(userId, tenantId, patch);
+    return { id: u.id, email: u.email, firstName: u.firstName, lastName: u.lastName, role: u.role };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    await this.usersService.changePassword(userId, currentPassword, newPassword);
+  }
+
   private async slugExists(slug: string): Promise<boolean> {
     try {
       await this.tenantsService.findBySlug(slug);

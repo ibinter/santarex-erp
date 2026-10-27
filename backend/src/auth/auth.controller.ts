@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   UseGuards,
   HttpCode,
@@ -21,6 +22,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto, ChangePasswordDto } from './dto/profile.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -153,5 +155,35 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Non authentifié' })
   async getMe(@CurrentUser() user: any) {
     return user;
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Modifier mon profil', description: 'Prénom et nom (le rôle ne peut pas être modifié ici)' })
+  async updateMe(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(user.userId ?? user.id, user.tenantId, dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Changer mon mot de passe', description: "Exige l'ancien mot de passe" })
+  async changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto, @Req() req: Request) {
+    await this.authService.changePassword(user.userId ?? user.id, dto.currentPassword, dto.newPassword);
+    this.auditLogsService.log({
+      action: AuditAction.UPDATE,
+      ressource: 'auth',
+      userId: user.userId ?? user.id,
+      userEmail: user.email,
+      userRole: user.role,
+      tenantId: user.tenantId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      contexte: { operation: 'change-password' },
+    });
+    return { message: 'Mot de passe modifié avec succès' };
   }
 }
