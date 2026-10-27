@@ -39,6 +39,19 @@ export class FacturationService {
   }
 
   async createFacture(dto: CreateFactureDto, tenantId: string, userId: string): Promise<Facture> {
+    // Deux créations simultanées peuvent tirer le même numéro : l'index unique
+    // (tenantId, numero) en refuse une, on retente avec le numéro suivant.
+    for (let tentative = 1; ; tentative++) {
+      try {
+        return await this.creerFacture(dto, tenantId, userId);
+      } catch (err: any) {
+        const collision = err?.code === '23505' || /duplicate key/i.test(err?.message ?? '');
+        if (!collision || tentative >= 3) throw err;
+      }
+    }
+  }
+
+  private async creerFacture(dto: CreateFactureDto, tenantId: string, userId: string): Promise<Facture> {
     const numero = await this.genererNumeroFacture(tenantId);
     const dateEcheance = dto.dateEcheance
       ? new Date(dto.dateEcheance)
@@ -161,8 +174,14 @@ export class FacturationService {
     if (facture.statut === StatutFacture.ANNULEE) {
       throw new BadRequestException('Impossible de modifier une facture annulée');
     }
-    await this.factureRepo.update(id, { ...dto });
-    return this.findOne(id, tenantId);
+    // `lignes` est une relation (gérée via addLigne/removeLigne) : on ne la
+    // passe pas à update(), qui échouerait. Les totaux sont recalculés car
+    // tauxTVA / partAssurance influencent TVA, TTC et part patient.
+    const { lignes: _lignes, ...champs } = dto as any;
+    if (Object.keys(champs).length > 0) {
+      await this.factureRepo.update(id, champs);
+    }
+    return this.recalculerTotaux(id, tenantId);
   }
 
   async findAll(

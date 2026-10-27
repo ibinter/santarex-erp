@@ -5,8 +5,10 @@ export class CreatePaiementDto {
   @IsString()
   factureId: string;
 
+  // Optionnel : déduit de la facture côté serveur (le frontend ne l'envoie pas).
+  @IsOptional()
   @IsString()
-  patientId: string;
+  patientId?: string;
 
   @IsNumber()
   @Min(0.01)

@@ -67,35 +67,73 @@ export class PaiementsService {
   }
 
   async createPaiement(dto: CreatePaiementDto, tenantId: string, userId: string): Promise<Paiement> {
-    const facture = await this.factureRepo.findOne({ where: { id: dto.factureId, tenantId } });
-    if (!facture) throw new NotFoundException('Facture non trouvée');
-    if (facture.statut === StatutFacture.ANNULEE) {
-      throw new BadRequestException('Impossible de payer une facture annulée');
+    // Le numéro de référence est calculé hors verrou : en cas de collision
+    // (deux encaissements simultanés), on retente avec le numéro suivant.
+    for (let tentative = 1; ; tentative++) {
+      try {
+        return await this.enregistrerPaiement(dto, tenantId, userId);
+      } catch (err: any) {
+        const collision = err?.code === '23505' || /duplicate key/i.test(err?.message ?? '');
+        if (!collision || tentative >= 3) throw err;
+      }
     }
-    if (facture.statut === StatutFacture.PAYEE) {
-      throw new BadRequestException('Cette facture est déjà entièrement payée');
-    }
+  }
 
+  private async enregistrerPaiement(dto: CreatePaiementDto, tenantId: string, userId: string): Promise<Paiement> {
     const reference = await this.genererReference(tenantId);
-    const paiement = this.paiementRepo.create({
-      reference,
-      factureId: dto.factureId,
-      patientId: dto.patientId,
-      montant: dto.montant,
-      devise: dto.devise ?? 'XOF',
-      modePaiement: dto.modePaiement,
-      operateur: dto.operateur,
-      referenceTransaction: dto.referenceTransaction,
-      notes: dto.notes,
-      statut: StatutPaiement.VALIDE,
-      tenantId,
-      createdById: userId,
-      validatedAt: new Date(),
-    });
 
-    const saved = await this.paiementRepo.save(paiement);
-    await this.updateFactureApresPaiement(dto.factureId, dto.montant, tenantId);
-    return saved;
+    // Transaction + verrou sur la facture : empêche le double encaissement
+    // simultané et garde paiement + facture cohérents (tout ou rien).
+    return this.paiementRepo.manager.transaction(async (em) => {
+      const facture = await em.findOne(Facture, {
+        where: { id: dto.factureId, tenantId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!facture) throw new NotFoundException('Facture non trouvée');
+      if (facture.statut === StatutFacture.ANNULEE) {
+        throw new BadRequestException('Impossible de payer une facture annulée');
+      }
+      if (facture.statut === StatutFacture.PAYEE) {
+        throw new BadRequestException('Cette facture est déjà entièrement payée');
+      }
+
+      const montant = Math.round(Number(dto.montant) * 100) / 100;
+      const dejaPaye = Number(facture.montantPaye);
+      const resteAPayer = Math.round((Number(facture.montantTTC) - dejaPaye) * 100) / 100;
+      if (montant > resteAPayer) {
+        throw new BadRequestException(
+          `Le montant (${montant}) dépasse le reste à payer (${resteAPayer})`,
+        );
+      }
+
+      const saved = await em.save(
+        em.create(Paiement, {
+          reference,
+          factureId: facture.id,
+          patientId: dto.patientId ?? facture.patientId,
+          montant,
+          devise: dto.devise ?? facture.devise ?? 'XOF',
+          modePaiement: dto.modePaiement,
+          operateur: dto.operateur,
+          referenceTransaction: dto.referenceTransaction,
+          notes: dto.notes,
+          statut: StatutPaiement.VALIDE,
+          tenantId,
+          createdById: userId,
+          validatedAt: new Date(),
+        }),
+      );
+
+      const montantPaye = Math.round((dejaPaye + montant) * 100) / 100;
+      const montantRestant = Math.max(0, Math.round((Number(facture.montantTTC) - montantPaye) * 100) / 100);
+      await em.update(Facture, facture.id, {
+        montantPaye,
+        montantRestant,
+        statut: montantRestant <= 0 ? StatutFacture.PAYEE : StatutFacture.PARTIELLEMENT_PAYEE,
+      });
+
+      return saved;
+    });
   }
 
   private async updateFactureApresPaiement(
@@ -186,7 +224,13 @@ export class PaiementsService {
     if (facture) {
       const montantPaye = Math.max(0, Number(facture.montantPaye) - Number(paiement.montant));
       const montantRestant = Number(facture.montantTTC) - montantPaye;
-      const statut = montantPaye <= 0 ? StatutFacture.EMISE : StatutFacture.PARTIELLEMENT_PAYEE;
+      // Une facture annulée le reste (un remboursement ne la « ressuscite » pas).
+      const statut =
+        facture.statut === StatutFacture.ANNULEE
+          ? StatutFacture.ANNULEE
+          : montantPaye <= 0
+            ? StatutFacture.EMISE
+            : StatutFacture.PARTIELLEMENT_PAYEE;
       await this.factureRepo.update(paiement.factureId, {
         montantPaye: Math.round(montantPaye * 100) / 100,
         montantRestant: Math.round(montantRestant * 100) / 100,
