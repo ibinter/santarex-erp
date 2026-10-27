@@ -203,6 +203,7 @@ describe('Isolation multi-tenant — FacturationService', () => {
         FacturationService,
         { provide: getRepositoryToken(Facture), useValue: factureRepo },
         { provide: getRepositoryToken(LigneFacture), useValue: ligneRepo },
+        { provide: getRepositoryToken(Patient), useValue: { find: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 
