@@ -63,6 +63,12 @@ export class PharmacieController {
     );
   }
 
+  @Get('medicaments/kpis')
+  @ApiOperation({ summary: 'Compteurs de stock (ruptures, alertes, valeur) sur tout le catalogue' })
+  getKpis(@Request() req) {
+    return this.pharmService.getKpisStock(req.user.tenantId);
+  }
+
   @Get('medicaments/rupture')
   @ApiOperation({ summary: 'MÃ©dicaments en rupture de stock (stockActuel <= stockMinimum)' })
   getEnRupture(@Request() req) {

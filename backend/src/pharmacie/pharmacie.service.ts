@@ -89,6 +89,26 @@ export class PharmacieService {
   // ────────────────────────────────────────────────────────────────
   // Alertes stock
   // ────────────────────────────────────────────────────────────────
+  /** Compteurs de stock sur tout le catalogue (indépendants de la pagination). */
+  async getKpisStock(tenantId: string) {
+    const r = await this.medicamentRepo
+      .createQueryBuilder('m')
+      .select('COUNT(*)', 'total')
+      .addSelect('COUNT(*) FILTER (WHERE m.stockActuel <= 0)', 'ruptures')
+      .addSelect('COUNT(*) FILTER (WHERE m.stockActuel > 0 AND m.stockActuel <= m.stockMinimum)', 'alertes')
+      .addSelect('COUNT(*) FILTER (WHERE m.stockActuel > m.stockMinimum)', 'enStock')
+      .addSelect('COALESCE(SUM(m.stockActuel * m.prixVente), 0)', 'valeurTotale')
+      .where('m.tenantId = :tenantId', { tenantId })
+      .getRawOne();
+    return {
+      total: Number(r.total),
+      ruptures: Number(r.ruptures),
+      alertes: Number(r.alertes),
+      enStock: Number(r.enStock),
+      valeurTotale: Number(r.valeurTotale),
+    };
+  }
+
   async getMedicamentsEnRupture(tenantId: string): Promise<Medicament[]> {
     return this.medicamentRepo
       .createQueryBuilder('m')

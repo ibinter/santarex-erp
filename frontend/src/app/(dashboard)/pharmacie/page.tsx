@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 import { exportXLSX, exportPDF } from '@/lib/export';
 
 type Medicament = {
@@ -65,21 +66,58 @@ export default function PharmaciePage() {
   const [tab, setTab]                 = useState<'tous'|'rupture'|'alerte'>('tous');
   const [lastRefresh, setLastRefresh] = useState<Date|null>(null);
 
+  const PAGE_SIZE = 50;
+  const [total, setTotal]             = useState(0);
+  const [page, setPage]               = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [kpis, setKpis]               = useState<{ total:number; ruptures:number; alertes:number; enStock:number; valeurTotale:number }|null>(null);
+  const [aSurveiller, setASurveiller] = useState<Medicament[]>([]);
+  const [searchDebounced, setSearchDebounced] = useState('');
+
+  useEffect(()=>{ const id = setTimeout(()=>setSearchDebounced(search.trim()), 300); return ()=>clearTimeout(id); },[search]);
+
+  const unwrapList = (d: any): Medicament[] => Array.isArray(d)?d:d?.items??d?.data??[];
+  const metaTotal = (d: any, fallback: number) => Number((d?.data?.total !== undefined ? d.data.total : d?.total) ?? fallback);
+  const url = (p: number) =>
+    `/pharmacie/medicaments?limit=${PAGE_SIZE}&page=${p}${searchDebounced?`&search=${encodeURIComponent(searchDebounced)}`:''}`;
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient<any>('/pharmacie/medicaments?limit=100');
-      setMedicaments(Array.isArray(d)?d:d?.items??d?.data??[]);
+      const [list, k, alerte] = await Promise.allSettled([
+        apiClient<any>(url(1)),
+        apiClient<any>('/pharmacie/medicaments/kpis'),
+        apiClient<any>('/pharmacie/medicaments/alerte'),
+      ]);
+      if (list.status==='fulfilled') {
+        const rows = unwrapList(list.value);
+        setMedicaments(rows); setPage(1); setTotal(metaTotal(list.value, rows.length));
+      }
+      if (k.status==='fulfilled') setKpis(k.value?.data ?? k.value);
+      if (alerte.status==='fulfilled') setASurveiller(unwrapList(alerte.value));
       setLastRefresh(new Date());
     } finally { setLoading(false); }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchDebounced]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const d = await apiClient<any>(url(page+1));
+      setMedicaments(prev=>[...prev, ...unwrapList(d)]);
+      setPage(p=>p+1);
+      setTotal(metaTotal(d, total));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(()=>{ load(); },[load]);
 
-  const ruptures     = medicaments.filter(m=>m.stockActuel<=0).length;
-  const alertes      = medicaments.filter(m=>m.stockActuel>0&&m.stockActuel<=m.stockMinimum).length;
-  const enStock      = medicaments.filter(m=>m.stockActuel>m.stockMinimum).length;
-  const valeurTotale = medicaments.reduce((acc,m)=>acc+m.stockActuel*(parseFloat(m.prixVente)||0),0);
+  // Compteurs sur tout le catalogue (serveur) ; repli sur la page chargée si indisponible.
+  const ruptures     = kpis?.ruptures     ?? medicaments.filter(m=>m.stockActuel<=0).length;
+  const alertes      = kpis?.alertes      ?? medicaments.filter(m=>m.stockActuel>0&&m.stockActuel<=m.stockMinimum).length;
+  const enStock      = kpis?.enStock      ?? medicaments.filter(m=>m.stockActuel>m.stockMinimum).length;
+  const valeurTotale = kpis?.valeurTotale ?? medicaments.reduce((acc,m)=>acc+m.stockActuel*(parseFloat(m.prixVente)||0),0);
+  const nbTotal      = kpis?.total        ?? total;
 
   const statutLabel = (s: StockStatus) => t(`statut.${s}` as any);
   const exportStatut = (m: Medicament) => m.stockActuel <= 0 ? t('export.statutRupture') : m.stockActuel <= m.stockMinimum ? t('export.statutAlerte') : t('export.statutEnStock');
@@ -125,9 +163,11 @@ export default function PharmaciePage() {
     t('export.pdfSubtitle', { count: medicaments.length, date: new Date().toLocaleDateString('fr-FR') }),
   );
 
-  const displayed = medicaments.filter(m => {
+  // Onglets Ruptures / Alertes : liste complète des produits à surveiller (pas seulement la page chargée).
+  const source = tab==='tous' ? medicaments : aSurveiller;
+  const displayed = source.filter(m => {
     const q = search.toLowerCase();
-    const matchQ = !search || m.nom.toLowerCase().includes(q) || m.code.toLowerCase().includes(q) || (m.dci??'').toLowerCase().includes(q) || (m.nomCommercial??'').toLowerCase().includes(q);
+    const matchQ = tab==='tous' || !search || m.nom.toLowerCase().includes(q) || m.code.toLowerCase().includes(q) || (m.dci??'').toLowerCase().includes(q) || (m.nomCommercial??'').toLowerCase().includes(q);
     if (!matchQ) return false;
     if (tab==='rupture') return m.stockActuel<=0;
     if (tab==='alerte')  return m.stockActuel>0&&m.stockActuel<=m.stockMinimum;
@@ -135,7 +175,7 @@ export default function PharmaciePage() {
   });
 
   const TABS = [
-    { id:'tous'    as const, label:t('list.tabTous'),     count:medicaments.length, color:'#1D4ED8', bg:'#EFF6FF' },
+    { id:'tous'    as const, label:t('list.tabTous'),     count:nbTotal, color:'#1D4ED8', bg:'#EFF6FF' },
     { id:'rupture' as const, label:t('list.tabRuptures'), count:ruptures,           color:'#DC2626', bg:'#FEE2E2' },
     { id:'alerte'  as const, label:t('list.tabAlertes'),  count:alertes,            color:'#C2410C', bg:'#FFF7ED' },
   ];
@@ -167,7 +207,7 @@ export default function PharmaciePage() {
                 <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:3 }}>
                   <span style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', display:'inline-block', animation:'pulse 2s infinite' }}/>
                   <span style={{ fontSize:11, color:'rgba(255,255,255,0.75)', fontWeight:600 }}>
-                    {loading?t('list.loading'):t('list.summary', { count: medicaments.length, value: fmtXOF(valeurTotale) })}
+                    {loading?t('list.loading'):t('list.summary', { count: nbTotal, value: fmtXOF(valeurTotale) })}
                   </span>
                   {lastRefresh&&<span style={{ fontSize:10, color:'rgba(255,255,255,0.45)', marginLeft:4 }}>• {lastRefresh.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>}
                 </div>
@@ -327,6 +367,7 @@ export default function PharmaciePage() {
             </tbody>
           </table>
         </div>
+        {tab==='tous' && <LoadMore loaded={medicaments.length} total={total} loading={loadingMore} onMore={loadMore} />}
       </div>
     </div>
   );

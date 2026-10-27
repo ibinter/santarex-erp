@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -8,6 +8,7 @@ import {
   Trash2, TrendingUp, Clock, Percent, CheckCircle,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import LoadMore from '@/components/ui/LoadMore';
 import PatientSearch, { PatientLite } from '@/components/PatientSearch';
 
 type StatutDevis = 'brouillon' | 'envoye' | 'accepte' | 'refuse' | 'expire' | 'facture';
@@ -79,27 +80,44 @@ export default function DevisPage() {
 
   const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.items ?? r?.data ?? []);
 
+  const PAGE_SIZE = 50;
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const metaTotal = (r: any, fallback: number) => Number((r?.data?.total !== undefined ? r.data.total : r?.total) ?? fallback);
+  const patientsRef = useRef<Record<string, Patient>>({});
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const [dRes, sRes, pRes] = await Promise.allSettled([
-        apiClient<any>('/devis?limit=100'),
+        apiClient<any>(`/devis?limit=${PAGE_SIZE}&page=1`),
         apiClient<any>('/devis/stats'),
         apiClient<any>('/patients?limit=100'),
       ]);
+      // Liste utilisée par le sélecteur de patient du formulaire « Nouveau devis ».
       const pList: Patient[] = pRes.status === 'fulfilled' ? unwrap(pRes.value) : [];
       setPatients(pList);
-      const pMap: Record<string, Patient> = Object.fromEntries(pList.map(p => [p.id, p]));
+      patientsRef.current = Object.fromEntries(pList.map(p => [p.id, p]));
       if (dRes.status === 'fulfilled') {
-        const list = unwrap(dRes.value).map((d: any) => ({
-          ...d,
-          patient: d.patient ?? pMap[d.patientId],
-        }));
-        setDevisList(list);
+        // Le patient fourni par le serveur n'est jamais écrasé.
+        const list = unwrap(dRes.value).map((d: any) => ({ ...d, patient: d.patient ?? patientsRef.current[d.patientId] }));
+        setDevisList(list); setPage(1); setTotal(metaTotal(dRes.value, list.length));
       }
       if (sRes.status === 'fulfilled') setStats(sRes.value);
     } finally { setLoading(false); }
   }, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const r = await apiClient<any>(`/devis?limit=${PAGE_SIZE}&page=${page + 1}`);
+      const more = unwrap(r).map((d: any) => ({ ...d, patient: d.patient ?? patientsRef.current[d.patientId] }));
+      setDevisList(prev => [...prev, ...more]);
+      setPage(p => p + 1);
+      setTotal(metaTotal(r, total));
+    } finally { setLoadingMore(false); }
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -294,6 +312,7 @@ export default function DevisPage() {
             </tbody>
           </table>
         </div>
+        <LoadMore loaded={devisList.length} total={total} loading={loadingMore} onMore={loadMore} />
       </div>
 
       {showForm && (
