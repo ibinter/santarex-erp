@@ -307,9 +307,9 @@ async function seedConsultationsEtFactures(
   log('Reseed de consultations et factures de démonstration...');
 
   const consultations = [
-    { patientIdx: 2, type: 'consultation_generale', motif: 'Fièvre et céphalées depuis 3 jours', diagnostic: 'Paludisme simple', ta: '120/80', fc: 88, temp: 38.6, montant: 15000, daysAgo: 2 },
+    { patientIdx: 2, type: 'consultation_generale', motif: 'Fièvre et céphalées depuis 3 jours', diagnostic: 'Paludisme simple', ta: '120/80', fc: 88, temp: 38.6, montant: 15000, daysAgo: 0 },
     { patientIdx: 4, type: 'suivi', motif: 'Suivi hypertension artérielle', diagnostic: 'HTA équilibrée sous traitement', ta: '135/85', fc: 76, temp: 36.8, montant: 10000, daysAgo: 4 },
-    { patientIdx: 6, type: 'specialite', motif: 'Douleurs abdominales chroniques', diagnostic: 'Gastrite chronique', ta: '118/78', fc: 72, temp: 37.0, montant: 20000, daysAgo: 1 },
+    { patientIdx: 6, type: 'specialite', motif: 'Douleurs abdominales chroniques', diagnostic: 'Gastrite chronique', ta: '118/78', fc: 72, temp: 37.0, montant: 20000, daysAgo: 0 },
     { patientIdx: 8, type: 'consultation_generale', motif: 'Toux productive et dyspnée', diagnostic: 'Bronchite aiguë', ta: '125/82', fc: 90, temp: 38.1, montant: 15000, daysAgo: 6 },
   ];
 
@@ -334,6 +334,18 @@ async function seedConsultationsEtFactures(
        VALUES ($1, $2, $3, $4, 'payee', $5, 0, 0, $5, $5, 0, $5, 'XOF', $6, $7, NOW(), NOW()) RETURNING id`,
       [numero, patientId, consultationId, dateHeure.toISOString(), ttc, tenantId, medecinId],
     );
+
+    // Encaissement correspondant : sans lui, la caisse et « Encaissements du jour » restent à zéro.
+    // Daté comme la consultation, donc les consultations d'aujourd'hui alimentent la caisse du jour.
+    try {
+      await ds.query(
+        `INSERT INTO paiements (reference, "factureId", "patientId", montant, devise, "modePaiement", statut, "tenantId", "createdById", "createdAt", "validatedAt")
+         VALUES ($1, $2, $3, $4, 'XOF', $5, 'valide', $6, $7, $8, $8)`,
+        [`${pre}PAY-2025-${String(factureSeq - 1).padStart(5, '0')}`, facture[0].id, patientId, ttc, factureSeq % 2 ? 'especes' : 'mobile_money', tenantId, medecinId, dateHeure.toISOString()],
+      );
+    } catch (err) {
+      log(`  - paiement ignoré (${numero}) : ${(err as Error)?.message ?? err}`);
+    }
 
     // Ligne de facture (best-effort : le schéma peut varier).
     try {
