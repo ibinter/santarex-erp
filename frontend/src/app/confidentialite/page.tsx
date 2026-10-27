@@ -60,12 +60,12 @@ export default function ConfidentialitePage() {
         </ul>
         <h2>5. Data security</h2>
         <ul>
-          <li>AES-256 encryption of all data at rest</li>
-          <li>TLS 1.3 encryption for all communications</li>
-          <li>Strict data isolation between facilities (secure multi-tenant)</li>
-          <li>Role-based access control (RBAC)</li>
-          <li>Complete audit trail of all user actions</li>
-          <li>Automatic encrypted daily backups (30-day retention)</li>
+          <li>Encrypted HTTPS (TLS) connections for all communications</li>
+          <li>Passwords hashed (bcrypt); payment and two-factor secrets stored encrypted (AES-256-GCM)</li>
+          <li>Data isolation between facilities, checked automatically at every release</li>
+          <li>Role-based access control (RBAC) and optional two-factor authentication</li>
+          <li>Audit log of sign-ins and sensitive actions</li>
+          <li>Daily backup, copied every night off the server in encrypted form (AES-256), kept for 30 days</li>
         </ul>
         <h2>6. Retention period</h2>
         <ul>
@@ -137,12 +137,12 @@ export default function ConfidentialitePage() {
       </ul>
       <h2>5. Sécurité des données</h2>
       <ul>
-        <li>Chiffrement AES-256 de toutes les données au repos</li>
-        <li>Chiffrement TLS 1.3 pour toutes les communications</li>
-        <li>Isolation stricte des données entre établissements (multi-tenant sécurisé)</li>
-        <li>Contrôle d&apos;accès basé sur les rôles (RBAC)</li>
-        <li>Journal d&apos;audit complet de toutes les actions utilisateurs</li>
-        <li>Sauvegardes automatiques chiffrées quotidiennes (rétention 30 jours)</li>
+        <li>Connexions chiffrées par HTTPS (TLS) pour toutes les communications</li>
+        <li>Mots de passe hachés (bcrypt) ; secrets de paiement et de double authentification stockés chiffrés (AES-256-GCM)</li>
+        <li>Isolation des données entre établissements, vérifiée automatiquement à chaque mise à jour</li>
+        <li>Contrôle d&apos;accès basé sur les rôles (RBAC) et double authentification disponible</li>
+        <li>Journal d&apos;audit des connexions et des actions sensibles</li>
+        <li>Sauvegarde quotidienne, copiée chaque nuit hors du serveur sous forme chiffrée (AES-256), conservée 30 jours</li>
       </ul>
       <h2>6. Durée de conservation</h2>
       <ul>
