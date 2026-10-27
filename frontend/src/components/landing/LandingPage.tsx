@@ -1177,7 +1177,7 @@ export default function LandingPage() {
             {process.env.NEXT_PUBLIC_DEMO_URL && (
               <div className="lp-hero-demo" style={{ marginTop: 18, maxWidth: 560 }}>
                 <a
-                  href={process.env.NEXT_PUBLIC_DEMO_URL}
+                  href={`${process.env.NEXT_PUBLIC_DEMO_URL}/login`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="lp-btn-secondary"

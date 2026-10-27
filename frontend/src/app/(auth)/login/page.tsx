@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
@@ -22,18 +22,29 @@ export default function LoginPage() {
     if (error) setError(null);
   };
 
+  // Démo publique (sous-domaine demo.*) : comptes 100 % fictifs, base remise à zéro chaque nuit.
+  const [isDemoHost, setIsDemoHost] = useState(false);
+  useEffect(() => { setIsDemoHost(window.location.hostname.startsWith('demo.')); }, []);
+
+  const handleDemo = () => {
+    void doLogin({ email: 'admin@clinique-saint-joseph.ci', password: 'Admin2025!', tenantId: 'clinique-saint-joseph' });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password || !form.tenantId) {
       setError(t('fillAllFields'));
       return;
     }
+    await doLogin(form);
+  };
 
+  const doLogin = async (creds: typeof form) => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await api.login(form) as any;
+      const res = await api.login(creds) as any;
       saveTokens({ access_token: res.access_token, refresh_token: res.refresh_token });
       saveUser(res.user);
       router.push('/dashboard');
@@ -64,6 +75,16 @@ export default function LoginPage() {
 
         {/* Formulaire */}
         <div className="bg-white rounded-card shadow-card p-8">
+          {isDemoHost && (
+            <button
+              type="button"
+              onClick={handleDemo}
+              disabled={loading}
+              className="w-full mb-6 rounded-lg bg-primary text-white font-semibold py-3 hover:opacity-90 disabled:opacity-60"
+            >
+              Entrer dans la démo (sans inscription)
+            </button>
+          )}
           <h2 className="text-lg font-semibold text-text-primary mb-6">
             {t('heading')}
           </h2>
