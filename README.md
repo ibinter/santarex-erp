@@ -137,3 +137,5 @@ GitHub Actions déclenché sur chaque push `main` :
 ---
 
 *© 2026 IBIG SOFT (IBIG SARL) — Tous droits réservés*
+
+<!-- Déploiement automatique : le VPS suit la branche main (vérification chaque minute). -->
