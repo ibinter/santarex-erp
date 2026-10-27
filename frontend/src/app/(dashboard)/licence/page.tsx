@@ -6,9 +6,13 @@ import {
   Calendar, Building2, Users, Heart, Clock, Mail,
   Zap, Star, Crown, ShieldCheck,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  FORMULE_INFO, FORMULE_ORDRE, FORMULES_MODULES, MODULE_CODE_PAR_TITRE, modulesAjoutes,
+  type FormuleCode,
+} from '@/lib/formules';
 
 type LicenceInfo = {
   valide: boolean;
@@ -30,36 +34,39 @@ function joursRestants(dateFin?: string) {
   return Math.ceil((new Date(dateFin).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
-const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string; border: string }> = {
-  demo:         { label: 'Démo',         icon: <Zap size={16}/>,    color: '#546E7A', bg: '#ECEFF1', border: '#CFD8DC' },
-  starter:      { label: 'Starter',      icon: <Star size={16}/>,   color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7' },
-  professional: { label: 'Professional', icon: <Award size={16}/>,  color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD' },
-  enterprise:   { label: 'Enterprise',   icon: <Crown size={16}/>,  color: '#5B21B6', bg: '#EDE9FE', border: '#C4B5FD' },
+/** Libellé français d'un module : titre de la page de vente, sinon le code mis en forme. */
+const LABEL_MODULE: Record<string, string> = {
+  patients: 'Patients',
+  paiements: 'Paiements',
+  ...Object.fromEntries(Object.entries(MODULE_CODE_PAR_TITRE).map(([titre, code]) => [code, titre]).reverse()),
 };
+function libelleModule(code: string) {
+  return LABEL_MODULE[code] ?? code.charAt(0).toUpperCase() + code.slice(1).replace(/-/g, ' ');
+}
 
-const MODULE_LABELS: Record<string, { label: string; icon: string }> = {
-  patients:       { label: 'Patients',            icon: '👤' },
-  consultations:  { label: 'Consultations',        icon: '🩺' },
-  facturation:    { label: 'Facturation',          icon: '🧾' },
-  pharmacie:      { label: 'Pharmacie',            icon: '💊' },
-  laboratoire:    { label: 'Laboratoire',          icon: '🔬' },
-  hospitalisation:{ label: 'Hospitalisation',      icon: '🛏️' },
-  urgences:       { label: 'Urgences',             icon: '🚨' },
-  imagerie:       { label: 'Imagerie',             icon: '🩻' },
-  rh:             { label: 'Ressources Humaines',  icon: '👥' },
-  reporting:      { label: 'Reporting & BI',       icon: '📊' },
-  ia:             { label: 'Assistant IA (SARA)',  icon: '🤖' },
+/** Formule du client : code de l'offre, sinon celle dont les modules sont exactement les siens. */
+function formuleDe(offre: string | null | undefined, modules: string[] | null): FormuleCode | null {
+  if (offre && (FORMULE_ORDRE as string[]).includes(offre)) return offre as FormuleCode;
+  if (!modules) return null;
+  return FORMULE_ORDRE.find((f) => {
+    const m = FORMULES_MODULES[f];
+    return m.length === modules.length && m.every((x) => modules.includes(x));
+  }) ?? null;
+}
+
+const COULEURS_FORMULE: Record<FormuleCode, { color: string; bg: string; border: string }> = {
+  pharmacie: { color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7' },
+  cabinet:   { color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD' },
+  centre:    { color: '#0E7490', bg: '#CFFAFE', border: '#67E8F9' },
+  clinique:  { color: '#5B21B6', bg: '#EDE9FE', border: '#C4B5FD' },
+  hopital:   { color: '#9D174D', bg: '#FCE7F3', border: '#F9A8D4' },
 };
-
-const PLANS = [
-  { key: 'starter',      label: 'Starter',      icon: <Star size={18}/>,   color: '#065F46', bg: '#D1FAE5', border: '#6EE7B7',  features: ['Jusqu\'à 5 utilisateurs','500 patients','Consultations + Facturation','Support email'] },
-  { key: 'professional', label: 'Professional', icon: <Award size={18}/>,  color: '#1E40AF', bg: '#DBEAFE', border: '#93C5FD',  features: ['Jusqu\'à 20 utilisateurs','5 000 patients','Tous les modules cliniques','Pharmacie & Laboratoire','Support prioritaire'] },
-  { key: 'enterprise',   label: 'Enterprise',   icon: <Crown size={18}/>,  color: '#5B21B6', bg: '#EDE9FE', border: '#C4B5FD',  features: ['Utilisateurs illimités','Patients illimités','Tous les modules','Assistant IA SARA','Reporting avancé','SLA dédié 24/7'] },
-] as const;
 
 export default function LicencePage() {
   const t = useTranslations('licence');
+  const locale = useLocale() === 'en' ? 'en' : 'fr';
   const [info, setInfo] = useState<LicenceInfo | null>(null);
+  const [etat, setEtat] = useState<{ offre: string | null; modules: string[] | null }>({ offre: null, modules: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +77,12 @@ export default function LicencePage() {
       const tenantSlug = (user as any)?.tenantSlug ?? user?.tenantId ?? 'clinique-saint-joseph';
       const data = await apiClient<LicenceInfo>(`/superadmin/licences/tenant/${tenantSlug}/verifier`);
       setInfo(data);
+      // Formule et modules réels du client (mêmes données que le menu).
+      try {
+        const r: any = await apiClient('/licence/etat');
+        const d = r?.data ?? r;
+        setEtat({ offre: d?.offre ?? null, modules: Array.isArray(d?.modules) ? d.modules : null });
+      } catch { /* l'écran reste correct sans ces détails */ }
     } catch (e: any) {
       setError(e?.message ?? t('verifyErrorFallback'));
     } finally { setLoading(false); }
@@ -83,8 +96,12 @@ export default function LicencePage() {
   const active = info?.valide && !expire;
 
   const licence = info?.licence;
-  const typeKey = licence?.type ?? 'starter';
-  const typeCfg = TYPE_CONFIG[typeKey] ?? TYPE_CONFIG.starter;
+  const formule = formuleDe(etat.offre, etat.modules);
+  // Les modules viennent de la licence (liste réelle) ; null = aucune restriction.
+  const modulesClient = etat.modules ?? licence?.modules ?? null;
+  const nomFormule = formule
+    ? FORMULE_INFO[formule].label[locale]
+    : modulesClient ? 'Sur mesure' : 'Accès complet';
 
   /* ── Hero gradient par statut ── */
   const heroGrad = active
@@ -137,7 +154,7 @@ export default function LicencePage() {
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               {licence && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.3)', fontSize: 13, fontWeight: 800, color: '#fff' }}>
-                  {typeCfg.icon} {typeCfg.label}
+                  <Award size={16}/> {nomFormule}
                 </span>
               )}
               <button onClick={load} disabled={loading}
@@ -244,22 +261,21 @@ export default function LicencePage() {
           )}
 
           {/* ── MODULES ──────────────────────────────────── */}
-          {licence?.modules && licence.modules.length > 0 && (
+          {modulesClient && modulesClient.length > 0 && (
             <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 1px 8px rgba(0,0,0,0.08)', padding: '20px 24px', marginBottom: 18 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                 <Building2 size={16} color="#1A2332"/>
                 <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('modulesIncluded')}</h2>
                 <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 700, color: '#065F46', background: '#D1FAE5', padding: '2px 8px', borderRadius: 20 }}>
-                  {licence.modules.length} / {Object.keys(MODULE_LABELS).length}
+                  {modulesClient.length} / {FORMULES_MODULES.hopital.length}
                 </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 8 }}>
-                {Object.entries(MODULE_LABELS).map(([key, { icon }]) => {
-                  const included = licence.modules!.includes(key);
+                {FORMULES_MODULES.hopital.map((key) => {
+                  const included = modulesClient.includes(key);
                   return (
                     <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px', borderRadius: 10, background: included ? '#F0FDF4' : '#FAFAFA', border: `1.5px solid ${included ? '#6EE7B7' : '#E0E8F0'}`, opacity: included ? 1 : 0.5 }}>
-                      <span style={{ fontSize: 15 }}>{icon}</span>
-                      <span style={{ fontSize: 12, color: included ? '#065F46' : '#90A4AE', fontWeight: included ? 700 : 400 }}>{t(`module.${key}`)}</span>
+                      <span style={{ fontSize: 12, color: included ? '#065F46' : '#90A4AE', fontWeight: included ? 700 : 400 }}>{libelleModule(key)}</span>
                       {included && <CheckCircle size={12} color="#10B981" style={{ marginLeft: 'auto', flexShrink: 0 }}/>}
                     </div>
                   );
@@ -275,28 +291,36 @@ export default function LicencePage() {
               <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('plansAvailable')}</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
-              {PLANS.map(plan => {
-                const isCurrent = plan.key === typeKey && active;
+              {FORMULE_ORDRE.map((f) => {
+                const plan = { ...COULEURS_FORMULE[f], ...FORMULE_INFO[f] };
+                const isCurrent = f === formule && !!active;
+                const ajoutes = modulesAjoutes(f);
+                const debut = FORMULE_ORDRE.indexOf(f) === 0;
                 return (
-                  <div key={plan.key} style={{ borderRadius: 12, border: `2px solid ${isCurrent ? plan.border : '#E0E8F0'}`, background: isCurrent ? plan.bg : '#FAFBFC', padding: '16px 18px', position: 'relative' }}>
+                  <div key={f} style={{ borderRadius: 12, border: `2px solid ${isCurrent ? plan.border : '#E0E8F0'}`, background: isCurrent ? plan.bg : '#FAFBFC', padding: '16px 18px', position: 'relative' }}>
                     {isCurrent && (
                       <div style={{ position: 'absolute', top: -10, right: 14, fontSize: 10, fontWeight: 800, color: plan.color, background: plan.bg, border: `1.5px solid ${plan.border}`, padding: '2px 10px', borderRadius: 20 }}>
                         {t('current')}
                       </div>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: isCurrent ? plan.border : '#EEF2F8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: plan.color }}>
-                        {plan.icon}
-                      </div>
-                      <span style={{ fontSize: 15, fontWeight: 900, color: isCurrent ? plan.color : '#1A2332' }}>{plan.label}</span>
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: isCurrent ? plan.color : '#1A2332' }}>{plan.label[locale]}</div>
+                      <div style={{ fontSize: 12, color: '#78909C', marginTop: 2 }}>{plan.cible[locale]}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: plan.color, marginTop: 6 }}>{plan.prix} FCFA / mois</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {(t.raw(`plans.${plan.key}.features`) as string[]).map(f => (
-                        <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: isCurrent ? plan.color : '#546E7A', fontWeight: isCurrent ? 600 : 400 }}>
+                    <div style={{ fontSize: 12, color: '#546E7A', marginBottom: 6, fontWeight: 600 }}>
+                      {FORMULES_MODULES[f].length} modules{debut ? '' : ` — dont ${ajoutes.length} de plus que la formule précédente`}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {ajoutes.slice(0, 6).map((m) => (
+                        <div key={m} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: isCurrent ? plan.color : '#546E7A' }}>
                           <CheckCircle size={11} color={isCurrent ? plan.color : '#90A4AE'}/>
-                          {f}
+                          {libelleModule(m)}
                         </div>
                       ))}
+                      {ajoutes.length > 6 && (
+                        <div style={{ fontSize: 11, color: '#90A4AE', paddingLeft: 18 }}>+ {ajoutes.length - 6} autres</div>
+                      )}
                     </div>
                   </div>
                 );
