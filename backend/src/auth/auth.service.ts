@@ -106,6 +106,8 @@ export class AuthService {
   /** L etablissement exige-t-il la double authentification de ses administrateurs ? */
   private async doubleAuthExigee(user: User): Promise<boolean> {
     if (user.twoFactorEnabled) return false;
+    // Démo publique : la connexion en un clic ne doit jamais renvoyer le visiteur vers la configuration de la 2FA.
+    if (process.env.DEMO_MODE === 'true') return false;
     if (user.role !== UserRole.ADMIN && user.role !== UserRole.DIRECTEUR) return false;
     try {
       const reglages = await this.tenantsService.getSettings(user.tenantId);

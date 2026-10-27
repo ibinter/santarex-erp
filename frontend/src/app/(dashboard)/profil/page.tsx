@@ -27,12 +27,18 @@ export default function ProfilPage() {
   const [lang, setLang] = useState<'fr' | 'en'>('fr');
   const [emailNotif, setEmailNotif] = useState(true);
 
+  // Nom réel de l'établissement (et non un libellé fixe valable pour tous).
+  const [etablissement, setEtablissement] = useState('');
+
   useEffect(() => {
     const u = getCurrentUser();
     setUser(u);
     if (u) {
       setInfoForm({ firstName: u.firstName, lastName: u.lastName, email: u.email });
     }
+    apiClient('/settings')
+      .then((r: any) => setEtablissement(String((r?.data ?? r)?.nomEtablissement ?? '')))
+      .catch(() => setEtablissement(''));
   }, []);
 
   function showSaved(section: Section) {
@@ -146,19 +152,21 @@ export default function ProfilPage() {
             >
               {roleLabel}
             </span>
-            <span
-              style={{
-                background: '#E8F5E9',
-                color: '#2E7D32',
-                fontSize: '11px',
-                fontWeight: 600,
-                padding: '3px 10px',
-                borderRadius: '20px',
-                border: '1px solid #A5D6A7',
-              }}
-            >
-              {t('hopital')}
-            </span>
+            {etablissement && (
+              <span
+                style={{
+                  background: '#E8F5E9',
+                  color: '#2E7D32',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  padding: '3px 10px',
+                  borderRadius: '20px',
+                  border: '1px solid #A5D6A7',
+                }}
+              >
+                {etablissement}
+              </span>
+            )}
           </div>
         </div>
       </div>
