@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Body, Param, Request,
-  UseGuards, BadRequestException, ForbiddenException,
+  UseGuards, BadRequestException, ForbiddenException, Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -33,10 +33,40 @@ export class UsersController {
   ) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
-  @ApiOperation({ summary: 'Liste des utilisateurs du tenant' })
-  findAll(@Request() req) {
-    return this.usersService.findAll(req.user.tenantId);
+  @ApiOperation({
+    summary: 'Utilisateurs du tenant (filtres role, q, limit)',
+    description:
+      "Administrateurs : comptes complets. Autres rôles : annuaire réduit (id, nom, prénom, rôle) "
+      + 'des comptes actifs — nécessaire aux sélecteurs de médecin des formulaires cliniques.',
+  })
+  async findAll(
+    @Request() req,
+    @Query('role') role?: string,
+    @Query('q') q?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const estAdmin = req.user.role === UserRole.ADMIN || req.user.role === UserRole.SUPERADMIN;
+    const roleFiltre = Object.values(UserRole).includes(role as UserRole) ? (role as UserRole) : undefined;
+    const users = await this.usersService.search(req.user.tenantId, {
+      role: roleFiltre,
+      q,
+      limit: limit ? Number(limit) : undefined,
+      // Un annuaire ou une recherche ne propose que des comptes actifs ; la gestion
+      // complète (administrateur, sans filtre) garde la liste de tous les comptes.
+      actifsSeulement: !estAdmin || !!roleFiltre || !!q,
+    });
+    // `prenom` / `nom` : alias lus par les formulaires du frontend.
+    if (estAdmin) {
+      return users.map((u) => Object.assign(u, { prenom: u.firstName, nom: u.lastName }));
+    }
+    return users.map((u) => ({
+      id: u.id,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      prenom: u.firstName,
+      nom: u.lastName,
+      role: u.role,
+    }));
   }
 
   @Post()

@@ -9,6 +9,20 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = 'santarex_pwa_install_dismissed';
 const SEEN_KEY = 'santarex_pwa_install_seen';
+const SNOOZE_KEY = 'santarex_pwa_install_snooze_until';
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000; // « Plus tard » = pas avant 7 jours
+
+// Stockage tolérant : localStorage peut être bloqué ou vidé (navigation privée,
+// réglages de confidentialité) ; on double avec un cookie pour que le choix tienne.
+function readPref(key: string): string | null {
+  try { const v = localStorage.getItem(key); if (v !== null) return v; } catch { /* ignore */ }
+  const m = document.cookie.match(new RegExp(`(?:^|; )${key}=([^;]*)`));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+function writePref(key: string, value: string) {
+  try { localStorage.setItem(key, value); } catch { /* ignore */ }
+  document.cookie = `${key}=${encodeURIComponent(value)}; max-age=31536000; path=/; SameSite=Lax`;
+}
 
 /**
  * Bannière d'installation PWA pour l'espace interne (dashboard).
@@ -27,8 +41,12 @@ export default function PwaInstallPrompt() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Déjà refusé définitivement
-    if (localStorage.getItem(DISMISS_KEY) === '1') return;
+    // Jamais sur la démo publique : le visiteur essaie le produit, pas de l'installer.
+    if (window.location.hostname.startsWith('demo.')) return;
+
+    // Déjà refusé définitivement, ou reporté (« Plus tard »)
+    if (readPref(DISMISS_KEY) === '1') return;
+    if (Number(readPref(SNOOZE_KEY) || '0') > Date.now()) return;
 
     // Déjà installé (mode standalone) → ne rien afficher
     const standalone =
@@ -44,8 +62,8 @@ export default function PwaInstallPrompt() {
     setIsIos(iOS);
 
     // Compteur de visites (affichage plutôt à la 2e visite)
-    const seen = Number(localStorage.getItem(SEEN_KEY) || '0') + 1;
-    localStorage.setItem(SEEN_KEY, String(seen));
+    const seen = Number(readPref(SEEN_KEY) || '0') + 1;
+    writePref(SEEN_KEY, String(seen));
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -66,7 +84,7 @@ export default function PwaInstallPrompt() {
     const onInstalled = () => {
       setVisible(false);
       setDeferredPrompt(null);
-      localStorage.setItem(DISMISS_KEY, '1');
+      writePref(DISMISS_KEY, '1');
     };
     window.addEventListener('appinstalled', onInstalled);
 
@@ -90,11 +108,12 @@ export default function PwaInstallPrompt() {
   };
 
   const handleLater = () => {
+    writePref(SNOOZE_KEY, String(Date.now() + SNOOZE_MS));
     setVisible(false);
   };
 
   const handleNever = () => {
-    localStorage.setItem(DISMISS_KEY, '1');
+    writePref(DISMISS_KEY, '1');
     setVisible(false);
   };
 

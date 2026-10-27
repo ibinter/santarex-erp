@@ -130,6 +130,28 @@ export class UsersService {
     });
   }
 
+  /**
+   * Recherche dans l'annuaire du tenant (filtres facultatifs). Sans filtre ni
+   * `actifsSeulement`, renvoie tous les comptes (comportement historique de findAll).
+   */
+  async search(
+    tenantId: string,
+    f: { role?: UserRole; q?: string; limit?: number; actifsSeulement?: boolean } = {},
+  ): Promise<User[]> {
+    const qb = this.userRepository
+      .createQueryBuilder('u')
+      .where('u.tenantId = :tenantId', { tenantId })
+      .orderBy('u.lastName', 'ASC')
+      .addOrderBy('u.firstName', 'ASC');
+    if (f.actifsSeulement) qb.andWhere('u.isActive = true');
+    if (f.role) qb.andWhere('u.role = :role', { role: f.role });
+    if (f.q?.trim()) {
+      qb.andWhere('(u.firstName ILIKE :s OR u.lastName ILIKE :s)', { s: `%${f.q.trim()}%` });
+    }
+    if (f.limit && f.limit > 0) qb.take(Math.min(f.limit, 200));
+    return qb.getMany();
+  }
+
   async updateUser(id: string, tenantId: string, dto: Partial<Pick<User, 'firstName' | 'lastName' | 'role'>>): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id, tenantId } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
