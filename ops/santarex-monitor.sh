@@ -35,7 +35,9 @@ if command -v flock >/dev/null 2>&1; then exec 9>"$STATE_DIR/.lock"; flock -n 9 
 log() { echo "$(date '+%F %T') $*" >> "$LOG" 2>/dev/null; }
 
 # ── envoi d'alerte ───────────────────────────────────────────────────────────
-env_val() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"; }
+# Lit une variable de .env.prod comme Docker la transmet au logiciel : guillemets retirés,
+# et « $$ » (échappement Docker d'un « $ ») ramené à « $ » — sinon un mot de passe contenant « $ » est faux.
+env_val() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" -e 's/\$\$/$/g'; }
 
 envoyer() {  # $1 = sujet (ASCII), $2 = corps
   local sujet="$1" corps="$2"
