@@ -5,6 +5,7 @@ import Link from 'next/link';
 import '@/app/landing.css';
 import { API_URL } from '@/lib/api';
 import { track } from '@/lib/analytics';
+import { FORMULE_ORDRE, FORMULE_INFO, FORMULES_MODULES, MODULE_CODE_PAR_TITRE, modulesAjoutes, tagPourModule } from '@/lib/formules';
 
 /* ═══════════════════════════════════════════════════════
    ICÔNES
@@ -392,6 +393,54 @@ const MC = {
 } as const;
 const S = (children: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{children}</svg>;
 
+/** Libellé commercial (fr/en) d'un code de module, pour les cartes de démo. */
+const MODULE_LIBELLES: Record<string, Record<Lang, string>> = {
+  'patients': { fr: 'Fichier patients', en: 'Patient file' },
+  'pharmacie': { fr: 'Pharmacie : stock, lots, péremptions', en: 'Pharmacy: stock, batches, expiry' },
+  'approvisionnement': { fr: 'Approvisionnement fournisseurs', en: 'Supplier procurement' },
+  'facturation': { fr: 'Facturation & Mobile Money', en: 'Billing & Mobile Money' },
+  'caisse-sessions': { fr: 'Caisse & reçus', en: 'Cash register & receipts' },
+  'paiements': { fr: 'Encaissements', en: 'Payments' },
+  'consultations': { fr: 'Consultations & ordonnances', en: 'Consultations & prescriptions' },
+  'dme': { fr: 'Dossier médical électronique', en: 'Electronic health record' },
+  'rendez-vous': { fr: 'Rendez-vous & agenda', en: 'Appointments & schedule' },
+  'laboratoire': { fr: 'Laboratoire & résultats', en: 'Laboratory & results' },
+  'vaccination': { fr: 'Vaccination', en: 'Vaccination' },
+  'devis': { fr: 'Devis', en: 'Quotes' },
+  'messages-sortants': { fr: 'SMS & rappels', en: 'SMS & reminders' },
+  'soins-infirmiers': { fr: 'Soins infirmiers', en: 'Nursing care' },
+  'hospitalisation': { fr: 'Hospitalisation & plan des lits', en: 'Inpatient care & bed plan' },
+  'urgences': { fr: 'Urgences & triage', en: 'Emergency & triage' },
+  'maternite': { fr: 'Maternité', en: 'Maternity' },
+  'pediatrie': { fr: 'Pédiatrie', en: 'Pediatrics' },
+  'consentements': { fr: 'Consentements éclairés', en: 'Informed consent' },
+  'interactions-medicamenteuses': { fr: 'Interactions médicamenteuses', en: 'Drug interactions' },
+  'prise-en-charge': { fr: 'Prise en charge assureurs', en: 'Insurance coverage' },
+  'tiers-payant': { fr: 'Tiers-payant', en: 'Third-party payment' },
+  'satisfaction': { fr: 'Satisfaction patient', en: 'Patient satisfaction' },
+  'plannings-gardes': { fr: 'Gardes & astreintes', en: 'On-call rosters' },
+  'messagerie': { fr: 'Messagerie interne', en: 'Internal messaging' },
+  'portail-patient': { fr: 'Portail patient', en: 'Patient portal' },
+  'reporting': { fr: 'Reporting & BI', en: 'Reporting & BI' },
+  'bloc-operatoire': { fr: 'Bloc opératoire', en: 'Operating room' },
+  'had': { fr: 'Hospitalisation à domicile', en: 'Home hospitalization' },
+  'imagerie': { fr: 'Imagerie médicale', en: 'Medical imaging' },
+  'banque-sang': { fr: 'Banque de sang', en: 'Blood bank' },
+  'sterilisation': { fr: 'Stérilisation', en: 'Sterilization' },
+  'equipements': { fr: 'Équipements biomédicaux', en: 'Biomedical equipment' },
+  'dechets-medicaux': { fr: 'Déchets DASRI', en: 'Medical waste' },
+  'budget': { fr: 'Budget', en: 'Budget' },
+  'incidents-qualite': { fr: 'Incidents qualité', en: 'Quality incidents' },
+  'indicateurs-qualite': { fr: 'Indicateurs qualité', en: 'Quality indicators' },
+  'declarations-sanitaires': { fr: 'Déclarations sanitaires', en: 'Health reporting' },
+  'transport': { fr: 'Transport & ambulances', en: 'Transport & ambulances' },
+  'morgue': { fr: 'Morgue', en: 'Mortuary' },
+  'rh': { fr: 'Ressources humaines & paie', en: 'HR & payroll' },
+  'sites': { fr: 'Multi-sites', en: 'Multi-site' },
+  'comptabilite': { fr: 'Comptabilité', en: 'Accounting' },
+  'services-personnalises': { fr: 'Services personnalisés', en: 'Custom services' },
+};
+
 const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
   { cat: { fr: 'Clinique & Soins', en: 'Clinical & Care' }, items: [
     { title: { fr: 'Patients & DME', en: 'Patients & EHR' }, desc: { fr: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', en: 'Complete electronic health records, automatic patient ID, history, allergies, medical background.' }, tag: 'Core', ...MC.teal, icon: S(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
@@ -479,8 +528,8 @@ const PLANS = [
     users: { fr: "Jusqu'à 15 utilisateurs", en: 'Up to 15 users' },
     featured: false, badge: null,
     features: {
-      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire basique','Facturation & reporting','Déploiement en 48h · Support 6j/7'],
-      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Basic laboratory','Billing & reporting','48h deployment · Support 6d/7'],
+      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire, vaccination & devis','Soins infirmiers','Déploiement en 48h · Support 6j/7'],
+      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Laboratory, vaccination & quotes','Nursing care','48h deployment · Support 6d/7'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -491,8 +540,8 @@ const PLANS = [
     users: { fr: "Jusqu'à 30 utilisateurs", en: 'Up to 30 users' },
     featured: true, badge: { fr: 'Le plus populaire', en: 'Most popular' },
     features: {
-      fr: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation & plan des lits','Dashboard BI & reporting','Support 7j/7 prioritaire'],
-      en: ['Up to 30 users','Patients, EHR & consultations','Pharmacy & inventory','Laboratory & results','Hospitalization & bed plan','BI dashboard & reporting','Priority 7d/7 support'],
+      fr: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation, urgences & plan des lits','Maternité, pédiatrie & tiers-payant','Messagerie, portail patient & reporting BI','Support 7j/7 prioritaire'],
+      en: ['Up to 30 users','Patients, EHR & consultations','Pharmacy & inventory','Laboratory & results','Inpatient care, emergency & bed plan','Maternity, pediatrics & third-party payment','Messaging, patient portal & BI reporting','Priority 7d/7 support'],
     },
     btnClass: 'lp-plan-btn-fill', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -503,8 +552,8 @@ const PLANS = [
     users: { fr: 'Utilisateurs illimités', en: 'Unlimited users' },
     featured: false, badge: null,
     features: {
-      fr: ['Utilisateurs illimités','Les 40 modules inclus','Urgences & bloc opératoire','Imagerie médicale (PACS)','Ressources humaines & paie','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
-      en: ['Unlimited users','All 40 modules included','Emergency & operating room','Medical imaging (PACS)','HR & payroll','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
+      fr: ['Utilisateurs illimités','Les 40 modules inclus','Bloc opératoire & imagerie (PACS)','Banque de sang & stérilisation','RH, comptabilité & budget','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
+      en: ['Unlimited users','All 40 modules included','Operating room & imaging (PACS)','Blood bank & sterilization','HR, accounting & budget','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: 'Nous contacter', en: 'Contact us' },
   },
@@ -1076,8 +1125,10 @@ export default function LandingPage() {
       <nav ref={navRef} className="lp-nav" style={{ top: 36 }}>
         <div className="lp-nav-logo"><NavLogo /></div>
         <div className="lp-nav-links">
+          <a href="#demos">{lang === 'fr' ? 'Démos' : 'Demos'}</a>
           <a href="#modules">{t('nav_modules')}</a>
           <a href="#activites">{t('nav_solutions')}</a>
+          <a href="#comparatif">{lang === 'fr' ? 'Comparatif' : 'Compare'}</a>
           <a href="#pricing">{t('nav_pricing')}</a>
           <a href="#faq">{t('nav_faq')}</a>
           <a href="#contact">{t('nav_contact')}</a>
@@ -1311,6 +1362,47 @@ export default function LandingPage() {
       </section>
 
       {/* ══ MODULES ══ */}
+      {/* ══ UNE DÉMO PAR FORMULE ══ */}
+      <section id="demos" className="lp-demos-section">
+        <div className="lp-demos-inner">
+          <span className="lp-eyebrow">{lang === 'fr' ? 'Essayez avant de choisir' : 'Try before you choose'}</span>
+          <h2 className="lp-section-title" style={{ textAlign: 'center' }}>
+            {lang === 'fr' ? 'Une démo pour chaque formule.' : 'A demo for every plan.'}<br />
+            <span style={{ color: 'var(--teal)' }}>{lang === 'fr' ? 'Vous ne voyez que ce que vous achetez.' : 'You only see what you buy.'}</span>
+          </h2>
+          <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 640 }}>
+            {lang === 'fr'
+              ? 'Chaque démo est le vrai logiciel, avec les seuls modules de sa formule et des données fictives. Sans inscription, remise à zéro chaque nuit.'
+              : 'Each demo is the real software, with only the modules of its plan and fictional data. No sign-up, reset every night.'}
+          </p>
+          <div className="lp-demos-grid">
+            {FORMULE_ORDRE.map((f) => {
+              const info = FORMULE_INFO[f];
+              const ajoutes = modulesAjoutes(f);
+              const total = FORMULES_MODULES[f].length;
+              const href = process.env.NEXT_PUBLIC_DEMO_URL ? `${process.env.NEXT_PUBLIC_DEMO_URL}/login?formule=${f}` : '#contact';
+              return (
+                <div key={f} className={`lp-demo-card${f === 'clinique' ? ' featured' : ''}`}>
+                  <div className="lp-demo-eyebrow">{info.cible[lang]}</div>
+                  <h3 className="lp-demo-name">{info.label[lang]}</h3>
+                  <div className="lp-demo-price"><strong>{info.prix}</strong> FCFA / {lang === 'fr' ? 'mois' : 'month'}</div>
+                  <div className="lp-demo-count">{total} {lang === 'fr' ? 'modules inclus' : 'modules included'}</div>
+                  <ul className="lp-demo-list">
+                    {ajoutes.slice(0, 6).map((m) => (
+                      <li key={m}><CheckIcon /> {(MODULE_LIBELLES[m] ?? { fr: m, en: m })[lang]}</li>
+                    ))}
+                    {ajoutes.length > 6 && <li className="more">+ {ajoutes.length - 6} {lang === 'fr' ? 'autres modules' : 'more modules'}</li>}
+                  </ul>
+                  <a href={href} className="lp-demo-btn">
+                    {lang === 'fr' ? `Essayer la démo ${info.label.fr}` : `Try the ${info.label.en} demo`} <ArrowRight />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section id="modules" className="lp-modules-section">
         <div className="lp-modules-inner">
           <div className="lp-modules-layout">
@@ -1331,13 +1423,63 @@ export default function LandingPage() {
                   {g.items.map(m => (
                     <div key={m.title.fr} className="lp-module-card">
                       <div className="lp-module-icon" style={{ background: m.iconColor }}><span style={{ color: m.strokeColor }}>{m.icon}</span></div>
-                      <h3>{m.title[lang]}</h3><p>{m.desc[lang]}</p><span className="lp-module-tag">{m.tag}</span>
+                      <h3>{m.title[lang]}</h3><p>{m.desc[lang]}</p><span className="lp-module-tag">{tagPourModule(m.title.fr) ?? m.tag}</span>
                     </div>
                   ))}
                 </Fragment>
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ══ COMPARATIF DES FORMULES ══ */}
+      <section id="comparatif" className="lp-compare-section">
+        <div className="lp-compare-inner">
+          <span className="lp-eyebrow" style={{ color: '#1A56C8' }}>{lang === 'fr' ? 'Comparatif' : 'Compare'}</span>
+          <h2 className="lp-section-title dark" style={{ textAlign: 'center' }}>
+            {lang === 'fr' ? 'Que contient chaque formule ?' : 'What does each plan include?'}
+          </h2>
+          <div className="lp-compare-wrap">
+            <table className="lp-compare-table">
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  {FORMULE_ORDRE.map((f) => (
+                    <th key={f}>
+                      {FORMULE_INFO[f].label[lang]}
+                      <span>{FORMULE_INFO[f].prix} FCFA</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {MODULE_GROUPS.map((g) => (
+                  <Fragment key={g.cat.fr}>
+                    <tr className="lp-compare-cat"><td colSpan={FORMULE_ORDRE.length + 1}>{g.cat[lang]}</td></tr>
+                    {g.items.map((m) => {
+                      const code = MODULE_CODE_PAR_TITRE[m.title.fr];
+                      return (
+                        <tr key={m.title.fr}>
+                          <td>{m.title[lang]}</td>
+                          {FORMULE_ORDRE.map((f) => (
+                            <td key={f} className={code && FORMULES_MODULES[f].includes(code) ? 'yes' : 'no'}>
+                              {code && FORMULES_MODULES[f].includes(code) ? '✓' : '—'}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="lp-compare-note">
+            {lang === 'fr'
+              ? 'Chaque formule inclut tous les modules de la précédente. Les prix sont HT, par mois.'
+              : 'Each plan includes every module of the previous one. Prices exclude tax, per month.'}
+          </p>
         </div>
       </section>
 

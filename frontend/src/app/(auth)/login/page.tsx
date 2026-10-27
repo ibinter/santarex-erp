@@ -9,6 +9,15 @@ import { api } from '@/lib/api';
 import { saveTokens, saveUser } from '@/lib/auth';
 import type { LoginResponse } from '@/types';
 
+// Démos publiques (sous-domaine demo.*) : une par formule, 100 % fictives, remises à zéro chaque nuit.
+const DEMOS = [
+  { code: 'pharmacie', label: 'Pharmacie', prix: '12 000', tenantId: 'demo-pharmacie', email: 'admin@demo-pharmacie.santarex.ci', password: 'Demo2025!' },
+  { code: 'cabinet', label: 'Cabinet', prix: '18 000', tenantId: 'demo-cabinet', email: 'admin@demo-cabinet.santarex.ci', password: 'Demo2025!' },
+  { code: 'centre', label: 'Centre de santé', prix: '35 000', tenantId: 'demo-centre', email: 'admin@demo-centre.santarex.ci', password: 'Demo2025!' },
+  { code: 'clinique', label: 'Clinique', prix: '75 000', tenantId: 'demo-clinique', email: 'admin@demo-clinique.santarex.ci', password: 'Demo2025!' },
+  { code: 'hopital', label: 'Hôpital', prix: '150 000', tenantId: 'clinique-saint-joseph', email: 'admin@clinique-saint-joseph.ci', password: 'Admin2025!' },
+] as const;
+
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations('login');
@@ -26,9 +35,18 @@ export default function LoginPage() {
   const [isDemoHost, setIsDemoHost] = useState(false);
   useEffect(() => { setIsDemoHost(window.location.hostname.startsWith('demo.')); }, []);
 
-  const handleDemo = () => {
-    void doLogin({ email: 'admin@clinique-saint-joseph.ci', password: 'Admin2025!', tenantId: 'clinique-saint-joseph' });
+  const handleDemo = (code: string) => {
+    const d = DEMOS.find((x) => x.code === code);
+    if (d) void doLogin({ email: d.email, password: d.password, tenantId: d.tenantId });
   };
+
+  // Lien depuis la page de vente (/login?formule=cabinet) : connexion directe à la démo choisie.
+  useEffect(() => {
+    if (!isDemoHost) return;
+    const f = new URLSearchParams(window.location.search).get('formule');
+    if (f && DEMOS.some((x) => x.code === f)) handleDemo(f);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemoHost]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -76,14 +94,26 @@ export default function LoginPage() {
         {/* Formulaire */}
         <div className="bg-white rounded-card shadow-card p-8">
           {isDemoHost && (
-            <button
-              type="button"
-              onClick={handleDemo}
-              disabled={loading}
-              className="w-full mb-6 rounded-lg bg-primary text-white font-semibold py-3 hover:opacity-90 disabled:opacity-60"
-            >
-              Entrer dans la démo (sans inscription)
-            </button>
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-text-primary mb-1">Essayez la formule de votre choix</p>
+              <p className="text-xs text-text-secondary mb-3">
+                Chaque démo contient uniquement les modules de sa formule. Sans inscription.
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {DEMOS.map((d) => (
+                  <button
+                    key={d.code}
+                    type="button"
+                    onClick={() => handleDemo(d.code)}
+                    disabled={loading}
+                    className="w-full flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-left hover:bg-primary/10 disabled:opacity-60"
+                  >
+                    <span className="font-semibold text-primary">Démo {d.label}</span>
+                    <span className="text-xs text-text-secondary">{d.prix} FCFA / mois</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           <h2 className="text-lg font-semibold text-text-primary mb-6">
             {t('heading')}

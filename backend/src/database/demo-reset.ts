@@ -24,6 +24,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { FORMULES } from '../licences/formules';
 import * as path from 'path';
 
 // Charge un éventuel .env (require paresseux : absent en prod conteneurisée).
@@ -176,16 +177,16 @@ const PATIENTS = [
   { nom: 'ADOU', prenom: 'Bernadette', sexe: 'F', dateNaissance: '1986-01-27', ville: 'Abidjan', tel: '0108901234', gs: 'B+' },
 ];
 
-async function seedPatients(ds: DataSource, adminId: string): Promise<string[]> {
+async function seedPatients(ds: DataSource, adminId: string, tenantId: string = TENANT_ID, pre = ''): Promise<string[]> {
   log('Reseed des patients fictifs...');
   const ids: string[] = [];
   for (let i = 0; i < PATIENTS.length; i++) {
     const p = PATIENTS[i];
-    const ippVal = ipp(i + 1);
+    const ippVal = `${pre}${ipp(i + 1)}`;
     const result = await ds.query(
       `INSERT INTO patients (ipp, nom, prenom, "dateNaissance", sexe, telephone, ville, pays, "groupeSanguin", statut, "tenantId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, 'CI', $8, 'actif', $9, $10, NOW(), NOW()) RETURNING id`,
-      [ippVal, p.nom, p.prenom, p.dateNaissance, p.sexe, p.tel, p.ville, p.gs, TENANT_ID, adminId],
+      [ippVal, p.nom, p.prenom, p.dateNaissance, p.sexe, p.tel, p.ville, p.gs, tenantId, adminId],
     );
     ids.push(result[0].id);
     log(`  ✓ ${p.nom} ${p.prenom} (${ippVal})`);
@@ -212,15 +213,15 @@ const MEDS = [
   { nom: 'Dexaméthasone', dosage: '4mg/ml', forme: 'injectable', unite: 'ampoule', categorie: 'autre', stock: 60, seuil: 10, prix: 450 },
 ];
 
-async function seedMedicaments(ds: DataSource): Promise<void> {
+async function seedMedicaments(ds: DataSource, tenantId: string = TENANT_ID, pre = ''): Promise<void> {
   log('Reseed du catalogue pharmacie...');
   for (let i = 0; i < MEDS.length; i++) {
     const m = MEDS[i];
-    const code = medCode(i + 1);
+    const code = `${pre}${medCode(i + 1)}`;
     await ds.query(
       `INSERT INTO medicaments (code, nom, forme, dosage, unite, categorie, "stockActuel", "stockMinimum", "stockMaximum", "prixUnitaire", "prixVente", devise, "prescriptionRequise", "estActif", "tenantId", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, 'XOF', false, true, $11, NOW(), NOW())`,
-      [code, m.nom, m.forme, m.dosage, m.unite, m.categorie, m.stock, m.seuil, m.seuil * 20, m.prix, TENANT_ID],
+      [code, m.nom, m.forme, m.dosage, m.unite, m.categorie, m.stock, m.seuil, m.seuil * 20, m.prix, tenantId],
     );
   }
   log(`  ✓ ${MEDS.length} médicaments`);
@@ -228,7 +229,7 @@ async function seedMedicaments(ds: DataSource): Promise<void> {
 
 // ─── 2d. Lits ─────────────────────────────────────────────────────────────────
 
-async function seedLits(ds: DataSource): Promise<Record<string, string>> {
+async function seedLits(ds: DataSource, tenantId: string = TENANT_ID, pre = ''): Promise<Record<string, string>> {
   log('Reseed des lits...');
   const litsDefs: Array<{ numero: string; service: string; salle: string; statut: string }> = [];
   const statutsMed = ['occupe', 'occupe', 'libre', 'libre', 'libre', 'libre', 'libre', 'libre', 'en_nettoyage', 'libre'];
@@ -249,7 +250,7 @@ async function seedLits(ds: DataSource): Promise<Record<string, string>> {
     const result = await ds.query(
       `INSERT INTO lits (numero, service, salle, statut, "estActif", "tenantId", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, true, $5, NOW(), NOW()) RETURNING id`,
-      [l.numero, l.service, l.salle, l.statut, TENANT_ID],
+      [`${pre}${l.numero}`, l.service, l.salle, l.statut, tenantId],
     );
     litIds[l.numero] = result[0].id;
   }
@@ -264,6 +265,8 @@ async function seedSejours(
   patientIds: string[],
   litIds: Record<string, string>,
   medecinId: string,
+  tenantId: string = TENANT_ID,
+  pre = '',
 ): Promise<void> {
   log('Reseed des séjours actifs...');
   const sejoursActifs = [
@@ -285,7 +288,7 @@ async function seedSejours(
     const result = await ds.query(
       `INSERT INTO sejours (numero, "patientId", "litId", "medecinReferentId", service, type, "dateHeureAdmission", "diagnosticEntree", "typeSortie", statut, "tenantId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'en_cours', 'actif', $9, $10, NOW(), NOW()) RETURNING id`,
-      [s.numero, patientIds[s.patientIdx], litId, medecinId, s.service, s.type, dateAdmission.toISOString(), s.diagnostic, TENANT_ID, medecinId],
+      [`${pre}${s.numero}`, patientIds[s.patientIdx], litId, medecinId, s.service, s.type, dateAdmission.toISOString(), s.diagnostic, tenantId, medecinId],
     );
     await ds.query('UPDATE lits SET "sejourActuelId" = $1 WHERE id = $2', [result[0].id, litId]);
   }
@@ -298,6 +301,8 @@ async function seedConsultationsEtFactures(
   ds: DataSource,
   patientIds: string[],
   medecinId: string,
+  tenantId: string = TENANT_ID,
+  pre = '',
 ): Promise<void> {
   log('Reseed de consultations et factures de démonstration...');
 
@@ -318,16 +323,16 @@ async function seedConsultationsEtFactures(
     const consult = await ds.query(
       `INSERT INTO consultations ("patientId", "medecinId", "dateHeure", type, motif, "tensionArterielle", "frequenceCardiaque", temperature, diagnostic, conclusion, statut, "tenantId", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'facturee', $11, NOW(), NOW()) RETURNING id`,
-      [patientId, medecinId, dateHeure.toISOString(), c.type, c.motif, c.ta, c.fc, c.temp, c.diagnostic, 'Traitement prescrit, contrôle si aggravation.', TENANT_ID],
+      [patientId, medecinId, dateHeure.toISOString(), c.type, c.motif, c.ta, c.fc, c.temp, c.diagnostic, 'Traitement prescrit, contrôle si aggravation.', tenantId],
     );
     const consultationId = consult[0].id;
 
-    const numero = `FACT-2025-${String(factureSeq++).padStart(5, '0')}`;
+    const numero = `${pre}FACT-2025-${String(factureSeq++).padStart(5, '0')}`;
     const ttc = c.montant;
     const facture = await ds.query(
       `INSERT INTO factures (numero, "patientId", "consultationId", "dateEmission", statut, "montantHT", "tauxTVA", "montantTVA", "montantTTC", "montantPaye", "montantRestant", "partPatient", devise, "tenantId", "createdById", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, 'payee', $5, 0, 0, $5, $5, 0, $5, 'XOF', $6, $7, NOW(), NOW()) RETURNING id`,
-      [numero, patientId, consultationId, dateHeure.toISOString(), ttc, TENANT_ID, medecinId],
+      [numero, patientId, consultationId, dateHeure.toISOString(), ttc, tenantId, medecinId],
     );
 
     // Ligne de facture (best-effort : le schéma peut varier).
@@ -335,13 +340,157 @@ async function seedConsultationsEtFactures(
       await ds.query(
         `INSERT INTO lignes_facture ("factureId", type, libelle, quantite, "prixUnitaire", "remisePourcent", "montantTotal", "tenantId")
          VALUES ($1, 'consultation', $2, 1, $3, 0, $3, $4)`,
-        [facture[0].id, `Consultation — ${c.diagnostic}`, ttc, TENANT_ID],
+        [facture[0].id, `Consultation — ${c.diagnostic}`, ttc, tenantId],
       );
     } catch (err) {
       log(`  - ligne_facture ignorée (${numero}) : ${(err as Error)?.message ?? err}`);
     }
   }
   log(`  ✓ ${consultations.length} consultations + factures`);
+}
+
+// ─── 3. Une démo par formule commerciale ──────────────────────────────────────
+//
+// Chaque formule (Pharmacie, Cabinet, Centre, Clinique) a son propre
+// établissement de démonstration, avec SA licence (donc SON menu et SES modules)
+// et des données adaptées. La formule Hôpital = la clinique historique
+// « clinique-saint-joseph » ci-dessus (accès complet).
+// Chaque démo est isolée : une erreur sur l'une n'arrête ni les autres ni la
+// démo principale.
+
+const DEMO_PASSWORD = 'Demo2025!';
+
+interface DemoFormule {
+  code: 'pharmacie' | 'cabinet' | 'centre' | 'clinique';
+  nom: string;
+  type: string;
+  prefix: string;
+  prix: number;
+  maxUsers: number;
+  users: Array<{ key: string; role: string; prenom: string; nom: string }>;
+  consultations: boolean;
+  hospitalisation: boolean;
+}
+
+const DEMOS: DemoFormule[] = [
+  {
+    code: 'pharmacie', nom: 'Pharmacie Démo — Officine du Plateau', type: 'pharmacie', prefix: 'P-', prix: 12000, maxUsers: 3,
+    users: [
+      { key: 'admin', role: 'admin', prenom: 'Awa', nom: 'Pharmacienne' },
+      { key: 'pharmacien', role: 'pharmacien', prenom: 'Ahmed', nom: 'Ben Salah' },
+      { key: 'caissier', role: 'caissier', prenom: 'Célestine', nom: 'Bamba' },
+    ],
+    consultations: false, hospitalisation: false,
+  },
+  {
+    code: 'cabinet', nom: 'Cabinet Médical Démo — Dr Diallo', type: 'cabinet', prefix: 'C-', prix: 18000, maxUsers: 5,
+    users: [
+      { key: 'admin', role: 'admin', prenom: 'Amara', nom: 'Diallo' },
+      { key: 'medecin', role: 'medecin', prenom: 'Koffi', nom: 'Mensah' },
+      { key: 'caissier', role: 'caissier', prenom: 'Célestine', nom: 'Bamba' },
+      { key: 'laborantin', role: 'laborantin', prenom: 'Jean', nom: 'Kouassi' },
+    ],
+    consultations: true, hospitalisation: false,
+  },
+  {
+    code: 'centre', nom: 'Centre de Santé Démo — CSI du Plateau', type: 'clinique', prefix: 'S-', prix: 35000, maxUsers: 15,
+    users: [
+      { key: 'admin', role: 'admin', prenom: 'Kouakou', nom: 'Directeur' },
+      { key: 'medecin', role: 'medecin', prenom: 'Amara', nom: 'Diallo' },
+      { key: 'infirmier', role: 'infirmier', prenom: 'Fatoumata', nom: 'Koné' },
+      { key: 'caissier', role: 'caissier', prenom: 'Célestine', nom: 'Bamba' },
+      { key: 'pharmacien', role: 'pharmacien', prenom: 'Ahmed', nom: 'Ben Salah' },
+      { key: 'laborantin', role: 'laborantin', prenom: 'Jean', nom: 'Kouassi' },
+    ],
+    consultations: true, hospitalisation: false,
+  },
+  {
+    code: 'clinique', nom: 'Clinique Démo — Polyclinique Sainte-Marie', type: 'polyclinique', prefix: 'L-', prix: 75000, maxUsers: 30,
+    users: [
+      { key: 'admin', role: 'admin', prenom: 'Kouakou', nom: 'Directeur' },
+      { key: 'medecin', role: 'medecin', prenom: 'Amara', nom: 'Diallo' },
+      { key: 'medecin2', role: 'medecin', prenom: 'Koffi', nom: 'Mensah' },
+      { key: 'infirmier', role: 'infirmier', prenom: 'Fatoumata', nom: 'Koné' },
+      { key: 'caissier', role: 'caissier', prenom: 'Célestine', nom: 'Bamba' },
+      { key: 'pharmacien', role: 'pharmacien', prenom: 'Ahmed', nom: 'Ben Salah' },
+      { key: 'laborantin', role: 'laborantin', prenom: 'Jean', nom: 'Kouassi' },
+    ],
+    consultations: true, hospitalisation: true,
+  },
+];
+
+async function seedDemoFormule(ds: DataSource, d: DemoFormule): Promise<void> {
+  const slug = `demo-${d.code}`;
+  const modules = FORMULES[d.code];
+  log(`── Démo ${d.code} (${slug}) : ${modules.length} modules`);
+
+  // Établissement
+  await ds.query(
+    `INSERT INTO tenants (id, slug, nom, type, email, pays, statut, "createdAt", "updatedAt")
+     VALUES (uuid_generate_v4(), $1, $2, $3, $4, 'CI', 'actif', NOW(), NOW())
+     ON CONFLICT (slug) DO UPDATE SET nom = EXCLUDED.nom, statut = 'actif', "updatedAt" = NOW()`,
+    [slug, d.nom, d.type, `contact@${slug}.santarex.ci`],
+  );
+
+  // Offre (la base de démo n'a pas forcément les offres) puis licence = modules de la formule
+  await ds.query(
+    `INSERT INTO offres_saas (id, code, nom, description, prix, cycle, "remiseAnnuelle", "maxUtilisateurs",
+        "modulesInclus", fonctionnalites, "estVisible", "estMisEnAvant", ordre, "estActif", "createdAt", "updatedAt")
+     VALUES (uuid_generate_v4(), $1, $2, $3, $4, 'mensuel', 17, $5, $6, '[]', true, false, 1, true, NOW(), NOW())
+     ON CONFLICT (code) DO UPDATE SET "modulesInclus" = EXCLUDED."modulesInclus", "updatedAt" = NOW()`,
+    [d.code, d.code.charAt(0).toUpperCase() + d.code.slice(1), `Formule ${d.code}`, d.prix, d.maxUsers, JSON.stringify(modules)],
+  );
+  const offre = await ds.query('SELECT id FROM offres_saas WHERE code = $1', [d.code]);
+  await ds.query('DELETE FROM licences WHERE "tenantSlug" = $1', [slug]);
+  await ds.query(
+    `INSERT INTO licences (id, cle, "tenantSlug", "offreId", "offreCode", statut, "dateDebut", "dateExpiration",
+        "maxUtilisateurs", "modulesActivesJson", "montantPaye", "modePaiement", "joursEssai", "createdAt", "updatedAt")
+     VALUES (uuid_generate_v4(), $1, $2, $3, $4, 'active', NOW(), NOW() + INTERVAL '10 years',
+        $5, $6, 0, 'gratuit', 30, NOW(), NOW())`,
+    [`DEMO-${d.code.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`, slug, offre[0].id, d.code, d.maxUsers, JSON.stringify(modules)],
+  );
+
+  // Utilisateurs (mot de passe public de démonstration)
+  const hash = await bcrypt.hash(DEMO_PASSWORD, SALT_ROUNDS);
+  const ids: Record<string, string> = {};
+  for (const u of d.users) {
+    const email = `${u.key}@${slug}.santarex.ci`;
+    const ex = await ds.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (ex.length) {
+      await ds.query('UPDATE users SET password = $2, "isActive" = true, "tenantId" = $3 WHERE id = $1', [ex[0].id, hash, slug]);
+      ids[u.key] = ex[0].id;
+      continue;
+    }
+    const r = await ds.query(
+      `INSERT INTO users (email, password, "firstName", "lastName", role, "tenantId", "isActive", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW()) RETURNING id`,
+      [email, hash, u.prenom, u.nom, u.role, slug],
+    );
+    ids[u.key] = r[0].id;
+  }
+  const adminId = ids['admin'];
+  const medecinId = ids['medecin'] ?? ids['pharmacien'] ?? adminId;
+
+  // Données adaptées aux modules de la formule
+  const patientIds = await seedPatients(ds, adminId, slug, d.prefix);
+  await seedMedicaments(ds, slug, d.prefix);
+  if (d.consultations) await seedConsultationsEtFactures(ds, patientIds, medecinId, slug, d.prefix);
+  if (d.hospitalisation) {
+    const litIds = await seedLits(ds, slug, d.prefix);
+    await seedSejours(ds, patientIds, litIds, medecinId, slug, d.prefix);
+  }
+  log(`  ✓ démo ${d.code} prête`);
+}
+
+async function seedDemosParFormule(ds: DataSource): Promise<void> {
+  log('Génération des démos par formule...');
+  for (const d of DEMOS) {
+    try {
+      await seedDemoFormule(ds, d);
+    } catch (err) {
+      log(`  ✗ démo ${d.code} ignorée : ${(err as Error)?.message ?? err}`);
+    }
+  }
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -369,6 +518,7 @@ async function main(): Promise<void> {
     const litIds = await seedLits(AppDataSource);
     await seedSejours(AppDataSource, patientIds, litIds, medecinId);
     await seedConsultationsEtFactures(AppDataSource, patientIds, medecinId);
+    await seedDemosParFormule(AppDataSource);
 
     console.log('');
     console.log('═══════════════════════════════════════════════════');
