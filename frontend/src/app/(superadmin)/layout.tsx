@@ -8,12 +8,13 @@ import type { User } from '@/types';
 import {
   LayoutDashboard, Building2, CreditCard, Package, ScrollText,
   LogOut, ChevronRight, Shield, Menu, X, Users, FileText,
-  Bot, DatabaseBackup, Activity,
+  Bot, DatabaseBackup, Activity, Megaphone,
 } from 'lucide-react';
 
 const NAV = [
   { href: '/superadmin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/superadmin/crm', label: 'CRM Prospects', icon: Users },
+  { href: '/superadmin/annonces', label: 'Annonces', icon: Megaphone },
   { href: '/superadmin/offres-commerciales', label: 'Offres commerciales', icon: FileText },
   { href: '/superadmin/tenants', label: 'Établissements', icon: Building2 },
   { href: '/superadmin/licences', label: 'Licences', icon: CreditCard },

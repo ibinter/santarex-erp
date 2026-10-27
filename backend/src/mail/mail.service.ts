@@ -261,6 +261,44 @@ export class MailService {
     }
   }
 
+  /**
+   * Annonce de nouveautés envoyée à un abonné. `message` est du texte brut : les lignes vides
+   * séparent les paragraphes, une ligne commençant par « • » ou « - » devient une puce.
+   * Renvoie true si le serveur SMTP a accepté le message.
+   */
+  async envoyerAnnonce(opts: { to: string; prenom: string; sujet: string; message: string; urlApp: string }): Promise<boolean> {
+    const blocs = String(opts.message ?? '').trim().split(/\n{2,}/).map((bloc) => {
+      const lignes = bloc.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (lignes.length && lignes.every((l) => /^[•\-*]\s+/.test(l))) {
+        return `<ul style="margin:0 0 14px;padding-left:20px;color:#37474F;line-height:1.6">${lignes
+          .map((l) => `<li>${this.echapper(l.replace(/^[•\-*]\s+/, ''))}</li>`)
+          .join('')}</ul>`;
+      }
+      return `<p style="margin:0 0 14px;color:#37474F;line-height:1.6">${lignes.map((l) => this.echapper(l)).join('<br>')}</p>`;
+    });
+    const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:24px">
+  <div style="max-width:560px;margin:auto;background:#fff;border-radius:12px;padding:28px">
+    <h2 style="margin:0 0 16px;color:#1565C0">${this.echapper(opts.sujet)}</h2>
+    <p style="margin:0 0 14px;color:#37474F">Bonjour ${this.echapper(opts.prenom)},</p>
+    ${blocs.join('\n    ')}
+    <p style="text-align:center;margin:24px 0"><a href="${this.echapper(opts.urlApp)}" style="background:#1565C0;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold">Ouvrir SANTAREX</a></p>
+    <p style="color:#90A4AE;font-size:12px;margin:18px 0 0">Vous recevez ce message parce que votre établissement utilise SANTAREX ERP. Pour ne plus recevoir ces annonces, répondez simplement « STOP » à ce message.</p>
+  </div></body></html>`;
+    try {
+      const info = await this.mailerService.sendMail({
+        to: opts.to,
+        from: `"${this.fromName}" <${this.fromEmail}>`,
+        subject: opts.sujet,
+        html,
+      });
+      this.logger.log(`Annonce envoyée [${opts.sujet}] → ${opts.to} (id: ${info?.messageId ?? 'n/a'})`);
+      return true;
+    } catch (err) {
+      this.logger.warn(`Échec annonce [${opts.sujet}] → ${opts.to}: ${(err as Error).message}`);
+      return false;
+    }
+  }
+
   /** Échappe le HTML des valeurs injectées dans un corps d'e-mail. */
   private echapper(v: unknown): string {
     return String(v ?? '')

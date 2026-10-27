@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { MailService } from './mail.service';
 import { LicenceEmailsScheduler } from './licence-emails.scheduler';
+import { AnnoncesController } from './annonces.controller';
+import { AnnoncesService } from './annonces.service';
 import { Licence } from '../licences/entities/licence.entity';
 import { User } from '../users/entities/user.entity';
 
@@ -37,7 +39,8 @@ import { User } from '../users/entities/user.entity';
     }),
     TypeOrmModule.forFeature([Licence, User]),
   ],
-  providers: [MailService, LicenceEmailsScheduler],
+  controllers: [AnnoncesController],
+  providers: [MailService, LicenceEmailsScheduler, AnnoncesService],
   exports: [MailService],
 })
 export class MailModule {}
