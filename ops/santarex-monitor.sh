@@ -59,12 +59,13 @@ envoyer() {  # $1 = sujet (ASCII), $2 = corps
       echo "Serveur : $(hostname) — $(date '+%F %T')"
     } > "$tmp"
     if [ "$secure" = "true" ] || [ "$port" = "465" ]; then proto="smtps"; else proto="smtp"; fi
+    local err
     if [ "$proto" = "smtp" ]; then
-      curl -s --max-time 30 --ssl-reqd "smtp://$host:$port" --mail-from "$from" --mail-rcpt "$ALERT_TO" \
-        --user "$user:$pass" -T "$tmp" >/dev/null 2>&1 || log "échec envoi e-mail (smtp)"
+      err=$(curl -sS --max-time 30 --ssl-reqd "smtp://$host:$port" --mail-from "$from" --mail-rcpt "$ALERT_TO" \
+        --user "$user:$pass" -T "$tmp" 2>&1 >/dev/null) || log "échec envoi e-mail (smtp $host:$port) : $(echo "$err" | tail -1)"
     else
-      curl -s --max-time 30 "smtps://$host:$port" --mail-from "$from" --mail-rcpt "$ALERT_TO" \
-        --user "$user:$pass" -T "$tmp" >/dev/null 2>&1 || log "échec envoi e-mail (smtps)"
+      err=$(curl -sS --max-time 30 "smtps://$host:$port" --mail-from "$from" --mail-rcpt "$ALERT_TO" \
+        --user "$user:$pass" -T "$tmp" 2>&1 >/dev/null) || log "échec envoi e-mail (smtps $host:$port) : $(echo "$err" | tail -1)"
     fi
     rm -f "$tmp"
   else
