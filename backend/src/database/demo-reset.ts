@@ -430,6 +430,52 @@ async function seedLaboratoire(
   log(`  ✓ ${types.length} types d'analyses + ${demandes.length} demandes`);
 }
 
+// ─── 2h. Ventes du comptoir (démo Pharmacie : pas de consultations) ────────────
+
+async function seedVentesPharmacie(
+  ds: DataSource,
+  patientIds: string[],
+  userId: string,
+  tenantId: string,
+  pre: string,
+): Promise<void> {
+  log('Reseed des ventes de pharmacie de démonstration...');
+  const ventes = [
+    { libelle: 'Amoxicilline 500mg × 10', ttc: 1500, mode: 'especes', h: 5 },
+    { libelle: 'Artéméther+Luméfantrine × 1 cure', ttc: 2500, mode: 'mobile_money', h: 4 },
+    { libelle: 'Doliprane sirop + Ibuprofène 400mg × 10', ttc: 1950, mode: 'especes', h: 3 },
+    { libelle: 'Metformine 500mg × 30', ttc: 3000, mode: 'carte_bancaire', h: 2 },
+    { libelle: 'Oméprazole 20mg × 14', ttc: 4200, mode: 'mobile_money', h: 1 },
+  ];
+  let n = 1;
+  for (const v of ventes) {
+    const quand = new Date(Date.now() - v.h * 3600_000).toISOString();
+    const patientId = patientIds[(n - 1) % patientIds.length];
+    const numero = `${pre}FACT-2025-${String(500 + n).padStart(5, '0')}`;
+    const facture = await ds.query(
+      `INSERT INTO factures (numero, "patientId", "dateEmission", statut, "montantHT", "tauxTVA", "montantTVA", "montantTTC", "montantPaye", "montantRestant", "partPatient", devise, "tenantId", "createdById", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 'payee', $4, 0, 0, $4, $4, 0, $4, 'XOF', $5, $6, $3, $3) RETURNING id`,
+      [numero, patientId, quand, v.ttc, tenantId, userId],
+    );
+    try {
+      await ds.query(
+        `INSERT INTO lignes_facture ("factureId", type, libelle, quantite, "prixUnitaire", "remisePourcent", "montantTotal", "tenantId")
+         VALUES ($1, 'medicament', $2, 1, $3, 0, $3, $4)`,
+        [facture[0].id, v.libelle, v.ttc, tenantId],
+      );
+    } catch (err) {
+      log(`  - ligne_facture ignorée (${numero}) : ${(err as Error)?.message ?? err}`);
+    }
+    await ds.query(
+      `INSERT INTO paiements (reference, "factureId", "patientId", montant, devise, "modePaiement", statut, "tenantId", "createdById", "createdAt", "validatedAt")
+       VALUES ($1, $2, $3, $4, 'XOF', $5, 'valide', $6, $7, $8, $8)`,
+      [`${pre}PAY-2025-${String(n).padStart(5, '0')}`, facture[0].id, patientId, v.ttc, v.mode, tenantId, userId, quand],
+    );
+    n += 1;
+  }
+  log(`  ✓ ${ventes.length} ventes du jour`);
+}
+
 // ─── 3. Une démo par formule commerciale ──────────────────────────────────────
 //
 // Chaque formule (Pharmacie, Cabinet, Centre, Clinique) a son propre
@@ -558,6 +604,9 @@ async function seedDemoFormule(ds: DataSource, d: DemoFormule): Promise<void> {
   if (d.consultations) {
     await seedConsultationsEtFactures(ds, patientIds, medecinId, slug, d.prefix);
     await seedLaboratoire(ds, patientIds, medecinId, slug, d.prefix).catch((e) => log(`  - laboratoire ignoré : ${e?.message ?? e}`));
+  }
+  if (!d.consultations) {
+    await seedVentesPharmacie(ds, patientIds, adminId, slug, d.prefix).catch((e) => log(`  - ventes ignorées : ${e?.message ?? e}`));
   }
   if (d.hospitalisation) {
     const litIds = await seedLits(ds, slug, d.prefix);
