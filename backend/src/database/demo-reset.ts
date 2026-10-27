@@ -341,7 +341,7 @@ async function seedConsultationsEtFactures(
       await ds.query(
         `INSERT INTO paiements (reference, "factureId", "patientId", montant, devise, "modePaiement", statut, "tenantId", "createdById", "createdAt", "validatedAt")
          VALUES ($1, $2, $3, $4, 'XOF', $5, 'valide', $6, $7, $8, $8)`,
-        [`${pre}PAY-2025-${String(factureSeq - 1).padStart(5, '0')}`, facture[0].id, patientId, ttc, factureSeq % 2 ? 'especes' : 'mobile_money', tenantId, medecinId, dateHeure.toISOString()],
+        [`${pre}PAY-2025-${String(factureSeq - 1).padStart(5, '0')}`, facture[0].id, patientId, ttc, ['especes', 'especes', 'mobile_money', 'carte_bancaire'][(factureSeq - 2) % 4], tenantId, medecinId, dateHeure.toISOString()],
       );
     } catch (err) {
       log(`  - paiement ignoré (${numero}) : ${(err as Error)?.message ?? err}`);
