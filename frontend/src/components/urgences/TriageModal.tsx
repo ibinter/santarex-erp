@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiClient } from '@/lib/api';
 import type { PatientUrgence, CategorieManchester } from '@/types';
 
 interface TriageModalProps {
@@ -24,11 +25,6 @@ const STATUTS = [
   { value: 'en_observation', label: 'En observation' },
 ];
 
-const MEDECINS_MOCK = [
-  { id: 'm1', label: 'Dr. Konan Kouassi' },
-  { id: 'm2', label: 'Dr. Ama Mensah' },
-  { id: 'm3', label: 'Dr. Pierre Akoto' },
-];
 
 export default function TriageModal({ patient, onClose, onUpdate }: TriageModalProps) {
   const [categorie, setCategorie] = useState<CategorieManchester>(patient.categorieManchester);
@@ -41,6 +37,20 @@ export default function TriageModal({ patient, onClose, onUpdate }: TriageModalP
   const [glasgow, setGlasgow] = useState(String(patient.constantes?.glasgow || ''));
   const [douleur, setDouleur] = useState(String(patient.constantes?.douleur || 0));
   const [notes, setNotes] = useState(patient.notes || '');
+  const [medecins, setMedecins] = useState<{ id: string; label: string }[]>([]);
+
+  // Médecins réels de l'établissement (au lieu d'une liste codée en dur)
+  useEffect(() => {
+    apiClient<any>('/users?role=medecin&limit=100')
+      .then(u => {
+        const list: any[] = Array.isArray(u) ? u : (u?.items ?? u?.data ?? []);
+        setMedecins(list.map(m => ({
+          id: m.id,
+          label: `Dr. ${m.firstName ?? m.prenom ?? ''} ${m.lastName ?? m.nom ?? ''}`.trim(),
+        })));
+      })
+      .catch(() => setMedecins([]));
+  }, []);
 
   const handleSubmit = () => {
     const constantes: Record<string, any> = {};
@@ -177,7 +187,7 @@ export default function TriageModal({ patient, onClose, onUpdate }: TriageModalP
               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               <option value="">-- Sélectionner un médecin --</option>
-              {MEDECINS_MOCK.map(m => (
+              {medecins.map(m => (
                 <option key={m.id} value={m.id}>{m.label}</option>
               ))}
             </select>
