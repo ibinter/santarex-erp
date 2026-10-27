@@ -5,6 +5,7 @@
   ConflictException,
   BadRequestException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +15,7 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { TenantsService } from '../tenants/tenants.service';
+import { TwoFactorService } from './twofactor.service';
 import { LicenceLifecycleService } from '../payments/licence-lifecycle.service';
 import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
@@ -36,6 +38,7 @@ export class AuthService {
     private mailService: MailService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @Optional() private readonly twoFactor?: TwoFactorService,
   ) {
     this.frontendUrl = this.configService.get<string>(
       'FRONTEND_URL',
@@ -65,12 +68,62 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password, dto.tenantId);
 
+    // Double authentification activee : pas de session tant que le code n est pas valide.
+    if (user.twoFactorEnabled && this.twoFactor) {
+      const challengeToken = await this.jwtService.signAsync(
+        { sub: user.id, tenantId: user.tenantId, type: '2fa' },
+        { secret: this.challengeSecret(), expiresIn: '5m' },
+      );
+      return { requires2fa: true as const, challengeToken };
+    }
+
+    return this.emettreSession(user);
+  }
+
+  /** Seconde etape de connexion : verifie le code (ou code de secours) puis ouvre la session. */
+  async verifyTwoFactor(challengeToken: string, code: string) {
+    let payload: { sub?: string; type?: string };
+    try {
+      payload = await this.jwtService.verifyAsync(challengeToken, { secret: this.challengeSecret() });
+    } catch {
+      throw new UnauthorizedException('Verification expiree : reconnectez-vous.');
+    }
+    if (payload?.type !== '2fa' || !payload.sub || !this.twoFactor) {
+      throw new UnauthorizedException('Verification invalide');
+    }
+    const user = await this.usersService.findById(payload.sub);
+    if (!user || !user.isActive) throw new UnauthorizedException('Compte indisponible');
+    const ok = await this.twoFactor.verifierConnexion(user.id, code);
+    if (!ok) throw new UnauthorizedException('Code incorrect');
+    return this.emettreSession(user);
+  }
+
+  /** Cle distincte : un jeton de verification ne peut jamais servir de jeton d acces. */
+  private challengeSecret(): string {
+    return `${this.configService.getOrThrow<string>('JWT_SECRET')}:2fa`;
+  }
+
+  /** L etablissement exige-t-il la double authentification de ses administrateurs ? */
+  private async doubleAuthExigee(user: User): Promise<boolean> {
+    if (user.twoFactorEnabled) return false;
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.DIRECTEUR) return false;
+    try {
+      const reglages = await this.tenantsService.getSettings(user.tenantId);
+      return reglages.twoFaEnabled === true;
+    } catch {
+      return false;
+    }
+  }
+
+  private async emettreSession(user: User) {
     const tokens = await this.generateTokens(user);
     await this.usersService.updateRefreshToken(user.id, tokens.refresh_token);
 
     return {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
+      // true : l etablissement l exige et ce compte ne l a pas encore activee.
+      twoFactorSetupRequired: await this.doubleAuthExigee(user),
       user: {
         id: user.id,
         email: user.email,

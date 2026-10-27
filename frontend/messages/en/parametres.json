@@ -26,7 +26,7 @@
     },
     "securite": {
       "twoFa": "Two-factor authentication (2FA)",
-      "twoFaDesc": "Requires a TOTP code in addition to the password for all accounts",
+      "twoFaDesc": "The facility's administrators and directors must enable two-factor authentication (6-digit code) on their account",
       "sessionTitle": "Session timeout",
       "sessionDesc": "Automatic logout after inactivity",
       "minutes": "{v} min"

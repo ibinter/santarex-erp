@@ -126,10 +126,11 @@ describe('AuthService', () => {
         tenantId: 'clinique-test',
       });
 
-      expect(result).toHaveProperty('access_token');
-      expect(result).toHaveProperty('refresh_token');
-      expect(result.user.email).toBe('dr.test@clinique.ci');
-      expect(result.user).not.toHaveProperty('password');
+      const session: any = result;
+      expect(session).toHaveProperty('access_token');
+      expect(session).toHaveProperty('refresh_token');
+      expect(session.user.email).toBe('dr.test@clinique.ci');
+      expect(session.user).not.toHaveProperty('password');
     });
   });
 });

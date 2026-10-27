@@ -69,6 +69,14 @@ export class UsersController {
     }));
   }
 
+  @Post(':id/2fa/reset')
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+  @ApiOperation({ summary: 'Retirer la double authentification d un utilisateur (telephone perdu)' })
+  async resetTwoFactor(@Request() req, @Param('id') id: string) {
+    await this.usersService.resetTwoFactor(id, req.user.tenantId);
+    return { message: 'Double authentification reinitialisee' };
+  }
+
   @Post()
   @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Créer un utilisateur' })

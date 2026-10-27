@@ -23,6 +23,8 @@ import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UpdateProfileDto, ChangePasswordDto } from './dto/profile.dto';
+import { VerifyTwoFactorDto, EnableTwoFactorDto, DisableTwoFactorDto } from './dto/twofactor.dto';
+import { TwoFactorService } from './twofactor.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -35,6 +37,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly twoFactorService: TwoFactorService,
   ) {}
 
   @Post('login')
@@ -46,6 +49,8 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     try {
       const result = await this.authService.login(loginDto);
+      // Double authentification activee : le code est demande a l etape suivante.
+      if ('requires2fa' in result) return result;
       this.auditLogsService.log({
         action: AuditAction.LOGIN,
         ressource: 'auth',
@@ -185,5 +190,100 @@ export class AuthController {
       contexte: { operation: 'change-password' },
     });
     return { message: 'Mot de passe modifié avec succès' };
+  }
+
+  // ── Double authentification (TOTP) ──────────────────────────────────────────
+
+  @Post('2fa/verify')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Seconde etape de connexion', description: 'Valide le code a 6 chiffres (ou un code de secours) et ouvre la session' })
+  async verifyTwoFactor(@Body() dto: VerifyTwoFactorDto, @Req() req: Request) {
+    try {
+      const result = await this.authService.verifyTwoFactor(dto.challengeToken, dto.code);
+      this.auditLogsService.log({
+        action: AuditAction.LOGIN,
+        ressource: 'auth',
+        userId: result.user.id,
+        userEmail: result.user.email,
+        userRole: result.user.role,
+        tenantId: result.user.tenantId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        contexte: { operation: 'login-2fa' },
+      });
+      return result;
+    } catch (err) {
+      this.auditLogsService.log({
+        action: AuditAction.LOGIN_FAILED,
+        ressource: 'auth',
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        contexte: { reason: err.message, operation: 'login-2fa' },
+      });
+      throw err;
+    }
+  }
+
+  @Get('2fa/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Etat de ma double authentification' })
+  twoFactorStatus(@CurrentUser() user: any) {
+    return this.twoFactorService.status(user.userId ?? user.id);
+  }
+
+  @Post('2fa/setup')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Commencer l activation : QR code a scanner' })
+  twoFactorSetup(@CurrentUser() user: any) {
+    return this.twoFactorService.setup(user.userId ?? user.id);
+  }
+
+  @Post('2fa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirmer avec un premier code : active et renvoie les codes de secours' })
+  async twoFactorEnable(@CurrentUser() user: any, @Body() dto: EnableTwoFactorDto, @Req() req: Request) {
+    const res = await this.twoFactorService.enable(user.userId ?? user.id, dto.code);
+    this.auditLogsService.log({
+      action: AuditAction.UPDATE,
+      ressource: 'auth',
+      userId: user.userId ?? user.id,
+      userEmail: user.email,
+      userRole: user.role,
+      tenantId: user.tenantId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      contexte: { operation: '2fa-enabled' },
+    });
+    return res;
+  }
+
+  @Post('2fa/disable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Desactiver (mot de passe + code requis)' })
+  async twoFactorDisable(@CurrentUser() user: any, @Body() dto: DisableTwoFactorDto, @Req() req: Request) {
+    await this.twoFactorService.disable(user.userId ?? user.id, dto.password, dto.code);
+    this.auditLogsService.log({
+      action: AuditAction.UPDATE,
+      ressource: 'auth',
+      userId: user.userId ?? user.id,
+      userEmail: user.email,
+      userRole: user.role,
+      tenantId: user.tenantId,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      contexte: { operation: '2fa-disabled' },
+    });
+    return { message: 'Double authentification desactivee' };
   }
 }

@@ -25,6 +25,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Double authentification : jeton de verification et code saisi a la seconde etape.
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [code2fa, setCode2fa] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -57,15 +60,37 @@ export default function LoginPage() {
     await doLogin(form);
   };
 
+  const handleVerify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!challenge || !code2fa.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.verify2fa({ challengeToken: challenge, code: code2fa.trim() }) as any;
+      saveTokens({ access_token: res.access_token, refresh_token: res.refresh_token });
+      saveUser(res.user);
+      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : '/dashboard');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Code incorrect');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const doLogin = async (creds: typeof form) => {
     setLoading(true);
     setError(null);
 
     try {
       const res = await api.login(creds) as any;
+      if (res.requires2fa) {
+        setChallenge(res.challengeToken);
+        setCode2fa('');
+        return;
+      }
       saveTokens({ access_token: res.access_token, refresh_token: res.refresh_token });
       saveUser(res.user);
-      router.push('/dashboard');
+      router.push(res.twoFactorSetupRequired ? '/profil?2fa=1' : '/dashboard');
     } catch (err: unknown) {
       setError((err as Error).message || t('invalidCredentials'));
     } finally {
@@ -93,6 +118,46 @@ export default function LoginPage() {
 
         {/* Formulaire */}
         <div className="bg-white rounded-card shadow-card p-8">
+          {challenge ? (
+            <form onSubmit={handleVerify} className="flex flex-col gap-4" noValidate>
+              <h2 className="text-lg font-semibold text-text-primary">Vérification en deux étapes</h2>
+              <p className="text-sm text-text-secondary">
+                Saisissez le code à 6 chiffres affiché par votre application d’authentification
+                (Google Authenticator, Microsoft Authenticator, Authy…).
+              </p>
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-xs text-danger">⚠ {error}</p>
+                </div>
+              )}
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                value={code2fa}
+                onChange={(e) => setCode2fa(e.target.value)}
+                placeholder="Code à 6 chiffres"
+                maxLength={16}
+                className="input-field text-center text-xl tracking-widest"
+              />
+              <button type="submit" disabled={loading || !code2fa.trim()} className="btn-primary w-full py-2.5">
+                {loading ? '…' : 'Valider'}
+              </button>
+              <p className="text-xs text-text-secondary">
+                Téléphone perdu ? Saisissez à la place un <strong>code de secours</strong> (ex. ABCDE-12345).
+                Sans code de secours, demandez à un administrateur de votre établissement de réinitialiser votre accès.
+              </p>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => { setChallenge(null); setCode2fa(''); setError(null); }}
+              >
+                ← Retour
+              </button>
+            </form>
+          ) : (
+          <>
           {isDemoHost && (
             <div className="mb-6">
               <p className="text-sm font-semibold text-text-primary mb-1">Essayez la formule de votre choix</p>
@@ -241,6 +306,8 @@ export default function LoginPage() {
               </Link>
             </p>
           </form>
+          </>
+          )}
         </div>
 
         {/* Footer */}

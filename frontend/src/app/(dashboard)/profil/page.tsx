@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { getCurrentUser, getUserInitials, getFullName } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
+import TwoFactorCard from '@/components/security/TwoFactorCard';
 import type { User } from '@/types';
 
 type Section = 'info' | 'security' | 'preferences';
@@ -286,6 +287,9 @@ export default function ProfilPage() {
           </div>
         </form>
       </div>
+
+      {/* Double authentification */}
+      <TwoFactorCard />
 
       {/* Section Préférences */}
       <div style={cardStyle}>

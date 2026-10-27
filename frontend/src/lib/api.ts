@@ -86,6 +86,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  verify2fa: (data: { challengeToken: string; code: string }) =>
+    fetchApi<any>('/auth/2fa/verify', { method: 'POST', body: JSON.stringify(data) }),
   me: () => fetchApi<ApiResponse<{ user: import('@/types').User }>>('/auth/me'),
   logout: () =>
     fetchApi('/auth/logout', { method: 'POST' }),

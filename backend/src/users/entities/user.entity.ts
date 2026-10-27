@@ -63,6 +63,22 @@ export class User {
   @Column({ type: 'timestamptz', nullable: true, select: false })
   resetTokenExpiry?: Date;
 
+  // ── Double authentification (TOTP) ────────────────────────────────────────
+  @Column({ default: false })
+  twoFactorEnabled: boolean;
+
+  /** Secret TOTP chiffré (AES-256-GCM). Jamais renvoyé par l API. */
+  @Column({ type: 'text', nullable: true, select: false })
+  twoFactorSecret?: string | null;
+
+  /** Empreintes SHA-256 des codes de secours restants (JSON). */
+  @Column({ type: 'text', nullable: true, select: false })
+  twoFactorRecoveryCodes?: string | null;
+
+  /** Dernier pas TOTP accepté : empêche de rejouer un code. */
+  @Column({ type: 'int', nullable: true })
+  twoFactorLastStep?: number | null;
+
   @ApiProperty({ description: 'Date de création' })
   @CreateDateColumn()
   createdAt: Date;

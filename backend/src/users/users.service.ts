@@ -152,6 +152,18 @@ export class UsersService {
     return qb.getMany();
   }
 
+  /** Un administrateur retire la double authentification d un collegue (telephone et codes de secours perdus). */
+  async resetTwoFactor(id: string, tenantId: string): Promise<void> {
+    const u = await this.userRepository.findOne({ where: { id, tenantId } });
+    if (!u) throw new NotFoundException('Utilisateur introuvable');
+    await this.userRepository.update(id, {
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+      twoFactorRecoveryCodes: null,
+      twoFactorLastStep: null,
+    });
+  }
+
   async updateUser(id: string, tenantId: string, dto: Partial<Pick<User, 'firstName' | 'lastName' | 'role'>>): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id, tenantId } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');

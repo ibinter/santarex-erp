@@ -26,7 +26,7 @@
     },
     "securite": {
       "twoFa": "Authentification à 2 facteurs (2FA)",
-      "twoFaDesc": "Exige un code TOTP en plus du mot de passe pour tous les comptes",
+      "twoFaDesc": "Les administrateurs et directeurs de l’établissement doivent activer la double authentification (code à 6 chiffres) sur leur compte",
       "sessionTitle": "Expiration de session",
       "sessionDesc": "Déconnexion automatique après inactivité",
       "minutes": "{v} min"
