@@ -279,7 +279,7 @@ const SARA_KB = [
   { t: ['essai','gratuit','trial','free','tester','commencer','démarrer'],
     r: "Oui ! L'essai est gratuit pendant 30 jours, sans carte bancaire et sans engagement. Cliquez sur « Démo gratuite » pour commencer." },
   { t: ['module','fonctionnalité','feature','quoi','faire','propose','contient','inclus'],
-    r: "SANTAREX ERP couvre tout le cycle hospitalier avec 40 modules, regroupés par domaine :\n• Clinique & Soins : DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD\n• Pharmacie & Plateau technique : pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI\n• Finances & Assurances : facturation, devis, caisse, assureurs, tiers-payant, budget\n• Communication : portail patient, SMS & rappels, messagerie, satisfaction\n• Qualité : gardes, incidents, indicateurs, déclarations sanitaires\n• Opérations : transport/ambulances, morgue, RH, BI, multi-sites\n\nChaque module communique en temps réel." },
+    r: "SANTAREX ERP couvre tout le cycle hospitalier avec 44 modules, regroupés par domaine :\n• Clinique & Soins : DME, consultations, RDV, hospitalisation, urgences, bloc, maternité, pédiatrie, vaccination, soins infirmiers, consentements, interactions médicamenteuses, HAD\n• Pharmacie & Plateau technique : pharmacie, laboratoire, imagerie, approvisionnement, banque de sang, stérilisation, équipements, déchets DASRI\n• Finances & Assurances : facturation, devis, caisse, assureurs, tiers-payant, budget\n• Communication : portail patient, SMS & rappels, messagerie, satisfaction\n• Qualité : gardes, incidents, indicateurs, déclarations sanitaires\n• Opérations : transport/ambulances, morgue, RH, BI, multi-sites\n\nChaque module communique en temps réel." },
   { t: ['pharmacie','pharmacy','stock','médicament','dispensation','rupture'],
     r: 'Le module Pharmacie gère les stocks en temps réel, la dispensation sur ordonnance, les alertes péremption/rupture et la traçabilité des lots.\n\n💊 Plan Pharmacie autonome : 12 000 FCFA/mois.' },
   { t: ['pays','afrique','disponible','région','déploie','cameroun','sénégal','guinée'],
@@ -445,7 +445,7 @@ const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
   { cat: { fr: 'Clinique & Soins', en: 'Clinical & Care' }, items: [
     { title: { fr: 'Patients & DME', en: 'Patients & EHR' }, desc: { fr: 'Dossiers médicaux électroniques complets, IPP automatique, historique, allergies, antécédents.', en: 'Complete electronic health records, automatic patient ID, history, allergies, medical background.' }, tag: 'Core', ...MC.teal, icon: S(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
     { title: { fr: 'Consultations', en: 'Consultations' }, desc: { fr: 'CIM-10, constantes vitales, ordonnances numériques, certificats médicaux, plan de soins.', en: 'ICD-10, vital signs, digital prescriptions, medical certificates, care plan.' }, tag: 'Core', ...MC.teal, icon: S(<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>) },
-    { title: { fr: 'Rendez-vous', en: 'Appointments' }, desc: { fr: "Agenda multi-médecins, créneaux disponibles, rappels SMS, liste d'attente.", en: 'Multi-doctor schedule, available slots, SMS reminders, waiting list.' }, tag: 'Core', ...MC.blue, icon: S(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { title: { fr: 'Rendez-vous', en: 'Appointments' }, desc: { fr: "Agenda multi-médecins, créneaux disponibles, modèles de rappels, liste d'attente.", en: 'Multi-doctor schedule, available slots, reminder templates, waiting list.' }, tag: 'Core', ...MC.blue, icon: S(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
     { title: { fr: 'Hospitalisation', en: 'Inpatient care' }, desc: { fr: 'Plan des lits temps réel, prescriptions médicales, notes infirmières, sorties et transferts.', en: 'Real-time bed plan, medical prescriptions, nursing notes, discharges and transfers.' }, tag: 'Clinique+', ...MC.red, icon: S(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
     { title: { fr: 'Urgences & triage', en: 'Emergency & triage' }, desc: { fr: 'Triage Manchester, file attente temps réel, suivi des passages, alertes critiques.', en: 'Manchester triage, real-time queue, patient tracking, critical alerts.' }, tag: 'Clinique+', ...MC.red, icon: S(<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>) },
     { title: { fr: 'Bloc opératoire', en: 'Operating room' }, desc: { fr: 'Programme chirurgical, gestion des salles, protocoles anesthésie, comptes rendus opératoires.', en: 'Surgical schedule, room management, anaesthesia protocols, operative reports.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>) },
@@ -477,7 +477,7 @@ const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
   ]},
   { cat: { fr: 'Communication & Patient', en: 'Communication & Patient' }, items: [
     { title: { fr: 'Portail patient', en: 'Patient portal' }, desc: { fr: 'Accès sécurisé aux résultats, ordonnances, rendez-vous et documents en ligne.', en: 'Secure online access to results, prescriptions, appointments and documents.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
-    { title: { fr: 'SMS & rappels', en: 'SMS & reminders' }, desc: { fr: 'Rappels de rendez-vous, notifications de résultats et campagnes SMS automatisées.', en: 'Appointment reminders, result notifications and automated SMS campaigns.' }, tag: 'Cabinet+', ...MC.teal, icon: S(<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>) },
+    { title: { fr: 'SMS & rappels', en: 'SMS & reminders' }, desc: { fr: "Modèles de messages (rappels de rendez-vous, résultats) et historique des envois. L'envoi réel par SMS et WhatsApp arrive prochainement.", en: 'Message templates (appointment reminders, results) and sending history. Actual SMS and WhatsApp sending is coming soon.' }, tag: 'Cabinet+', ...MC.teal, icon: S(<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>) },
     { title: { fr: 'Messagerie interne', en: 'Internal messaging' }, desc: { fr: 'Communication sécurisée entre services et équipes, notifications temps réel.', en: 'Secure communication between departments and teams, real-time notifications.' }, tag: 'Clinique+', ...MC.purple, icon: S(<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>) },
     { title: { fr: 'Satisfaction patient', en: 'Patient satisfaction' }, desc: { fr: 'Enquêtes de satisfaction, collecte des avis, scores NPS et suivi qualité perçue.', en: 'Satisfaction surveys, feedback collection, NPS scores and perceived-quality tracking.' }, tag: 'Clinique+', ...MC.amber, icon: S(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>) },
   ]},
@@ -573,8 +573,8 @@ const DISCOVER = {
     en: ['1 user', 'All core features', 'Web access and PWA install', 'Daily backup'],
   },
   excluded: {
-    fr: ['Export CSV/Excel/PDF', 'Multi-utilisateur et rôles', 'API et intégrations', 'Relances automatiques WhatsApp et SMS', 'Assistant IA SARA', 'Support prioritaire'],
-    en: ['CSV/Excel/PDF export', 'Multi-user and roles', 'API and integrations', 'Automatic WhatsApp and SMS reminders', 'SARA AI assistant', 'Priority support'],
+    fr: ['Export CSV/Excel/PDF', 'Multi-utilisateur et rôles', 'API et intégrations', 'Modèles de rappels patients (envoi SMS/WhatsApp à venir)', 'Assistant IA SARA', 'Support prioritaire'],
+    en: ['CSV/Excel/PDF export', 'Multi-user and roles', 'API and integrations', 'Patient reminder templates (SMS/WhatsApp sending coming soon)', 'SARA AI assistant', 'Priority support'],
   },
   btnLabel: { fr: 'Créer mon espace gratuit', en: 'Create my free space' },
   note: {
@@ -674,13 +674,16 @@ const ACTIVITES: { title: Record<Lang,string>; desc: Record<Lang,string>; tags: 
 ];
 
 const INTEGRATIONS = [
-  { name: 'Orange Money', statusKey: 'int_available' as const, color: '#FF6B00' },
-  { name: 'MTN MoMo', statusKey: 'int_available' as const, color: '#FFCC00' },
-  { name: 'Wave', statusKey: 'int_available' as const, color: '#1DC9FF' },
-  { name: 'Moov Money', statusKey: 'int_available' as const, color: '#0066CC' },
-  { name: 'Moneroo', statusKey: 'int_available' as const, color: '#6C3EDB' },
-  { name: 'CinetPay', statusKey: 'int_available' as const, color: '#E63946' },
-  { name: 'WhatsApp Business', statusKey: 'int_available' as const, color: '#25D366' },
+  // Statuts vérifiés dans le code : seuls l'e-mail et l'API sont réellement disponibles aujourd'hui.
+  // Les paiements Mobile Money sont ENREGISTRÉS à la caisse (pas d'encaissement automatique),
+  // et l'envoi SMS/WhatsApp est simulé tant qu'aucun fournisseur n'est branché.
+  { name: 'Orange Money', statusKey: 'int_soon' as const, color: '#FF6B00' },
+  { name: 'MTN MoMo', statusKey: 'int_soon' as const, color: '#FFCC00' },
+  { name: 'Wave', statusKey: 'int_soon' as const, color: '#1DC9FF' },
+  { name: 'Moov Money', statusKey: 'int_soon' as const, color: '#0066CC' },
+  { name: 'Moneroo', statusKey: 'int_wip' as const, color: '#6C3EDB' },
+  { name: 'CinetPay', statusKey: 'int_wip' as const, color: '#E63946' },
+  { name: 'WhatsApp Business', statusKey: 'int_soon' as const, color: '#25D366' },
   { name: 'Email SMTP', statusKey: 'int_available' as const, color: '#4A8AF4' },
   { name: 'API REST', statusKey: 'int_available' as const, color: '#00C8B8' },
   { name: 'FedaPay', statusKey: 'int_wip' as const, color: '#1A56C8' },
