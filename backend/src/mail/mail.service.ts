@@ -91,6 +91,21 @@ export class MailService {
     return this.send(opts.to, 'Réinitialisation de votre mot de passe SANTAREX', 'reinitialisation-mdp', opts);
   }
 
+  /** Lien de confirmation d'adresse e-mail (envoyé à l'inscription, renvoyable). */
+  async envoyerConfirmationEmail(opts: { to: string; prenom: string; urlConfirmation: string }) {
+    const prenom = this.echapper(opts.prenom);
+    const url = this.echapper(opts.urlConfirmation);
+    const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:24px">
+  <div style="max-width:520px;margin:auto;background:#fff;border-radius:12px;padding:28px">
+    <h2 style="margin:0 0 12px;color:#1565C0">Confirmez votre adresse e-mail</h2>
+    <p style="color:#37474F;line-height:1.5">Bonjour ${prenom},<br>Cliquez sur le bouton pour confirmer votre adresse e-mail et sécuriser votre compte SANTAREX.</p>
+    <p style="text-align:center;margin:24px 0"><a href="${url}" style="background:#1565C0;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold">Confirmer mon e-mail</a></p>
+    <p style="color:#78909C;font-size:12px">Ce lien est valable 3 jours. Si le bouton ne marche pas, copiez cette adresse dans votre navigateur :<br>${url}</p>
+    <p style="color:#78909C;font-size:12px">Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>
+  </div></body></html>`;
+    return this.sendHtml(opts.to, 'Confirmez votre adresse e-mail — SANTAREX', html);
+  }
+
   async envoyerNouvelUtilisateurAdmin(opts: {
     to: string; prenomAdmin: string; nomEtablissement: string; nomUtilisateur: string;
     emailUtilisateur: string; roleUtilisateur: string; creePar: string;

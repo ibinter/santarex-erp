@@ -79,6 +79,10 @@ export class User {
   @Column({ type: 'int', nullable: true })
   twoFactorLastStep?: number | null;
 
+  /** Date de confirmation de l'adresse e-mail (null = pas encore confirmée). */
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerifiedAt?: Date | null;
+
   @ApiProperty({ description: 'Date de création' })
   @CreateDateColumn()
   createdAt: Date;

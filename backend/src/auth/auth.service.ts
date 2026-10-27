@@ -236,6 +236,11 @@ export class AuthService {
       }
     })();
 
+    // 6bis. Lien de confirmation de l'adresse e-mail (en arrière-plan, non bloquant).
+    void this.envoyerConfirmationEmail(user).catch((err: any) =>
+      this.logger.warn(`Confirmation d'e-mail non envoyée à ${user.email}: ${err.message}`),
+    );
+
     // 7. Tokens (comme login).
     const tokens = await this.generateTokens(user);
     await this.usersService.updateRefreshToken(user.id, tokens.refresh_token);
@@ -369,6 +374,61 @@ export class AuthService {
 
   async logout(userId: string): Promise<void> {
     await this.usersService.updateRefreshToken(userId, null);
+  }
+
+  // ── Confirmation de l'adresse e-mail ───────────────────────────────────────
+  // Non bloquante : le compte reste utilisable, un bandeau invite à confirmer.
+
+  /** Clé distincte : un jeton de confirmation ne peut jamais servir de jeton d'accès. */
+  private verifyEmailSecret(): string {
+    return `${this.configService.getOrThrow<string>('JWT_SECRET')}:verify-email`;
+  }
+
+  async envoyerConfirmationEmail(user: Pick<User, 'id' | 'email' | 'firstName'>): Promise<void> {
+    const token = await this.jwtService.signAsync(
+      { sub: user.id, email: user.email, type: 'verify-email' },
+      { secret: this.verifyEmailSecret(), expiresIn: '3d' },
+    );
+    await this.mailService.envoyerConfirmationEmail({
+      to: user.email,
+      prenom: user.firstName,
+      urlConfirmation: `${this.frontendUrl}/confirmer-email?token=${token}`,
+    });
+  }
+
+  /** Valide le lien reçu par e-mail. Idempotent : un second clic réussit aussi. */
+  async verifierEmail(token: string): Promise<{ message: string }> {
+    let payload: { sub?: string; email?: string; type?: string };
+    try {
+      payload = await this.jwtService.verifyAsync(token, { secret: this.verifyEmailSecret() });
+    } catch {
+      throw new BadRequestException('Lien de confirmation invalide ou expiré');
+    }
+    if (payload?.type !== 'verify-email' || !payload.sub) {
+      throw new BadRequestException('Lien de confirmation invalide ou expiré');
+    }
+    const user = await this.usersService.findById(payload.sub);
+    // Le lien est lié à l'adresse : si l'e-mail a changé depuis, il ne vaut plus rien.
+    if (!user || user.email.toLowerCase() !== String(payload.email ?? '').toLowerCase()) {
+      throw new BadRequestException('Lien de confirmation invalide ou expiré');
+    }
+    if (!user.emailVerifiedAt) {
+      await this.userRepository.update(user.id, { emailVerifiedAt: new Date() });
+    }
+    return { message: 'Adresse e-mail confirmée' };
+  }
+
+  async statutEmail(userId: string): Promise<{ verified: boolean }> {
+    const user = await this.usersService.findById(userId);
+    return { verified: !!user?.emailVerifiedAt };
+  }
+
+  async renvoyerConfirmation(userId: string): Promise<{ message: string }> {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('Compte indisponible');
+    if (user.emailVerifiedAt) return { message: 'Adresse e-mail déjà confirmée' };
+    await this.envoyerConfirmationEmail(user);
+    return { message: 'E-mail de confirmation envoyé' };
   }
 
   /**

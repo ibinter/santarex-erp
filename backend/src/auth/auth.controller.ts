@@ -24,6 +24,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UpdateProfileDto, ChangePasswordDto } from './dto/profile.dto';
 import { VerifyTwoFactorDto, EnableTwoFactorDto, DisableTwoFactorDto } from './dto/twofactor.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 import { TwoFactorService } from './twofactor.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -126,6 +127,32 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Lien invalide ou expiré' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @Post('verify-email')
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirmer mon adresse e-mail', description: 'Valide le lien reçu par e-mail' })
+  verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifierEmail(dto.token);
+  }
+
+  @Get('email-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mon adresse e-mail est-elle confirmée ?' })
+  emailStatus(@CurrentUser() user: any) {
+    return this.authService.statutEmail(user.userId ?? user.id);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Renvoyer l'e-mail de confirmation" })
+  resendVerification(@CurrentUser() user: any) {
+    return this.authService.renvoyerConfirmation(user.userId ?? user.id);
   }
 
   @Post('refresh')

@@ -9,6 +9,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import AiChat from '@/components/AiChat';
 import AppFooter from '@/components/layout/AppFooter';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
+import EmailVerifyBanner from '@/components/security/EmailVerifyBanner';
 import OfflineBanner from '@/components/OfflineBanner';
 import LicenceBanner from '@/components/LicenceBanner';
 import QuoiDeNeuf from '@/components/QuoiDeNeuf';
@@ -164,6 +165,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }}
         >
           <LicenceBanner />
+          <EmailVerifyBanner />
           <div style={{ flex: 1 }}>
             {moduleAllowed('/' + (pathname.split('/')[1] ?? ''), modules) ? children : (
               <div style={{ maxWidth: 520, margin: '80px auto', padding: 24, textAlign: 'center', background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
