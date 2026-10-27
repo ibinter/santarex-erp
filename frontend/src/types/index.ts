@@ -430,7 +430,8 @@ export interface DemandeAnalyse {
 // ──────────────────────────────────────────────────────
 export type StatutFacture = 'brouillon' | 'emise' | 'partiellement_payee' | 'payee' | 'annulee';
 export type TypeLigneFacture = 'consultation' | 'medicament' | 'analyse' | 'acte_chirurgical' | 'hospitalisation' | 'materiel' | 'autre';
-export type ModePaiement = 'especes' | 'carte' | 'mobile_money' | 'virement' | 'assurance';
+// Mêmes valeurs que l'énumération du serveur (ModePaiement) : toute autre valeur est refusée en 400.
+export type ModePaiement = 'especes' | 'carte_bancaire' | 'mobile_money' | 'virement' | 'cheque' | 'assurance' | 'autre';
 
 export interface LigneFacture {
   id: string;

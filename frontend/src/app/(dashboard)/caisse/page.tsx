@@ -14,9 +14,11 @@ const TODAY_STR = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year
 const MODE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: React.ReactNode }> = {
   especes:      { label: 'Espèces',      color: '#065F46', bg: '#D1FAE5', border: '#A7F3D0', icon: <Banknote size={13}/> },
   mobile_money: { label: 'Mobile Money', color: '#92400E', bg: '#FEF3C7', border: '#FDE68A', icon: <Smartphone size={13}/> },
-  carte:        { label: 'Carte',        color: '#1E40AF', bg: '#DBEAFE', border: '#BFDBFE', icon: <CreditCard size={13}/> },
+  carte_bancaire: { label: 'Carte',      color: '#1E40AF', bg: '#DBEAFE', border: '#BFDBFE', icon: <CreditCard size={13}/> },
   assurance:    { label: 'Assurance',    color: '#5B21B6', bg: '#EDE9FE', border: '#DDD6FE', icon: <Shield size={13}/> },
   virement:     { label: 'Virement',     color: '#374151', bg: '#F3F4F6', border: '#E5E7EB', icon: <DollarSign size={13}/> },
+  cheque:       { label: 'Chèque',       color: '#374151', bg: '#F3F4F6', border: '#E5E7EB', icon: <DollarSign size={13}/> },
+  autre:        { label: 'Autre',        color: '#374151', bg: '#F3F4F6', border: '#E5E7EB', icon: <DollarSign size={13}/> },
 };
 
 function fmtXOF(val: number) { return val.toLocaleString('fr-FR') + ' XOF'; }
@@ -102,7 +104,7 @@ export default function CaissePage() {
   const getMode = (key: string) => Number(stats?.parMode?.find(m => m.modePaiement === key)?.total ?? 0);
   const totalEspeces = getMode('especes');
   const totalMobile  = getMode('mobile_money');
-  const totalCarte   = getMode('carte');
+  const totalCarte   = getMode('carte_bancaire');
   const nbTransactions = stats?.parMode?.reduce((acc, m) => acc + Number(m.count), 0) ?? 0;
 
   const filtered = paiements.filter(p => !modeFilter || p.modePaiement === modeFilter);

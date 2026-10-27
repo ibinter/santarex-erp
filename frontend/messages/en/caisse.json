@@ -28,9 +28,11 @@
     "mode": {
       "especes": "Cash",
       "mobile_money": "Mobile Money",
-      "carte": "Card",
+      "carte_bancaire": "Card",
       "assurance": "Insurance",
-      "virement": "Bank transfer"
+      "virement": "Bank transfer",
+      "cheque": "Cheque",
+      "autre": "Other"
     },
     "expColReference": "Reference",
     "expColPatient": "Patient",

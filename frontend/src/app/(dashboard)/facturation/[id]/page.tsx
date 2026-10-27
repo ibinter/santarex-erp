@@ -34,7 +34,7 @@ const STATUT_CONFIG: Record<string, { label: string; color: string; bg: string; 
 const MODE_CONFIG: Record<string, { label: string; color: string }> = {
   especes:      { label: 'Espèces',      color: '#2E7D32' },
   mobile_money: { label: 'Mobile Money', color: '#E65100' },
-  carte:        { label: 'Carte',        color: '#0D47A1' },
+  carte_bancaire: { label: 'Carte',      color: '#0D47A1' },
   assurance:    { label: 'Assurance',    color: '#6A1B9A' },
   virement:     { label: 'Virement',     color: '#37474F' },
 };

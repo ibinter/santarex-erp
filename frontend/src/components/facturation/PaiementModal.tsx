@@ -21,7 +21,7 @@ interface PaiementModalProps {
 
 const MODES: { value: ModePaiement; label: string; emoji: string }[] = [
   { value: 'especes', label: 'Espèces', emoji: '💵' },
-  { value: 'carte', label: 'Carte bancaire', emoji: '💳' },
+  { value: 'carte_bancaire', label: 'Carte bancaire', emoji: '💳' },
   { value: 'mobile_money', label: 'Mobile Money', emoji: '📱' },
   { value: 'virement', label: 'Virement', emoji: '🏦' },
   { value: 'assurance', label: 'Assurance (tiers-payant)', emoji: '🏥' },
@@ -119,7 +119,7 @@ export default function PaiementModal({ isOpen, onClose, resteAPayer, factureNum
         </div>
 
         {/* Référence transaction */}
-        {(mode === 'mobile_money' || mode === 'virement' || mode === 'carte') && (
+        {(mode === 'mobile_money' || mode === 'virement' || mode === 'carte_bancaire') && (
           <div>
             <label className="block text-xs font-medium text-text-secondary mb-1">
               Référence transaction {mode === 'mobile_money' ? '*' : '(optionnel)'}
