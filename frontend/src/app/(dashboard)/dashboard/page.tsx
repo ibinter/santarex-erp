@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, getFullName, getUserInitials } from '@/lib/auth';
 import { apiClient } from '@/lib/api';
+import { useLicenceModules, moduleAllowed } from '@/lib/licence-modules';
 import { useTranslations } from 'next-intl';
 import type { User } from '@/types';
 import {
@@ -166,10 +167,6 @@ function MiniBarChart({ data, color }: { data: number[]; color: string }) {
 }
 
 // ── fake weekly trends ────────────────────────────────────────────────────────
-const SPARK_ENCAISSE  = [820000, 940000, 710000, 1050000, 880000, 1200000, 1380000];
-const SPARK_PATIENTS  = [42, 38, 55, 47, 61, 53, 68];
-const SPARK_URGENCES  = [6, 9, 5, 11, 8, 7, 9];
-const BARS_CONSULT    = [14, 18, 12, 22, 19, 25, 21];
 
 function fmt(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.', ',') + 'M';
@@ -182,15 +179,7 @@ function fmtXof(n: number) {
   return n.toLocaleString('fr-FR') + ' XOF';
 }
 
-const JOURS_COURT = ['L', 'M', 'Me', 'J', 'V', 'S', 'D'];
 
-const ACTIVITES: { time: string; actKey: string; who?: string; whoKey?: string; color: string; icon: string }[] = [
-  { time: '08:42', actKey: 'act1', who: 'Dr. Koné', color: '#C62828', icon: '🔴' },
-  { time: '08:15', actKey: 'act2', whoKey: 'whoCash', color: '#E65100', icon: '🧾' },
-  { time: '07:55', actKey: 'act3', who: 'Dr. Ouédraogo', color: '#6A1B9A', icon: '🔬' },
-  { time: '07:30', actKey: 'act4', whoKey: 'whoReception', color: '#1565C0', icon: '👤' },
-  { time: '07:10', actKey: 'act5', whoKey: 'whoPharmacy', color: '#2E7D32', icon: '💊' },
-];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -204,12 +193,21 @@ export default function DashboardPage() {
   const [now, setNow] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [stats, setStats] = useState({
-    encaissementJour: 0,
-    urgencesActives: 0,
-    urgencesCritiques: 0,
-    medicamentsRupture: 0,
+  type Stats = {
+    encaissementJour: number | null;
+    urgencesActives: number | null;
+    urgencesCritiques: number;
+    medicamentsRupture: number | null;
+    consultationsJour: number | null;
+    occupationLits: number | null;
+  };
+  const [stats, setStats] = useState<Stats>({
+    encaissementJour: null, urgencesActives: null, urgencesCritiques: 0,
+    medicamentsRupture: null, consultationsJour: null, occupationLits: null,
   });
+  // Modules de la formule souscrite : on n'affiche (ni n'interroge) que ceux-là.
+  const licModules = useLicenceModules();
+  const allow = (href: string) => moduleAllowed(href, licModules);
 
   useEffect(() => {
     setUser(getCurrentUser());
@@ -220,24 +218,37 @@ export default function DashboardPage() {
   const loadStats = useCallback(async () => {
     setLoading(true);
     try {
-      const [caisse, urgences, pharmacie] = await Promise.allSettled([
-        apiClient('/paiements/stats-caisse'),
-        apiClient('/urgences/stats'),
-        apiClient('/pharmacie/stats/jour'),
+      const debut = new Date(); debut.setHours(0, 0, 0, 0);
+      const fin = new Date(); fin.setHours(23, 59, 59, 999);
+      const nul = Promise.resolve(null as any);
+      const [caisse, urgences, pharmacie, consult, lits] = await Promise.allSettled([
+        allow('/caisse') ? apiClient('/paiements/stats-caisse') : nul,
+        allow('/urgences') ? apiClient('/urgences/actifs') : nul,
+        allow('/pharmacie') ? apiClient('/pharmacie/medicaments/kpis') : nul,
+        allow('/consultations') ? apiClient(`/consultations?limit=1&dateDebut=${debut.toISOString()}&dateFin=${fin.toISOString()}`) : nul,
+        allow('/hospitalisation') ? apiClient('/hospitalisation/lits') : nul,
       ]);
-      const c = caisse.status === 'fulfilled' ? (caisse.value as any) : null;
-      const u = urgences.status === 'fulfilled' ? (urgences.value as any) : null;
-      const p = pharmacie.status === 'fulfilled' ? (pharmacie.value as any) : null;
+      const ok = (r: PromiseSettledResult<any>) => (r.status === 'fulfilled' && r.value != null ? (r.value?.data ?? r.value) : null);
+      const c = ok(caisse), u = ok(urgences), p = ok(pharmacie), k = ok(consult), l = ok(lits);
+      const listeLits: any[] | null = Array.isArray(l) ? l : Array.isArray(l?.items) ? l.items : Array.isArray(l?.data) ? l.data : null;
+      const parCat: Record<string, number> = u?.parCategorie ?? {};
+      const critiques = Object.entries(parCat).filter(([cat]) => cat.toLowerCase() === 'rouge').reduce((n, [, v]) => n + Number(v), 0);
+      // Aucune valeur d'exemple : si une donnée est indisponible, on affiche « — ».
       setStats({
-        encaissementJour:   c?.totalJour    ?? 1_380_000,
-        urgencesActives:    u?.actifs       ?? u?.total ?? 9,
-        urgencesCritiques:  u?.critiques    ?? 2,
-        medicamentsRupture: p?.rupture      ?? 4,
+        encaissementJour: c ? Number(c.totalJour ?? 0) : null,
+        urgencesActives: u ? Number(u.totalActifs ?? 0) : null,
+        urgencesCritiques: critiques,
+        medicamentsRupture: p ? Number(p.ruptures ?? 0) : null,
+        consultationsJour: k ? Number(k.total ?? 0) : null,
+        occupationLits: listeLits && listeLits.length
+          ? Math.round((listeLits.filter((x: any) => x.statut === 'occupe').length / listeLits.length) * 100)
+          : null,
       });
       setLastRefresh(new Date());
-    } catch { /* keep defaults */ }
+    } catch { /* garde les valeurs « — » */ }
     finally { setLoading(false); }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [licModules]);
 
   useEffect(() => { loadStats(); }, [loadStats]);
 
@@ -246,12 +257,11 @@ export default function DashboardPage() {
   const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-  const litOccupancyPct = 72;
-  const consultJour = BARS_CONSULT[BARS_CONSULT.length - 1];
+  const fmtN = (n: number | null) => (n == null ? '—' : n.toLocaleString('fr-FR'));
 
   const alertes = [
     ...(stats.urgencesCritiques > 0 ? [{ level: 'danger', text: t('criticalPatients', { n: stats.urgencesCritiques }), href: '/urgences' }] : []),
-    ...(stats.medicamentsRupture > 0 ? [{ level: 'warning', text: t('medsOutOfStock', { n: stats.medicamentsRupture }), href: '/pharmacie' }] : []),
+    ...((stats.medicamentsRupture ?? 0) > 0 ? [{ level: 'warning', text: t('medsOutOfStock', { n: stats.medicamentsRupture }), href: '/pharmacie' }] : []),
     { level: 'info', text: t('realtimeSync'), href: '#' },
   ];
 
@@ -315,37 +325,27 @@ export default function DashboardPage() {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:14, marginBottom:20 }}>
 
         {/* Encaissements */}
-        <div className="dash-kpi" onClick={() => router.push('/caisse')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', position:'relative', overflow:'hidden', borderBottom:'3px solid #2E7D32' }}>
+        {allow('/caisse') && <div className="dash-kpi" onClick={() => router.push('/caisse')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', position:'relative', overflow:'hidden', borderBottom:'3px solid #2E7D32' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiEncaissements')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#2E7D32', lineHeight:1.1, marginTop:6 }}>
-                {loading ? <span style={{display:'inline-block',width:90,height:24,background:'#E8F5E9',borderRadius:4}}/> : fmtXof(stats.encaissementJour)}
-              </div>
-              <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
-                <TrendingUp size={12} color="#2E7D32"/>
-                <span style={{ fontSize:11, color:'#2E7D32', fontWeight:600 }}>{t('vsYesterday')}</span>
+                {loading ? <span style={{display:'inline-block',width:90,height:24,background:'#E8F5E9',borderRadius:4}}/> : (stats.encaissementJour == null ? '—' : fmtXof(stats.encaissementJour))}
               </div>
             </div>
             <div style={{ background:'#E8F5E9', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <CreditCard size={20} color="#2E7D32"/>
             </div>
           </div>
-          <div style={{ marginTop:12 }}>
-            <Sparkline data={SPARK_ENCAISSE} color="#2E7D32" fill="#E8F5E9" />
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
-              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
-            </div>
-          </div>
-        </div>
+</div>}
 
         {/* Urgences */}
-        <div className="dash-kpi" onClick={() => router.push('/urgences')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #C62828' }}>
+        {allow('/urgences') && <div className="dash-kpi" onClick={() => router.push('/urgences')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #C62828' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiUrgences')}</p>
               <div style={{ fontSize:26, fontWeight:900, color:'#C62828', lineHeight:1.1, marginTop:6 }}>
-                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFEBEE',borderRadius:4}}/> : stats.urgencesActives}
+                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFEBEE',borderRadius:4}}/> : fmtN(stats.urgencesActives)}
               </div>
               {stats.urgencesCritiques > 0 && (
                 <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
@@ -358,104 +358,72 @@ export default function DashboardPage() {
               <Siren size={20} color="#C62828"/>
             </div>
           </div>
-          <div style={{ marginTop:12 }}>
-            <Sparkline data={SPARK_URGENCES} color="#C62828" fill="#FFEBEE" />
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
-              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
-            </div>
-          </div>
-        </div>
+</div>}
 
         {/* Occupation lits */}
-        <div className="dash-kpi" onClick={() => router.push('/hospitalisation')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #1565C0' }}>
+        {allow('/hospitalisation') && <div className="dash-kpi" onClick={() => router.push('/hospitalisation')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #1565C0' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiOccupation')}</p>
-              <div style={{ fontSize:26, fontWeight:900, color:'#1565C0', lineHeight:1.1, marginTop:6 }}>{litOccupancyPct}%</div>
+              <div style={{ fontSize:26, fontWeight:900, color:'#1565C0', lineHeight:1.1, marginTop:6 }}>{stats.occupationLits == null ? '—' : `${stats.occupationLits}%`}</div>
               <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>{t('bedsOccupied')}</div>
             </div>
-            <DonutChart pct={litOccupancyPct} color="#1565C0" size={72} />
+            <DonutChart pct={stats.occupationLits ?? 0} color="#1565C0" size={72} />
           </div>
           <div style={{ marginTop:10, background:'#E3F2FD', borderRadius:6, height:6, overflow:'hidden' }}>
-            <div style={{ width:`${litOccupancyPct}%`, height:'100%', background:'linear-gradient(90deg,#1565C0,#0288D1)', borderRadius:6, transition:'width 1s ease' }}/>
+            <div style={{ width:`${stats.occupationLits ?? 0}%`, height:'100%', background:'linear-gradient(90deg,#1565C0,#0288D1)', borderRadius:6, transition:'width 1s ease' }}/>
           </div>
-        </div>
+        </div>}
 
         {/* Consultations du jour */}
-        <div className="dash-kpi" onClick={() => router.push('/consultations')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #00838F' }}>
+        {allow('/consultations') && <div className="dash-kpi" onClick={() => router.push('/consultations')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #00838F' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiConsultations')}</p>
-              <div style={{ fontSize:26, fontWeight:900, color:'#00838F', lineHeight:1.1, marginTop:6 }}>{consultJour}</div>
-              <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:5 }}>
-                <TrendingUp size={12} color="#00838F"/>
-                <span style={{ fontSize:11, color:'#00838F', fontWeight:600 }}>{t('vsWeek')}</span>
-              </div>
+              <div style={{ fontSize:26, fontWeight:900, color:'#00838F', lineHeight:1.1, marginTop:6 }}>{loading ? '…' : fmtN(stats.consultationsJour)}</div>
             </div>
             <div style={{ background:'#E0F7FA', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <Stethoscope size={20} color="#00838F"/>
             </div>
           </div>
-          <div style={{ marginTop:12 }}>
-            <MiniBarChart data={BARS_CONSULT} color="#00838F" />
-            <div style={{ display:'flex', justifyContent:'space-between', marginTop:2 }}>
-              {JOURS_COURT.map(j => <span key={j} style={{ fontSize:9, color:'#B0BEC5', fontWeight:600 }}>{j}</span>)}
-            </div>
-          </div>
-        </div>
+</div>}
 
         {/* Pharmacie rupture */}
-        <div className="dash-kpi" onClick={() => router.push('/pharmacie')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #E65100' }}>
+        {allow('/pharmacie') && <div className="dash-kpi" onClick={() => router.push('/pharmacie')} style={{ background:'#fff', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(0,0,0,0.07)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #E65100' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'#546E7A', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiRupture')}</p>
-              <div style={{ fontSize:26, fontWeight:900, color: stats.medicamentsRupture > 0 ? '#E65100' : '#2E7D32', lineHeight:1.1, marginTop:6 }}>
-                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFF3E0',borderRadius:4}}/> : stats.medicamentsRupture}
+              <div style={{ fontSize:26, fontWeight:900, color: (stats.medicamentsRupture ?? 0) > 0 ? '#E65100' : '#2E7D32', lineHeight:1.1, marginTop:6 }}>
+                {loading ? <span style={{display:'inline-block',width:40,height:24,background:'#FFF3E0',borderRadius:4}}/> : fmtN(stats.medicamentsRupture)}
               </div>
               <div style={{ fontSize:11, color:'#546E7A', marginTop:5 }}>
-                {stats.medicamentsRupture > 0 ? t('restockRequired') : t('stockOptimal')}
+                {stats.medicamentsRupture == null ? '' : stats.medicamentsRupture > 0 ? t('restockRequired') : t('stockOptimal')}
               </div>
             </div>
             <div style={{ background:'#FFF3E0', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <Pill size={20} color="#E65100"/>
             </div>
           </div>
-          <div style={{ marginTop:14 }}>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-              {['Paracétamol','Amoxicilline','Ibuprofène','Oméprazole'].map((m,i) => (
-                <span key={i} style={{ fontSize:9, background:'#FFF3E0', color:'#E65100', padding:'2px 6px', borderRadius:8, fontWeight:600, whiteSpace:'nowrap' }}>{m}</span>
-              )).slice(0, stats.medicamentsRupture || 0)}
-              {stats.medicamentsRupture === 0 && <span style={{ fontSize:10, color:'#2E7D32', fontWeight:600 }}>{t('noStockout')}</span>}
-            </div>
-          </div>
-        </div>
+</div>}
 
         {/* Modules actifs */}
         <div className="dash-kpi" onClick={() => router.push('/reporting')} style={{ background:'linear-gradient(135deg,#0A2E6E,#1565C0)', borderRadius:14, padding:'18px 20px', boxShadow:'0 2px 10px rgba(13,71,161,0.25)', cursor:'pointer', transition:'all .2s', borderBottom:'3px solid #0288D1' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
             <div>
               <p style={{ margin:0, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.7)', textTransform:'uppercase', letterSpacing:'.6px' }}>{t('kpiModules')}</p>
-              <div style={{ fontSize:26, fontWeight:900, color:'#fff', lineHeight:1.1, marginTop:6 }}>{MODULES.length}</div>
-              <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', marginTop:5 }}>{t('systemOperational')}</div>
+              <div style={{ fontSize:26, fontWeight:900, color:'#fff', lineHeight:1.1, marginTop:6 }}>{modules.filter(m => allow(m.href)).length}</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.65)', marginTop:5 }}>{t('modulesTitle')}</div>
             </div>
             <div style={{ background:'rgba(255,255,255,0.15)', width:40, height:40, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <BarChart2 size={20} color="#fff"/>
             </div>
-          </div>
-          <div style={{ marginTop:14 }}>
-            <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
-              {[...Array(MODULES.length)].map((_,i) => (
-                <div key={i} style={{ width:8, height:8, borderRadius:2, background: '#4ADE80' }}/>
-              ))}
-            </div>
-            <div style={{ fontSize:10, color:'rgba(255,255,255,0.5)', marginTop:5 }}>{t('modulesOnline', { n: MODULES.length })}</div>
           </div>
         </div>
 
       </div>
 
       {/* ── ALERTES + ACTIVITÉ RÉCENTE ──────────────────────────────────── */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:20 }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:16, marginBottom:20 }}>
 
         {/* Alertes */}
         <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
@@ -481,31 +449,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Activité récente */}
-        <div style={{ background:'#fff', borderRadius:14, boxShadow:'0 2px 10px rgba(0,0,0,0.07)', overflow:'hidden' }}>
-          <div style={{ padding:'14px 18px', borderBottom:'1px solid #F0F4FA', display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:8, background:'#E3F2FD', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <Activity size={14} color="#1565C0"/>
-            </div>
-            <span style={{ fontWeight:700, fontSize:13, color:'#1A2332' }}>{t('recentActivity')}</span>
-            <span style={{ marginLeft:'auto', fontSize:10, color:'#90A4AE', fontWeight:600 }}>{t('thisMorning')}</span>
-          </div>
-          <div style={{ padding:'6px 10px' }}>
-            {ACTIVITES.map((a, i) => (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 10px', borderRadius:10, marginBottom:2 }}
-                onMouseEnter={e=>(e.currentTarget.style.background='#F8FAFC')}
-                onMouseLeave={e=>(e.currentTarget.style.background='transparent')}>
-                <span style={{ fontSize:15, flexShrink:0 }}>{a.icon}</span>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:12, color:'#37474F', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t(a.actKey)}</div>
-                  <div style={{ fontSize:10, color:'#90A4AE', marginTop:1 }}>{a.whoKey ? t(a.whoKey) : a.who}</div>
-                </div>
-                <div style={{ fontSize:10, color:'#90A4AE', fontWeight:600, flexShrink:0 }}>{a.time}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
 
       {/* ── GRILLE MODULES ──────────────────────────────────────────────── */}
@@ -513,15 +456,11 @@ export default function DashboardPage() {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
           <div>
             <h2 style={{ margin:0, fontSize:15, fontWeight:800, color:'#1A2332' }}>{t('modulesTitle')}</h2>
-            <p style={{ margin:'2px 0 0', fontSize:12, color:'#90A4AE' }}>{t('modulesAvailable', { n: MODULES.length })}</p>
-          </div>
-          <div style={{ display:'flex', alignItems:'center', gap:6, background:'#E8F5E9', padding:'5px 12px', borderRadius:20 }}>
-            <div style={{ width:7, height:7, borderRadius:'50%', background:'#4ADE80', animation:'pulse-dot 2s infinite' }}/>
-            <span style={{ fontSize:11, color:'#2E7D32', fontWeight:700 }}>{t('allOperational')}</span>
+            <p style={{ margin:'2px 0 0', fontSize:12, color:'#90A4AE' }}>{t('modulesAvailable', { n: modules.filter(m => allow(m.href)).length })}</p>
           </div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))', gap:12 }}>
-          {modules.map(mod => (
+          {modules.filter(m => allow(m.href)).map(mod => (
             <ModuleCard key={mod.id} mod={mod} onClick={() => router.push(mod.href)} />
           ))}
         </div>
@@ -542,7 +481,7 @@ export default function DashboardPage() {
             { label:t('qNewInvoice'),      href:'/facturation/nouvelle',   color:'#FFE0B2', bg:'rgba(230,81,0,0.35)',  icon:'🧾' },
             { label:t('qLabOrder'),       href:'/laboratoire/demandes/nouvelle', color:'#E1BEE7', bg:'rgba(106,27,154,0.35)', icon:'🔬' },
             { label:t('qReports'),             href:'/reporting',              color:'#B3E5FC', bg:'rgba(2,136,209,0.35)', icon:'' },
-          ].map(item => (
+          ].filter(item => allow('/' + item.href.split('/')[1])).map(item => (
             <a key={item.href} href={item.href} className="quick-btn"
               style={{ padding:'9px 16px', borderRadius:22, background:item.bg, color:item.color, fontSize:12, fontWeight:700, textDecoration:'none', display:'flex', alignItems:'center', gap:6, border:'1px solid rgba(255,255,255,0.15)', transition:'all .15s', backdropFilter:'blur(4px)' }}>
               {item.icon && <span style={{ fontSize:14 }}>{item.icon}</span>}

@@ -51,6 +51,8 @@ const HREF_TO_MODULE: Record<string, string> = {
   '/messages-sortants': 'messages-sortants',
   '/rh': 'rh',
   '/plannings-gardes': 'plannings-gardes',
+  '/messagerie': 'messagerie',
+  '/reporting': 'reporting',
   '/services-personnalises': 'services-personnalises',
 };
 

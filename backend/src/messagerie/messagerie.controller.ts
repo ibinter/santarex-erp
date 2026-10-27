@@ -14,12 +14,14 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { LicenceGuard } from '../common/guards/licence.guard';
+import { ModuleGuard } from '../common/guards/module.guard';
 import { MessagerieService } from './messagerie.service';
 import { CreateConversationDto, EnvoyerMessageDto } from './dto/messagerie.dto';
 
 @ApiTags('Messagerie')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, LicenceGuard, ModuleGuard)
 @Controller('messagerie')
 export class MessagerieController {
   constructor(private readonly service: MessagerieService) {}

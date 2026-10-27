@@ -164,7 +164,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }}
         >
           <LicenceBanner />
-          <div style={{ flex: 1 }}>{children}</div>
+          <div style={{ flex: 1 }}>
+            {moduleAllowed('/' + (pathname.split('/')[1] ?? ''), modules) ? children : (
+              <div style={{ maxWidth: 520, margin: '80px auto', padding: 24, textAlign: 'center', background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
+                <div style={{ fontSize: 40 }}>🔒</div>
+                <h2 style={{ margin: '12px 0 6px', fontSize: 18, color: '#1A2332' }}>Module non inclus dans votre formule</h2>
+                <p style={{ margin: '0 0 18px', fontSize: 14, color: '#546E7A', lineHeight: 1.5 }}>
+                  Cette fonction n&apos;est pas disponible avec votre abonnement actuel.
+                  Passez à une formule supérieure pour l&apos;activer.
+                </p>
+                <a href="/abonnement" style={{ display: 'inline-block', padding: '10px 20px', borderRadius: 10, background: '#1565C0', color: '#fff', fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+                  Voir les formules
+                </a>
+              </div>
+            )}
+          </div>
           <QuoiDeNeuf />
           <AppFooter />
         </main>

@@ -45,6 +45,8 @@ const PREFIX_TO_MODULE: ReadonlyArray<readonly [string, string]> = [
   ['/interactions-medicamenteuses', 'interactions-medicamenteuses'],
   // Le contrôleur est servi sur /interactions : sans cette ligne le garde restait inerte.
   ['/interactions', 'interactions-medicamenteuses'],
+  ['/messagerie', 'messagerie'],
+  ['/portail-patient', 'portail-patient'],
   ['/declarations-sanitaires', 'declarations-sanitaires'],
   ['/services-personnalises', 'services-personnalises'],
   ['/indicateurs-qualite', 'indicateurs-qualite'],
