@@ -156,6 +156,16 @@ else
   verifier "sauvegarde" ko "aucune sauvegarde de moins de 26 h dans $BACKUP_DIR (dernière : ${dernier:-aucune})"
 fi
 
+# ── 7bis. Copie hors serveur (Google Drive) récente (moins de 26 h) ──────────
+# Actif seulement après une première copie réussie (santarex-offsite.sh crée le fichier).
+if [ -f "$STATE_DIR/offsite.ok" ]; then
+  if [ -n "$(find "$STATE_DIR/offsite.ok" -mmin -1560 2>/dev/null)" ]; then
+    verifier "copie-hors-serveur" ok "dernière copie : $(cat "$STATE_DIR/offsite.ok")"
+  else
+    verifier "copie-hors-serveur" ko "aucune copie vers Google Drive depuis plus de 26 h (voir /var/log/santarex-offsite.log)"
+  fi
+fi
+
 # ── 8. Certificat HTTPS (plus de 10 jours) ───────────────────────────────────
 host=$(echo "$SITE" | sed -e 's#https\?://##' -e 's#/.*##')
 fin=$(echo | openssl s_client -servername "$host" -connect "$host:443" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
