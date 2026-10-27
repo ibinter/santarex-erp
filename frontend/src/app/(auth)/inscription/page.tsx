@@ -55,6 +55,10 @@ export default function InscriptionPage() {
       setError(t('errorPasswordLength'));
       return;
     }
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(form.password)) {
+      setError(t('errorPasswordStrength'));
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError(t('errorPasswordMismatch'));
       return;

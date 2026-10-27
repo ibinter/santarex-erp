@@ -88,10 +88,15 @@ export class AuthService {
    * bloquant) et retourne les tokens comme le fait `login`.
    */
   async register(dto: RegisterDto) {
+    // 0. E-mail normalisé (espaces, casse) : « Jean@X.com » et « jean@x.com » sont le même compte.
+    const adminEmail = dto.adminEmail.trim().toLowerCase();
+    dto.adminEmail = adminEmail;
+
     // 1. Refus précoce si l'email est déjà pris (contrainte unique globale sur `users.email`).
-    const emailTaken = await this.userRepository.findOne({
-      where: { email: dto.adminEmail },
-    });
+    const emailTaken = await this.userRepository
+      .createQueryBuilder('u')
+      .where('LOWER(u.email) = :email', { email: adminEmail })
+      .getOne();
     if (emailTaken) {
       throw new ConflictException('Un compte avec cet email existe déjà');
     }
@@ -102,21 +107,34 @@ export class AuthService {
     // 3. Création du tenant.
     await this.tenantsService.create({
       slug,
-      nom: dto.nomEtablissement,
-      email: dto.adminEmail,
+      nom: dto.nomEtablissement.trim(),
+      email: adminEmail,
       telephone: dto.telephone,
       pays: dto.pays || 'CI',
     });
 
     // 4. Création du compte administrateur (le mot de passe est haché par UsersService).
-    const user = await this.usersService.create({
-      email: dto.adminEmail,
-      password: dto.password,
-      firstName: dto.adminPrenom,
-      lastName: dto.adminNom,
-      role: UserRole.ADMIN,
-      tenantId: slug,
-    });
+    //    Si elle échoue (ex. deux inscriptions simultanées avec le même e-mail), on retire
+    //    l'établissement créé à l'étape 3 : jamais d'établissement orphelin sans administrateur.
+    let user: User;
+    try {
+      user = await this.usersService.create({
+        email: adminEmail,
+        password: dto.password,
+        firstName: dto.adminPrenom.trim(),
+        lastName: dto.adminNom.trim(),
+        role: UserRole.ADMIN,
+        tenantId: slug,
+      });
+    } catch (err: any) {
+      await this.tenantsService.removeBySlug(slug).catch((e) =>
+        this.logger.error(`Nettoyage de l'établissement "${slug}" impossible: ${e.message}`),
+      );
+      if (err?.code === '23505' || /duplicate key/i.test(err?.message ?? '')) {
+        throw new ConflictException('Un compte avec cet email existe déjà');
+      }
+      throw err;
+    }
 
     // 5. Attribution de la licence — non bloquant (le guard licence est fail-open).
     //    palier='gratuit' → espace Découverte direct (§3) ; sinon essai 30j.
@@ -127,43 +145,43 @@ export class AuthService {
         await this.licenceLifecycle.startTrial(slug, 'cabinet');
       }
     } catch (err) {
-      this.logger.warn(`Licence non attribuée pour "${slug}" (palier=${dto.palier ?? 'essai'}): ${err.message}`);
+      this.logger.error(`Licence non attribuée pour "${slug}" (palier=${dto.palier ?? 'essai'}): ${err.message}`);
     }
 
-    // 5bis. Notification interne à l'adresse principale — best-effort.
-    //       L'inscription reste valide même si l'e-mail échoue (jamais de throw).
-    try {
-      const gratuit = dto.palier === 'gratuit';
-      await this.mailService.envoyerNotificationInscription({
-        nomEtablissement: dto.nomEtablissement,
-        nom: dto.adminNom,
-        prenom: dto.adminPrenom,
-        email: dto.adminEmail,
-        whatsapp: dto.telephone,
-        telephone: dto.telephone,
-        statut: gratuit ? 'Découverte (gratuit)' : 'Essai',
-        offre: gratuit ? 'Découverte' : 'Cabinet (essai 30 jours)',
-        dateInscription: new Date(),
-        clientId: slug,
-      });
-    } catch (err) {
-      this.logger.warn(`Notification d'inscription non envoyée pour "${slug}": ${err.message}`);
-    }
-
-    // 6. Email de bienvenue — non bloquant.
-    try {
-      await this.mailService.envoyerBienvenue({
-        to: user.email,
-        prenom: user.firstName,
-        email: user.email,
-        nomEtablissement: dto.nomEtablissement,
-        tenantSlug: slug,
-        role: user.role,
-        urlConnexion: `${this.frontendUrl}/login`,
-      });
-    } catch (err) {
-      this.logger.warn(`Email de bienvenue non envoyé à ${user.email}: ${err.message}`);
-    }
+    // 5bis + 6. Notification interne et e-mail de bienvenue — en arrière-plan : un serveur
+    //    SMTP lent ou en panne ne doit jamais retarder ni faire échouer l'inscription.
+    const gratuit = dto.palier === 'gratuit';
+    void (async () => {
+      try {
+        await this.mailService.envoyerNotificationInscription({
+          nomEtablissement: dto.nomEtablissement,
+          nom: dto.adminNom,
+          prenom: dto.adminPrenom,
+          email: adminEmail,
+          whatsapp: dto.telephone,
+          telephone: dto.telephone,
+          statut: gratuit ? 'Découverte (gratuit)' : 'Essai',
+          offre: gratuit ? 'Découverte' : 'Cabinet (essai 30 jours)',
+          dateInscription: new Date(),
+          clientId: slug,
+        });
+      } catch (err: any) {
+        this.logger.warn(`Notification d'inscription non envoyée pour "${slug}": ${err.message}`);
+      }
+      try {
+        await this.mailService.envoyerBienvenue({
+          to: user.email,
+          prenom: user.firstName,
+          email: user.email,
+          nomEtablissement: dto.nomEtablissement,
+          tenantSlug: slug,
+          role: user.role,
+          urlConnexion: `${this.frontendUrl}/login`,
+        });
+      } catch (err: any) {
+        this.logger.warn(`Email de bienvenue non envoyé à ${user.email}: ${err.message}`);
+      }
+    })();
 
     // 7. Tokens (comme login).
     const tokens = await this.generateTokens(user);

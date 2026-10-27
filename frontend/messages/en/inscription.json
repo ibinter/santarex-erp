@@ -7,6 +7,7 @@
     "errorRequired": "Please fill in all required fields.",
     "errorEmail": "Invalid email address.",
     "errorPasswordLength": "The password must contain at least 8 characters.",
+    "errorPasswordStrength": "The password must contain at least one letter and one digit.",
     "errorPasswordMismatch": "The passwords do not match.",
     "errorSubmit": "Sign-up failed. Please try again.",
     "labelNomEtablissement": "Facility name",

@@ -25,7 +25,7 @@ export class UsersService {
     return this.userRepository
       .createQueryBuilder('user')
       .addSelect('user.password')
-      .where('user.email = :email AND user.tenantId = :tenantId', { email, tenantId })
+      .where('LOWER(user.email) = LOWER(:email) AND user.tenantId = :tenantId', { email: email.trim(), tenantId })
       .getOne();
   }
 

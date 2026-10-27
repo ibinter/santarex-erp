@@ -26,6 +26,11 @@ export class TenantsService {
     return this.tenantRepository.save(tenant);
   }
 
+  /** Annule une création d'établissement restée incomplète (inscription échouée). */
+  async removeBySlug(slug: string): Promise<void> {
+    await this.tenantRepository.delete({ slug });
+  }
+
   async findAll(paginationDto: PaginationDto) {
     const { page = 1, limit = 20 } = paginationDto;
     const [data, total] = await this.tenantRepository.findAndCount({
