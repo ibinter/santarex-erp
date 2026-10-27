@@ -273,6 +273,8 @@ export class LicencesService {
     quotas: { patients: { valeur: number; plafond: number; restant: number } | null };
     filigrane: boolean;
     message: string;
+    modules: string[] | null;
+    offre: string | null;
   }> {
     const licences = await this.licenceRepository.find({
       where: { tenantSlug },
@@ -357,7 +359,26 @@ export class LicencesService {
       // Filigrane « Généré avec SANTAREX » sur les documents du palier gratuit.
       filigrane: gratuit,
       message,
+      // Modules de la formule souscrite : le menu n'affiche QUE ceux-là.
+      // null = aucune restriction (tenant historique / licence sans liste).
+      modules: LicencesService.lireModules(courante?.modulesActivesJson),
+      offre: courante?.offreCode ?? null,
     };
+  }
+
+  /** Même lecture que EntitlementService.parseModules (null = tout autorisé). */
+  static lireModules(raw: string | null | undefined): string[] | null {
+    if (!raw) return null;
+    const trimmed = String(raw).trim();
+    if (!trimmed) return null;
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed) && parsed.length) return parsed.map((m) => String(m).toLowerCase());
+    } catch {
+      const list = trimmed.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+      if (list.length) return list;
+    }
+    return null;
   }
 
   /**

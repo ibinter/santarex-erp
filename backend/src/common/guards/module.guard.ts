@@ -43,6 +43,8 @@ const PREFIX_TO_MODULE: ReadonlyArray<readonly [string, string]> = [
   //    contrôleurs). Codes 1:1 avec `OffreSaas.modulesInclus`. Préfixes longs
   //    d'abord (ex. caisse-sessions avant un éventuel /caisse).
   ['/interactions-medicamenteuses', 'interactions-medicamenteuses'],
+  // Le contrôleur est servi sur /interactions : sans cette ligne le garde restait inerte.
+  ['/interactions', 'interactions-medicamenteuses'],
   ['/declarations-sanitaires', 'declarations-sanitaires'],
   ['/services-personnalises', 'services-personnalises'],
   ['/indicateurs-qualite', 'indicateurs-qualite'],

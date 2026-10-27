@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import NavSidebar from '@/components/layout/NavSidebar';
+import { useLicenceModules, moduleAllowed } from '@/lib/licence-modules';
 import Topbar from '@/components/layout/Topbar';
 import BottomNav from '@/components/layout/BottomNav';
 import AiChat from '@/components/AiChat';
@@ -47,7 +48,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations('nav');
-  const nav = ALL_NAV.map(n => ({ ...n, label: t(n.key) }));
+  const modules = useLicenceModules();
+  const nav = ALL_NAV.filter(n => moduleAllowed(n.href, modules)).map(n => ({ ...n, label: t(n.key) }));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [moreDrawerOpen, setMoreDrawerOpen] = useState(false);

@@ -147,12 +147,15 @@ interface NavSidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
+import { useLicenceModules, moduleAllowed } from '@/lib/licence-modules';
+
 export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollapsedChange }: NavSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('nav');
   const [collapsed, setCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
+  const modules = useLicenceModules();
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -160,6 +163,9 @@ export default function NavSidebar({ mobileOpen = false, onMobileClose, onCollap
   }, []);
 
   const canSee = (item: NavItem) => {
+    // 1. Formule souscrite : un module non inclus n'apparaît pas du tout.
+    if (!moduleAllowed(item.href, modules)) return false;
+    // 2. Rôle de l'utilisateur.
     if (!item.roles || item.roles.length === 0) return true;
     if (!userRole) return true; // show all while loading
     return item.roles.includes(userRole);

@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { User } from '@/types';
+import { useLicenceModules, moduleAllowed } from '@/lib/licence-modules';
 
 const MAIN_ITEMS = [
   { href: '/dashboard', key: 'home', icon: LayoutDashboard },
@@ -22,7 +23,9 @@ interface BottomNavProps {
 export default function BottomNav({ onMoreClick }: BottomNavProps) {
   const pathname = usePathname();
   const t = useTranslations('nav');
-  const mainItems = MAIN_ITEMS.map(item => ({ ...item, label: t(item.key) }));
+  const modules = useLicenceModules();
+  // Les raccourcis suivent la formule souscrite (ex. pas d'« Urgences » pour une pharmacie).
+  const mainItems = MAIN_ITEMS.filter(item => moduleAllowed(item.href, modules)).map(item => ({ ...item, label: t(item.key) }));
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => { setUser(getCurrentUser()); }, []);
