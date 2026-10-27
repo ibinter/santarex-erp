@@ -84,12 +84,16 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  // Documentation API : désactivée en production sauf SWAGGER_ENABLED=true.
+  const swaggerOn = process.env.NODE_ENV !== 'production' || process.env.SWAGGER_ENABLED === 'true';
+  if (swaggerOn) {
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.BACKEND_PORT || 3001;
   await app.listen(port);
   console.log(`SANTAREX ERP Backend démarré sur le port ${port}`);
-  console.log(`Documentation Swagger : http://localhost:${port}/api/docs`);
+  if (swaggerOn) console.log(`Documentation Swagger : http://localhost:${port}/api/docs`);
 }
 bootstrap();
