@@ -91,6 +91,7 @@ const TABLES_A_PURGER: string[] = [
   'sejours',
   'resultats_analyse',
   'demandes_analyse',
+  'types_analyse', // re-seedés avec la démo (laboratoire)
   'ordonnances',
   'consultations',
   'rendez_vous',
@@ -361,6 +362,74 @@ async function seedConsultationsEtFactures(
   log(`  ✓ ${consultations.length} consultations + factures`);
 }
 
+// ─── 2g. Laboratoire : types d'analyses + demandes à tous les stades ───────────
+
+async function seedLaboratoire(
+  ds: DataSource,
+  patientIds: string[],
+  medecinId: string,
+  tenantId: string = TENANT_ID,
+  pre = '',
+): Promise<void> {
+  log('Reseed du laboratoire de démonstration...');
+  const types = [
+    { code: 'NFS', nom: 'Numération Formule Sanguine', cat: 'hematologie', prix: 8000, delai: 4,
+      params: [{ nom: 'Hémoglobine', unite: 'g/dL', valeursNormalesMin: 12, valeursNormalesMax: 16 }, { nom: 'Globules blancs', unite: 'G/L', valeursNormalesMin: 4, valeursNormalesMax: 10 }, { nom: 'Plaquettes', unite: 'G/L', valeursNormalesMin: 150, valeursNormalesMax: 400 }] },
+    { code: 'GLY', nom: 'Glycémie à jeun', cat: 'biochimie', prix: 3000, delai: 2,
+      params: [{ nom: 'Glycémie', unite: 'g/L', valeursNormalesMin: 0.7, valeursNormalesMax: 1.1 }] },
+    { code: 'GE', nom: 'Goutte épaisse (paludisme)', cat: 'parasitologie', prix: 3500, delai: 1,
+      params: [{ nom: 'Plasmodium', unite: '', valeursNormalesTexte: 'Absent' }] },
+    { code: 'CREA', nom: 'Créatinine', cat: 'biochimie', prix: 4000, delai: 4,
+      params: [{ nom: 'Créatinine', unite: 'mg/L', valeursNormalesMin: 7, valeursNormalesMax: 13 }] },
+    { code: 'WIDAL', nom: 'Sérodiagnostic de Widal', cat: 'serologie', prix: 5000, delai: 6,
+      params: [{ nom: 'Anticorps anti-O', unite: '', valeursNormalesTexte: '< 1/80' }] },
+  ];
+  const typeId: Record<string, string> = {};
+  for (const t of types) {
+    const r = await ds.query(
+      `INSERT INTO types_analyse (code, nom, categorie, "delaiResultatsHeures", "prixUnitaire", parametres, "estActif", "tenantId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, true, $7, NOW(), NOW()) RETURNING id`,
+      [t.code, t.nom, t.cat, t.delai, t.prix, JSON.stringify(t.params), tenantId],
+    );
+    typeId[t.code] = r[0].id;
+  }
+
+  const heures = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
+  const demandes = [
+    { patientIdx: 2, analyses: ['NFS', 'GE'], urgence: true, statut: 'en_analyse', h: 1, notes: 'Fièvre élevée, suspicion de paludisme grave' },
+    { patientIdx: 4, analyses: ['GLY', 'CREA'], urgence: false, statut: 'termine', h: 6, notes: 'Contrôle diabète et fonction rénale',
+      resultats: [{ code: 'GLY', valeurs: [{ paramNom: 'Glycémie', valeur: 1.42, unite: 'g/L', valeursNormalesMin: 0.7, valeursNormalesMax: 1.1, interpretation: 'eleve' }], commentaire: 'Hyperglycémie : adapter le traitement.' },
+                    { code: 'CREA', valeurs: [{ paramNom: 'Créatinine', valeur: 10, unite: 'mg/L', valeursNormalesMin: 7, valeursNormalesMax: 13, interpretation: 'normal' }], commentaire: 'Fonction rénale normale.' }] },
+    { patientIdx: 6, analyses: ['NFS'], urgence: false, statut: 'preleve', h: 2, notes: 'Bilan avant intervention' },
+    { patientIdx: 8, analyses: ['WIDAL'], urgence: false, statut: 'attente_prelevement', h: 0.2, notes: 'Fièvre prolongée' },
+    { patientIdx: 1, analyses: ['GE'], urgence: false, statut: 'termine', h: 26, notes: 'Contrôle après traitement',
+      resultats: [{ code: 'GE', valeurs: [{ paramNom: 'Plasmodium', valeur: 'Absent', unite: '', interpretation: 'normal' }], commentaire: 'Goutte épaisse négative.' }] },
+  ];
+
+  let n = 1;
+  for (const d of demandes) {
+    const patientId = patientIds[d.patientIdx] ?? patientIds[0];
+    const r = await ds.query(
+      `INSERT INTO demandes_analyse (numero, "patientId", "medecinId", analyses, urgence, "statutPrelevement", "dateHeureDemande", "dateHeurePrelevement", "datePrevueResultats", notes, "tenantId", "createdById", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $3, NOW(), NOW()) RETURNING id`,
+      [
+        `${pre}LAB-2025-${String(n++).padStart(5, '0')}`, patientId, medecinId,
+        JSON.stringify(d.analyses.map((c) => typeId[c])), d.urgence, d.statut, heures(d.h),
+        d.statut === 'attente_prelevement' ? null : heures(Math.max(d.h - 0.3, 0)),
+        new Date(Date.now() + 4 * 3600_000).toISOString(), d.notes, tenantId,
+      ],
+    );
+    for (const res of d.resultats ?? []) {
+      await ds.query(
+        `INSERT INTO resultats_analyse ("demandeAnalyseId", "patientId", "typeAnalyseId", resultats, interpretation, statut, "biologisteId", "dateValidation", "estCritique", "tenantId", "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, $4, $5, 'valide', $6, $7, false, $8, NOW(), NOW())`,
+        [r[0].id, patientId, typeId[res.code], JSON.stringify(res.valeurs), res.commentaire, medecinId, heures(Math.max(d.h - 0.5, 0)), tenantId],
+      );
+    }
+  }
+  log(`  ✓ ${types.length} types d'analyses + ${demandes.length} demandes`);
+}
+
 // ─── 3. Une démo par formule commerciale ──────────────────────────────────────
 //
 // Chaque formule (Pharmacie, Cabinet, Centre, Clinique) a son propre
@@ -486,7 +555,10 @@ async function seedDemoFormule(ds: DataSource, d: DemoFormule): Promise<void> {
   // Données adaptées aux modules de la formule
   const patientIds = await seedPatients(ds, adminId, slug, d.prefix);
   await seedMedicaments(ds, slug, d.prefix);
-  if (d.consultations) await seedConsultationsEtFactures(ds, patientIds, medecinId, slug, d.prefix);
+  if (d.consultations) {
+    await seedConsultationsEtFactures(ds, patientIds, medecinId, slug, d.prefix);
+    await seedLaboratoire(ds, patientIds, medecinId, slug, d.prefix).catch((e) => log(`  - laboratoire ignoré : ${e?.message ?? e}`));
+  }
   if (d.hospitalisation) {
     const litIds = await seedLits(ds, slug, d.prefix);
     await seedSejours(ds, patientIds, litIds, medecinId, slug, d.prefix);
@@ -530,6 +602,7 @@ async function main(): Promise<void> {
     const litIds = await seedLits(AppDataSource);
     await seedSejours(AppDataSource, patientIds, litIds, medecinId);
     await seedConsultationsEtFactures(AppDataSource, patientIds, medecinId);
+    await seedLaboratoire(AppDataSource, patientIds, medecinId).catch((e) => log(`  - laboratoire ignoré : ${e?.message ?? e}`));
     await seedDemosParFormule(AppDataSource);
 
     console.log('');
