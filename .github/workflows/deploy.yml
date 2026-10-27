@@ -1,0 +1,47 @@
+name: Deploy — SANTAREX ERP (VPS)
+
+# Déploiement automatique : se lance quand la CI réussit sur main,
+# ou manuellement depuis l'onglet Actions.
+on:
+  workflow_run:
+    workflows: ["CI — SANTAREX ERP"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/santarex-erp
+            git fetch origin main
+            git reset --hard origin/main
+            test -f .env.prod || { echo ".env.prod manquant sur le VPS"; exit 1; }
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            for i in $(seq 1 12); do
+              if curl -sf http://127.0.0.1:3002/api/v1/health >/dev/null; then
+                echo "Backend OK"; docker image prune -f; exit 0
+              fi
+              sleep 5
+            done
+            echo "Backend ne répond pas après 60s"
+            docker compose -f docker-compose.prod.yml logs --tail=50 backend
+            exit 1
