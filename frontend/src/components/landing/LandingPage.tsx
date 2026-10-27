@@ -1088,7 +1088,8 @@ export default function LandingPage() {
             {t('nav_partner')}
           </a>
           <Link href="/login" className="lp-btn-ghost">{t('nav_login')}</Link>
-          <a href="#contact" className="lp-btn-cta">{t('nav_demo')}</a>
+          {/* Démo en libre-service si disponible ; sinon repli sur le formulaire de contact */}
+          <a href={process.env.NEXT_PUBLIC_DEMO_URL ? `${process.env.NEXT_PUBLIC_DEMO_URL}/login` : '#contact'} className="lp-btn-cta">{t('nav_demo')}</a>
           {/* Mobile hamburger */}
           <button
             className="lp-nav-hamburger"
@@ -1145,7 +1146,7 @@ export default function LandingPage() {
             {/* CTA */}
             <div className="lp-mobile-menu-ctas">
               <Link href="/login" className="lp-btn-ghost" onClick={closeMobileMenu}>{t('nav_login')}</Link>
-              <a href="#contact" className="lp-btn-cta" onClick={closeMobileMenu}>{t('nav_demo')}</a>
+              <a href={process.env.NEXT_PUBLIC_DEMO_URL ? `${process.env.NEXT_PUBLIC_DEMO_URL}/login` : '#contact'} className="lp-btn-cta" onClick={closeMobileMenu}>{t('nav_demo')}</a>
             </div>
           </div>
         </div>
