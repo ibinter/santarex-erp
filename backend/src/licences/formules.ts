@@ -26,17 +26,15 @@ export const CABINET = [
   'messages-sortants',
 ];
 
-// Centre de santé : Cabinet + soins infirmiers (15 utilisateurs).
-export const CENTRE = [...CABINET, 'soins-infirmiers'];
+// Centre de santé : Cabinet + soins infirmiers, maternité, pédiatrie et consentements éclairés
+// (15 utilisateurs). C'est le cœur d'un CSI / dispensaire : consultations, suivi mère-enfant, soins.
+export const CENTRE = [...CABINET, 'soins-infirmiers', 'maternite', 'pediatrie', 'consentements'];
 
-// CLINIQUE+ : hospitalisation, urgences, maternité, pédiatrie, assureurs, qualité perçue…
+// CLINIQUE+ : hospitalisation, urgences, assureurs, qualité perçue…
 export const CLINIQUE = [
   ...CENTRE,
   'hospitalisation',
   'urgences',
-  'maternite',
-  'pediatrie',
-  'consentements',
   'interactions-medicamenteuses',
   'prise-en-charge',
   'tiers-payant',

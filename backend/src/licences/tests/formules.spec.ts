@@ -44,10 +44,18 @@ describe('Formules commerciales', () => {
   });
 
   it('les modules « CLINIQUE+ » ne sont pas dans Cabinet ni Centre', () => {
-    for (const m of ['hospitalisation', 'urgences', 'maternite', 'pediatrie', 'tiers-payant', 'prise-en-charge']) {
+    for (const m of ['hospitalisation', 'urgences', 'tiers-payant', 'prise-en-charge']) {
       expect(CENTRE).not.toContain(m);
       expect(CLINIQUE).toContain(m);
     }
+  });
+
+  it('Centre de santé : soins infirmiers, maternité, pédiatrie et consentements (pas un Cabinet à peine enrichi)', () => {
+    for (const m of ['soins-infirmiers', 'maternite', 'pediatrie', 'consentements']) {
+      expect(CENTRE).toContain(m);
+      expect(CABINET).not.toContain(m);
+    }
+    expect(CENTRE.length - CABINET.length).toBeGreaterThanOrEqual(4);
   });
 
   it('Hôpital contient tous les modules (44 codes, 41 + 3 transverses)', () => {

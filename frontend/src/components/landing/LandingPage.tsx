@@ -529,8 +529,8 @@ const PLANS = [
     users: { fr: "Jusqu'à 15 utilisateurs", en: 'Up to 15 users' },
     featured: false, badge: null,
     features: {
-      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire, vaccination & devis','Soins infirmiers','Accompagnement à la mise en route · Support WhatsApp'],
-      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Laboratory, vaccination & quotes','Nursing care','Setup assistance · WhatsApp support'],
+      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire, vaccination & devis','Soins infirmiers','Maternité & pédiatrie','Consentements éclairés','Accompagnement à la mise en route · Support WhatsApp'],
+      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Laboratory, vaccination & quotes','Nursing care','Maternity & pediatrics','Informed consent','Setup assistance · WhatsApp support'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },

@@ -23,8 +23,8 @@ UPDATE offres_saas SET "modulesInclus" = $j$${json}$j$, "updatedAt" = now() WHER
 `;
 }
 sql += `
-UPDATE offres_saas SET description = 'Centre de santé : consultations, laboratoire, pharmacie et soins infirmiers.',
-  fonctionnalites = '["Consultations, DME & laboratoire","Pharmacie de dispensation","Soins infirmiers & vaccination"]', "updatedAt" = now() WHERE code = 'centre';
+UPDATE offres_saas SET description = 'Centre de santé : consultations, laboratoire, pharmacie, soins infirmiers, maternité et pédiatrie.',
+  fonctionnalites = '["Consultations, DME & laboratoire","Pharmacie de dispensation","Soins infirmiers, maternité & pédiatrie"]', "updatedAt" = now() WHERE code = 'centre';
 UPDATE offres_saas SET description = 'Clinique : hospitalisation, urgences, maternité, pédiatrie et assureurs.',
   fonctionnalites = '["Hospitalisation, urgences & plan des lits","Maternité, pédiatrie & soins infirmiers","Tiers-payant, prise en charge & gardes"]', "updatedAt" = now() WHERE code = 'clinique';
 UPDATE offres_saas SET description = 'Établissement hospitalier complet : tous les modules inclus.',

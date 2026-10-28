@@ -25,15 +25,12 @@ const CABINET = [
   'messages-sortants',
 ];
 
-const CENTRE = [...CABINET, 'soins-infirmiers'];
+const CENTRE = [...CABINET, 'soins-infirmiers', 'maternite', 'pediatrie', 'consentements'];
 
 const CLINIQUE = [
   ...CENTRE,
   'hospitalisation',
   'urgences',
-  'maternite',
-  'pediatrie',
-  'consentements',
   'interactions-medicamenteuses',
   'prise-en-charge',
   'tiers-payant',
