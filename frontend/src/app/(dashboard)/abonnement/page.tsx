@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient, API_URL } from '@/lib/api';
+import { useDevise, SelecteurDevise, MentionDevise } from '@/lib/devise';
 
 type TFunc = ReturnType<typeof useTranslations>;
 
@@ -94,6 +95,7 @@ function SecurityBanner({ t }: { t: TFunc }) {
 
 export default function AbonnementPage() {
   const t = useTranslations('abonnement');
+  const dev = useDevise();
   const [methods, setMethods] = useState<ClientPaymentMethod[]>([]);
   const [offres, setOffres] = useState<Offre[]>([]);
   const [offerCode, setOfferCode] = useState('');
@@ -138,6 +140,12 @@ export default function AbonnementPage() {
       {/* Bandeau obligatoire, toujours affiché */}
       <SecurityBanner t={t} />
 
+      {/* Équivalent indicatif en euro / dollar ; le paiement se fait en FCFA. */}
+      <div style={{ marginBottom: 14 }}>
+        <SelecteurDevise devise={dev.devise} onChange={dev.setDevise} />
+        <MentionDevise devise={dev.devise} />
+      </div>
+
       {/* Sélecteur d'offre (utilisé par la plupart des méthodes) */}
       <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
@@ -151,7 +159,7 @@ export default function AbonnementPage() {
           >
             {offres.map((o) => (
               <option key={o.code} value={o.code}>
-                {(o.nom ?? o.code)}{o.prix ? ` — ${fmtXOF(o.prix)}` : ''}
+                {(o.nom ?? o.code)}{o.prix ? ` — ${fmtXOF(o.prix)}${dev.devise !== 'XOF' ? ` (${dev.fmt(o.prix)})` : ''}` : ''}
               </option>
             ))}
           </select>

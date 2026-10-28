@@ -13,6 +13,7 @@ import {
   FORMULE_INFO, FORMULE_ORDRE, FORMULES_MODULES, MODULE_CODE_PAR_TITRE, modulesAjoutes,
   type FormuleCode,
 } from '@/lib/formules';
+import { useDevise, SelecteurDevise, MentionDevise, chiffres } from '@/lib/devise';
 
 type LicenceInfo = {
   valide: boolean;
@@ -65,6 +66,7 @@ const COULEURS_FORMULE: Record<FormuleCode, { color: string; bg: string; border:
 export default function LicencePage() {
   const t = useTranslations('licence');
   const locale = useLocale() === 'en' ? 'en' : 'fr';
+  const dev = useDevise();
   const [info, setInfo] = useState<LicenceInfo | null>(null);
   const [etat, setEtat] = useState<{ offre: string | null; modules: string[] | null }>({ offre: null, modules: null });
   const [loading, setLoading] = useState(true);
@@ -290,6 +292,10 @@ export default function LicencePage() {
               <Crown size={16} color="#1A2332"/>
               <h2 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{t('plansAvailable')}</h2>
             </div>
+            <div style={{ marginBottom: 14 }}>
+              <SelecteurDevise devise={dev.devise} onChange={dev.setDevise} lang={locale} />
+              <MentionDevise devise={dev.devise} lang={locale} />
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
               {FORMULE_ORDRE.map((f) => {
                 const plan = { ...COULEURS_FORMULE[f], ...FORMULE_INFO[f] };
@@ -306,7 +312,7 @@ export default function LicencePage() {
                     <div style={{ marginBottom: 10 }}>
                       <div style={{ fontSize: 15, fontWeight: 900, color: isCurrent ? plan.color : '#1A2332' }}>{plan.label[locale]}</div>
                       <div style={{ fontSize: 12, color: '#78909C', marginTop: 2 }}>{plan.cible[locale]}</div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: plan.color, marginTop: 6 }}>{plan.prix} FCFA / mois</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: plan.color, marginTop: 6 }}>{dev.devise === 'XOF' ? `${plan.prix} FCFA` : dev.fmt(chiffres(plan.prix))} / {locale === 'fr' ? 'mois' : 'month'}</div>
                     </div>
                     <div style={{ fontSize: 12, color: '#546E7A', marginBottom: 6, fontWeight: 600 }}>
                       {FORMULES_MODULES[f].length} modules{debut ? '' : ` — dont ${ajoutes.length} de plus que la formule précédente`}

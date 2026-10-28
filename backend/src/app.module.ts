@@ -9,6 +9,7 @@ import { TenantsModule } from './tenants/tenants.module';
 import { OffresSaasModule } from './offres-saas/offres-saas.module';
 import { LicencesModule } from './licences/licences.module';
 import { PaymentsModule } from './payments/payments.module';
+import { TauxChangeModule } from './taux-change/taux-change.module';
 import { EntitlementModule } from './common/entitlement.module';
 import { ComptabiliteModule } from './comptabilite/comptabilite.module';
 import { RhModule } from './rh/rh.module';
@@ -109,6 +110,7 @@ import { SeedModule } from './database/seed.module';
     ExportsModule,
     SearchModule,
     PaymentsModule,
+    TauxChangeModule,
     EntitlementModule,
     AiAssistantModule,
     NotificationsModule,

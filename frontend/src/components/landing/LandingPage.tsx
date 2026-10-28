@@ -6,6 +6,7 @@ import '@/app/landing.css';
 import { API_URL } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { FORMULE_ORDRE, FORMULE_INFO, FORMULES_MODULES, MODULE_CODE_PAR_TITRE, modulesAjoutes, tagPourModule } from '@/lib/formules';
+import { useDevise, SelecteurDevise, MentionDevise, chiffres } from '@/lib/devise';
 
 /* ═══════════════════════════════════════════════════════
    ICÔNES
@@ -1061,6 +1062,7 @@ export default function LandingPage() {
   const [lang, setLang] = useState<Lang>('fr');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [annual, setAnnual] = useState(false);
+  const dev = useDevise();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -1373,6 +1375,9 @@ export default function LandingPage() {
               ? 'Chaque démo est le vrai logiciel, avec les seuls modules de sa formule et des données fictives. Sans inscription.'
               : 'Each demo is the real software, with only the modules of its plan and fictional data. No sign-up.'}
           </p>
+          <div style={{ textAlign: 'center', margin: '0 0 18px' }}>
+            <SelecteurDevise devise={dev.devise} onChange={dev.setDevise} lang={lang} />
+          </div>
           <div className="lp-demos-grid">
             {FORMULE_ORDRE.map((f) => {
               const info = FORMULE_INFO[f];
@@ -1383,7 +1388,11 @@ export default function LandingPage() {
                 <div key={f} className={`lp-demo-card${f === 'clinique' ? ' featured' : ''}`}>
                   <div className="lp-demo-eyebrow">{info.cible[lang]}</div>
                   <h3 className="lp-demo-name">{info.label[lang]}</h3>
-                  <div className="lp-demo-price"><strong>{info.prix}</strong> FCFA / {lang === 'fr' ? 'mois' : 'month'}</div>
+                  <div className="lp-demo-price">
+                    {dev.devise === 'XOF'
+                      ? <><strong>{info.prix}</strong> FCFA / {lang === 'fr' ? 'mois' : 'month'}</>
+                      : <><strong>{dev.fmt(chiffres(info.prix))}</strong> / {lang === 'fr' ? 'mois' : 'month'}</>}
+                  </div>
                   <div className="lp-demo-count">{total} {lang === 'fr' ? 'modules inclus' : 'modules included'}</div>
                   <ul className="lp-demo-list">
                     {ajoutes.slice(0, 6).map((m) => (
@@ -1446,7 +1455,7 @@ export default function LandingPage() {
                   {FORMULE_ORDRE.map((f) => (
                     <th key={f}>
                       {FORMULE_INFO[f].label[lang]}
-                      <span>{FORMULE_INFO[f].prix} FCFA</span>
+                      <span>{dev.devise === 'XOF' ? `${FORMULE_INFO[f].prix} FCFA` : dev.fmt(chiffres(FORMULE_INFO[f].prix))}</span>
                     </th>
                   ))}
                 </tr>
@@ -1639,6 +1648,10 @@ export default function LandingPage() {
             </button>
           </div>
 
+          <div style={{ textAlign: 'center', margin: '4px 0 18px' }}>
+            <SelecteurDevise devise={dev.devise} onChange={dev.setDevise} lang={lang} />
+          </div>
+
           {annual && (
             <div className="lp-annual-info">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
@@ -1687,12 +1700,14 @@ export default function LandingPage() {
                   <div className="lp-plan-name">{p.code}</div>
                   <div className="lp-plan-users">{users}</div>
                   <div style={{ marginBottom: 20 }}>
-                    <span className="lp-plan-amount">{price}</span>
-                    <span className="lp-plan-cycle"> {cycle}</span>
+                    <span className="lp-plan-amount">{dev.devise === 'XOF' ? price : dev.fmt(chiffres(price))}</span>
+                    <span className="lp-plan-cycle"> {dev.devise === 'XOF' ? cycle : (annual ? (lang === 'fr' ? '/ an' : '/ year') : (lang === 'fr' ? '/ mois' : '/ month'))}</span>
                   </div>
                   {annual && (
                     <div className="lp-plan-saving">
-                      {lang === 'fr' ? `soit ${p.priceM} FCFA/mois` : `= ${p.priceM} FCFA/month`}
+                      {dev.devise === 'XOF'
+                        ? (lang === 'fr' ? `soit ${p.priceM} FCFA/mois` : `= ${p.priceM} FCFA/month`)
+                        : (lang === 'fr' ? `soit ${dev.fmt(chiffres(p.priceM))}/mois` : `= ${dev.fmt(chiffres(p.priceM))}/month`)}
                     </div>
                   )}
                   <div className="lp-plan-divider" />
@@ -1707,6 +1722,7 @@ export default function LandingPage() {
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: '.8125rem', color: '#64748B' }}>
             {t('pricing_note')}
           </p>
+          <MentionDevise devise={dev.devise} lang={lang} />
           {/* §C7 — mentions cycle de vie (Essai · Découverte · Période de grâce · Lecture seule) */}
           <div className="lp-lifecycle-notes">
             {LIFECYCLE_NOTES[lang].map(n => (
