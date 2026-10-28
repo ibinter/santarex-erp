@@ -12,7 +12,8 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentTransaction } from './entities/payment-transaction.entity';
 import { PaymentProof } from './entities/payment-proof.entity';
 import { PaymentMethodConfig } from './entities/payment-method-config.entity';
-import { PaymentStatus } from './payments.enums';
+import { PaymentStatus, PaymentMethodType } from './payments.enums';
+import { GatewayService } from './gateway.service';
 import { CreateTransactionDto } from './dto/client.dto';
 import { ProofStorageService, UploadedProofFile } from './proof-storage.service';
 import { OffresSaasService } from '../offres-saas/offres-saas.service';
@@ -55,6 +56,7 @@ export class ManualPaymentService {
     private readonly licenceLifecycle: LicenceLifecycleService,
     private readonly mailService: MailService,
     private readonly config: ConfigService,
+    private readonly gateways: GatewayService,
   ) {}
 
   /** Tolérance de rapprochement de montant (plus petite unité). Défaut : 1. */
@@ -105,7 +107,8 @@ export class ManualPaymentService {
       offreCode: offre.code,
       methodType: method.type,
       methodKey: method.key,
-      status: PaymentStatus.AWAITING_PROOF,
+      // Passerelle électronique : pas de preuve à déposer, le client paie sur la page de la passerelle.
+      status: method.type === PaymentMethodType.GATEWAY ? PaymentStatus.PENDING : PaymentStatus.AWAITING_PROOF,
       amountExpected,
       amountReceived: null,
       currency: 'XOF',
@@ -120,7 +123,30 @@ export class ManualPaymentService {
     this.logger.log(
       `Transaction créée ${saved.reference} tenant=${tenant.tenantId} offre=${offre.code} montant=${amountExpected}`,
     );
+
+    if (method.type === PaymentMethodType.GATEWAY) {
+      return this.lancerPaiementPasserelle(saved);
+    }
     return saved;
+  }
+
+  /**
+   * Lance le paiement chez la passerelle pour obtenir l'adresse de la page de paiement (`paymentUrl`).
+   * Sans cet appel, le client n'est jamais redirigé et ne peut pas payer. En cas de refus de la
+   * passerelle (clés invalides, mode test/réel incohérent, montant trop faible…), la commande est
+   * marquée « échouée » et la raison est renvoyée.
+   */
+  private async lancerPaiementPasserelle(tx: PaymentTransaction): Promise<PaymentTransaction> {
+    try {
+      return await this.gateways.initiate(tx);
+    } catch (err) {
+      const raison = ((err as Error)?.message ?? 'erreur inconnue').slice(0, 300);
+      this.logger.error(`Paiement ${tx.reference} : la passerelle a refusé l'initialisation — ${raison}`);
+      tx.status = PaymentStatus.FAILED;
+      tx.metadata = { ...(tx.metadata ?? {}), erreurPasserelle: raison };
+      await this.txRepo.save(tx);
+      throw new BadRequestException(`Le paiement en ligne est momentanément indisponible. (${raison})`.slice(0, 400));
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────

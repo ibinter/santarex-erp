@@ -7,6 +7,7 @@ import { ManualPaymentService } from '../manual-payment.service';
 import { ProofStorageService } from '../proof-storage.service';
 import { LicenceLifecycleService } from '../licence-lifecycle.service';
 import { MailService } from '../../mail/mail.service';
+import { GatewayService } from '../gateway.service';
 import { OffresSaasService } from '../../offres-saas/offres-saas.service';
 import { PaymentTransaction } from '../entities/payment-transaction.entity';
 import { PaymentProof } from '../entities/payment-proof.entity';
@@ -25,6 +26,7 @@ describe('ManualPaymentService', () => {
   let methodRepo: Record<string, jest.Mock>;
   let proofStorage: { computeSha256: jest.Mock; store: jest.Mock };
   let lifecycle: { activateFromTransaction: jest.Mock };
+  let gateways: { initiate: jest.Mock };
 
   const futureExpiry = new Date(Date.now() + 24 * 3_600_000);
 
@@ -59,6 +61,7 @@ describe('ManualPaymentService', () => {
       store: jest.fn(),
     };
     lifecycle = { activateFromTransaction: jest.fn().mockResolvedValue({ id: 'lic-1' }) };
+    gateways = { initiate: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -71,10 +74,53 @@ describe('ManualPaymentService', () => {
         { provide: LicenceLifecycleService, useValue: lifecycle },
         { provide: MailService, useValue: { envoyerPaiementRecu: jest.fn() } },
         { provide: ConfigService, useValue: { get: (_k: string, d?: unknown) => d } },
+        { provide: GatewayService, useValue: gateways },
       ],
     }).compile();
 
     service = module.get(ManualPaymentService);
+  });
+
+  describe('createTransaction — paiement par passerelle', () => {
+    const tenant = { tenantId: 'clinique-a', tenantSlug: 'clinique-a' };
+    const dto: any = { offerCode: 'cabinet', methodKey: 'gateway.geniuspay' };
+
+    beforeEach(() => {
+      txRepo.createQueryBuilder = jest.fn().mockReturnValue({ where: () => ({ getCount: async () => 1 }) });
+      (service as any).offres.findByCode.mockResolvedValue({ code: 'cabinet', prix: 18000 });
+    });
+
+    it('un moyen « passerelle » lance le paiement chez la passerelle et renvoie l’adresse de paiement', async () => {
+      methodRepo.findOne.mockResolvedValue({ key: 'gateway.geniuspay', type: PaymentMethodType.GATEWAY, enabled: true });
+      gateways.initiate.mockImplementation(async (tx: any) => ({
+        ...tx, status: PaymentStatus.PROCESSING, gatewayTransactionId: 'MTX-1', paymentUrl: 'https://pay.geniuspay.ci/c/1',
+      }));
+
+      const r: any = await service.createTransaction(dto, tenant);
+
+      expect(gateways.initiate).toHaveBeenCalledTimes(1);
+      expect(gateways.initiate.mock.calls[0][0]).toMatchObject({ amountExpected: 1_800_000, status: PaymentStatus.PENDING });
+      expect(r.paymentUrl).toBe('https://pay.geniuspay.ci/c/1');
+    });
+
+    it('si la passerelle refuse, la commande est marquée échouée et la raison est renvoyée', async () => {
+      methodRepo.findOne.mockResolvedValue({ key: 'gateway.geniuspay', type: PaymentMethodType.GATEWAY, enabled: true });
+      gateways.initiate.mockRejectedValue(new Error('GeniusPay: apiKey / apiSecret manquant dans la config'));
+
+      await expect(service.createTransaction(dto, tenant)).rejects.toThrow(/manquant/);
+      const derniere = txRepo.save.mock.calls[txRepo.save.mock.calls.length - 1][0];
+      expect(derniere.status).toBe(PaymentStatus.FAILED);
+      expect(derniere.metadata.erreurPasserelle).toMatch(/manquant/);
+    });
+
+    it('un moyen manuel (Mobile Money, virement…) n’appelle jamais la passerelle', async () => {
+      methodRepo.findOne.mockResolvedValue({ key: 'mobile_money.orange', type: PaymentMethodType.MOBILE_MONEY, enabled: true });
+
+      const r: any = await service.createTransaction({ ...dto, methodKey: 'mobile_money.orange' }, tenant);
+
+      expect(gateways.initiate).not.toHaveBeenCalled();
+      expect(r.status).toBe(PaymentStatus.AWAITING_PROOF);
+    });
   });
 
   describe('submitProof — déduplication', () => {
