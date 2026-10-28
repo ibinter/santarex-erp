@@ -71,16 +71,16 @@ const T = {
     form_nom: 'Nom complet', form_email: 'Email professionnel',
     form_type: "Type d'établissement", form_pays: 'Pays',
     form_select: 'Sélectionner…',
-    form_btn: 'Envoyer la demande →', form_ok: '✓ Demande envoyée — nous revenons sous 24h',
-    form_err: 'Veuillez remplir nom et email', form_note: 'Réponse garantie sous 24h · Aucun engagement',
+    form_btn: 'Envoyer la demande →', form_ok: '✓ Demande envoyée — nous revenons vers vous rapidement',
+    form_err: 'Veuillez remplir nom et email', form_note: 'Réponse rapide · Aucun engagement',
     faq_title: 'Questions fréquentes', faq_other: "Votre question n'est pas listée ?", faq_sara: 'Poser la question à SARA',
     integrations_title: 'Connecté à vos outils.',
     partner_cta: 'Devenir partenaire revendeur SANTAREX →',
     footer_partner_cta: 'Devenir partenaire revendeur SANTAREX →',
     see_all: 'Voir toutes les solutions IBIG Soft ↗',
     contact_title: 'Prêt à moderniser votre établissement ?',
-    contact_sub: 'Parlez à notre équipe. Réponse garantie sous 24h, démo adaptée à votre type de structure.',
-    deploy_in: 'Déployé dans', active: '60+ établissements actifs',
+    contact_sub: 'Parlez à notre équipe. Réponse rapide, démo adaptée à votre type de structure.',
+    deploy_in: 'Déployé dans', active: '5 formules, une démo pour chacune',
     install: 'Installer', later: 'Plus tard',
     cookie_text: 'Nous utilisons des cookies pour améliorer votre expérience.',
     cookie_continue: 'En continuant, vous acceptez notre', cookie_policy: 'politique de cookies',
@@ -118,8 +118,8 @@ const T = {
     partners_title: 'Développez vos revenus avec',
     stats_modules: 'Modules cliniques intégrés',
     stats_trial: 'Essai gratuit sans engagement',
-    stats_uptime: 'Disponibilité garantie SLA',
-    stats_support: 'Support technique inclus',
+    stats_uptime: 'Formules, de la pharmacie à l’hôpital',
+    stats_support: 'Pour ouvrir une démonstration',
     footer_col2: 'Produit', footer_col3: 'Ressources', footer_col4: 'IBIG Soft', footer_col5: 'Légal',
     footer_references: 'Références', footer_demo: 'Démo gratuite',
     footer_helpdesk: 'Centre d\'aide', footer_guide: 'Guide utilisateur', footer_changelog: 'Nouveautés', footer_sara: 'Parler à SARA',
@@ -131,8 +131,8 @@ const T = {
     hero_badge: 'Un produit IBIG SOFT · ibigsoft.com',
     trust_count: 'établissements actifs',
     problem_before_label: 'Avant', problem_after_label: 'Avec SANTAREX',
-    modules_desc: "40 modules couvrant tout le cycle hospitalier — de la maternité au bloc, de la banque de sang au portail patient. Chaque module communique en temps réel : une prescription générée en consultation alerte automatiquement la pharmacie, un résultat labo apparaît dans le DME dès validation.",
-    modules_check1: 'Données synchronisées en temps réel',
+    modules_desc: "44 modules couvrant tout le cycle hospitalier — de la maternité au bloc, de la banque de sang au portail patient. Les modules s'appuient sur un même dossier patient : consultations, pharmacie, laboratoire et facturation partagent les mêmes données.",
+    modules_check1: 'Un seul dossier patient pour tous les modules',
     modules_check2: 'Déployable module par module',
     modules_check3: 'Formation incluse dans tous les plans',
     pricing_desc: 'Tous les plans incluent hébergement, maintenance et support. Pas de frais cachés. Résiliez à tout moment.',
@@ -177,16 +177,16 @@ const T = {
     form_nom: 'Full name', form_email: 'Work email',
     form_type: 'Facility type', form_pays: 'Country',
     form_select: 'Select…',
-    form_btn: 'Send request →', form_ok: '✓ Request sent — we reply within 24h',
-    form_err: 'Please fill in name and email', form_note: 'Reply guaranteed within 24h · No commitment',
+    form_btn: 'Send request →', form_ok: '✓ Request sent — we will get back to you shortly',
+    form_err: 'Please fill in name and email', form_note: 'Quick reply · No commitment',
     faq_title: 'Frequently asked questions', faq_other: "Your question isn't listed?", faq_sara: 'Ask SARA',
     integrations_title: 'Connected to your tools.',
     partner_cta: 'Become a SANTAREX reseller partner →',
     footer_partner_cta: 'Become a SANTAREX reseller partner →',
     see_all: 'See all IBIG Soft solutions ↗',
     contact_title: 'Ready to modernize your facility?',
-    contact_sub: 'Talk to our team. Reply within 24h, demo tailored to your type of facility.',
-    deploy_in: 'Deployed in', active: '60+ active facilities',
+    contact_sub: 'Talk to our team. Quick reply, demo tailored to your type of facility.',
+    deploy_in: 'Deployed in', active: '5 plans, a demo for each',
     install: 'Install', later: 'Later',
     cookie_text: 'We use cookies to improve your experience.',
     cookie_continue: 'By continuing, you accept our', cookie_policy: 'cookie policy',
@@ -224,8 +224,8 @@ const T = {
     partners_title: 'Grow your revenue with',
     stats_modules: 'Integrated clinical modules',
     stats_trial: 'Free trial, no commitment',
-    stats_uptime: 'SLA guaranteed uptime',
-    stats_support: 'Technical support included',
+    stats_uptime: 'Plans, from pharmacy to hospital',
+    stats_support: 'To open a live demo',
     footer_col2: 'Product', footer_col3: 'Resources', footer_col4: 'IBIG Soft', footer_col5: 'Legal',
     footer_references: 'References', footer_demo: 'Free demo',
     footer_helpdesk: 'Help center', footer_guide: 'User guide', footer_changelog: 'Changelog', footer_sara: 'Talk to SARA',
@@ -237,8 +237,8 @@ const T = {
     hero_badge: 'A product by IBIG SOFT · ibigsoft.com',
     trust_count: 'active facilities',
     problem_before_label: 'Before', problem_after_label: 'With SANTAREX',
-    modules_desc: '40 modules covering the entire hospital cycle — from maternity to the operating room, from the blood bank to the patient portal. Every module communicates in real time: a prescription from a consultation automatically alerts the pharmacy, and a lab result appears in the EHR as soon as it is validated.',
-    modules_check1: 'Data synchronized in real time',
+    modules_desc: '44 modules covering the entire hospital cycle — from maternity to the operating room, from the blood bank to the patient portal. The modules rely on one patient record: consultations, pharmacy, laboratory and billing share the same data.',
+    modules_check1: 'One patient record for every module',
     modules_check2: 'Deploy module by module',
     modules_check3: 'Training included in all plans',
     pricing_desc: 'All plans include hosting, maintenance and support. No hidden fees. Cancel anytime.',
@@ -291,9 +291,9 @@ const SARA_KB = [
   { t: ['sécurité','données','security','data','chiffrement','rgpd','protection','sauvegarde'],
     r: 'Sécurité SANTAREX ERP :\n• Connexion chiffrée (HTTPS)\n• Double authentification par application, avec codes de secours\n• Contrôle d\'accès par rôles\n• Journal d\'audit complet\n• Données isolées par établissement\n• Sauvegarde automatique chaque jour, copiée chaque nuit hors du serveur sous forme chiffrée (AES-256), conservée 30 jours\n• Surveillance automatique du service avec alerte immédiate' },
   { t: ['support','assistance','aide','help','contact','problème','bug','urgence'],
-    r: 'Support disponible :\n• 📱 WhatsApp : +225 07 78 88 25 92\n• 📞 Tél. : +225 27 22 27 60 14\n• ✉️ contact@ibigsoft.com\n\nFormules Clinique/Hôpital : support 7j/7 et 24h/24.' },
+    r: 'Support disponible :\n• 📱 WhatsApp : +225 07 78 88 25 92\n• 📞 Tél. : +225 27 22 27 60 14\n• ✉️ contact@ibigsoft.com' },
   { t: ['demo','démonstration','demonstration','voir','montrer'],
-    r: 'Nous organisons des démonstrations personnalisées, adaptées à votre type de structure. Cliquez sur « Démo gratuite » ou remplissez le formulaire en bas de page. Réponse garantie sous 24h.' },
+    r: 'Nous organisons des démonstrations personnalisées, adaptées à votre type de structure. Cliquez sur « Démo gratuite » ou remplissez le formulaire en bas de page. Nous vous répondons rapidement.' },
   { t: ['ibig','éditeur','société','entreprise','about','qui est'],
     r: 'SANTAREX ERP est édité par IBIG Soft (ibigsoft.com), éditeur africain de logiciels professionnels, spécialisé dans les solutions adaptées aux réalités du continent africain.' },
   { t: ['partner','partenaire','revendre','commission','ibigpartners','affilié','réseau'],
@@ -303,7 +303,7 @@ const SARA_KB = [
   { t: ['bonjour','salut','hello','bonsoir','hi','bonne journée'],
     r: 'Bonjour ! Je suis SARA, votre assistante SANTAREX ERP 👋\n\nComment puis-je vous aider ?\n• Présentation du logiciel\n• Tarifs et formules\n• Demande de démonstration\n• Support technique' },
   { t: ['merci','thank','parfait','super','excellent','très bien'],
-    r: "Avec plaisir ! N'hésitez pas si vous avez d'autres questions. Je suis disponible 24h/24 😊" },
+    r: "Avec plaisir ! N'hésitez pas si vous avez d'autres questions. Je suis là pour vous aider 😊" },
 ];
 
 function getSaraLocal(msg: string): string | null {
@@ -351,14 +351,14 @@ const HERO_SLIDES: { line1: Record<Lang,string>; accent: Record<Lang,string>; li
   {
     line1: { fr: "L'hôpital", en: 'The digital' },
     accent: { fr: 'numérique.', en: 'hospital.' },
-    line3: { fr: 'Zéro paperasse.', en: 'Zero paperwork.' },
-    sub: { fr: 'Ordonnances électroniques, résultats labo instantanés, prescriptions directement reliées à la pharmacie. Votre établissement tourne à plein régime.', en: 'Electronic prescriptions, instant lab results, prescriptions directly linked to the pharmacy. Your facility runs at full capacity.' },
+    line3: { fr: 'Moins de paperasse.', en: 'Less paperwork.' },
+    sub: { fr: 'Ordonnances électroniques, résultats d’analyses saisis et consultés en ligne, dossiers patients accessibles à toute l’équipe autorisée.', en: 'Electronic prescriptions, lab results entered and viewed online, patient records available to every authorised team member.' },
   },
   {
     line1: { fr: 'La pharmacie', en: 'The intelligent' },
     accent: { fr: 'intelligente.', en: 'pharmacy.' },
-    line3: { fr: 'Zéro rupture de stock.', en: 'Zero stockouts.' },
-    sub: { fr: 'Alertes automatiques de péremption, synchronisation temps réel avec les prescriptions médecin, gestion des lots et traçabilité complète.', en: 'Automatic expiry alerts, real-time sync with doctor prescriptions, batch management and full traceability.' },
+    line3: { fr: 'Stock sous contrôle.', en: 'Stock under control.' },
+    sub: { fr: 'Alertes de stock bas et de rupture, suivi des lots et des péremptions, mouvements de stock tracés et dispensation sur ordonnance.', en: 'Low-stock and stockout alerts, batch and expiry tracking, traced stock movements and dispensing on prescription.' },
   },
   {
     line1: { fr: 'La facturation', en: 'Billing,' },
@@ -369,14 +369,14 @@ const HERO_SLIDES: { line1: Record<Lang,string>; accent: Record<Lang,string>; li
   {
     line1: { fr: 'Votre assistante IA', en: 'Your AI assistant' },
     accent: { fr: 'SARA.', en: 'SARA.' },
-    line3: { fr: 'Disponible 24h/24.', en: 'Available 24/7.' },
-    sub: { fr: "SARA guide vos équipes, répond aux questions et aide chaque utilisateur à maîtriser SANTAREX ERP — à chaque instant, depuis n'importe quel appareil.", en: 'SARA guides your teams, answers questions and helps every user master SANTAREX ERP — at any time, from any device.' },
+    line3: { fr: 'Toujours à portée de clic.', en: 'Always one click away.' },
+    sub: { fr: "SARA guide vos équipes, répond aux questions et aide chaque utilisateur à prendre en main SANTAREX ERP, depuis n'importe quel appareil.", en: 'SARA guides your teams, answers questions and helps every user get started with SANTAREX ERP, from any device.' },
   },
 ];
 
 const PROBLEMS: { icon: string; before: Record<Lang,string>; after: Record<Lang,string> }[] = [
   { icon: '📋', before: { fr: 'Registres papier dispersés, risque de perte de dossiers', en: 'Scattered paper registers, risk of losing patient files' }, after: { fr: "Dossiers médicaux électroniques centralisés, accessibles en temps réel par toute l'équipe", en: 'Centralized electronic medical records, accessible in real time by the whole team' } },
-  { icon: '💊', before: { fr: 'Stocks de médicaments gérés manuellement — ruptures et péremptions non détectées', en: 'Manually managed drug inventory — stockouts and expiries undetected' }, after: { fr: 'Alertes automatiques en temps réel. Zéro rupture non détectée, zéro médicament périmé distribué', en: 'Real-time automatic alerts. Zero undetected stockout, zero expired drug dispensed' } },
+  { icon: '💊', before: { fr: 'Stocks de médicaments gérés manuellement — ruptures et péremptions non détectées', en: 'Manually managed drug inventory — stockouts and expiries undetected' }, after: { fr: 'Alertes de stock bas et de rupture, suivi des lots et des péremptions pour ne plus être pris au dépourvu', en: 'Low-stock and stockout alerts, batch and expiry tracking so you are never caught off guard' } },
   { icon: '🧾', before: { fr: 'Facturation laborieuse avec des erreurs de calcul fréquentes', en: 'Tedious billing with frequent calculation errors' }, after: { fr: 'Facturation automatique, paiements Mobile Money enregistrés par facture, reçus numériques générés instantanément', en: 'Automatic billing, Mobile Money payments recorded per invoice, digital receipts generated instantly' } },
   { icon: '📊', before: { fr: "Aucune visibilité sur les performances de l'établissement", en: 'No visibility on facility performance' }, after: { fr: "Tableau de bord avec KPIs en temps réel — recettes, taux d'occupation, activité médicale", en: 'Real-time KPI dashboard — revenue, occupancy rate, medical activity' } },
   { icon: '🔬', before: { fr: 'Résultats de laboratoire transmis manuellement au médecin', en: 'Lab results transmitted manually to the doctor' }, after: { fr: "Résultats disponibles dans le DME dès validation du biologiste — alertes critiques immédiates", en: 'Results available in the EHR as soon as validated by the biologist — immediate critical alerts' } },
@@ -460,7 +460,7 @@ const MODULE_GROUPS: { cat: Record<Lang,string>; items: Mod[] }[] = [
   { cat: { fr: 'Pharmacie, Labo & Plateau technique', en: 'Pharmacy, Lab & Technical' }, items: [
     { title: { fr: 'Pharmacie', en: 'Pharmacy' }, desc: { fr: 'Stock temps réel, alertes rupture & péremption, gestion des lots, dispensation sur ordonnance.', en: 'Real-time stock, stockout & expiry alerts, batch management, prescription dispensing.' }, tag: 'Cabinet+', ...MC.amber, icon: S(<path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/>) },
     { title: { fr: 'Laboratoire', en: 'Laboratory' }, desc: { fr: "Demandes d'analyses, saisie & validation des résultats, interface biologiste, historique labo.", en: 'Test requests, result entry & validation, biologist interface, lab history.' }, tag: 'Cabinet+', ...MC.purple, icon: S(<><path d="M9 3l-1 8H5l3 10h8l3-10h-3L14 3z"/><line x1="9" y1="3" x2="15" y2="3"/></>) },
-    { title: { fr: 'Imagerie médicale', en: 'Medical imaging' }, desc: { fr: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus, PACS basique.', en: 'Exam management (X-ray, Echo, CT, MRI), reports, basic PACS.' }, tag: 'Hôpital+', ...MC.amber, icon: S(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
+    { title: { fr: 'Imagerie médicale', en: 'Medical imaging' }, desc: { fr: 'Gestion des examens (Radio, Écho, Scanner, IRM), comptes rendus.', en: 'Exam management (X-ray, Echo, CT, MRI), reports.' }, tag: 'Hôpital+', ...MC.amber, icon: S(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
     { title: { fr: 'Approvisionnement & achats', en: 'Procurement & purchasing' }, desc: { fr: 'Commandes fournisseurs, bons de réception, suivi des livraisons et coûts.', en: 'Supplier orders, goods receipts, delivery and cost tracking.' }, tag: 'Clinique+', ...MC.blue, icon: S(<><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></>) },
     { title: { fr: 'Banque de sang', en: 'Blood bank' }, desc: { fr: 'Poches, groupes & compatibilité, stock par type, traçabilité des transfusions.', en: 'Blood units, groups & compatibility, stock by type, transfusion traceability.' }, tag: 'Hôpital+', ...MC.red, icon: S(<path d="M12 2.7s6 6.3 6 10.3a6 6 0 0 1-12 0c0-4 6-10.3 6-10.3z"/>) },
     { title: { fr: 'Stérilisation', en: 'Sterilization' }, desc: { fr: 'Cycles de stérilisation, traçabilité des instruments, contrôle qualité des lots.', en: 'Sterilization cycles, instrument traceability, batch quality control.' }, tag: 'Hôpital+', ...MC.teal, icon: S(<><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></>) },
@@ -504,8 +504,8 @@ const PLANS = [
     users: { fr: '1 à 3 utilisateurs', en: '1 to 3 users' },
     featured: false, badge: { fr: 'Nouveau', en: 'New' },
     features: {
-      fr: ['Gestion des stocks complète','Dispensation sur ordonnance','Alertes péremption & rupture','Gestion des lots & traçabilité','Facturation & Mobile Money','Support WhatsApp 5j/7'],
-      en: ['Full inventory management','Prescription dispensing','Expiry & stockout alerts','Batch & traceability management','Billing & Mobile Money','WhatsApp support 5d/7'],
+      fr: ['Gestion des stocks complète','Dispensation sur ordonnance','Alertes péremption & rupture','Gestion des lots & traçabilité','Facturation & Mobile Money','Support WhatsApp et e-mail'],
+      en: ['Full inventory management','Prescription dispensing','Expiry & stockout alerts','Batch & traceability management','Billing & Mobile Money','WhatsApp and email support'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -516,8 +516,8 @@ const PLANS = [
     users: { fr: '1 à 5 utilisateurs', en: '1 to 5 users' },
     featured: false, badge: null,
     features: {
-      fr: ["Jusqu'à 5 utilisateurs",'Patients & DME illimités','Consultations & ordonnances CIM-10','Rendez-vous & agenda médecin','Facturation & Mobile Money','Support WhatsApp 5j/7'],
-      en: ['Up to 5 users','Unlimited patients & EHR','Consultations & ICD-10 prescriptions','Appointments & doctor schedule','Billing & Mobile Money','WhatsApp support 5d/7'],
+      fr: ["Jusqu'à 5 utilisateurs",'Patients & DME illimités','Consultations & ordonnances CIM-10','Rendez-vous & agenda médecin','Facturation & Mobile Money','Support WhatsApp et e-mail'],
+      en: ['Up to 5 users','Unlimited patients & EHR','Consultations & ICD-10 prescriptions','Appointments & doctor schedule','Billing & Mobile Money','WhatsApp and email support'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -528,8 +528,8 @@ const PLANS = [
     users: { fr: "Jusqu'à 15 utilisateurs", en: 'Up to 15 users' },
     featured: false, badge: null,
     features: {
-      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire, vaccination & devis','Soins infirmiers','Déploiement en 48h · Support 6j/7'],
-      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Laboratory, vaccination & quotes','Nursing care','48h deployment · Support 6d/7'],
+      fr: ["Jusqu'à 15 utilisateurs",'Patients, DME & consultations','Pharmacie de dispensation','Laboratoire, vaccination & devis','Soins infirmiers','Accompagnement à la mise en route · Support WhatsApp'],
+      en: ['Up to 15 users','Patients, EHR & consultations','Dispensing pharmacy','Laboratory, vaccination & quotes','Nursing care','Setup assistance · WhatsApp support'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -540,8 +540,8 @@ const PLANS = [
     users: { fr: "Jusqu'à 30 utilisateurs", en: 'Up to 30 users' },
     featured: true, badge: { fr: 'Le plus populaire', en: 'Most popular' },
     features: {
-      fr: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation, urgences & plan des lits','Maternité, pédiatrie & tiers-payant','Messagerie, portail patient & reporting BI','Support 7j/7 prioritaire'],
-      en: ['Up to 30 users','Patients, EHR & consultations','Pharmacy & inventory','Laboratory & results','Inpatient care, emergency & bed plan','Maternity, pediatrics & third-party payment','Messaging, patient portal & BI reporting','Priority 7d/7 support'],
+      fr: ["Jusqu'à 30 utilisateurs",'Patients, DME & consultations','Pharmacie & gestion stocks','Laboratoire & résultats','Hospitalisation, urgences & plan des lits','Maternité, pédiatrie & tiers-payant','Messagerie, portail patient & reporting BI','Support prioritaire (WhatsApp et e-mail)'],
+      en: ['Up to 30 users','Patients, EHR & consultations','Pharmacy & inventory','Laboratory & results','Inpatient care, emergency & bed plan','Maternity, pediatrics & third-party payment','Messaging, patient portal & BI reporting','Priority support (WhatsApp and email)'],
     },
     btnClass: 'lp-plan-btn-fill', btnLabel: { fr: "Démarrer l'essai gratuit", en: 'Start free trial' },
   },
@@ -552,8 +552,8 @@ const PLANS = [
     users: { fr: 'Utilisateurs illimités', en: 'Unlimited users' },
     featured: false, badge: null,
     features: {
-      fr: ['Utilisateurs illimités','Les 40 modules inclus','Bloc opératoire & imagerie (PACS)','Banque de sang & stérilisation','RH, comptabilité & budget','Multi-sites & consolidation','SLA 99,9% · Support 24/7','Account manager dédié'],
-      en: ['Unlimited users','All 40 modules included','Operating room & imaging (PACS)','Blood bank & sterilization','HR, accounting & budget','Multi-site & consolidation','99.9% SLA · 24/7 support','Dedicated account manager'],
+      fr: ['Utilisateurs illimités','Les 44 modules inclus','Bloc opératoire & imagerie médicale','Banque de sang & stérilisation','RH, comptabilité & budget','Multi-sites','Support prioritaire','Accompagnement personnalisé à la mise en route'],
+      en: ['Unlimited users','All 44 modules included','Operating room & medical imaging','Blood bank & sterilization','HR, accounting & budget','Multi-site','Priority support','Personalised onboarding assistance'],
     },
     btnClass: 'lp-plan-btn-outline', btnLabel: { fr: 'Nous contacter', en: 'Contact us' },
   },
@@ -702,15 +702,9 @@ const FAQ_ITEMS: { q: Record<Lang,string>; a: Record<Lang,string> }[] = [
   { q: { fr: "Est-il disponible hors connexion ?", en: "Is it available offline?" }, a: { fr: "SANTAREX ERP propose un mode hors-ligne partiel pour les consultations et la pharmacie. Les données saisies sont synchronisées automatiquement au retour de connexion internet.", en: "SANTAREX ERP offers a partial offline mode for consultations and pharmacy. Data entered is automatically synced when internet connection is restored." } },
   { q: { fr: "Puis-je l'installer sur mon téléphone ?", en: "Can I install it on my phone?" }, a: { fr: "Oui. SANTAREX ERP est une Progressive Web App (PWA). Installez-la sur votre smartphone, tablette ou ordinateur directement depuis votre navigateur, sans passer par l'App Store ou le Play Store.", en: "Yes. SANTAREX ERP is a Progressive Web App (PWA). Install it on your smartphone, tablet or computer directly from your browser, without going through the App Store or Play Store." } },
   { q: { fr: "Quels modes de paiement sont pris en charge ?", en: "Which payment methods are supported?" }, a: { fr: "Espèces, Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money), carte bancaire, chèque, virement et prise en charge par une assurance. À la caisse, chaque paiement est enregistré et rattaché à sa facture. Le prélèvement automatique depuis le téléphone du patient n'est pas encore proposé.", en: "Cash, Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money), bank card, cheque, bank transfer and insurance cover. At the till, every payment is recorded and tied to its invoice. Automatic collection from the patient's phone is not offered yet." } },
-  { q: { fr: "Combien de temps pour être opérationnel ?", en: "How long to get started?" }, a: { fr: "La mise en route prend généralement 48 heures : création du compte, configuration de votre établissement, import des données existantes et formation de vos équipes.", en: "Getting started generally takes 48 hours: account creation, facility configuration, existing data import and team training." } },
+  { q: { fr: "Combien de temps pour être opérationnel ?", en: "How long to get started?" }, a: { fr: "Vous pouvez commencer dès l'inscription : créez votre établissement, ajoutez vos utilisateurs et vos tarifs, puis enregistrez vos premiers patients. Nous vous accompagnons pour la configuration.", en: "You can start right after signing up: create your facility, add your users and prices, then register your first patients. We assist you with the setup." } },
   { q: { fr: "Où sont hébergées mes données ?", en: "Where is my data hosted?" }, a: { fr: "Vos données sont hébergées sur des serveurs sécurisés, accessibles uniquement par une connexion chiffrée (HTTPS). Chaque établissement dispose de son propre espace isolé. Une sauvegarde est faite automatiquement chaque jour, puis copiée chaque nuit hors du serveur sous forme chiffrée (AES-256) et conservée 30 jours. Vous restez propriétaire de vos données.", en: "Your data is hosted on secure servers, reachable only through an encrypted connection (HTTPS). Each facility has its own isolated space. A backup is made automatically every day, then copied every night off the server in encrypted form (AES-256) and kept for 30 days. You remain the owner of your data." } },
   { q: { fr: "Y a-t-il un engagement minimum ?", en: "Is there a minimum commitment?" }, a: { fr: "Non. SANTAREX ERP fonctionne sur abonnement mensuel sans engagement de durée. Vous pouvez résilier à tout moment depuis votre espace administration, sans frais.", en: "No. SANTAREX ERP operates on a monthly subscription with no duration commitment. You can cancel at any time from your admin panel, with no fees." } },
-];
-
-const TESTIMONIALS: { initial: string; name: string; role: Record<Lang,string>; quote: Record<Lang,string> }[] = [
-  { initial: 'K', name: 'Dr. Konan Akissi', role: { fr: 'Directeur médical — Clinique Sainte-Marie, Douala', en: 'Medical Director — Clinique Sainte-Marie, Douala' }, quote: { fr: 'SANTAREX a transformé notre pharmacie. La synchronisation avec les prescriptions médecin est instantanée — plus aucune rupture non détectée.', en: 'SANTAREX transformed our pharmacy. Synchronization with doctor prescriptions is instant — no more undetected stockouts.' } },
-  { initial: 'T', name: 'Mme Traoré Fatoumata', role: { fr: 'Responsable administratif — Polyclinique Dakar Santé', en: 'Administrative Manager — Polyclinique Dakar Santé' }, quote: { fr: "Le tableau de bord nous donne enfin une visibilité complète sur nos recettes et notre taux d'occupation. On pilote l'hôpital avec des données.", en: "The dashboard finally gives us complete visibility on our revenue and occupancy rate. We manage the hospital with real data." } },
-  { initial: 'C', name: 'Dr. Coulibaly Moussa', role: { fr: 'Médecin généraliste — Cabinet Excellence, Lomé', en: 'General Practitioner — Cabinet Excellence, Lomé' }, quote: { fr: "Les ordonnances numériques et le DME m'économisent 2 heures par jour. Je me concentre sur mes patients, pas sur la paperasse.", en: "Digital prescriptions and the EHR save me 2 hours a day. I focus on my patients, not on paperwork." } },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1242,8 +1236,8 @@ export default function LandingPage() {
                 </a>
                 <p style={{ marginTop: 8, fontSize: '.8rem', opacity: 0.75, lineHeight: 1.4 }}>
                   {lang === 'fr'
-                    ? 'Le vrai logiciel, données fictives, sans inscription. Remise à zéro chaque nuit.'
-                    : 'The real software, sample data, no sign-up. Reset every night.'}
+                    ? 'Le vrai logiciel, données fictives, sans inscription.'
+                    : 'The real software, sample data, no sign-up.'}
                 </p>
               </div>
             )}
@@ -1275,7 +1269,7 @@ export default function LandingPage() {
                 </div>
                 <div className="lp-mk-main">
                   <div className="lp-mk-topbar">
-                    <span className="lp-mk-topbar-title">Tableau de bord</span>
+                    <span className="lp-mk-topbar-title">Aperçu illustratif</span>
                     <div className="lp-mk-topbar-right"><div className="lp-mk-search" /><div className="lp-mk-avatar" /></div>
                   </div>
                   <div className="lp-mk-body">
@@ -1335,7 +1329,7 @@ export default function LandingPage() {
       {/* ══ STATS ══ */}
       <section className="lp-stats-section">
         <div className="lp-stats-inner">
-          {[{ num: '40', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '99', sup: '%', lbl: t('stats_uptime') }, { num: '24', sup: '/7', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
+          {[{ num: '44', sup: '', lbl: t('stats_modules') }, { num: '30', sup: 'j', lbl: t('stats_trial') }, { num: '5', sup: '', lbl: t('stats_uptime') }, { num: '1', sup: ' clic', lbl: t('stats_support') }].map(({ num, sup, lbl }) => (
             <div key={lbl} className="lp-stat-box"><div className="lp-stat-num">{num}<span>{sup}</span></div><div className="lp-stat-lbl">{lbl}</div></div>
           ))}
         </div>
@@ -1376,8 +1370,8 @@ export default function LandingPage() {
           </h2>
           <p className="lp-section-desc" style={{ textAlign: 'center', margin: '16px auto 0', maxWidth: 640 }}>
             {lang === 'fr'
-              ? 'Chaque démo est le vrai logiciel, avec les seuls modules de sa formule et des données fictives. Sans inscription, remise à zéro chaque nuit.'
-              : 'Each demo is the real software, with only the modules of its plan and fictional data. No sign-up, reset every night.'}
+              ? 'Chaque démo est le vrai logiciel, avec les seuls modules de sa formule et des données fictives. Sans inscription.'
+              : 'Each demo is the real software, with only the modules of its plan and fictional data. No sign-up.'}
           </p>
           <div className="lp-demos-grid">
             {FORMULE_ORDRE.map((f) => {
@@ -1722,29 +1716,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ══ TESTIMONIALS ══ */}
-      <section id="testimonials" className="lp-testi-section">
-        <div className="lp-testi-inner">
-          <span className="lp-eyebrow">{t('testimonials_eyebrow')}</span>
-          <h2 className="lp-section-title">{t('testimonials_title')}</h2>
-          <div className="lp-testi-grid">
-            {TESTIMONIALS.map(testi => (
-              <div key={testi.name} className="lp-testi-card">
-                <div className="lp-stars">★★★★★</div>
-                <p className="lp-testi-quote">{testi.quote[lang]}</p>
-                <div className="lp-testi-author">
-                  <div className="lp-testi-avatar">{testi.initial}</div>
-                  <div><div className="lp-testi-name">{testi.name}</div><div className="lp-testi-role">{testi.role[lang]}</div></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* §8.7 — étiquetage obligatoire des témoignages non encore vérifiés */}
-          <p className="lp-testi-illustrative" style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--muted, #6B7280)', fontStyle: 'italic' }}>
-            {t('illustrative_note')}
-          </p>
-        </div>
-      </section>
+      {/* Témoignages : section retirée. Elle contenait des personnes et des cliniques inventées.
+          À rétablir seulement avec de vrais témoignages de clients, avec leur accord. */}
 
       {/* ══ FAQ ══ */}
       <section id="faq" className="lp-faq-section">
@@ -1868,7 +1841,7 @@ export default function LandingPage() {
                 <li><a href="#modules">{t('nav_modules')}</a></li>
                 <li><a href="#activites">{t('nav_solutions')}</a></li>
                 <li><a href="#pricing">{t('nav_pricing')}</a></li>
-                <li><a href="#testimonials">{t('footer_references')}</a></li>
+                {/* « Références » retiré : aucun témoignage vérifié pour l'instant */}
                 <li><Link href="/login">{t('nav_login')}</Link></li>
                 <li><a href="#contact">{t('footer_demo')}</a></li>
               </ul>
