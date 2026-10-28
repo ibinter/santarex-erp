@@ -130,6 +130,7 @@ const navGroups: NavGroup[] = [
       { key: 'servicesPersonnalises', href: '/services-personnalises', icon: <Puzzle size={18} />, roles: ADMIN_DIR },
       { key: 'interoperabilite', href: '/interoperabilite', icon: <Plug size={18} />, roles: ADMIN_DIR },
       { key: 'auditLogs', href: '/audit-logs', icon: <ShieldCheck size={18} />, roles: ADMIN_DIR },
+      { key: 'abonnement', href: '/abonnement', icon: <CreditCard size={18} />, roles: ADMIN_DIR },
       { key: 'licence', href: '/licence', icon: <Award size={18} />, roles: ADMIN_DIR },
       { key: 'changelog', href: '/changelog', icon: <Sparkles size={18} />, roles: ALL_ROLES },
       { key: 'guide', href: '/guide', icon: <BookOpen size={18} />, roles: ALL_ROLES },
