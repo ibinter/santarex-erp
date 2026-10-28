@@ -33,7 +33,9 @@ import { VoucherStatus } from './payments.enums';
 @ApiTags('Paiements — Vouchers (Admin)')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+// SUPERADMIN uniquement : générer un voucher = créer un code d'activation de licence. Un administrateur
+// d'établissement ne doit jamais pouvoir s'en fabriquer.
+@Roles(UserRole.SUPERADMIN)
 @Controller('admin/payments/vouchers')
 export class VoucherController {
   constructor(private readonly vouchers: VoucherService) {}

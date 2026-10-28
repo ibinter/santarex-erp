@@ -13,6 +13,9 @@ import {
   Param,
   Body,
   UseGuards,
+  Logger,
+  HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentConfigService } from './payments-config.service';
@@ -29,15 +32,34 @@ import { UserRole } from '../users/entities/user.entity';
 // DemoModeGuard : la configuration des moyens de paiement est fermée en
 // démonstration publique (§4.5) — le paiement est désactivé en démo.
 @UseGuards(JwtAuthGuard, RolesGuard, DemoModeGuard)
-@Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
+// SUPERADMIN uniquement : cette configuration est GLOBALE (clés de la passerelle qui encaisse les
+// licences). Un administrateur d'établissement ne doit jamais pouvoir la lire ni la modifier.
+@Roles(UserRole.SUPERADMIN)
 @Controller('admin/payments/config')
 export class AdminPaymentsController {
+  private readonly logger = new Logger(AdminPaymentsController.name);
+
   constructor(private readonly configService: PaymentConfigService) {}
+
+  /**
+   * Cet écran est réservé au superadministrateur : en cas d'erreur inattendue, on renvoie la VRAIE
+   * raison (au lieu de « Internal server error ») et on l'écrit dans le journal du serveur.
+   */
+  private async expliquer<T>(action: string, travail: () => Promise<T>): Promise<T> {
+    try {
+      return await travail();
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      const raison = (err as Error)?.message ?? String(err);
+      this.logger.error(`Paiements (${action}) : ${raison}`, (err as Error)?.stack);
+      throw new InternalServerErrorException(`Paiements (${action}) : ${raison}`.slice(0, 400));
+    }
+  }
 
   @Get()
   @ApiOperation({ summary: 'Lister les moyens de paiement (secrets masqués).' })
   list() {
-    return this.configService.list();
+    return this.expliquer('lecture', () => this.configService.list());
   }
 
   @Post()
@@ -46,7 +68,7 @@ export class AdminPaymentsController {
     @Body() dto: UpsertPaymentConfigDto,
     @CurrentUser('userId') adminId: string,
   ) {
-    return this.configService.upsert(dto, adminId);
+    return this.expliquer('enregistrement', () => this.configService.upsert(dto, adminId));
   }
 
   @Patch(':key/toggle')
@@ -71,6 +93,6 @@ export class AdminPaymentsController {
   @Post('seed-defaults')
   @ApiOperation({ summary: 'Amorcer les moyens de paiement par défaut (désactivés).' })
   seedDefaults() {
-    return this.configService.seedDefaults();
+    return this.expliquer('création', () => this.configService.seedDefaults());
   }
 }
