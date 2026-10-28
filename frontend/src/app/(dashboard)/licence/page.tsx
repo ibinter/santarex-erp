@@ -338,10 +338,17 @@ export default function LicencePage() {
                 {active ? t('upgradeDesc') : t('activateDesc')}
               </div>
             </div>
-            <a href="mailto:contact@ibigsoft.com"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#fff', color: '#0F3460', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
-              <Mail size={14}/> {t('contactSupport')}
-            </a>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {/* Le paiement se fait sur la page Abonnement (choix de la formule puis du moyen de paiement). */}
+              <a href="/abonnement"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#2DD4BF', color: '#073B3A', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
+                <Crown size={14}/> {active ? 'Changer de formule / payer' : 'Choisir ma formule et payer'}
+              </a>
+              <a href="mailto:contact@ibigsoft.com"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#fff', color: '#0F3460', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
+                <Mail size={14}/> {t('contactSupport')}
+              </a>
+            </div>
           </div>
 
         </div>

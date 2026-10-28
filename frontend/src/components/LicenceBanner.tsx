@@ -145,6 +145,23 @@ export default function LicenceBanner() {
         }}
       />
       <span>{msg.text}</span>
+      {/* La page Abonnement est le seul endroit où l'on paie : on y mène directement. */}
+      <a
+        href="/abonnement"
+        style={{
+          marginLeft: 6,
+          padding: '3px 12px',
+          borderRadius: 999,
+          background: 'rgba(255,255,255,0.95)',
+          color: '#0F3460',
+          fontSize: 12,
+          fontWeight: 800,
+          textDecoration: 'none',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {lang === 'fr' ? 'Choisir ma formule' : 'Choose my plan'}
+      </a>
     </div>
   );
 }
