@@ -114,7 +114,8 @@ export default function AbonnementPage() {
     }
     // Offres : best-effort (facultatif pour le redeem voucher).
     try {
-      const off = await apiClient<Offre[]>('/offres-saas');
+      // Route publique : `/offres-saas` est réservé au superadmin, un administrateur d'établissement y est refusé.
+      const off = await apiClient<Offre[]>('/offres-saas/public');
       if (Array.isArray(off) && off.length) {
         setOffres(off);
         setOfferCode((prev) => prev || off[0].code);
