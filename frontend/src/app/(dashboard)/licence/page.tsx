@@ -190,7 +190,7 @@ export default function LicencePage() {
               )}
               {!info?.valide && !licence && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '5px 13px' }}>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>{t('contactActivate')}</span>
+                  <a href="/abonnement" style={{ fontSize: 12, color: '#fff', fontWeight: 800, textDecoration: 'underline' }}>{locale === 'fr' ? 'Choisir ma formule et payer en ligne →' : 'Choose my plan and pay online →'}</a>
                 </div>
               )}
             </div>
@@ -206,8 +206,8 @@ export default function LicencePage() {
             <div style={{ fontSize: 14, fontWeight: 800, color: '#92400E' }}>{t('renewalRequired', { n: jours ?? 0 })}</div>
             <div style={{ fontSize: 12, color: '#78350F', marginTop: 3 }}>{t('renewalWarning')}</div>
           </div>
-          <a href="mailto:contact@ibigsoft.com" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: '#92400E', color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
-            <Mail size={12}/> {t('renew')}
+          <a href="/abonnement" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 9, background: '#92400E', color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <Crown size={12}/> {locale === 'fr' ? 'Renouveler maintenant' : 'Renew now'}
           </a>
         </div>
       )}
@@ -322,6 +322,17 @@ export default function LicencePage() {
                         <div style={{ fontSize: 11, color: '#90A4AE', paddingLeft: 18 }}>+ {ajoutes.length - 6} autres</div>
                       )}
                     </div>
+                    {/* Bouton de paiement : mène à la page Abonnement, où l'on choisit la formule puis le moyen de paiement. */}
+                    {isCurrent ? (
+                      <div style={{ marginTop: 14, textAlign: 'center', fontSize: 12, fontWeight: 800, color: plan.color }}>
+                        ✓ {locale === 'fr' ? 'Votre formule actuelle' : 'Your current plan'}
+                      </div>
+                    ) : (
+                      <a href="/abonnement"
+                        style={{ marginTop: 14, display: 'block', textAlign: 'center', padding: '9px 12px', borderRadius: 9, background: plan.color, color: '#fff', textDecoration: 'none', fontSize: 12, fontWeight: 800 }}>
+                        {locale === 'fr' ? 'Choisir cette formule' : 'Choose this plan'}
+                      </a>
+                    )}
                   </div>
                 );
               })}
@@ -332,10 +343,14 @@ export default function LicencePage() {
           <div style={{ background: 'linear-gradient(135deg,#1A1A2E,#0F3460)', borderRadius: 14, padding: '22px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', marginBottom: 4 }}>
-                {active ? t('upgradeTitle') : t('activateTitle')}
+                {active
+                  ? (locale === 'fr' ? 'Changez de formule à tout moment' : 'Change plan at any time')
+                  : (locale === 'fr' ? 'Activez votre licence en ligne' : 'Activate your license online')}
               </div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>
-                {active ? t('upgradeDesc') : t('activateDesc')}
+                {locale === 'fr'
+                  ? 'Choisissez une formule et réglez en ligne : votre licence s’active dès que le paiement est confirmé.'
+                  : 'Choose a plan and pay online: your license is activated as soon as the payment is confirmed.'}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -344,9 +359,9 @@ export default function LicencePage() {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#2DD4BF', color: '#073B3A', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
                 <Crown size={14}/> {active ? 'Changer de formule / payer' : 'Choisir ma formule et payer'}
               </a>
-              <a href="mailto:contact@ibigsoft.com"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: '#fff', color: '#0F3460', textDecoration: 'none', fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
-                <Mail size={14}/> {t('contactSupport')}
+              <a href="/support"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 10, background: 'rgba(255,255,255,0.12)', color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                <Mail size={14}/> {locale === 'fr' ? 'Une question ?' : 'A question?'}
               </a>
             </div>
           </div>
