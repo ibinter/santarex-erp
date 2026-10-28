@@ -1394,11 +1394,18 @@ export default function LandingPage() {
                       : <><strong>{dev.fmt(chiffres(info.prix))}</strong> / {lang === 'fr' ? 'mois' : 'month'}</>}
                   </div>
                   <div className="lp-demo-count">{total} {lang === 'fr' ? 'modules inclus' : 'modules included'}</div>
+                  {FORMULE_ORDRE.indexOf(f) > 0 && (
+                    <div className="lp-demo-count" style={{ opacity: 0.85, fontWeight: 600 }}>
+                      {lang === 'fr'
+                        ? `Tout de la formule ${FORMULE_INFO[FORMULE_ORDRE[FORMULE_ORDRE.indexOf(f) - 1]].label.fr}, plus :`
+                        : `Everything in ${FORMULE_INFO[FORMULE_ORDRE[FORMULE_ORDRE.indexOf(f) - 1]].label.en}, plus:`}
+                    </div>
+                  )}
                   <ul className="lp-demo-list">
-                    {ajoutes.slice(0, 6).map((m) => (
+                    {/* Toutes les fonctions sont affichées : c'est ce qui donne envie de souscrire. */}
+                    {ajoutes.map((m) => (
                       <li key={m}><CheckIcon /> {(MODULE_LIBELLES[m] ?? { fr: m, en: m })[lang]}</li>
                     ))}
-                    {ajoutes.length > 6 && <li className="more">+ {ajoutes.length - 6} {lang === 'fr' ? 'autres modules' : 'more modules'}</li>}
                   </ul>
                   <a href={href} className="lp-demo-btn">
                     {lang === 'fr' ? `Essayer la démo ${info.label.fr}` : `Try the ${info.label.en} demo`} <ArrowRight />
