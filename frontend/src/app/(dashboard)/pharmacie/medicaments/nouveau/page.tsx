@@ -8,7 +8,7 @@ import { apiClient } from '@/lib/api';
 
 const FORMES = ['comprime','gelule','sirop','injectable','pommade','collyre','suppositoire','patch','spray','autre'];
 
-const CATEGORIES = ['antibiotique','antalgique','antihypertenseur','antipaludeen','antiretroviral','vaccin','cardiovasculaire','diabetologie','autre'];
+const CATEGORIES = ['antibiotique','antalgique','antihypertenseur','antidiabetique','antipaludeen','antiretroviral','vaccin','autre'];
 
 type FormData = {
   nom: string; dci: string; forme: string; dosage: string; categorie: string;
@@ -34,23 +34,31 @@ export default function NouveauMedicamentPage() {
     if (!form.nom.trim()) { setError(t('form.errNom')); return; }
     setLoading(true); setError(null);
     try {
-      await apiClient('/pharmacie/medicaments', {
+      const stockInitial = parseInt(form.stockActuel) || 0;
+      if (stockInitial > 0 && !form.dateExpiration) { setError('Indiquez la date de péremption pour enregistrer le stock initial.'); setLoading(false); return; }
+      // Le serveur refuse tout champ inconnu : on envoie exactement ceux de sa fiche médicament.
+      const cree = await apiClient<any>('/pharmacie/medicaments', {
         method: 'POST',
         body: {
           nom: form.nom.trim(),
+          nomCommercial: form.fabricant || undefined,
           dci: form.dci || undefined,
           forme: form.forme,
-          dosage: form.dosage || undefined,
+          dosage: form.dosage.trim() || '-',
+          unite: form.forme === 'injectable' ? 'ampoule' : form.forme === 'sirop' ? 'flacon' : 'boîte',
           categorie: form.categorie,
-          fabricant: form.fabricant || undefined,
           prixVente: form.prixVente ? parseFloat(form.prixVente) : undefined,
-          stockActuel: parseInt(form.stockActuel) || 0,
           stockMinimum: parseInt(form.stockMinimum) || 10,
-          dateExpiration: form.dateExpiration || undefined,
-          ordonnanceRequise: form.ordonnanceRequise,
-          description: form.description || undefined,
+          prescriptionRequise: form.ordonnanceRequise,
         },
       });
+      // Le stock initial entre en stock comme une vraie réception (lot + péremption), pas comme un champ de la fiche.
+      if (stockInitial > 0 && cree?.id) {
+        await apiClient(`/pharmacie/medicaments/${cree.id}/entree-stock`, {
+          method: 'POST',
+          body: { numeroLot: `INIT-${new Date().toISOString().slice(0, 10)}`, datePeremption: form.dateExpiration, quantite: stockInitial, motif: 'Stock initial' },
+        });
+      }
       router.push('/pharmacie');
     } catch (e: any) {
       setError(e?.message ?? t('form.errCreate'));

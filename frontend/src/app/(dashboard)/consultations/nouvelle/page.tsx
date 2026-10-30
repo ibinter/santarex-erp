@@ -79,6 +79,9 @@ export default function NouvelleConsultationPage() {
         body: {
           patientId: selectedPatient!.id,
           medecinId: selectedMedecin!.id,
+          // Le serveur exige la date et le type, et attend les constantes « à plat » (il refuse tout champ inconnu).
+          dateHeure: new Date().toISOString(),
+          type: 'consultation_generale',
           motif: form.motif,
           anamnese: form.anamnese || undefined,
           examenClinique: form.examenClinique || undefined,
@@ -86,13 +89,12 @@ export default function NouvelleConsultationPage() {
           codeCIM10: form.codeCIM10 || undefined,
           planSoins: form.planSoins || undefined,
           conclusion: form.conclusion || undefined,
-          constantesVitales: {
-            ta: form.ta || undefined, fc: form.fc ? Number(form.fc) : undefined,
-            temperature: form.temperature ? Number(form.temperature) : undefined,
-            poids: form.poids ? Number(form.poids) : undefined,
-            taille: form.taille ? Number(form.taille) : undefined,
-            spo2: form.spo2 ? Number(form.spo2) : undefined,
-          },
+          tensionArterielle: form.ta || undefined,
+          frequenceCardiaque: form.fc ? Number(form.fc) : undefined,
+          temperature: form.temperature ? Number(form.temperature) : undefined,
+          poidsKg: form.poids ? Number(form.poids) : undefined,
+          tailleCm: form.taille ? Number(form.taille) : undefined,
+          saturationO2: form.spo2 ? Number(form.spo2) : undefined,
         },
       });
       router.push('/consultations');

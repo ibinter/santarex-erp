@@ -6,6 +6,18 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeft, Save, AlertTriangle, UserCog, RefreshCw } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
+// Le serveur stocke les allergies sous forme de liste JSON et les antécédents dans « antecedentsMedicaux » :
+// l'écran garde un champ texte simple (séparé par des virgules) et convertit à l'envoi et à la lecture.
+const allergiesVersJson = (txt: string) => {
+  const noms = txt.split(/[,;\n]/).map((s) => s.trim()).filter(Boolean);
+  return noms.length ? JSON.stringify(noms.map((nom) => ({ nom }))) : undefined;
+};
+const allergiesDepuisJson = (j?: string | null) => {
+  if (!j) return '';
+  try { const a = JSON.parse(j); return Array.isArray(a) ? a.map((x: any) => x?.nom ?? String(x)).join(', ') : String(j); } catch { return String(j); }
+};
+
+
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const PAYS_CODES = ['CI', 'SN', 'ML', 'BF', 'GH', 'NG', 'CM', 'TG', 'BJ', 'GN', 'FR'];
 
@@ -42,7 +54,7 @@ export default function ModifierPatientPage() {
         sexe: p.sexe ?? 'M',
         telephone: p.telephone ?? '', telephoneUrgence: p.telephoneUrgence ?? '',
         adresse: p.adresse ?? '', ville: p.ville ?? '', pays: p.pays ?? 'CI',
-        groupeSanguin: p.groupeSanguin ?? '', allergies: p.allergies ?? '', antecedents: p.antecedents ?? '',
+        groupeSanguin: p.groupeSanguin ?? '', allergies: allergiesDepuisJson(p.allergiesJson), antecedents: p.antecedentsMedicaux ?? '',
         assuranceNom: p.assuranceNom ?? '', assuranceNumero: p.assuranceNumero ?? '',
         assuranceTiersPayant: p.assuranceTiersPayant ?? false,
       });
@@ -73,8 +85,8 @@ export default function ModifierPatientPage() {
           ville: form.ville || undefined,
           pays: form.pays,
           groupeSanguin: form.groupeSanguin || undefined,
-          allergies: form.allergies || undefined,
-          antecedents: form.antecedents || undefined,
+          allergiesJson: allergiesVersJson(form.allergies),
+          antecedentsMedicaux: form.antecedents || undefined,
           assuranceTiersPayant: form.assuranceTiersPayant,
           assuranceNom: form.assuranceNom || undefined,
           assuranceNumero: form.assuranceNumero || undefined,

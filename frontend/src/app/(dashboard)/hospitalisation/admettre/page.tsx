@@ -52,16 +52,20 @@ export default function AdmettreHospitalisationPage() {
     e.preventDefault();
     if (!selectedPatient) { setError(t('erreurPatientRequis')); return; }
     if (!selectedLit) { setError(t('erreurLitRequis')); return; }
+    if (!selectedMedecin) { setError('Choisissez le médecin référent.'); return; }
     setLoading(true); setError(null);
     try {
+      // Le serveur attend ces champs-là (et refuse tout autre) : médecin référent, service du lit, type d'admission, diagnostic d'entrée.
+      const lit = lits.find((l) => l.id === selectedLit);
       const created = await apiClient<any>('/hospitalisation/sejours/admettre', {
         method: 'POST',
         body: {
           patientId: selectedPatient.id,
           litId: selectedLit,
-          medecinId: selectedMedecin || undefined,
-          motifAdmission: motifAdmission || undefined,
-          diagnosticAdmission: diagnostic || undefined,
+          medecinReferentId: selectedMedecin,
+          service: lit?.service || 'medecine_generale',
+          type: 'programme',
+          diagnosticEntree: (diagnostic || motifAdmission || 'À préciser').trim(),
         },
       });
       router.push(created?.id ? `/hospitalisation/${created.id}` : '/hospitalisation');

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, FlaskConical, ChevronDown, ChevronUp, Zap, AlertTriangle, Check, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/api';
+import { getCurrentUser } from '@/lib/auth';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
 type Analyse = { id: string; code?: string; nom: string; prix?: number };
@@ -102,13 +103,18 @@ export default function NouvelleDemandeLaboratoirePage() {
     if (selectedIds.size === 0) { setError(t('form.errNoAnalyse')); return; }
     setLoading(true); setError(null);
     try {
+      // Le serveur attend le médecin prescripteur (l'utilisateur connecté), la liste « analyses » et des « notes » ;
+      // il refuse tout autre champ.
+      const moi = getCurrentUser();
+      if (!moi?.id) { setError('Session expirée : reconnectez-vous.'); setLoading(false); return; }
       const created = await apiClient<any>('/laboratoire/demandes', {
         method: 'POST',
         body: {
           patientId: selectedPatient.id,
+          medecinId: moi.id,
           urgence,
-          motif: motif || undefined,
-          typesAnalyseIds: Array.from(selectedIds),
+          notes: motif || undefined,
+          analyses: Array.from(selectedIds),
         },
       });
       router.push(created?.id ? `/laboratoire/demandes/${created.id}` : '/laboratoire');
