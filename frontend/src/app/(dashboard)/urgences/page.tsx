@@ -127,8 +127,22 @@ export default function UrgencesPage() {
 
   const load = useCallback(async () => {
     try {
-      const data = await apiClient<PatientUrgence[]>('/urgences/actifs');
-      setPatients(Array.isArray(data)?data:(data as any)?.items??[]);
+      const data = await apiClient<any>('/urgences/actifs');
+      // Le serveur renvoie { patients: [...] } avec ses propres noms de champs (categorieUrgence, motifConsultation…) :
+      // on les ramène à ceux de l'écran. Avant, la liste restait vide même avec des patients aux urgences.
+      const brut: any[] = Array.isArray(data) ? data : (data?.patients ?? data?.items ?? []);
+      setPatients(brut.map((u) => ({
+        ...u,
+        categorieManchester: String(u.categorieManchester ?? u.categorieUrgence ?? 'vert').toUpperCase(),
+        heureArrivee: u.heureArrivee ?? u.dateHeureArrivee ?? u.createdAt,
+        motif: u.motif ?? u.motifConsultation,
+        constantes: u.constantes ?? {
+          tensionArterielle: u.tensionArterielle,
+          frequenceCardiaque: u.frequenceCardiaque,
+          temperature: u.temperature,
+          glasgow: u.scoreGlasgow,
+        },
+      })) as PatientUrgence[]);
       setLastRefresh(new Date());
     } catch { /* keep */ } finally { setLoading(false); }
   }, []);
