@@ -95,6 +95,24 @@ const TABLES_A_PURGER: string[] = [
   'ordonnances',
   'consultations',
   'rendez_vous',
+  // Modules avancés re-seedés pour la démo Hôpital (pas de clé étrangère vers patients : purge explicite)
+  'patients_urgence',
+  'img_resultats',
+  'img_demandes',
+  'img_types_examen',
+  'mat_accouchements',
+  'mat_consultations_prenatales',
+  'mat_suivis_postnatal',
+  'mat_surveillances_travail',
+  'mat_dossiers_grossesse',
+  'lignes_devis',
+  'devis_patient',
+  'rh_conges',
+  'rh_bulletins_paie',
+  'rh_employes',
+  'equip_interventions',
+  'equip_equipements',
+  'incidents_qualite',
   // Facturation / caisse / paiements patients
   'lignes_facture',
   'factures',
@@ -476,6 +494,196 @@ async function seedVentesPharmacie(
   log(`  ✓ ${ventes.length} ventes du jour`);
 }
 
+// ─── 2c. Données des modules avancés (formule Hôpital) ───────────────────────
+//
+// Sans elles, la démo Hôpital montre une quinzaine d'écrans vides (rendez-vous, urgences, imagerie,
+// maternité, devis, RH, équipements, incidents qualité…). Dates relatives à « maintenant ».
+async function seedHopitalExtras(ds: DataSource, patientIds: string[], adminId: string, medecinId: string, tenantId: string = TENANT_ID): Promise<void> {
+  const jours = (n: number, h = 9) => {
+    const d = new Date(); d.setDate(d.getDate() + n); d.setHours(h, 0, 0, 0); return d;
+  };
+  const jour = (n: number) => jours(n).toISOString().slice(0, 10);
+  const p = (i: number) => patientIds[i % patientIds.length];
+
+  const etape = async (nom: string, fn: () => Promise<void>) => {
+    try { await fn(); log(`  ✓ ${nom}`); } catch (e) { log(`  - ${nom} ignoré : ${(e as Error)?.message ?? e}`); }
+  };
+
+  await etape('rendez-vous', async () => {
+    const rdv: Array<[number, number, number, string, string, string]> = [
+      [0, 0, 9, 'Contrôle tension artérielle', 'suivi', 'confirme'],
+      [1, 0, 11, 'Consultation de médecine générale', 'consultation', 'planifie'],
+      [2, 1, 15, 'Bilan avant intervention', 'examen', 'confirme'],
+      [3, 2, 9, 'Suivi post-opératoire', 'suivi', 'planifie'],
+      [4, 2, 14, 'Consultation pédiatrique', 'consultation', 'confirme'],
+      [5, 3, 10, 'Résultats de laboratoire', 'suivi', 'planifie'],
+      [6, 4, 9, 'Consultation de cardiologie', 'consultation', 'confirme'],
+      [7, 5, 11, 'Pose de plâtre', 'consultation', 'planifie'],
+      [8, -1, 10, 'Consultation de médecine générale', 'consultation', 'honore'],
+      [9, -2, 15, 'Contrôle diabète', 'suivi', 'honore'],
+    ];
+    for (const [i, j, h, motif, type, statut] of rdv) {
+      await ds.query(
+        `INSERT INTO rendez_vous ("patientId", "medecinId", "dateHeure", "dureeMinutes", motif, type, statut, salle, "rappelEnvoye", "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,30,$4,$5,$6,$7,false,$8,$9,NOW(),NOW())`,
+        [p(i), medecinId, jours(j, h), motif, type, statut, `Cabinet ${1 + (i % 3)}`, tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('urgences', async () => {
+    const u: Array<[number, string, string, string, string, string, number, string, number, string]> = [
+      [0, 'ambulance', 'Douleur thoracique', 'rouge', 'en_soins', '170/100', 118, '37.2', 4, 'U-001'],
+      [1, 'propre_pied', "Fièvre et vomissements chez l'enfant", 'jaune', 'en_triage', '100/60', 124, '39.4', 5, 'U-002'],
+      [2, 'accompagne', 'Plaie profonde à la main', 'orange', 'en_soins', '120/80', 92, '36.8', 6, 'U-003'],
+      [3, 'propre_pied', 'Entorse de la cheville', 'vert', 'attente_triage', '125/80', 80, '36.7', 3, 'U-004'],
+      [4, 'pompiers', 'Accident de la route', 'orange', 'en_observation', '110/70', 104, '36.9', 7, 'U-005'],
+    ];
+    for (const [i, mode, motif, cat, statut, ta, fc, t, douleur, num] of u) {
+      await ds.query(
+        `INSERT INTO patients_urgence (numero, "patientId", "dateHeureArrivee", "modeArrivee", "motifConsultation", "categorieUrgence", "tensionArterielle", "frequenceCardiaque", temperature, douleur, "medecinResponsableId", statut, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,NOW() - ($3 || ' minutes')::interval,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW(),NOW())`,
+        [num, p(i + 1), String(20 + i * 25), mode, motif, cat, ta, fc, t, douleur, medecinId, statut, tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('imagerie', async () => {
+    const types: Array<[string, string, string, string, number]> = [
+      ['RX-THO', 'Radiographie du thorax', 'radio', 'Thorax', 12000],
+      ['ECHO-ABD', 'Échographie abdominale', 'echo', 'Abdomen', 20000],
+      ['SCAN-CER', 'Scanner cérébral', 'scanner', 'Crâne', 85000],
+      ['RX-MB', 'Radiographie du membre', 'radio', 'Membre', 10000],
+    ];
+    const ids: string[] = [];
+    for (const [code, nom, mod, reg, prix] of types) {
+      const r = await ds.query(
+        `INSERT INTO img_types_examen (code, nom, modalite, "regionAnatomique", "prixUnitaire", "delaiResultatsHeures", "estActif", "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,24,true,$6,NOW(),NOW()) RETURNING id`,
+        [code, nom, mod, reg, prix, tenantId],
+      );
+      ids.push(r[0].id);
+    }
+    const dem: Array<[number, number, string, string, boolean, string]> = [
+      [0, 0, 'valide', 'Toux persistante depuis 3 semaines', false, 'IMG-0001'],
+      [1, 1, 'termine', 'Douleurs abdominales', false, 'IMG-0002'],
+      [2, 2, 'en_cours', 'Céphalées intenses après traumatisme', true, 'IMG-0003'],
+      [3, 3, 'en_attente', 'Suspicion de fracture du poignet', false, 'IMG-0004'],
+    ];
+    for (const [i, t, statut, indic, urg, num] of dem) {
+      const r = await ds.query(
+        `INSERT INTO img_demandes (numero, "patientId", "medecinPrescripteurId", "typeExamenId", modalite, "regionAnatomique", urgence, statut, "dateHeureDemande", "indicationClinique", "tenantId", "createdById", "createdAt", "updatedAt")
+         SELECT $1,$2,$3,id,modalite,"regionAnatomique",$4,$5,NOW() - INTERVAL '2 hours',$6,$7,$8,NOW(),NOW() FROM img_types_examen WHERE id = $9 RETURNING id`,
+        [num, p(i + 2), medecinId, urg, statut, indic, tenantId, adminId, ids[t]],
+      );
+      if (statut === 'valide' || statut === 'termine') {
+        await ds.query(
+          `INSERT INTO img_resultats ("demandeId", "patientId", "compteRendu", conclusion, "radiologueId", "dateValidation", "tenantId", "createdAt", "updatedAt")
+           VALUES ($1,$2,$3,$4,$5,NOW(),$6,NOW(),NOW())`,
+          [r[0].id, p(i + 2), "Examen de qualité satisfaisante. Pas d'anomalie focale visible.", 'Examen sans anomalie significative.', medecinId, tenantId],
+        );
+      }
+    }
+  });
+
+  await etape('maternité', async () => {
+    const dossiers: Array<[number, string, number, number, boolean, string | null, string]> = [
+      [1, 'GRO-0001', 1, 0, false, null, 'en_cours'],
+      [5, 'GRO-0002', 3, 2, true, "Antécédent de pré-éclampsie", 'en_cours'],
+      [3, 'GRO-0003', 2, 1, false, null, 'terminee'],
+    ];
+    for (const [i, num, gest, par, risque, motif, statut] of dossiers) {
+      const r = await ds.query(
+        `INSERT INTO mat_dossiers_grossesse (numero, "patientId", ddr, dpa, gestite, parite, avortements, "groupeSanguin", rhesus, "grossesseARisque", "motifRisque", statut, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,0,'O','positif',$7,$8,$9,$10,$11,NOW(),NOW()) RETURNING id`,
+        [num, p(i), jour(statut === 'terminee' ? -300 : -150), jour(statut === 'terminee' ? -20 : 130), gest, par, risque, motif, statut, tenantId, adminId],
+      );
+      await ds.query(
+        `INSERT INTO mat_consultations_prenatales ("dossierId", date, "termeSA", poids, "tensionArterielle", "hauteurUterine", "bruitsCoeurFoetal", oedemes, observations, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,22,68.5,'115/70',22,142,false,'Évolution normale, échographie du 2e trimestre conforme.',$3,$4,NOW(),NOW())`,
+        [r[0].id, jour(-7), tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('devis', async () => {
+    const dv: Array<[number, string, string, number, string]> = [
+      [0, 'DEV-0001', 'Césarienne programmée', 650000, 'envoye'],
+      [4, 'DEV-0002', 'Bilan de santé complet', 85000, 'accepte'],
+      [6, 'DEV-0003', 'Chirurgie de la hernie', 420000, 'brouillon'],
+    ];
+    for (const [i, num, objet, ttc, statut] of dv) {
+      const r = await ds.query(
+        `INSERT INTO devis_patient (numero, "patientId", objet, "dateEmission", "dateValidite", statut, "montantHT", "remisePourcent", "montantRemise", "montantTTC", devise, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,NOW(),NOW() + INTERVAL '30 days',$4,$5,0,0,$5,'XOF',$6,$7,NOW(),NOW()) RETURNING id`,
+        [num, p(i), objet, statut, ttc, tenantId, adminId],
+      );
+      await ds.query(
+        `INSERT INTO lignes_devis ("devisId", type, designation, quantite, "prixUnitaire", "montantLigne", "tenantId")
+         VALUES ($1,'acte',$2,1,$3,$3,$4)`,
+        [r[0].id, objet, ttc, tenantId],
+      );
+    }
+  });
+
+  await etape('ressources humaines', async () => {
+    const emp: Array<[string, string, string, string, string, number]> = [
+      ['EMP-001', 'Diallo', 'Amara', 'Médecin chef', 'Médecine', 950000],
+      ['EMP-002', 'Mensah', 'Koffi', 'Médecin généraliste', 'Médecine', 700000],
+      ['EMP-003', 'Koné', 'Fatoumata', 'Infirmière', 'Soins infirmiers', 280000],
+      ['EMP-004', 'Bamba', 'Célestine', 'Caissière', 'Administration', 220000],
+      ['EMP-005', 'Ben Salah', 'Ahmed', 'Pharmacien', 'Pharmacie', 600000],
+      ['EMP-006', 'Kouassi', 'Jean', 'Technicien de laboratoire', 'Laboratoire', 350000],
+    ];
+    for (const [mat, nom, prenom, poste, dep, sal] of emp) {
+      const r = await ds.query(
+        `INSERT INTO rh_employes (matricule, nom, prenom, poste, departement, "dateEmbauche", "typeContrat", "salaireBase", statut, "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,'CDI',$7,'actif',$8,NOW(),NOW()) RETURNING id`,
+        [mat, nom, prenom, poste, dep, jour(-900), sal, tenantId],
+      );
+      if (mat === 'EMP-003') {
+        await ds.query(
+          `INSERT INTO rh_conges ("employeId", type, "dateDebut", "dateFin", jours, statut, motif, "tenantId", "createdAt", "updatedAt")
+           VALUES ($1,'conge_annuel',$2,$3,10,'demande','Congé annuel',$4,NOW(),NOW())`,
+          [r[0].id, jour(20), jour(30), tenantId],
+        );
+      }
+    }
+  });
+
+  await etape('équipements biomédicaux', async () => {
+    const eq: Array<[string, string, string, string, string, string, number]> = [
+      ['EQ-001', 'Échographe Doppler', 'imagerie', "Salle d'échographie", 'en_service', 'GE', 18000000],
+      ['EQ-002', 'Moniteur multiparamétrique', 'monitoring', 'Réanimation', 'en_service', 'Mindray', 3500000],
+      ['EQ-003', "Automate d'hématologie", 'laboratoire', 'Laboratoire', 'en_maintenance', 'Sysmex', 9000000],
+      ['EQ-004', "Table d'opération", 'bloc', 'Bloc opératoire 1', 'en_service', 'Maquet', 12000000],
+      ['EQ-005', 'Radiographie numérique', 'imagerie', 'Salle de radiologie', 'en_panne', 'Fujifilm', 25000000],
+    ];
+    for (const [code, nom, cat, loc, statut, marque, val] of eq) {
+      await ds.query(
+        `INSERT INTO equip_equipements (code, nom, categorie, marque, localisation, "dateAcquisition", "valeurAcquisition", devise, statut, "periodiciteMaintenanceJours", "dateProchaineMaintenance", "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,'XOF',$8,180,$9,$10,NOW(),NOW())`,
+        [code, nom, cat, marque, loc, jour(-700), val, statut, jour(statut === 'en_service' ? 45 : 5), tenantId],
+      );
+    }
+  });
+
+  await etape('incidents qualité', async () => {
+    const inc: Array<[string, string, string, string, string, string]> = [
+      ['INC-0001', 'chute', 'mineure', 'cloture', 'Hospitalisation', "Chute d'un patient sans gravité lors d'un transfert vers le fauteuil."],
+      ['INC-0002', 'erreur_medicamenteuse', 'moderee', 'en_analyse', 'Pharmacie', "Dosage erroné détecté avant l'administration, corrigé par l'infirmière."],
+      ['INC-0003', 'materiel_defectueux', 'mineure', 'declare', 'Laboratoire', 'Centrifugeuse bruyante, déclarée à la maintenance.'],
+    ];
+    for (const [num, type, grav, statut, service, desc] of inc) {
+      await ds.query(
+        `INSERT INTO incidents_qualite (numero, "tenantId", type, gravite, statut, "dateSurvenue", "serviceConcerne", description, "declarantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,NOW() - INTERVAL '3 days',$6,$7,$8,NOW(),NOW())`,
+        [num, tenantId, type, grav, statut, service, desc, adminId],
+      );
+    }
+  });
+}
+
 // ─── 3. Une démo par formule commerciale ──────────────────────────────────────
 //
 // Chaque formule (Pharmacie, Cabinet, Centre, Clinique) a son propre
@@ -652,6 +860,7 @@ async function main(): Promise<void> {
     await seedSejours(AppDataSource, patientIds, litIds, medecinId);
     await seedConsultationsEtFactures(AppDataSource, patientIds, medecinId);
     await seedLaboratoire(AppDataSource, patientIds, medecinId).catch((e) => log(`  - laboratoire ignoré : ${e?.message ?? e}`));
+    await seedHopitalExtras(AppDataSource, patientIds, adminId, medecinId);
     await seedDemosParFormule(AppDataSource);
 
     console.log('');
