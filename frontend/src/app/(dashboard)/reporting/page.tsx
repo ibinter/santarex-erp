@@ -29,7 +29,7 @@ function fmtXOF(v?: number) {
 }
 function pct(v?: number) { return v != null ? v.toFixed(1) + '%' : '—'; }
 function nbFactures(s: FactureStats | null) {
-  return s?.nbFactures?.toString() ?? '0';
+  return s?.nbFactures?.toString() ?? '—';
 }
 
 const STATUT_CFG: Record<string, { color: string; bg: string; border: string }> = {
@@ -66,9 +66,34 @@ export default function ReportingPage() {
       apiClient<LaboStats>('/laboratoire/stats/jour'),
       apiClient<any>('/patients?limit=1'),
     ]);
-    if (f.status === 'fulfilled') setFactureStats(f.value);
-    if (h.status === 'fulfilled') setHospStats(h.value);
-    if (l.status === 'fulfilled') setLaboStats(l.value);
+    // Les trois routes de statistiques renvoient leurs propres noms de champs : on les ramène à ceux de l'écran
+    // (avant, tous les indicateurs restaient à « — » même avec des données).
+    if (f.status === 'fulfilled') {
+      const v: any = f.value;
+      setFactureStats({
+        ...v,
+        totalTTC: v?.totalTTC ?? v?.caMois,
+        totalPaye: v?.totalPaye ?? (v?.caMois != null ? Math.max(Number(v.caMois) - Number(v.impayes ?? 0), 0) : undefined),
+      });
+    }
+    if (h.status === 'fulfilled') {
+      const v: any = h.value;
+      setHospStats({
+        ...v,
+        sejoursActifs: v?.sejoursActifs ?? v?.sejours?.actifs,
+        totalLits: v?.totalLits ?? v?.lits?.total,
+        litsOccupes: v?.litsOccupes ?? v?.lits?.occupes,
+        tauxOccupation: v?.tauxOccupation ?? v?.lits?.tauxOccupationPct,
+      });
+    }
+    if (l.status === 'fulfilled') {
+      const v: any = l.value;
+      setLaboStats({
+        totalDemandes: v?.totalDemandes ?? v?.demandesJour,
+        demandesUrgentes: v?.demandesUrgentes ?? v?.urgentes,
+        demandesTraitees: v?.demandesTraitees ?? v?.terminees,
+      });
+    }
     if (p.status === 'fulfilled') {
       const v = p.value;
       setNbPatients(v?.total ?? v?.count ?? (Array.isArray(v) ? v.length : null));
