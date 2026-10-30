@@ -26,9 +26,11 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   role: UserRole;
 
-  @ApiProperty({ example: 'clinique-saint-joseph' })
+  // Facultatif côté requête : le contrôleur impose TOUJOURS l'établissement de l'administrateur connecté
+  // (isolation entre établissements). Un `tenantId` envoyé par le navigateur est ignoré.
+  @ApiPropertyOptional({ example: 'clinique-saint-joseph', description: "Ignoré : l'établissement est celui de l'administrateur connecté." })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   tenantId: string;
 
   @ApiPropertyOptional({ example: true })

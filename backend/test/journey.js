@@ -101,6 +101,18 @@ async function main() {
   const connexionB = await appel('POST', '/auth/login', { corps: { email: b.email, password: MDP, tenantId: b.data.user.tenantId } });
   const jetonB = connexionB.data?.access_token;
 
+  console.log('\nUtilisateurs');
+  const nouvelUtilisateur = await appel('POST', '/users', {
+    jeton: jetonA,
+    corps: { email: `medecin.${suffixe}@parcours.test`, password: MDP, firstName: 'Awa', lastName: 'Koné', role: 'medecin' },
+  });
+  verifier('un administrateur crée un utilisateur sans préciser l’établissement', nouvelUtilisateur.statut === 201,
+    `(statut ${nouvelUtilisateur.statut} ${nouvelUtilisateur.brut?.error?.message ?? ''})`);
+  verifier('le nouvel utilisateur est rattaché à l’établissement de l’administrateur', nouvelUtilisateur.data?.tenantId === tenantA,
+    `(reçu ${nouvelUtilisateur.data?.tenantId})`);
+  const connexionMedecin = await appel('POST', '/auth/login', { corps: { email: `medecin.${suffixe}@parcours.test`, password: MDP, tenantId: tenantA } });
+  verifier('le nouvel utilisateur peut se connecter', connexionMedecin.statut === 200 && !!connexionMedecin.data?.access_token, `(statut ${connexionMedecin.statut})`);
+
   console.log('\nPatient, facture, paiements');
   const patient = await appel('POST', '/patients', {
     jeton: jetonA,
