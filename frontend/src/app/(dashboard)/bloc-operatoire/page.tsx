@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Scissors, Clock, CheckCircle, Plus, Calendar, AlertTriangle, RefreshCw, Play, Square, X, Loader2, Wrench } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 
 // ── Types (miroir des entités backend) ──────────────────────────────────────
@@ -522,9 +522,7 @@ function NouvelleInterventionModal({ salles, onClose, onCreated }: {
 
   const searchPatients = useCallback(async (q: string) => {
     try {
-      const d = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=8`);
-      const list = Array.isArray(d) ? d : (d?.items ?? d?.data ?? []);
-      setPatients(list);
+      setPatients(await rechercherPatients(q, 8));
     } catch { setPatients([]); }
   }, []);
   const searchMedecins = useCallback(async (q: string) => {

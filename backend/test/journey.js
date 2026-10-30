@@ -121,6 +121,36 @@ async function main() {
   verifier('un patient se crée', patient.statut === 201 && !!patient.data?.id, `(statut ${patient.statut})`);
   const patientId = patient.data?.id;
 
+  console.log('\nÉcrans de saisie (recherche, filtres, formulaires)');
+  // Ces appels reproduisent exactement ce qu'envoient les écrans : le serveur refuse tout champ ou paramètre inconnu.
+  const rechercheListe = await appel('GET', '/patients?page=1&limit=20&q=kouassi&sexe=M&statut=actif', { jeton: jetonA });
+  verifier('l’écran Patients : recherche + filtres sexe/statut acceptés', rechercheListe.statut === 200 && (rechercheListe.data?.total ?? 0) >= 1,
+    `(statut ${rechercheListe.statut} ${rechercheListe.brut?.error?.message ?? ''})`);
+  const rechercheSelecteur = await appel('GET', '/patients/search?q=kou&limit=6', { jeton: jetonA });
+  verifier('le sélecteur de patient des formulaires trouve le patient', rechercheSelecteur.statut === 200 && (rechercheSelecteur.data?.data?.length ?? 0) >= 1,
+    `(statut ${rechercheSelecteur.statut})`);
+  const auditFiltre = await appel('GET', '/audit-logs?page=1&limit=20&ressource=patients', { jeton: jetonA });
+  verifier('le journal d’audit accepte ses filtres', auditFiltre.statut === 200, `(statut ${auditFiltre.statut} ${auditFiltre.brut?.error?.message ?? ''})`);
+  const auditAutreTenant = await appel('GET', `/audit-logs?page=1&limit=50&tenantId=${encodeURIComponent('autre-etablissement')}`, { jeton: jetonA });
+  verifier('un administrateur ne peut pas lire le journal d’un autre établissement',
+    auditAutreTenant.statut === 200 && (auditAutreTenant.data?.data ?? []).every((l) => !l.tenantId || l.tenantId === tenantA),
+    `(statut ${auditAutreTenant.statut})`);
+  const patientAvecAllergies = await appel('POST', '/patients', {
+    jeton: jetonA,
+    corps: { nom: 'DIABATÉ', prenom: 'Awa', dateNaissance: '1990-01-01', sexe: 'F', allergiesJson: JSON.stringify([{ nom: 'Pénicilline' }]), antecedentsMedicaux: 'Asthme' },
+  });
+  verifier('un patient se crée avec allergies et antécédents', patientAvecAllergies.statut === 201, `(statut ${patientAvecAllergies.statut} ${patientAvecAllergies.brut?.error?.message ?? ''})`);
+  const medicament = await appel('POST', '/pharmacie/medicaments', {
+    jeton: jetonA,
+    corps: { nom: 'Metformine', forme: 'comprime', dosage: '500 mg', unite: 'boîte', categorie: 'antidiabetique', prixVente: 1500, stockMinimum: 10, prescriptionRequise: false },
+  });
+  verifier('une fiche médicament se crée', medicament.statut === 201 && !!medicament.data?.id, `(statut ${medicament.statut} ${medicament.brut?.error?.message ?? ''})`);
+  const consultation = await appel('POST', '/consultations', {
+    jeton: jetonA,
+    corps: { patientId, medecinId: nouvelUtilisateur.data?.id, dateHeure: new Date().toISOString(), type: 'consultation_generale', motif: 'Fièvre', tensionArterielle: '120/80', frequenceCardiaque: 80, temperature: 38.2, poidsKg: 70, tailleCm: 175, saturationO2: 98 },
+  });
+  verifier('une consultation se crée comme depuis l’écran', consultation.statut === 201, `(statut ${consultation.statut} ${consultation.brut?.error?.message ?? ''})`);
+
   const facture = await appel('POST', '/facturation', {
     jeton: jetonA,
     corps: {

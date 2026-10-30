@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, Plus, Trash2, Save, Receipt, AlertTriangle } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string; assuranceTiersPayant?: boolean; assuranceNom?: string };
 type LigneForm = { id: string; type: string; libelle: string; quantite: number; prixUnitaire: number };
@@ -38,8 +38,7 @@ export default function NouvelleFacturePage() {
 
   const searchPatients = useCallback(async (q: string) => {
     try {
-      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`);
-      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+      setPatients(await rechercherPatients(q, 6));
     } catch { setPatients([]); }
   }, []);
 

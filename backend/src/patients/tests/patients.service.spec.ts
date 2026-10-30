@@ -76,17 +76,26 @@ describe('PatientsService', () => {
   });
 
   describe('findAll', () => {
-    it('filtre par tenantId et statut ACTIF', async () => {
+    it('filtre par tenantId et statut ACTIF par défaut', async () => {
       repo.findAndCount.mockResolvedValue([[mockPatient], 1]);
       const result = await service.findAll(TENANT, { page: 1, limit: 20 } as any);
 
       expect(repo.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { tenantId: TENANT, statut: PatientStatut.ACTIF },
-        }),
+        expect.objectContaining({ where: { tenantId: TENANT, statut: PatientStatut.ACTIF } }),
       );
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
+    });
+
+    it("applique la recherche (q), le statut et le sexe demandés par l'écran Patients", async () => {
+      await service.findAll(TENANT, { page: 1, limit: 20, q: ' ama ', statut: PatientStatut.INACTIF, sexe: 'F' } as any);
+
+      const { where } = repo.findAndCount.mock.calls[0][0];
+      expect(Array.isArray(where)).toBe(true);
+      expect(where).toHaveLength(4); // nom, prénom, téléphone, IPP
+      for (const w of where) {
+        expect(w).toMatchObject({ tenantId: TENANT, statut: PatientStatut.INACTIF, sexe: 'F' });
+      }
     });
   });
 

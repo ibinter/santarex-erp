@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, FlaskConical, ChevronDown, ChevronUp, Zap, AlertTriangle, Check, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
@@ -60,8 +60,7 @@ export default function NouvelleDemandeLaboratoirePage() {
 
   const searchPatients = useCallback(async (q: string) => {
     try {
-      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`);
-      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+      setPatients(await rechercherPatients(q, 6));
     } catch { setPatients([]); }
   }, []);
 

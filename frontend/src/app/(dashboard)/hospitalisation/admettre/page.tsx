@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bed, Search, Save, AlertTriangle } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
@@ -29,7 +29,7 @@ export default function AdmettreHospitalisationPage() {
   const mTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const searchPatients = useCallback(async (q: string) => {
-    try { const d = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`); setPatients(Array.isArray(d) ? d : d?.items ?? []); }
+    try { setPatients(await rechercherPatients(q, 6)); }
     catch { setPatients([]); }
   }, []);
 
@@ -43,7 +43,7 @@ export default function AdmettreHospitalisationPage() {
 
   useEffect(() => {
     searchPatients(''); searchMedecins('');
-    apiClient<any>('/hospitalisation/lits?statut=disponible&limit=100').then(d => {
+    apiClient<any>("/hospitalisation/lits?statut=libre").then(d => {
       setLits(Array.isArray(d) ? d : d?.items ?? []);
     }).catch(() => {});
   }, []);

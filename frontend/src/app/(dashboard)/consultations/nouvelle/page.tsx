@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Search, User, Check, ChevronRight, ChevronLeft, Stethoscope, AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string; dateNaissance?: string; groupeSanguin?: string; allergies?: string };
 type Medecin = { id: string; nom: string; prenom: string; specialite?: string; role?: string };
@@ -43,8 +43,7 @@ export default function NouvelleConsultationPage() {
 
   const searchPatients = useCallback(async (q: string) => {
     try {
-      const data = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=8`);
-      setPatients(Array.isArray(data) ? data : data?.items ?? []);
+      setPatients(await rechercherPatients(q, 8));
     } catch { setPatients([]); }
   }, []);
 

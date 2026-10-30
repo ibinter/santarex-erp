@@ -26,6 +26,7 @@ import { PatientsService } from './patients.service';
 import { LicencesService } from '../licences/licences.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { ListPatientsQueryDto } from './dto/list-patients-query.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { SearchDto } from '../common/dto/search.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -51,9 +52,9 @@ export class PatientsController {
   @ApiResponse({ status: 200, description: 'Liste récupérée avec succès' })
   async findAll(
     @CurrentUser('tenantId') tenantId: string,
-    @Query() paginationDto: PaginationDto,
+    @Query() query: ListPatientsQueryDto,
   ) {
-    return this.patientsService.findAll(tenantId, paginationDto);
+    return this.patientsService.findAll(tenantId, query);
   }
 
   @Get('search')

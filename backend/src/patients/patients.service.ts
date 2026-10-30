@@ -9,6 +9,7 @@ import { Patient, PatientStatut } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { ListPatientsQueryDto } from './dto/list-patients-query.dto';
 
 @Injectable()
 export class PatientsService {
@@ -33,13 +34,27 @@ export class PatientsService {
 
   async findAll(
     tenantId: string,
-    paginationDto: PaginationDto,
+    query: ListPatientsQueryDto,
   ): Promise<{ data: Patient[]; total: number; page: number; limit: number; totalPages: number }> {
-    const { page = 1, limit = 20 } = paginationDto;
+    const { page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
+    const base: any = { tenantId, statut: query.statut ?? PatientStatut.ACTIF };
+    if (query.sexe) base.sexe = query.sexe;
+
+    // Recherche : nom, prénom, téléphone ou IPP (chaque critère est combiné au filtre d'établissement).
+    const terme = query.q?.trim();
+    const where = terme
+      ? [
+          { ...base, nom: ILike(`%${terme}%`) },
+          { ...base, prenom: ILike(`%${terme}%`) },
+          { ...base, telephone: Like(`%${terme}%`) },
+          { ...base, ipp: Like(`%${terme}%`) },
+        ]
+      : base;
+
     const [data, total] = await this.patientRepository.findAndCount({
-      where: { tenantId, statut: PatientStatut.ACTIF },
+      where,
       order: { createdAt: 'DESC' },
       skip,
       take: limit,

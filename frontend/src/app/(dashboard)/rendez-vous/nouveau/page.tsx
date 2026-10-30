@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Search, Save, AlertTriangle, Clock } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 import { useTranslations } from 'next-intl';
 
 type Patient = { id: string; ipp?: string; nom: string; prenom: string };
@@ -42,7 +42,7 @@ export default function NouveauRendezVousPage() {
   const mTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const searchP = useCallback(async (q: string) => {
-    try { const d = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`); setPatients(Array.isArray(d) ? d : d?.items ?? []); } catch { setPatients([]); }
+    try { setPatients(await rechercherPatients(q, 6)); } catch { setPatients([]); }
   }, []);
   const searchM = useCallback(async (q: string) => {
     try { const d = await apiClient<any>(`/users?role=medecin&q=${encodeURIComponent(q)}&limit=6`); setMedecins(Array.isArray(d) ? d : d?.items ?? []); } catch { setMedecins([]); }

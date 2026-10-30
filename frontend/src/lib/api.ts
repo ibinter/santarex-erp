@@ -290,3 +290,17 @@ export async function apiClient<T = any>(
     body: options?.body ? JSON.stringify(options.body) : undefined,
   });
 }
+
+/** Extrait une liste d'une réponse du serveur, quelle que soit sa forme : [..], { data: [..] }, { items: [..] }. */
+export function listeDe<T = any>(d: any): T[] {
+  if (Array.isArray(d)) return d as T[];
+  if (Array.isArray(d?.data)) return d.data as T[];
+  if (Array.isArray(d?.items)) return d.items as T[];
+  return [];
+}
+
+/** Recherche de patients pour les sélecteurs des formulaires (route serveur : /patients/search?q=…). */
+export async function rechercherPatients<T = any>(q: string, limit = 6): Promise<T[]> {
+  const d = await apiClient<any>(`/patients/search?q=${encodeURIComponent(q)}&limit=${limit}`);
+  return listeDe<T>(d);
+}

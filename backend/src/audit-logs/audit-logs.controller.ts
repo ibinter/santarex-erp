@@ -1,8 +1,7 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Query, Request, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuditLogsService } from './audit-logs.service';
-import { AuditAction } from './entities/audit-log.entity';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { ListAuditLogsQueryDto } from './dto/list-audit-logs-query.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -18,17 +17,10 @@ export class AuditLogsController {
 
   @Get()
   @ApiOperation({ summary: 'Consulter le journal d\'audit' })
-  @ApiQuery({ name: 'tenantId', required: false })
-  @ApiQuery({ name: 'userId', required: false })
-  @ApiQuery({ name: 'action', required: false, enum: AuditAction })
-  @ApiQuery({ name: 'ressource', required: false })
-  findAll(
-    @Query() pagination: PaginationDto,
-    @Query('tenantId') tenantId?: string,
-    @Query('userId') userId?: string,
-    @Query('action') action?: AuditAction,
-    @Query('ressource') ressource?: string,
-  ) {
-    return this.auditLogsService.findAll(pagination, { tenantId, userId, action, ressource });
+  findAll(@Query() query: ListAuditLogsQueryDto, @Request() req) {
+    // Un administrateur d'établissement ne voit que le journal de SON établissement ; seul le superadmin peut filtrer.
+    const tenantId = req.user?.role === UserRole.SUPERADMIN ? query.tenantId : req.user?.tenantId;
+    const { userId, action, ressource } = query;
+    return this.auditLogsService.findAll(query, { tenantId, userId, action, ressource });
   }
 }

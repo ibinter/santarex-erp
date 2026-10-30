@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Scan, RefreshCw, Plus, Clock, CheckCircle, FileImage, Zap, ChevronRight, X, Calendar, User, AlertTriangle, Search, Save, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { apiClient } from '@/lib/api';
+import { apiClient, rechercherPatients } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type StatutExamen = 'EN_ATTENTE'|'EN_COURS'|'TERMINE'|'VALIDE'|string;
@@ -115,8 +115,7 @@ export default function ImagériePage() {
   // Recherche patient (debounce)
   const searchPatients = useCallback(async (q: string) => {
     try {
-      const d = await apiClient<any>(`/patients?q=${encodeURIComponent(q)}&limit=6`);
-      setPResults(Array.isArray(d)?d:d?.items??d?.data??[]);
+      setPResults(await rechercherPatients(q, 6));
     } catch { setPResults([]); }
   }, []);
   useEffect(()=>{

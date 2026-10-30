@@ -113,7 +113,8 @@ for (const { t } of controllers) {
     const suivant = reste.search(/\n\s*@(Get|Post|Put|Patch|Delete)\(/);
     const sig = suivant === -1 ? reste.slice(0, 1500) : reste.slice(0, suivant);
     const bm = /@Body\([^)]*\)\s*\w+\s*:\s*(?:Partial<)?(\w+)/.exec(sig);
-    routes.push({ method: m[1].toUpperCase(), re: new RegExp('^' + full.replace(/:\w+/g, '[^/]+').replace(/\*/g, '.*') + '$'), full, dto: bm ? bm[1] : null });
+    const qm = /@Query\(\s*\)\s*\w+\s*:\s*(\w+)/.exec(sig);
+    routes.push({ method: m[1].toUpperCase(), re: new RegExp('^' + full.replace(/:\w+/g, '[^/]+').replace(/\*/g, '.*') + '$'), full, dto: bm ? bm[1] : null, queryDto: qm ? qm[1] : null });
   }
 }
 
@@ -138,6 +139,13 @@ for (const f of walk(FRONT)) {
     if (!route) {
       if (!TOLERES.some((r) => r.test(url))) problemes.push(`Route serveur inconnue ${method} ${url} (${nom}:${ligne})`);
       continue;
+    }
+    if (route.queryDto) {
+      const champsRequete = tousChamps(route.queryDto);
+      const brut = pm[2].split('?')[1] || '';
+      const cles = [...(brut.match(/(?:^|&)(\w+)=/g) || [])].map((x) => x.replace(/[&=]/g, ''));
+      const inconnues = champsRequete && champsRequete.size ? cles.filter((c) => !champsRequete.has(c)) : [];
+      if (inconnues.length) problemes.push(`Paramètres de recherche refusés par le serveur sur GET ${url} → ${route.queryDto} : [${inconnues.join(', ')}] (${nom}:${ligne})`);
     }
     if (!route.dto || !['POST', 'PUT', 'PATCH'].includes(method)) continue;
     const champsServeur = tousChamps(route.dto);
