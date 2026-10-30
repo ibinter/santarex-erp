@@ -573,7 +573,7 @@ async function seedHopitalExtras(ds: DataSource, patientIds: string[], adminId: 
     for (const [i, t, statut, indic, urg, num] of dem) {
       const r = await ds.query(
         `INSERT INTO img_demandes (numero, "patientId", "medecinPrescripteurId", "typeExamenId", modalite, "regionAnatomique", urgence, statut, "dateHeureDemande", "indicationClinique", "tenantId", "createdById", "createdAt", "updatedAt")
-         SELECT $1,$2,$3,id,modalite,"regionAnatomique",$4,$5,NOW() - INTERVAL '2 hours',$6,$7,$8,NOW(),NOW() FROM img_types_examen WHERE id = $9 RETURNING id`,
+         SELECT $1,$2,$3,id,modalite::text::img_demandes_modalite_enum,"regionAnatomique",$4,$5,NOW() - INTERVAL '2 hours',$6,$7,$8,NOW(),NOW() FROM img_types_examen WHERE id = $9 RETURNING id`,
         [num, p(i + 2), medecinId, urg, statut, indic, tenantId, adminId, ids[t]],
       );
       if (statut === 'valide' || statut === 'termine') {
@@ -644,7 +644,7 @@ async function seedHopitalExtras(ds: DataSource, patientIds: string[], adminId: 
       if (mat === 'EMP-003') {
         await ds.query(
           `INSERT INTO rh_conges ("employeId", type, "dateDebut", "dateFin", jours, statut, motif, "tenantId", "createdAt", "updatedAt")
-           VALUES ($1,'conge_annuel',$2,$3,10,'demande','Congé annuel',$4,NOW(),NOW())`,
+           VALUES ($1,'conge',$2,$3,10,'demande','Congé annuel',$4,NOW(),NOW())`,
           [r[0].id, jour(20), jour(30), tenantId],
         );
       }
