@@ -106,6 +106,21 @@ jobs:
         if: failure()
         run: tail -150 server.log
 
+  # ─── Cohérence frontend ↔ serveur ───────────────────────────────────────────
+  # Échoue si un lien mène à une page absente (404), si le frontend appelle une route inexistante
+  # ou envoie un champ que le serveur refuse.
+  coherence:
+    name: Cohérence frontend / serveur
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Audit de cohérence
+        run: node scripts/audit-coherence.js
+
   # ─── Build frontend ─────────────────────────────────────────────────────────
   build-frontend:
     name: Build Frontend (Next.js)
