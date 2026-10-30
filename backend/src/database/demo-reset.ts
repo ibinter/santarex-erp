@@ -113,6 +113,20 @@ const TABLES_A_PURGER: string[] = [
   'equip_interventions',
   'equip_equipements',
   'incidents_qualite',
+  'bloc_interventions',
+  'bloc_salles',
+  'appro_lignes_commande',
+  'appro_bons_commande',
+  'appro_fournisseurs',
+  'plannings_gardes',
+  'satisfaction_reponses',
+  'satisfaction_questionnaires',
+  'transport_missions',
+  'transport_vehicules',
+  'bs_transfusions',
+  'bs_poches_sang',
+  'bons_prise_en_charge',
+  'assureurs',
   // Facturation / caisse / paiements patients
   'lignes_facture',
   'factures',
@@ -679,6 +693,184 @@ async function seedHopitalExtras(ds: DataSource, patientIds: string[], adminId: 
         `INSERT INTO incidents_qualite (numero, "tenantId", type, gravite, statut, "dateSurvenue", "serviceConcerne", description, "declarantId", "createdAt", "updatedAt")
          VALUES ($1,$2,$3,$4,$5,NOW() - INTERVAL '3 days',$6,$7,$8,NOW(),NOW())`,
         [num, tenantId, type, grav, statut, service, desc, adminId],
+      );
+    }
+  });
+
+  await etape('bloc opératoire', async () => {
+    const salles = ['Bloc 1 — Chirurgie générale', 'Bloc 2 — Orthopédie', 'Bloc 3 — Obstétrique'];
+    const ids: string[] = [];
+    for (const [k, nom] of salles.entries()) {
+      const r = await ds.query(
+        `INSERT INTO bloc_salles (nom, type, statut, "estActive", "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,'bloc',$2,true,$3,NOW(),NOW()) RETURNING id`,
+        [nom, k === 0 ? 'occupee' : 'disponible', tenantId],
+      );
+      ids.push(r[0].id);
+    }
+    const interv: Array<[string, number, number, string, number, number, string, boolean]> = [
+      ['BLOC-0001', 0, 0, 'Appendicectomie', 0, 60, 'en_cours', false],
+      ['BLOC-0002', 1, 1, 'Pose de prothèse de hanche', 3, 150, 'programmee', false],
+      ['BLOC-0003', 2, 2, 'Césarienne', 5, 60, 'programmee', false],
+      ['BLOC-0004', 3, 0, 'Cure de hernie inguinale', -1, 75, 'terminee', false],
+    ];
+    for (const [num, i, s, type, h, duree, statut, urg] of interv) {
+      await ds.query(
+        `INSERT INTO bloc_interventions (numero, "patientId", "chirurgienId", "salleId", "typeIntervention", "dateHeurePrevue", "dureeEstimee", urgence, statut, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW(),NOW())`,
+        [num, p(i), medecinId, ids[s], type, jours(h < 0 ? h : 0, 8 + Math.abs(h)), duree, urg, statut, tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('approvisionnement', async () => {
+    const fours: Array<[string, string, string, string]> = [
+      ['PharmaCI Distribution', 'grossiste', 'Abidjan', '+225 27 21 00 11 22'],
+      ['Laborex Côte d\'Ivoire', 'grossiste', 'Abidjan', '+225 27 21 00 33 44'],
+      ['MedConsommables Afrique', 'consommables', 'Bouaké', '+225 27 31 00 55 66'],
+    ];
+    const ids: string[] = [];
+    for (const [nom, type, ville, tel] of fours) {
+      const r = await ds.query(
+        `INSERT INTO appro_fournisseurs (nom, type, telephone, ville, actif, "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,true,$5,NOW(),NOW()) RETURNING id`,
+        [nom, type, tel, ville, tenantId],
+      );
+      ids.push(r[0].id);
+    }
+    const bons: Array<[string, number, string, number, string, number]> = [
+      ['BC-0001', 0, 'Amoxicilline 500 mg (boîtes)', 120, 'envoyee', 1800],
+      ['BC-0002', 1, 'Paracétamol 1 g (boîtes)', 200, 'recue', 650],
+      ['BC-0003', 2, 'Gants stériles (boîtes)', 80, 'brouillon', 3200],
+    ];
+    for (const [num, f, des, qte, statut, pu] of bons) {
+      const r = await ds.query(
+        `INSERT INTO appro_bons_commande (numero, "fournisseurId", "dateCommande", "dateLivraisonPrevue", statut, "montantTotal", devise, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,NOW(),NOW() + INTERVAL '7 days',$3,$4,'XOF',$5,$6,NOW(),NOW()) RETURNING id`,
+        [num, ids[f], statut, qte * pu, tenantId, adminId],
+      );
+      await ds.query(
+        `INSERT INTO appro_lignes_commande ("bonCommandeId", designation, "quantiteCommandee", "quantiteRecue", "prixUnitaire", "montantLigne", "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW(),NOW())`,
+        [r[0].id, des, qte, statut === 'recue' ? qte : 0, pu, qte * pu, tenantId],
+      );
+    }
+  });
+
+  await etape('gardes et astreintes', async () => {
+    const g: Array<[string, string, string, number, string, string, string]> = [
+      ['Dr Amara Diallo', 'Urgences', 'garde_nuit', 0, '20:00', '08:00', 'planifiee'],
+      ['Dr Koffi Mensah', 'Hospitalisation', 'garde_jour', 1, '08:00', '20:00', 'planifiee'],
+      ['Fatoumata Koné (infirmière)', 'Urgences', 'garde_nuit', 1, '20:00', '08:00', 'planifiee'],
+      ['Dr Amara Diallo', 'Bloc opératoire', 'astreinte', 2, '00:00', '23:59', 'planifiee'],
+      ['Dr Koffi Mensah', 'Urgences', 'garde_nuit', -1, '20:00', '08:00', 'effectuee'],
+      ['Ahmed Ben Salah (pharmacien)', 'Pharmacie', 'garde_jour', 3, '08:00', '20:00', 'planifiee'],
+    ];
+    for (const [pers, service, type, j, deb, fin, statut] of g) {
+      await ds.query(
+        `INSERT INTO plannings_gardes ("personnelRef", service, "typeGarde", date, "heureDebut", "heureFin", statut, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())`,
+        [pers, service, type, jour(j), deb, fin, statut, tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('satisfaction patient', async () => {
+    const questions = [
+      { id: 'q1', libelle: "Accueil à l'arrivée", type: 'note_5' },
+      { id: 'q2', libelle: 'Qualité des soins reçus', type: 'note_5' },
+      { id: 'q3', libelle: "Temps d'attente", type: 'note_5' },
+    ];
+    const r = await ds.query(
+      `INSERT INTO satisfaction_questionnaires ("tenantId", titre, description, questions, "echelleMax", actif, "createdAt", "updatedAt")
+       VALUES ($1,'Satisfaction à la sortie','Enquête remise à chaque patient',$2,5,true,NOW(),NOW()) RETURNING id`,
+      [tenantId, JSON.stringify(questions)],
+    );
+    const notes: Array<[number, number[], string, boolean, string]> = [
+      [0, [5, 5, 4], 'Consultations', true, 'Personnel très accueillant, merci.'],
+      [1, [4, 5, 3], 'Urgences', true, "Prise en charge rapide, un peu d'attente à l'accueil."],
+      [2, [5, 4, 4], 'Hospitalisation', true, 'Chambre propre et soins attentifs.'],
+      [3, [3, 3, 2], 'Consultations', false, "Trop d'attente avant d'être reçu."],
+      [4, [5, 5, 5], 'Maternité', true, 'Équipe à l\'écoute, accouchement bien accompagné.'],
+    ];
+    for (const [i, v, service, reco, com] of notes) {
+      const rep = v.map((valeur, k) => ({ questionId: `q${k + 1}`, valeur }));
+      const score = v.reduce((a, b) => a + b, 0) / v.length;
+      await ds.query(
+        `INSERT INTO satisfaction_reponses ("tenantId", "questionnaireId", "patientId", "serviceConcerne", "dateReponse", reponses, "scoreGlobal", "commentaireLibre", recommande, "createdAt")
+         VALUES ($1,$2,$3,$4,NOW() - ($5 || ' days')::interval,$6,$7,$8,$9,NOW())`,
+        [tenantId, r[0].id, p(i), service, String(i), JSON.stringify(rep), score, com, reco],
+      );
+    }
+  });
+
+  await etape('transport et ambulances', async () => {
+    const veh: Array<[string, string, string, string, string, number]> = [
+      ['1234 AB 01', 'ambulance', 'Toyota', 'Hiace', 'disponible', 84500],
+      ['5678 CD 01', 'ambulance', 'Mercedes', 'Sprinter', 'en_mission', 120300],
+      ['9012 EF 01', 'vsl', 'Renault', 'Kangoo', 'maintenance', 61000],
+    ];
+    const ids: string[] = [];
+    for (const [im, type, marque, modele, statut, km] of veh) {
+      const r = await ds.query(
+        `INSERT INTO transport_vehicules (immatriculation, type, marque, modele, statut, kilometrage, "seuilEntretienKm", "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,10000,$7,$8,NOW(),NOW()) RETURNING id`,
+        [im, type, marque, modele, statut, km, tenantId, adminId],
+      );
+      ids.push(r[0].id);
+    }
+    const mis: Array<[string, number, string, number, string, string, string]> = [
+      ['TR-0001', 1, 'transfert', 2, 'Clinique Saint-Joseph', 'CHU de Cocody', 'en_cours'],
+      ['TR-0002', 0, 'retour_domicile', 4, 'Clinique Saint-Joseph', 'Domicile — Yopougon', 'planifiee'],
+      ['TR-0003', 0, 'evacuation', 0, 'Domicile — Abobo', 'Clinique Saint-Joseph', 'terminee'],
+    ];
+    for (const [num, v, type, i, orig, dest, statut] of mis) {
+      await ds.query(
+        `INSERT INTO transport_missions (numero, "vehiculeId", type, "patientId", origine, destination, "dateDepart", "accompagnantMedical", statut, "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,NOW(),true,$7,$8,$9,NOW(),NOW())`,
+        [num, ids[v], type, p(i), orig, dest, statut, tenantId, adminId],
+      );
+    }
+  });
+
+  await etape('banque de sang', async () => {
+    const poches: Array<[string, string, string, string, number]> = [
+      ['PS-0001', 'O', '+', 'CGR', 40], ['PS-0002', 'O', '+', 'CGR', 25], ['PS-0003', 'A', '+', 'CGR', 30],
+      ['PS-0004', 'B', '+', 'CGR', 12], ['PS-0005', 'AB', '+', 'plasma', 20], ['PS-0006', 'O', '-', 'CGR', 5],
+      ['PS-0007', 'A', '-', 'plaquettes', 4],
+    ];
+    for (const [num, g, rh, type, j] of poches) {
+      await ds.query(
+        `INSERT INTO bs_poches_sang (numero, groupe, rhesus, "typeProduit", "volumeMl", "datePrelevement", "datePeremption", statut, provenance, localisation, "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,450,NOW() - INTERVAL '3 days',NOW() + ($5 || ' days')::interval,'disponible','Centre national de transfusion sanguine','Réfrigérateur 1',$6,NOW(),NOW())`,
+        [num, g, rh, type, String(j), tenantId],
+      );
+    }
+  });
+
+  await etape('prise en charge assureurs', async () => {
+    const ass: Array<[string, string, number]> = [
+      ['MUGEFCI', 'mutuelle', 80], ['NSIA Assurances', 'assurance_privee', 70], ['CMU Côte d\'Ivoire', 'cmu', 70],
+    ];
+    const ids: string[] = [];
+    for (const [nom, type, taux] of ass) {
+      const r = await ds.query(
+        `INSERT INTO assureurs (nom, type, "tauxCouvertureDefaut", actif, "tenantId", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,true,$4,NOW(),NOW()) RETURNING id`,
+        [nom, type, taux, tenantId],
+      );
+      ids.push(r[0].id);
+    }
+    const bons: Array<[string, number, number, string, number, number, string]> = [
+      ['BPC-0001', 0, 0, 'Hospitalisation 5 jours', 450000, 80, 'accepte'],
+      ['BPC-0002', 1, 1, 'Intervention chirurgicale', 900000, 70, 'demande_envoyee'],
+      ['BPC-0003', 2, 2, 'Bilan biologique complet', 60000, 70, 'accepte'],
+    ];
+    for (const [num, i, a, prest, est, taux, statut] of bons) {
+      await ds.query(
+        `INSERT INTO bons_prise_en_charge (numero, "patientId", "assureurId", "numeroAssure", prestation, "montantEstime", "tauxCouverture", "montantCouvert", statut, "dateValidite", "tenantId", "createdById", "createdAt", "updatedAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW() + INTERVAL '60 days',$10,$11,NOW(),NOW())`,
+        [num, p(i), ids[a], `ASS-${1000 + i}`, prest, est, taux, Math.round((est * taux) / 100), statut, tenantId, adminId],
       );
     }
   });
