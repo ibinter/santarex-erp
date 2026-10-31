@@ -88,7 +88,10 @@ import { SeedModule } from './database/seed.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 20 }]),
+    // Limite GLOBALE par adresse IP : un établissement entier partage souvent la même IP (box/NAT), et un écran fait
+    // plusieurs appels. 20/min provoquait des erreurs 429 dès qu'on naviguait un peu. Les routes sensibles (connexion,
+    // mot de passe, 2FA…) gardent leur limite stricte via @Throttle().
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 600 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

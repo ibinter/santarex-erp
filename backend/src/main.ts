@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -9,7 +10,11 @@ import helmet from 'helmet';
 async function bootstrap() {
   // rawBody: true — nécessaire à la vérification de signature HMAC des webhooks
   // de paiement (le corps brut doit être disponible via req.rawBody).
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
+
+  // L'API est derrière nginx : sans ceci, `req.ip` est l'adresse du proxy pour TOUS les visiteurs (une seule limite de
+  // requêtes partagée par tout le monde, et un journal d'audit qui note partout la même adresse).
+  app.set('trust proxy', 1);
 
   // En-têtes de sécurité durcis (section 46.3 #8).
   // L'API est servie en HTTPS derrière un reverse proxy.
